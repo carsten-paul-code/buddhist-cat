@@ -3220,6 +3220,30 @@ not to copy.  nil when there is neither."
           "wording, and never reproduce it in your output sections):\n"
           (mapconcat #'identity verse "\n")))))))
 
+(defconst tibetan-cascade--machine-text-re
+  (concat "\\`\\[\\(?:Requesting\\|Awaiting\\|Claude\\|Translation not"
+          "\\|Antwort abgeschnitten\\)")
+  "Machine placeholders / stubs of a slot — never content.
+Prefix-anchored (§5.40 lesson: a real rendering may open with an
+editorial bracket like `[He] spoke').")
+
+(defun tibetan-cascade--clean-slot-text (body)
+  "BODY of a machine-filled slot (Translation, DharmaMitra) as plain
+text, or nil when it is only a placeholder/stub.  A leading
+:PROPERTIES: drawer (DM's :LAST_TRANSLATED:) and the machine label
+line — `(Sentence N — …)' / `(Section …)' — are stripped.  §5.62:
+shared by the handout and the translation discussion."
+  (when (and body (stringp body))
+    (let ((tx (string-trim body)))
+      (when (string-match "\\`:PROPERTIES:\n\\(?:.*\n\\)*?:END:\n?" tx)
+        (setq tx (string-trim (substring tx (match-end 0)))))
+      (setq tx (string-trim
+                (replace-regexp-in-string
+                 "\\`(\\(?:Sentence\\|Section\\)[^)\n]*)[ \t]*\n" "" tx)))
+      (unless (or (string-empty-p tx)
+                  (string-match-p tibetan-cascade--machine-text-re tx))
+        tx))))
+
 (defun tibetan-cascade--pt-region ()
   "Bounds (START . END) des `* Provided Translations'-Bodys im
 aktuellen Buffer, oder nil."

@@ -28,6 +28,9 @@
 (require 'tibetan-cascade)
 (require 'tibetan-translation-doc)
 
+(declare-function tibetan-cascade--scope-at-point "tibetan-cascade" ())
+(declare-function tibetan-cascade--clean-slot-text "tibetan-cascade" (body))
+
 ;; ============================================================================
 ;; B1 — data layer
 ;; ============================================================================
@@ -205,13 +208,6 @@ Resources."
       (tibetan-load-resources-vocab)
       tibetan-current-resources-vocab)))
 
-(defconst tibetan-handout--machine-text-re
-  (concat "\\`\\[\\(?:Requesting\\|Awaiting\\|Claude\\|Translation not"
-          "\\|Antwort abgeschnitten\\)")
-  "Machine placeholders / stubs — never content on a handout.
-Prefix-anchored (§5.40 lesson: a real rendering may open with an
-editorial bracket like `[He] spoke').")
-
 (defun tibetan-handout--translation (file seg-nums sections)
   "The translation of the sentence FILE for the handout, or nil.
 \(:by-seg ((N . TEXT) …)) when every segment of SEG-NUMS has a
@@ -221,19 +217,14 @@ TEXT) from the Translation slot of SECTIONS (machine label
   (let ((rends (tibetan-translation-doc--renderings file)))
     (if (and seg-nums
              (cl-every (lambda (n)
-                         (let ((r (cdr (assq n rends))))
-                           (and r (not (string-match-p
-                                        tibetan-handout--machine-text-re r)))))
+                         (tibetan-cascade--clean-slot-text
+                          (cdr (assq n rends))))
                        seg-nums))
         (list :by-seg (mapcar (lambda (n) (cons n (cdr (assq n rends))))
                               seg-nums))
-      (let ((tr (plist-get sections :translation)))
-        (when (and tr (not (string-match-p tibetan-handout--machine-text-re tr)))
-          (setq tr (string-trim
-                    (replace-regexp-in-string
-                     "\\`(Sentence[^)\n]*)[ \t]*\n" "" tr)))
-          (unless (string-empty-p tr)
-            (list :whole tr)))))))
+      (let ((tr (tibetan-cascade--clean-slot-text
+                 (plist-get sections :translation))))
+        (when tr (list :whole tr))))))
 
 (defun tibetan-handout--vocab (body sa word-analysis)
   "Per-segment vocabulary entries from the Claude Vocabulary BODY.
@@ -598,7 +589,6 @@ appears (headings are German; the slots are named by content)."
 ;; B3 — scope, file, PDF, command
 ;; ============================================================================
 
-(declare-function tibetan-cascade--scope-at-point "tibetan-cascade" ())
 
 (defun tibetan-handout--output-file (scope)
   "`<source dir>/handouts/<short>-par-NNN.org' for a Lopez § SCOPE,

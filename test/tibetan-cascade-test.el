@@ -1318,6 +1318,28 @@ Zweiter Lauf: idempotent, Hand-Edits bleiben unangetastet."
                                        :test #'equal))))))
         (delete-directory dir t)))))
 
+(ert-deftest tibetan-cascade-clean-slot-text ()
+  "§5.62 (Refactor für Handout + Diskussion): der Inhalt eines
+maschinell gefüllten Slots (Translation, DharmaMitra) als reiner
+Text — Platzhalter/Stubs → nil; :PROPERTIES:-Drawer und die
+Maschinen-Etikette `(Sentence N — …)' / `(Section …)' entfallen; eine
+echte Übersetzung, die mit einer editorischen Klammer beginnt, bleibt
+\(§5.40-Lektion)."
+  (should-not (tibetan-cascade--clean-slot-text nil))
+  (should-not (tibetan-cascade--clean-slot-text "[Requesting translation...]"))
+  (should-not (tibetan-cascade--clean-slot-text "[Awaiting DharmaMitra…]"))
+  (should-not (tibetan-cascade--clean-slot-text
+               "[Antwort abgeschnitten — Satz neu feuern mit C-c u R]"))
+  (should (equal "Ganzer Satz."
+                 (tibetan-cascade--clean-slot-text
+                  "(Sentence 654 — §220 chunk)\nGanzer Satz.")))
+  (should (equal "DM text."
+                 (tibetan-cascade--clean-slot-text
+                  (concat ":PROPERTIES:\n:LAST_TRANSLATED: 2026-10-07\n:END:\n\n"
+                          "(Sentence 2 — segments 3–4)\n\nDM text."))))
+  (should (equal "[He] spoke."
+                 (tibetan-cascade--clean-slot-text "[He] spoke."))))
+
 ;; ============================================================================
 ;; B (§5.60): Vers-Referenzen — #+TIBETAN_SENTENCE_REFS (Dyczkowski)
 ;; ============================================================================
