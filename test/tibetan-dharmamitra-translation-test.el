@@ -89,6 +89,20 @@ Analysis' — peer of `** Translation' (Claude).  Layout revision
           ;; The placeholder body is gone.
           (should-not (string-match-p "\\[Awaiting DharmaMitra" s)))))))
 
+(ert-deftest tibetan-dm-trans-write-runs-after-write-hook ()
+  "§5.62: nach JEDER gelandeten DM-Übersetzung läuft
+`tibetan-dharmamitra-translation-after-write-functions' mit der Datei
+— die Übersetzungs-Diskussion startet, sobald Claude UND DharmaMitra
+da sind (wer zuletzt landet, löst aus).  Leere Antwort → kein Hook."
+  (tibetan-dm-trans-test--with-analysis-file
+      (tibetan-dm-trans-test--baseline-analysis)
+    (let* ((seen '())
+           (tibetan-dharmamitra-translation-after-write-functions
+            (list (lambda (f) (push f seen)))))
+      (should (tibetan-dharmamitra-translation--write-nested-tibetan-section
+               analysis-file "By me, the work was done."))
+      (should (equal (list analysis-file) seen)))))
+
 (ert-deftest tibetan-dm-trans-write-section-tibetan-deletes-legacy-toplevel ()
   "Migration:  when the analysis file has a LEGACY top-level
 `* DharmaMitra Translation (Tibetan)' section (from before the

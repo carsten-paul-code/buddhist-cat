@@ -1520,6 +1520,11 @@ oder Batch-Fire offen."
   (and (stringp response)
        (not (string-match-p "^## Concept Notes" response))))
 
+(defvar tibetan-cascade-after-land-functions nil
+  "Abnormal hook run with the sentence FILE after a sentence-level
+Claude response has landed in it (§5.62).  The translation
+discussion uses it to start once Claude AND DharmaMitra are there.")
+
 (defun tibetan-cascade--land-response (response ctx)
   "Land a sentence-first RESPONSE into the ONE cascade file.
 CTX: (:sent-num N :seg-nums L :sent-file FILE :cascade t :force BOOL).
@@ -1650,6 +1655,14 @@ touched."
                  (replace-regexp-in-string "^\\(\\*+\\)" " \\1" span)
                (format "[Claude sentence response missing Segment %d — re-fire the sentence (C-c u R)]"
                        n))))))
+      ;; §5.62: listeners (the translation discussion) learn that this
+      ;; sentence has fresh Claude content.  A listener error must
+      ;; never undo a landing.
+      (condition-case err
+          (run-hook-with-args 'tibetan-cascade-after-land-functions file)
+        (error (message "after-land hook failed for %s: %s"
+                        (file-name-nondirectory file)
+                        (error-message-string err))))
       t)))
 
 ;; ============================================================================

@@ -474,6 +474,24 @@ daraus (Padapāṭha Zeile 1, Morph Zeile 3, Claude-Glosse Zeile 2)."
         (should (string-match-p "| N\\.GEN\\.PL" s))
         (should (string-match-p "Gegebenheiten" s))))))
 
+(ert-deftest tibetan-cascade-land-runs-after-land-hook ()
+  "§5.62: nach einer gelandeten Satz-Antwort läuft
+`tibetan-cascade-after-land-functions' mit der Satzdatei (Auslöser
+der Übersetzungs-Diskussion)."
+  (tibetan-sanskrit-cascade-test--with-source
+    (let* ((file (tibetan-cascade--create-file
+                  1 '((1 . "dharmāṇāṃ śūnyatā svabhāvaḥ ।")
+                      (2 . "na svato nāpi parataḥ ॥"))
+                  src))
+           (seen '())
+           (tibetan-cascade-after-land-functions
+            (list (lambda (f) (push f seen)))))
+      (should (tibetan-cascade--land-response
+               tibetan-sanskrit-cascade-test--response
+               (list :sent-num 1 :seg-nums '(1 2)
+                     :sent-file file :cascade t)))
+      (should (equal (list file) seen)))))
+
 (ert-deftest tibetan-sanskrit-cascade-land-never-refires ()
   "C3-Loop-Guard: das Regenerate nach der Landung feuert NIE —
 auch bei einer Teilantwort, deren Stubs weiterhin als

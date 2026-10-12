@@ -50,6 +50,10 @@ line; nil-safe."
 ;; Writer
 ;; ----------------------------------------------------------------------------
 
+(defvar tibetan-dharmamitra-translation-after-write-functions nil
+  "Abnormal hook run with the analysis FILE after a DharmaMitra
+translation has been written into its nested slot (§5.62).")
+
 (defun tibetan-dharmamitra-translation--write-nested-tibetan-section
     (analysis-file translation)
   "Write the DharmaMitra Tibetan TRANSLATION into the level-2
@@ -121,6 +125,15 @@ Returns t on success, nil otherwise."
             (tibetan-dharmamitra-translation--write-toplevel-section
              buf translation "Tibetan")))))
       (with-current-buffer buf (save-buffer))
+      ;; §5.62: listeners (the translation discussion) learn that this
+      ;; file has a fresh DharmaMitra translation; their errors never
+      ;; undo the write.
+      (condition-case err
+          (run-hook-with-args
+           'tibetan-dharmamitra-translation-after-write-functions
+           analysis-file)
+        (error (message "DM after-write hook failed: %s"
+                        (error-message-string err))))
       t)))
 
 (defun tibetan-dharmamitra-translation--delete-legacy-toplevel-section
