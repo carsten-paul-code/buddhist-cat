@@ -658,7 +658,11 @@ SOURCE-FILE when the sentence module is not loaded."
                             source-file)))
                  (or (plist-get meta :section-refs)
                      (plist-get meta :sentence-refs))))
-      (tibetan-cascade-materialize-provided-translations filepath))
+      ;; The file is seconds old — a `~' backup of it is clutter
+      ;; (Rumpflauf Tantrāloka 12.10.: 288 `…org~' beside the new
+      ;; files).
+      (let ((make-backup-files nil))
+        (tibetan-cascade-materialize-provided-translations filepath)))
     filepath))
 
 ;; ============================================================================

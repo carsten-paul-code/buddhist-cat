@@ -1378,6 +1378,25 @@ zweiter Materialisierungslauf schreibt nichts, Hand-Edits bleiben."
                    (with-temp-buffer (insert-file-contents f5)
                                      (buffer-string)))))))
 
+(ert-deftest tibetan-cascade-create-file-leaves-no-backup ()
+  "§5.60-Nachtrag (Rumpflauf Tantrāloka, 12.10.): das Materialisieren
+direkt nach dem Anlegen speicherte die Sekunden alte Datei ein zweites
+Mal — mit `make-backup-files' (Default, Carstens Konfiguration leitet
+nicht um) lag danach neben jeder neuen Satzdatei ein `…org~'."
+  (tibetan-cascade-test--with-sentence-refs
+    ;; Fixtures liegen unter `temporary-file-directory', wo Emacs nie
+    ;; sichert — das Prädikat wird freigeschaltet, sonst sieht der
+    ;; Test den Korpus-Fehlmodus nicht.
+    (let ((make-backup-files t)
+          (backup-directory-alist nil)
+          (backup-enable-predicate (lambda (_name) t)))
+      (let ((f4 (tibetan-cascade--create-file
+                 4 '((7 . "naumi citpratibhāṃ /")) src)))
+        (should (string-match-p "Dyczkowski 2023"
+                                (with-temp-buffer (insert-file-contents f4)
+                                                  (buffer-string))))
+        (should-not (file-exists-p (concat f4 "~")))))))
+
 ;; ============================================================================
 ;; C3.2 — cascade fire (dispatcher branch, claim, request, DM)
 ;; ============================================================================
