@@ -3,7 +3,12 @@
 This file briefs Claude Code (or any other Claude surface) picking up
 work on **tibetan-cat.el**, Carsten Paul's Emacs-Lisp Computer-Assisted
 Translation (CAT) system for Classical Tibetan. Read it in full before
-editing. Last updated 2026-10-12 (§5.61: SANSKRIT-ANALYSE — sa-Satzdateien
+editing. Last updated 2026-10-12 (§5.62: ÜBERSETZUNGS-DISKUSSION — je
+Kaskaden-Satz `** Discussion' am Ende von * Provided Translations:
+Einschätzung der Referenzübersetzung(en), Referenz mit vom Tool selbst
+markierten Passagen (⟨N⟩), nummerierte Seminar-Punkte gegen Claude +
+DharmaMitra; automatisch nach C-c u G, auf Abruf C-c u c; im Handout
+je Satz; ERT 2505.  Previous: §5.61: SANSKRIT-ANALYSE — sa-Satzdateien
 tragen `* Sanskrit Analysis', ausführliche Grammatik je Segment (Sandhi /
 Nominal- / Verbalformen / Komposita / Syntax), eigenes Antwortlimit
 16000 statt gptels 4096 (wahrscheinliche Ursache der sent-654-
@@ -3992,6 +3997,76 @@ migrieren beim nächsten Regenerate (editierte `** Gloss Tables`
 bleiben per §5.54-Schutz stehen).  Suite 2339 → **2345 ERT**
 (0 unexpected, 1 skip); BDD 250; compile clean; REFERENCE.org je
 def-Commit.
+
+### 5.62 Übersetzungs-Diskussion für das Seminar (done, 2026-10-12)
+
+Carsten (12.10., Tantrāloka): „Was es perfekt machen würde, wäre eine
+Einschätzung der Dyczkowski-Übersetzung, Hervorhebung der Teile, die
+diskussionswürdig sind.  Claude und DharmaMitra übersetzen in der
+Regel anders als die zur Verfügung gestellten Übersetzungen, und das
+diskutieren wir im Seminar.  Als generelles Modul wäre das super."
+Entscheidungen (AskUserQuestion): automatisch mit C-c u G (schaltbar);
+Sprache = Zielsprache des Dokuments; verglichen werden
+Referenzübersetzungen + Claude + DharmaMitra (NICHT die Working
+Translation); ins Handout je Satz.  Commits `56608f8' … `1e496c1'.
+
+- **Vorarbeiten**: `56608f8' geteilter Slot-Text-Reiniger
+  `tibetan-cascade--clean-slot-text' (Maschinen-Platzhalter, Drawer,
+  „(Sentence …)"-Label — Handout und Diskussion lesen Slots gleich);
+  `b9fed88' Hooks `tibetan-cascade-after-land-functions' (Ende von
+  `--land-response') und `tibetan-dharmamitra-translation-after-
+  write-functions' (Ende des Nested-Writers), je in condition-case.
+- **Bugfix unterwegs** (`a379f17'): der `* Translation Comparison'-
+  Abschnitt der par-Dateien empfahl „Refresh via C-c u T" — C-c u T
+  ist translate-region, der Vergleich liegt seit langem auf C-c u c.
+- **Modul** `persist/tibetan-translation-discussion.el' (`288bd89'):
+  Eingaben = PT-Kinder außer DM / Claude Particles / Discussion /
+  „Übersetzung…" (Referenzen), Claude aus `* Translation', DM aus dem
+  Slot (beide über den Reiniger), Quelltext + Wylie (bo) bzw.
+  Padapāṭha aus `** Word Analysis' (sa).  System-Prompt konstant je
+  Zielsprache (eigener Cache-Präfix); Antwortschema `## Assessment' /
+  `## Discussion Points' mit `### N. <Quellwort>' und Zeilen
+  Text / <Referenz> / Claude / DharmaMitra / Issue / Assessment /
+  Question — Zitate WÖRTLICH.  Landung: `** Discussion' (:GENERATED:)
+  als letztes PT-Kind; `*** <Referenz> — marked|markiert' = Referenz,
+  in der das TOOL die Zitate sucht (whitespace-tolerant) und fett +
+  ⟨N⟩ markiert — nicht gefunden = unmarkiert, eine falsche Stelle kann
+  nie markiert werden; der Marker steht IN der Fettung (`*x⟨1⟩*' —
+  nach schließendem `*' verlangt org Leerraum/Satzzeichen, `*x*⟨1⟩'
+  wäre nicht fett; Test mit org-element als Schiedsrichter); gekürzte
+  Referenzlabels („Dyczkowski:") werden zugeordnet.  Punkte als
+  Beschreibungsliste, Labels in der Dokumentsprache (de: Problem /
+  Einschätzung / Frage, „— markiert").  Überlebt den Regenerate
+  (unbekanntes L2 im PT-Body).
+- **Auslösung**: `tibetan-discussion--maybe-fire' an beiden Hooks —
+  wer von Claude/DM als ZWEITER landet, löst aus; Gates: Schalter
+  `tibetan-discussion-auto' (Default t), Kaskaden-Datei, kein
+  DEFER_MT, noch keine Diskussion, Referenz + Claude + DM vorhanden.
+  Ein Request je Datei gleichzeitig (Inflight-Tabelle), Landung per
+  run-at-time außerhalb des gptel-Sentinels (§5.40), gptel-max-tokens
+  wie §5.61.  Abhängigkeiten HART geladen (defer-MT-Prädikat per
+  fboundp = B0-Falle).
+- **C-c u c** = `tibetan-translation-compare-dwim': in Kaskaden-
+  Quelle/sent-Datei Diskussion für den Satz bzw. alle Sätze unter der
+  Überschrift (erzwungen neu; > 10 mit Rückfrage; Sätze ohne
+  Claude/DM/Referenz werden gezählt, erst C-c u G); in par-NNN.org
+  unverändert die Ähnlichkeitsmatrix.
+- **Handout** (`1e496c1'): `tibetan-discussion-read' liest die
+  geschriebene Form zurück (kanonische Schlüssel, NIE der markierte
+  Volltext — zitieren ja, reproduzieren nie); `** Diskussion' nach der
+  Grammatik, deutsche Labels; Claudes Übersetzung heißt dort wie ihr
+  Abschnitt: /Übersetzung/ (Label und Fließtext — das Handout sagt
+  nie „Claude").  Die Handout-Fixture trägt Lopez-Poison im
+  markierten Block → der Build-Test verriegelt das Nicht-Durchsickern.
+
+**Kosten**: ein zusätzlicher Claude-Call je Satz mit Referenz
+\(Tantrāloka: 288 Verse mit Dyczkowski; Rgyan: Lopez/W&M) — also drei
+Calls je Vers mit C-c u G (Claude, DM, Diskussion).  Bereits geholte
+Verse (TĀ 1.1) bekommen die Diskussion NICHT automatisch (die Hooks
+feuern nur bei einer Landung) — dort C-c u c.
+
+Suite ERT 2489 → **2505** (0 unexpected, 1 Skip); BDD grün; compile
+sauber; REFERENCE.org je def-Commit.
 
 ### 5.61 Sanskrit-Analyse: Überschrift, ausführliche Grammatik, Antwortlimit (done, 2026-10-12)
 
