@@ -76,6 +76,7 @@
 ;; behaviour).  sentence-persist requires tibetan-cascade only at
 ;; call time (soft), so there is no load-time cycle.
 (require 'tibetan-sentence-persist)
+(defvar tibetan-analysis--cascade-analysis-heading-re) ; §5.61, analysis-claude
 
 (defun tibetan-cascade-split-shad-units (text)
   "Split TEXT into its shad-terminated units.
@@ -597,7 +598,8 @@ marks the file for every reader (§2.8: explicit, never sniffed)."
       ;; [Partikelkarte] / Claude Particles / Concept Notes — the
       ;; shared renderer's output is decomposed, the ** Grammar hull
       ;; and the nested Provided Translations are gone.
-      (insert "* Tibetan Analysis\n")
+      ;; §5.61: the parent is named after the source language.
+      (insert (if sa-p "* Sanskrit Analysis\n" "* Tibetan Analysis\n"))
       (insert ":PROPERTIES:\n:GENERATED: t\n:END:\n\n")
       ;; C1: no Tibetan auto-analysis over IAST — sa gets the
       ;; minimal slot scaffold; the landing writers fill it.
@@ -784,7 +786,7 @@ calling this primitive."
 (defconst tibetan-cascade--known-l1-sections
   '("My Notes" "Working Translation" "Tibetan Text" "Reading"
     "Translation" "Provided Translations"
-    "Tibetan Analysis" "Subsegments" "Footnotes")
+    "Tibetan Analysis" "Sanskrit Analysis" "Subsegments" "Footnotes")
   "The L1 headings the cascade scaffold owns.  Anything else found in
 an existing file is preserved verbatim across regenerate
 \(§5.38-H2: preserve-by-default, never a whitelist wipe).
@@ -898,7 +900,8 @@ Translations / Working Translation / My Notes, ein dort angelegter
 Slot landete im falschen Elternteil."
   (save-excursion
     (goto-char (point-min))
-    (if (re-search-forward "^\\* Tibetan Analysis$" nil t)
+    (if (re-search-forward tibetan-analysis--cascade-analysis-heading-re
+                           nil t)
         (progn
           (forward-line 1)
           (if (re-search-forward "^\\* " nil t)

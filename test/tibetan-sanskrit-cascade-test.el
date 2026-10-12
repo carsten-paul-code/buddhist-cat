@@ -76,13 +76,92 @@ neuen L1-Ordnung im falschen Elternteil)."
   (with-temp-buffer
     (insert-file-contents file)
     (goto-char (point-min))
-    (re-search-forward "^\\* Tibetan Analysis$")
+    (re-search-forward "^\\* \\(?:Tibetan\\|Sanskrit\\) Analysis$")
     (forward-line 1)
     (if (re-search-forward "^\\* " nil t)
         (goto-char (line-beginning-position))
       (goto-char (point-max)))
     (insert "** Word Analysis\n" body "\n\n")
     (write-region (point-min) (point-max) file nil 'silent)))
+
+(defun tibetan-sanskrit-cascade-test--between-p (s child parent next)
+  "Non-nil when L2 CHILD lies between L1 PARENT and L1 NEXT in S."
+  (let ((p (string-match (format "^\\* %s$" parent) s))
+        (c (string-match (format "^\\*\\* %s$" child) s))
+        (n (string-match (format "^\\* %s$" next) s)))
+    (and p c n (< p c n))))
+
+(ert-deftest tibetan-sanskrit-cascade-analysis-heading ()
+  "§5.61 (Carsten 12.10.: „Tibetan Analysis als Überschrift ist hier
+falsch“): eine sa-Satzdatei trägt `* Sanskrit Analysis'.  (Das
+tibetische Layout behält `* Tibetan Analysis' — cascade-test.)"
+  (tibetan-sanskrit-cascade-test--with-source
+    (let ((s (tibetan-sanskrit-cascade-test--file-string
+              (tibetan-cascade--create-file
+               1 '((1 . "dharmāṇāṃ śūnyatā svabhāvaḥ ।")
+                   (2 . "na svato nāpi parataḥ ॥"))
+               src))))
+      (should (string-match-p "^\\* Sanskrit Analysis$" s))
+      (should-not (string-match-p "^\\* Tibetan Analysis$" s))
+      (dolist (h '("Claude Vocabulary" "Claude Grammar" "Concept Notes"))
+        (should (tibetan-sanskrit-cascade-test--between-p
+                 s h "Sanskrit Analysis" "Provided Translations"))))))
+
+(ert-deftest tibetan-sanskrit-cascade-land-under-sanskrit-analysis ()
+  "§5.61: die Landung (inkl. neu angelegter `** Word Analysis') und das
+Regenerate-after-Land bleiben unter `* Sanskrit Analysis' — kein
+`* Tibetan Analysis' entsteht wieder."
+  (tibetan-sanskrit-cascade-test--with-source
+    (let ((file (tibetan-cascade--create-file
+                 1 '((1 . "dharmāṇāṃ śūnyatā svabhāvaḥ ।")
+                     (2 . "na svato nāpi parataḥ ॥"))
+                 src)))
+      (should (tibetan-cascade--land-response
+               tibetan-sanskrit-cascade-test--response
+               (list :sent-num 1 :seg-nums '(1 2)
+                     :sent-file file :cascade t)))
+      (let ((s (tibetan-sanskrit-cascade-test--file-string file)))
+        (should-not (string-match-p "^\\* Tibetan Analysis$" s))
+        (should (= 1 (cl-count "* Sanskrit Analysis"
+                               (split-string s "\n") :test #'equal)))
+        (dolist (h '("Claude Vocabulary" "Claude Grammar" "Concept Notes"
+                     "Word Analysis"))
+          (should (tibetan-sanskrit-cascade-test--between-p
+                   s h "Sanskrit Analysis" "Provided Translations")))
+        (should (string-match-p "Nominalsatz" s))))))
+
+(ert-deftest tibetan-sanskrit-cascade-regenerate-migrates-heading ()
+  "§5.61: eine BESTEHENDE sa-Datei mit `* Tibetan Analysis'
+\(Tantrāloka-Rümpfe, MAv-sa, PP) bekommt beim Regenerate
+`* Sanskrit Analysis'; gelandete Bodies bleiben, zweiter Lauf
+idempotent."
+  (tibetan-sanskrit-cascade-test--with-source
+    (let* ((segs '((1 . "dharmāṇāṃ śūnyatā svabhāvaḥ ।")
+                   (2 . "na svato nāpi parataḥ ॥")))
+           (file (tibetan-cascade--create-file 1 segs src)))
+      ;; Alt-Zustand herstellen: alte Überschrift + gelandete Bodies.
+      (with-temp-buffer
+        (insert-file-contents file)
+        (goto-char (point-min))
+        (re-search-forward "^\\* Sanskrit Analysis$")
+        (replace-match "* Tibetan Analysis")
+        (write-region (point-min) (point-max) file nil 'silent))
+      (tibetan-sanskrit-cascade-test--insert-word-analysis
+       file tibetan-sanskrit-cascade-test--wa-org)
+      (tibetan-cascade--regenerate file 1 segs src)
+      (let ((s1 (tibetan-sanskrit-cascade-test--file-string file)))
+        (should (string-match-p "^\\* Sanskrit Analysis$" s1))
+        (should-not (string-match-p "^\\* Tibetan Analysis$" s1))
+        (should (string-match-p "- dharmāṇām — dharma; N\\.GEN\\.PL" s1))
+        (should (tibetan-sanskrit-cascade-test--between-p
+                 s1 "Word Analysis" "Sanskrit Analysis"
+                 "Provided Translations"))
+        (tibetan-cascade--regenerate file 1 segs src)
+        (should (equal
+                 (replace-regexp-in-string "^#\\+LAST_ANALYZED:.*$" "" s1)
+                 (replace-regexp-in-string
+                  "^#\\+LAST_ANALYZED:.*$" ""
+                  (tibetan-sanskrit-cascade-test--file-string file))))))))
 
 (ert-deftest tibetan-sanskrit-cascade-scaffold-reading-plain-iast ()
   "C1: sa-Scaffold — Reading mit reinen IAST-Zeilen (kein

@@ -63,6 +63,16 @@
 (require 'cl-lib)
 (defvar gptel-max-tokens)            ; bound per request (§5.61)
 (defvar tibetan-claude-max-tokens)
+
+(defconst tibetan-analysis--cascade-analysis-heading-re
+  "^\\* \\(?:Tibetan\\|Sanskrit\\) Analysis$"
+  "The analysis parent of a CASCADE sentence file: `* Sanskrit
+Analysis' for #+SOURCE_LANG: sa (§5.61, Carsten 12.10.: „Tibetan
+Analysis ist hier falsch“), `* Tibetan Analysis' otherwise.  Use it
+ONLY on cascade-v2 paths: a two-file parallel-Sanskrit file carries
+a DIFFERENT `* Sanskrit Analysis' (§5.17) ABOVE its `* Tibetan
+Analysis' — a both-names search there would hit the wrong block.")
+
 (require 'md5)
 (require 'tibetan-utils)                 ; tibetan-fresh-file-buffer
 (require 'tibetan-claude-queue nil t)
@@ -2089,6 +2099,13 @@ fresh per-segment scaffolds get Translation promoted to level 2."
        ;; Aligned layout marker — `* Tibetan Analysis' parent.  Both
        ;; segment files AND new-style sentence files have this.
        ((re-search-forward "^\\* Tibetan Analysis$" nil t) t)
+       ;; §5.61: a cascade-v2 file (`* Translation' on L1) is segment
+       ;; layout whatever its analysis parent is called — sa files
+       ;; carry `* Sanskrit Analysis' and have a top-level `* Provided
+       ;; Translations', which the legacy clause below misreads.
+       ((progn (goto-char (point-min))
+               (re-search-forward "^\\* Translation$" nil t))
+        t)
        ;; Legacy sentence marker — top-level `* Provided Translations'.
        ((progn
           (goto-char (point-min))
@@ -2782,10 +2799,11 @@ whichever target heading is still missing.  Idempotent."
                       (goto-char (point-min))
                       (re-search-forward
                        (format "^\\*\\* %s$" (regexp-quote h)) nil t))
-              ;; Ans ENDE von * Tibetan Analysis (nie vor
+              ;; Ans ENDE von * Tibetan/Sanskrit Analysis (nie vor
               ;; * Footnotes — dazwischen liegen jetzt PT/WT/Notes).
               (goto-char (point-min))
-              (if (re-search-forward "^\\* Tibetan Analysis$" nil t)
+              (if (re-search-forward
+                   tibetan-analysis--cascade-analysis-heading-re nil t)
                   (progn
                     (forward-line 1)
                     (if (re-search-forward "^\\* " nil t)
