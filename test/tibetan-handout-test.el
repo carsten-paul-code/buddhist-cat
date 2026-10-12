@@ -73,6 +73,17 @@
    "* Provided Translations\n"
    "** DharmaMitra Translation\nDM POISON TEXT\n\n"
    "** Lopez 2006\nLOPEZ POISON TEXT\n\n"
+   "** Discussion\n:PROPERTIES:\n:GENERATED: 2026-10-12\n:END:\n"
+   "Lopez glättet; ASSESSMENT TEXT.\n\n"
+   "*** Lopez 2006 — markiert\nLOPEZ POISON TEXT *marked⟨1⟩*\n\n"
+   "*** 1. blos\n"
+   "- Text :: blos\n"
+   "- Lopez 2006 :: “by the mind”\n"
+   "- Claude :: “durch den Verstand”\n"
+   "- DharmaMitra :: “mit dem Geist”\n"
+   "- Problem :: Claude's instrumental vs. Lopez' agentive reading.\n"
+   "- Einschätzung :: EINSCHAETZUNG TEXT.\n"
+   "- Frage :: FRAGE TEXT?\n\n"
    "* Working Translation\nWT POISON TEXT\n\n"
    "* My Notes\n\n* Footnotes\n"))
 
@@ -513,6 +524,39 @@ alle; in einer sent-Analysedatei → dieser Satz."
               (should (equal (file-truename src)
                              (file-truename (plist-get s :source))))))
         (kill-buffer buf)))))
+
+(ert-deftest tibetan-handout-discussion-block ()
+  "§5.62: the sentence's `** Discussion' reaches the handout as
+`** Diskussion' after the Grammatik — assessment, then per point the
+title and the quotes with German labels; Claude's rendering is named
+like its own handout section (/Übersetzung/), in labels AND prose.
+The marked full-text reference never reaches it (build test: Lopez
+poison, no \"Claude\")."
+  (tibetan-handout-test--with-corpus
+    (let* ((d (tibetan-handout--sentence-data 654 src))
+           (org (tibetan-handout-render
+                 (list :title "T" :scope "§220" :source-name "Rgyan-cat.org"
+                       :date "2026-10-12" :sentences (list d)))))
+      (should (plist-get d :discussion))
+      (should (< (string-match "^\\*\\* Grammatik$" org)
+                 (string-match "^\\*\\* Diskussion$" org)))
+      (should (string-match-p "^Lopez glättet; ASSESSMENT TEXT\\.$" org))
+      (should (string-match-p "^\\*1\\. blos\\*$" org))
+      (should (string-match-p "^- Lopez 2006 :: “by the mind”$" org))
+      (should (string-match-p "^- /Übersetzung/ :: “durch den Verstand”$" org))
+      (should (string-match-p "^- DharmaMitra :: “mit dem Geist”$" org))
+      (should (string-match-p
+               "^- Problem :: /Übersetzung/ instrumental vs\\. Lopez' agentive" org))
+      (should (string-match-p "^- Einschätzung :: EINSCHAETZUNG TEXT\\.$" org))
+      (should (string-match-p "^- Frage :: FRAGE TEXT\\?$" org))
+      (should-not (string-match-p "POISON\\|Claude\\|⟨" org))))
+  ;; No discussion → no block (sa fixture has none).
+  (tibetan-handout-test--with-corpus
+    (let ((org (tibetan-handout-render
+                (list :title "T" :scope "Satz 1" :source-name "Mav-sa.org"
+                      :date "2026-10-12"
+                      :sentences (list (tibetan-handout--sentence-data 1 sa-src))))))
+      (should-not (string-match-p "Diskussion" org)))))
 
 (ert-deftest tibetan-handout-build-writes-guarded-file ()
   "Build schreibt `handouts/<short>-par-220.org' neben die Quelle:

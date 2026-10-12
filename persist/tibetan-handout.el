@@ -27,9 +27,11 @@
 (require 'tibetan-sanskrit-reading)
 (require 'tibetan-cascade)
 (require 'tibetan-translation-doc)
+(require 'tibetan-translation-discussion)  ; §5.62 :discussion
 
 (declare-function tibetan-cascade--scope-at-point "tibetan-cascade" ())
 (declare-function tibetan-cascade--clean-slot-text "tibetan-cascade" (body))
+(declare-function tibetan-discussion-read "tibetan-translation-discussion" (file))
 
 ;; ============================================================================
 ;; B1 — data layer
@@ -297,7 +299,9 @@ only grammar there is and goes through the same filter."
 Plist: :sent-num :lang (\"bo\"/\"sa\") :segs ((:num :wylie :uchen) …)
 — the source text itself, Uchen only for bo — and, when the cascade
 file exists, :translation (`tibetan-handout--translation'), :vocab
-\(`--vocab') and :grammar (`--grammar'); otherwise :missing t (a
+\(`--vocab'), :grammar (`--grammar') and :discussion (§5.62,
+`tibetan-discussion-read' — quotes and points, never the marked full
+reference); otherwise :missing t (a
 visible gap, never an error).  ★ lookups use the wordlist state the
 CALLER binds (`tibetan-handout--load-curated').  Reads only the
 tool's Translation/Vocabulary/Grammar slots — Provided Translations
@@ -330,7 +334,8 @@ tool's Translation/Vocabulary/Grammar slots — Provided Translations
                       :vocab (tibetan-handout--vocab
                               (plist-get sections :vocabulary) sa wa)
                       :grammar (tibetan-handout--grammar
-                                (plist-get sections :grammar))))))))
+                                (plist-get sections :grammar))
+                      :discussion (tibetan-discussion-read file)))))))
 
 ;; ============================================================================
 ;; B2 — renderer (pure: spec → org string)
@@ -495,9 +500,72 @@ segment number in the margin, wide line spacing for handwriting."
    ;; class text; the per-sentence look-up part starts fresh.
    "}\\clearpage\n#+END_EXPORT\n\n"))
 
+(defconst tibetan-handout--discussion-labels
+  '(("Issue" . "Problem") ("Assessment" . "Einschätzung")
+    ("Question" . "Frage"))
+  "German handout labels of the discussion's prose items (the handout
+headings are German whatever the document language).")
+
+(defun tibetan-handout--unclaude (s)
+  "S with Claude named like its own handout section: /Übersetzung/.
+The handout never says \"Claude\" (§5.59); its Übersetzung IS that
+translation, so the discussion's label and prose mentions follow."
+  (let ((case-fold-search nil))
+    (replace-regexp-in-string "\\bClaude\\(?:'s\\|’s\\|s\\)?\\b"
+                              "/Übersetzung/" s t t)))
+
+(defun tibetan-handout--discussion-text (s)
+  "Prose/quote S of a discussion item as handout org."
+  (tibetan-handout--unclaude (tibetan-handout--md-to-org s)))
+
+(defun tibetan-handout--discussion-block (disc)
+  "`** Diskussion' for DISC (`tibetan-discussion-read'), \"\" when nil:
+the assessment, then per point a bold title line and a description
+list — the quotes (reference translators, /Übersetzung/, DharmaMitra)
+followed by Problem / Einschätzung / Frage."
+  (if (null disc)
+      ""
+    (concat
+     "** Diskussion\n"
+     (let ((a (plist-get disc :assessment)))
+       (if (and a (not (string-empty-p a)))
+           (concat (tibetan-handout--discussion-text a) "\n\n")
+         ""))
+     (cl-loop
+      for p in (plist-get disc :points) for i from 1
+      concat
+      (let* ((items (plist-get p :items))
+             (title (plist-get p :title))
+             (text (cdr (assoc "Text" items)))
+             (prose (cl-remove-if-not
+                     (lambda (it) (assoc (car it) tibetan-handout--discussion-labels))
+                     items))
+             (quotes (cl-remove-if
+                      (lambda (it) (or (equal (car it) "Text")
+                                       (assoc (car it) tibetan-handout--discussion-labels)))
+                      items)))
+        (concat
+         (format "*%d. %s*%s\n" i title
+                 (if (and text (not (equal text title)))
+                     (format " — %s" text)
+                   ""))
+         (mapconcat (lambda (it)
+                      (format "- %s :: “%s”"
+                              (tibetan-handout--unclaude (car it))
+                              (tibetan-handout--discussion-text (cdr it))))
+                    quotes "\n")
+         (if (and quotes prose) "\n" "")
+         (mapconcat (lambda (it)
+                      (format "- %s :: %s"
+                              (cdr (assoc (car it) tibetan-handout--discussion-labels))
+                              (tibetan-handout--discussion-text (cdr it))))
+                    prose "\n")
+         "\n\n"))))))
+
 (defun tibetan-handout--sentence-block (d)
   "`* Satz N (Seg. …)' for the sentence data D: compact Wylie,
-Übersetzung, Vokabular, Grammatik — or the visible gap."
+Übersetzung, Vokabular, Grammatik, Diskussion (when there is one,
+§5.62) — or the visible gap."
   (let* ((segs (plist-get d :segs))
          (multi (cdr segs))
          (tr (plist-get d :translation)))
@@ -570,7 +638,8 @@ segment number in the margin, wide line spacing for handwriting."
                  (cdr g) "\n")
                 "\n\n"))
              (plist-get d :grammar) "")
-          "{{{luecke(noch keine Grammatik)}}}\n\n"))))))
+          "{{{luecke(noch keine Grammatik)}}}\n\n")
+        (tibetan-handout--discussion-block (plist-get d :discussion)))))))
 
 (defun tibetan-handout-render (spec)
   "The handout org text for SPEC — a plist (:title :scope :source-name

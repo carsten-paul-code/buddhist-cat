@@ -405,6 +405,45 @@ replacing an existing `** Discussion'.  t on success."
        file (tibetan-discussion--render parsed inputs
                                         (format-time-string "%Y-%m-%d"))))))
 
+(defun tibetan-discussion--label-key (label)
+  "The canonical (English) key of the display LABEL — inverse of
+`tibetan-discussion--label'; other labels (translators, Text) as is."
+  (or (cl-some (lambda (lang)
+                 (car (rassoc label (cdr lang))))
+               tibetan-discussion--labels)
+      label))
+
+(defun tibetan-discussion-read (file)
+  "The written `** Discussion' of FILE as data, nil when absent:
+\(:assessment STR :points ((:title STR :items ((KEY . TEXT) …)) …)),
+KEY canonical (`tibetan-discussion--label-key'), TEXT without the
+quote marks.  The marked full-text reference(s) are NOT returned —
+the handout may quote, never reproduce a provided translation."
+  (let ((body (cdr (assoc tibetan-discussion--heading
+                          (tibetan-discussion--pt-children file)))))
+    (when body
+      (let* ((body (replace-regexp-in-string
+                    "\\`[ \t\n]*:PROPERTIES:\\(?:.\\|\n\\)*?:END:[ \t]*\n" ""
+                    body))
+             (chunks (split-string body "^\\*\\*\\* "))
+             (points '()))
+        (dolist (chunk (cdr chunks))
+          (let ((title (car (split-string chunk "\n"))))
+            (unless (string-match-p " — \\(?:marked\\|markiert\\)[ \t]*\\'" title)
+              (let ((items '()))
+                (dolist (l (cdr (split-string chunk "\n")))
+                  (when (string-match "^- \\(.+?\\) :: \\(.*\\)$" l)
+                    (push (cons (tibetan-discussion--label-key (match-string 1 l))
+                                (tibetan-discussion--unquote (match-string 2 l)))
+                          items)))
+                (push (list :title (string-trim
+                                    (replace-regexp-in-string
+                                     "\\`[0-9]+\\.[ \t]*" "" title))
+                            :items (nreverse items))
+                      points)))))
+        (list :assessment (string-trim (car chunks))
+              :points (nreverse points))))))
+
 ;; ============================================================================
 ;; Firing
 ;; ============================================================================

@@ -237,6 +237,35 @@ bullet is still rendered as a quote."
       (should (string-match-p "consciousness⟨1⟩\\*" s))
       (should (string-match-p "^- Dyczkowski :: “the creative intuition" s)))))
 
+(ert-deftest tibetan-discussion-read-roundtrip ()
+  "`tibetan-discussion-read' turns the written `** Discussion' back
+into data for the handout: assessment + points, item keys canonical
+\(English) whatever the document language, quote marks stripped, the
+marked full-text reference NEVER returned."
+  (dolist (target '("en" "de"))
+    (tibetan-discussion-test--with-corpus target
+      (should (null (tibetan-discussion-read file)))
+      (tibetan-discussion--land file tibetan-discussion-test--response)
+      (let* ((d (tibetan-discussion-read file))
+             (p1 (car (plist-get d :points)))
+             (items (plist-get p1 :items)))
+        (should (string-match-p "\\`Dyczkowski renders freely"
+                                (plist-get d :assessment)))
+        (should (= 2 (length (plist-get d :points))))
+        (should (equal "citpratibhā" (plist-get p1 :title)))
+        (should (equal "the creative intuition of consciousness"
+                       (cdr (assoc "Dyczkowski 2023" items))))
+        (should (string-prefix-p "pratibhā as intuition"
+                                 (cdr (assoc "Issue" items))))
+        (should (string-prefix-p "Which sense"
+                                 (cdr (assoc "Question" items))))
+        (should (assoc "Assessment" items))
+        (should (equal "(not rendered)"
+                       (cdr (assoc "DharmaMitra"
+                                   (plist-get (cadr (plist-get d :points))
+                                              :items)))))
+        (should-not (string-match-p "⟨" (format "%S" d)))))))
+
 (ert-deftest tibetan-discussion-land-german-labels ()
   "A German document gets German labels (Problem / Einschätzung /
 Frage) and `— markiert'."
