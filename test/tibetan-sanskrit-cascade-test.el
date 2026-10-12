@@ -331,6 +331,23 @@ null Grammar-Headings, obwohl jede Landung eine schrieb)."
       (should-not (string-match-p "Classical Tibetan" user))
       (should-not (string-match-p "Classical Tibetan" system)))))
 
+(ert-deftest tibetan-sanskrit-cascade-prompt-detailed-grammar ()
+  "§5.61 (Carsten 12.10.: „mein Sanskrit ist sehr schwach — eine
+ausführlichere Grammatik-Erklärung (Sandhis, Geschlecht, Stamm,
+Deklination, Verbform …) wäre sehr willkommen“): der sa-Kontrakt
+verlangt je Segment feste Erklär-Punkte, didaktisch für einen
+Leser, der jedes Wort selbst nachvollziehen will.  Der Tibetisch-
+Prompt bleibt unberührt."
+  (let ((sys tibetan-sentence-claude--system-prompt-sanskrit))
+    (dolist (label '("*Sandhi:*" "*Nominal forms:*" "*Verbal forms:*"
+                     "*Compounds:*" "*Syntax:*"))
+      (should (string-match-p (regexp-quote label) sys)))
+    (dolist (topic '("stem" "gender" "case" "number" "root" "class"
+                     "vigraha" "WEAK Sanskrit"))
+      (should (string-match-p (regexp-quote topic) sys)))
+    (should-not (string-match-p "Nominal forms"
+                                tibetan-sentence-claude--system-addendum))))
+
 (ert-deftest tibetan-sanskrit-cascade-sentence-prompt-cache-constant ()
   "C2: der sa-System-Prompt ist pro Dokument byte-konstant
 \(Anthropic-Cache-Präfix — vierter koexistierender)."

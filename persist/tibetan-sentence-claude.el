@@ -302,10 +302,33 @@ word key MUST be spelled exactly as in the padapāṭha.
 Indeclinables get compact entries.
 
 ## Grammar
-Open with a 2-4 sentence overview of the whole sentence/verse
-(clause structure, agreement, notable sandhi or metre) BEFORE the
-first subsection; then a `### Segment N' subsection per segment
-with labeled bullets.  Metalanguage: English.
+Written for a reader with WEAK Sanskrit who wants to parse every word
+on their own: explicit and didactic, no step skipped, no form left
+unexplained.  Open with a 2-4 sentence overview of the whole
+sentence/verse (clause structure, agreement, metre) BEFORE the first
+subsection; then a `### Segment N' subsection per segment with
+EXACTLY these labeled bullets, in this order (leave one out only
+when the segment has nothing for it):
+- *Sandhi:* resolve EVERY sandhi junction of the segment's surface
+  text as `surface → word + word: rule' — vowel, visarga and
+  consonant sandhi, also between compound members (e.g.
+  `svabhāvāvaraṇād dhi → svabhāvāvaraṇāt + hi: final -t before h-
+  becomes -d, the h- becomes dh-').
+- *Nominal forms:* every noun, adjective, pronoun and numeral as
+  `word: stem (stem class: a-/ā-/i-/ī-/u-/ṛ-/consonant stem …),
+  gender, case, number — ending and the paradigm it follows (e.g.
+  „like deva-“); what it agrees with or depends on'.
+- *Verbal forms:* every finite verb as `word: root (√…, present
+  class, parasmaipada/ātmanepada), tense/mood, voice, person,
+  number'; participles, absolutives, infinitives and gerundives with
+  their formation (root + suffix) and what they qualify.
+- *Compounds:* every compound with its members, the analytical
+  paraphrase (vigraha) and its type (tatpuruṣa with the case,
+  karmadhāraya, bahuvrīhi, dvandva, avyayībhāva …).
+- *Syntax:* how the segment is built — subject, predicate (incl. an
+  implied copula), objects, agreement, relative/correlative pairs —
+  and how it connects to the neighbouring segments.
+Metalanguage: English.
 
 ## Concept Notes
 0-3 short encyclopedia notes on Buddhist/philosophical technical
