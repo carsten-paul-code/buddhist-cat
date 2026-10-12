@@ -3,7 +3,11 @@
 This file briefs Claude Code (or any other Claude surface) picking up
 work on **tibetan-cat.el**, Carsten Paul's Emacs-Lisp Computer-Assisted
 Translation (CAT) system for Classical Tibetan. Read it in full before
-editing. Last updated 2026-10-09 (§5.59: C-c u A/R AUF JEDER EBENE
+editing. Last updated 2026-10-12 (§5.60: KI NUR AUF ABRUF — C-c u A
+legt an/öffnet überall ohne Fire (Auto-Fire-Schalter Default nil, auch
+Zwei-Datei-Öffner), C-c u G holt Claude + DharmaMitra; Vers-Referenzen
+#+TIBETAN_SENTENCE_REFS (Dyczkowski für das Tantrāloka) im Rumpf +
+Prompt; Tantrāloka: 332 Rümpfe; ERT 2483.  Previous: §5.59: C-c u A/R AUF JEDER EBENE
 der Kaskaden-Quelle (Section/§/`* Tibetan Text' analysieren bzw.
 rendern den org-Subtree — vorher Absatz-Fehlweg) + LESE-HANDOUT
 C-c u H (Wylie + Uchen, Übersetzung, Vokabular ★-zuerst, Grammatik
@@ -3983,6 +3987,57 @@ migrieren beim nächsten Regenerate (editierte `** Gloss Tables`
 bleiben per §5.54-Schutz stehen).  Suite 2339 → **2345 ERT**
 (0 unexpected, 1 skip); BDD 250; compile clean; REFERENCE.org je
 def-Commit.
+
+### 5.60 KI nur auf Abruf (C-c u G) · Vers-Referenzen · Tantrāloka-Rümpfe (done, 2026-10-12)
+
+Carsten (12.10., Tantrāloka-Reading, Sanskrit → Englisch): „Ich will
+nicht gleich alle Verse komplett analysieren … alle Analysefiles
+erstmal als Rumpf mit der/den Übersetzung/en, alles ohne AI; ein
+extra Kommando holt bei Claude und DharmaMitra ab."  Entscheidungen
+(AskUserQuestion): ÜBERALL so (auch Rgyan); Dyczkowski auch als
+Claude-Kontext.  Commits `3348fed` … `cb46405`.
+
+- **A1 C-c u A öffnet nur** (`3348fed`): `tibetan-auto-fire-claude-
+  on-create' / `-dm-on-create' Default nil (gelten fürs Anlegen UND
+  Öffnen; t = altes Automatikverhalten).  RED zeigte UNGESCHALTETE
+  Fires in den Zwei-Datei-Öffnern (Segment: Claude/DM/Parallel beim
+  Anlegen UND Wiederöffnen; Satz; Absatz) — jetzt an den Schaltern.
+  `tibetan-cascade-analyze-subtree' = Rumpf (`--ensure-files') +
+  öffnen.  C-c u B / C-c s N = Rumpf des Dokuments.  C-c u R bleibt.
+- **A2 C-c u G** (`31d673e`): `tibetan-fetch' → `tibetan-cascade-
+  fetch' über den geteilten `tibetan-cascade--scope-at-point'
+  (`7a77203', aus dem Handout umgezogen): Rumpf sicherstellen, Gate
+  `--sentence-needs-fire-p', FORCE nil, unabhängig von den
+  Schaltern; > `tibetan-cascade-subtree-confirm-threshold' (10)
+  y-or-n-p.  Zwei-Datei-Quellen: Hinweis auf C-c u R.
+- **B Vers-Referenzen** (`a277807`): `#+TIBETAN_SENTENCE_REFS:' →
+  Datei mit `** Sentence N' / `*** <Name>'; generischer
+  `--ref-bodies' (§ und Satz), `--refs-block' für Satz- UND Chunk-
+  Prompt (Kontext, nicht kopieren), Materialisierung §+Vers,
+  `--create-file' materialisiert sofort (Rumpf trägt die Übersetzung;
+  `cb46405': ohne `~'-Backup — Fixtures unter temporary-file-directory
+  sichern nie, der Test schaltet `backup-enable-predicate' frei).
+- Kleinere Fixes vorab: sa-Tokenizer überspringt GRETIL-Versnummern
+  (`83d12d4'), erklärende Meldung statt „Not in a segment or
+  paragraph" (`b83d075').  `65b4e47' räumt zwei durchgerutschte
+  Compile-Warnungen aus `7a77203' auf.
+
+**Korpus** (buddhist-studies `4146e15'): `WS26-27/Tantraloka/
+tantraloka-1.org' ist Sanskrit-Kaskade (Vers = `*** Sentence N' mit
+:VERSE: TĀ 1.N, Halbvers = Segment, `** Section <Dyczkowski>',
+Zielsprache en).  `Resources/dyczkowski-ta1.org' = Dyczkowski 2023 je
+Vers aus dem OCR-Textlayer (Skript im Sitzungs-Scratchpad: Halbverse
+gegen 1–3-Zeilen-Fenster gematcht — er setzt einen Pāda pro Zeile;
+Übersetzung bis zur Marke „(N…) (KSTS…)", Fußnoten/Seitenköpfe
+übersprungen; 288 auto / 43 prüfen (nur Kommentar, nicht
+materialisiert) / 1 fehlt).  332 Rümpfe in analysis/, 288 mit
+Dyczkowski.  Freischalten eines prüfen-Verses: `*** Dyczkowski 2023'
+in der Referenzdatei anlegen, dann `tibetan-cascade-materialize-
+provided-translations' auf analysis/.
+
+**Offen:** prüfen-Fälle (Carsten); Bereichsangaben können bei direkt
+aufeinanderfolgenden Versen zu weit greifen (1.250); Handout zeigt
+„Satz N" statt „TĀ 1.N" (= gleiche Nummer).
 
 ### 5.59 C-c u A/R auf jeder Ebene · Lese-Handout C-c u H (done, 2026-10-09)
 
