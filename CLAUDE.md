@@ -4067,6 +4067,18 @@ Suite 2440 → **2470 ERT** (0 unexpected, 1 Skip; der echte
 LuaLaTeX-Smoke-Test läuft nur mit lualatex + Font); BDD 251;
 compile clean durchgehend; REFERENCE.org je def-Commit.
 
+**Nachtrag 12.10. (Tantrāloka-Reading WS26/27):** Carstens Lesedatei
+`WS26-27/Tantraloka/tantraloka-1.org' (Verse `*** TĀ 1.N' mit
+#+begin_verse) war kein CAT-Dokument → C-c u A meldete nur „Not in a
+segment or paragraph" („passiert nichts").  Tool: die Meldung erklärt
+jetzt Gliederung + C-c o k (`b83d075', user-error); der sa-Tokenizer
+überspringt GRETIL-Versnummern `// 1' (`83d12d4').  Daten (Korpus
+`5ed3a0f'): Datei in place auf die Kaskade umgestellt — Vers =
+`*** Sentence N' (N = Versnummer, :VERSE: TĀ 1.N), Halbvers-Zeile =
+`**** Segment M' (1–668), Dyczkowski-Abschnitte `** Section …',
+#+SOURCE_LANG: sa; Übersetzung/Notizen in analysis/sent-NNN-tantralo.
+org.  Suite **ERT 2472**.
+
 ### 5.58 READING-CLASS-STRUKTUR der Kaskaden-Satzdateien (done, 2026-10-09)
 
 Carstens Struktur-Skizze (09.10.) für die 4 Reading-Klassen WS26
