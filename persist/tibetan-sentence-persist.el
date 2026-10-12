@@ -1463,22 +1463,26 @@ source buffer must visit a file"))
           ;; every child — since B-1.2 including singletons).  The
           ;; legacy per-sentence call remains only as the
           ;; dispatcher-nil fallback (flat layout, missing children).
-          (unless (and (fboundp 'tibetan-analysis--fire-sentence-level)
-                       (condition-case nil
-                           (tibetan-analysis--fire-sentence-level
-                            tib-text newpath source-file
-                            (car seg-nums) nil)
-                         (error nil)))
-            (condition-case err
-                (tibetan-sentence--request-claude
-                 tib-text seg-nums newpath source-file)
-              (error (message "Sentence Claude skipped: %s"
-                              (error-message-string err)))))
+          ;; §5.60: AI on demand — the opener fires only when firing
+          ;; on create is opted in (`tibetan-auto-fire-claude-on-create').
+          (when (bound-and-true-p tibetan-auto-fire-claude-on-create)
+            (unless (and (fboundp 'tibetan-analysis--fire-sentence-level)
+                         (condition-case nil
+                             (tibetan-analysis--fire-sentence-level
+                              tib-text newpath source-file
+                              (car seg-nums) nil)
+                           (error nil)))
+              (condition-case err
+                  (tibetan-sentence--request-claude
+                   tib-text seg-nums newpath source-file)
+                (error (message "Sentence Claude skipped: %s"
+                                (error-message-string err))))))
           ;; Sentence-level wiring of two-language-parallel-analysis
           ;; (2026-04-30): in parallel mode, also fire Sanskrit +
           ;; Combined for the new sentence file.  No-op when the
           ;; sentence's child segments lack real Sanskrit content.
-          (when (and (fboundp 'tibetan-sanskrit-parallel-text-for-sentence)
+          (when (and (bound-and-true-p tibetan-auto-fire-claude-on-create)
+                     (fboundp 'tibetan-sanskrit-parallel-text-for-sentence)
                      (fboundp 'tibetan-analysis--fire-parallel-claude-with-plist))
             (let ((skt-plist
                    (condition-case nil

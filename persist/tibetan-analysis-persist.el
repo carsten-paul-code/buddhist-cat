@@ -5002,6 +5002,9 @@ unused-arg warning without breaking the public API."
 ;; MAIN COMMANDS
 ;; ============================================================================
 
+(defvar tibetan-auto-fire-claude-on-create)
+(defvar tibetan-auto-fire-dm-on-create)
+
 (defun tibetan-analysis--no-unit-message ()
   "Why C-c u A / C-c u R found no analysis unit at point — and how to
 get one.  §5.59-Nachtrag (Tantrāloka, 12.10.): the bare \"Not in a
@@ -5148,7 +5151,10 @@ sentence."
             ;; the common case where seg-NNN.org was created weeks ago
             ;; but Claude never filled it in — previously you had to
             ;; notice this and explicitly run `C-c u F' or `C-c u R'.
-            (when (and (fboundp 'tibetan-auto--claude-needs-request-p)
+            ;; §5.60: only when the user opted into firing on open
+            ;; (default: AI on demand via C-c u G).
+            (when (and (bound-and-true-p tibetan-auto-fire-claude-on-create)
+                       (fboundp 'tibetan-auto--claude-needs-request-p)
                        (tibetan-auto--claude-needs-request-p filepath))
               (message "Claude placeholder detected — firing translation request for seg-%s"
                        seg-id)
@@ -5176,7 +5182,8 @@ sentence."
             ;; sibling), so calling it when EITHER side needs work
             ;; correctly skips the populated side and fires only the
             ;; missing one.
-            (when (and (fboundp 'tibetan-dharmamitra-translation-needs-fire-on-open-p)
+            (when (and (bound-and-true-p tibetan-auto-fire-dm-on-create)
+                       (fboundp 'tibetan-dharmamitra-translation-needs-fire-on-open-p)
                        (fboundp 'tibetan-dharmamitra-translation-fire-for-segment)
                        (tibetan-dharmamitra-translation-needs-fire-on-open-p
                         filepath))
@@ -5196,7 +5203,8 @@ sentence."
             ;; otherwise never grow the new sections even after
             ;; source-side Sanskrit alignment landed.  No-op when
             ;; source isn't parallel-mode or sibling is placeholder.
-            (when (fboundp 'tibetan-analysis--fire-parallel-mode-claude-calls)
+            (when (and (bound-and-true-p tibetan-auto-fire-claude-on-create)
+                       (fboundp 'tibetan-analysis--fire-parallel-mode-claude-calls))
               (condition-case err
                   (tibetan-analysis--fire-parallel-mode-claude-calls
                    tibetan-text source-file filepath)
@@ -5228,10 +5236,12 @@ sentence."
             (display-buffer-in-side-window buf
                                            '((side . right)
                                              (window-width . 0.5))))
-          ;; Request Claude translation asynchronously (never break on failure)
-          (condition-case err
-              (tibetan-analysis--request-claude-translation tibetan-text new-filepath)
-            (error (message "Claude translation skipped: %s" (error-message-string err))))
+          ;; Request Claude translation asynchronously (never break on
+          ;; failure) — §5.60: only when firing on create is opted in.
+          (when (bound-and-true-p tibetan-auto-fire-claude-on-create)
+            (condition-case err
+                (tibetan-analysis--request-claude-translation tibetan-text new-filepath)
+              (error (message "Claude translation skipped: %s" (error-message-string err)))))
           ;; Phase A.1 of multi-translator-parallel-reading (2026-04-30):
           ;; Fire DharmaMitra translation alongside Claude.  Soft-coded —
           ;; missing module / API failures are silent (NOT broadcast as
@@ -5239,7 +5249,8 @@ sentence."
           ;; Claude-driven primary workflow.  Phase A.2 (2026-04-30):
           ;; uses umbrella `fire-for-segment' which fires BOTH Tibetan
           ;; AND Sanskrit (parallel-mode + sibling) automatically.
-          (when (fboundp 'tibetan-dharmamitra-translation-fire-for-segment)
+          (when (and (bound-and-true-p tibetan-auto-fire-dm-on-create)
+                     (fboundp 'tibetan-dharmamitra-translation-fire-for-segment))
             (condition-case err
                 (tibetan-dharmamitra-translation-fire-for-segment
                  tibetan-text new-filepath source-file seg-id)
@@ -5253,7 +5264,8 @@ sentence."
           ;; shipped — `C-c u A' on a fresh segment otherwise only
           ;; produced the Tibetan side.  No-op when source isn't
           ;; parallel-mode or sibling is placeholder.
-          (when (fboundp 'tibetan-analysis--fire-parallel-mode-claude-calls)
+          (when (and (bound-and-true-p tibetan-auto-fire-claude-on-create)
+                     (fboundp 'tibetan-analysis--fire-parallel-mode-claude-calls))
             (condition-case err
                 (tibetan-analysis--fire-parallel-mode-claude-calls
                  tibetan-text source-file new-filepath)
@@ -5491,10 +5503,12 @@ right-side window."
             (display-buffer-in-side-window buf
                                            '((side . right)
                                              (window-width . 0.5))))
-          (condition-case err
-              (tibetan-analysis--request-claude-translation tibetan-text new-filepath)
-            (error (message "Claude translation skipped: %s"
-                            (error-message-string err)))))))))
+          ;; §5.60: AI on demand — only with firing on create opted in.
+          (when (bound-and-true-p tibetan-auto-fire-claude-on-create)
+            (condition-case err
+                (tibetan-analysis--request-claude-translation tibetan-text new-filepath)
+              (error (message "Claude translation skipped: %s"
+                              (error-message-string err))))))))))
 
 ;;;###autoload
 (defun tibetan-reanalyze-paragraph ()

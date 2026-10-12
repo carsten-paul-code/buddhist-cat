@@ -295,35 +295,31 @@ SOURCE-FILE is the path to the source document."
 ;; ============================================================================
 
 ;;;###autoload
-(defcustom tibetan-auto-fire-claude-on-create t
-  "Whether initial batch creation should fire Claude translation requests.
+(defcustom tibetan-auto-fire-claude-on-create nil
+  "Whether CREATING or OPENING analysis files fires Claude by itself.
 
-When non-nil (default), `tibetan-auto-analyze-document' and
-`tibetan-sentence-create-all' queue staggered gptel requests for
-every newly-created `seg-*.org' (resp. `sent-*.org') file immediately
-after the structural analysis is written — so a single
-`C-c u B' / `C-c s N' produces both the structural skeleton AND
-Claude translations, matching what the single-file `C-c u A' /
-`C-c s A' commands have always done.
+Default nil since §5.60 (2026-10-12, Carsten: „ich will nicht gleich
+alle Verse komplett analysieren“): AI ON DEMAND.  `C-c u A' only
+creates/opens (on any heading of a cascade source it creates the
+skeletons of every sentence below), `C-c u B' / `C-c s N' create the
+skeletons of the whole document, and Claude + DharmaMitra are fetched
+explicitly with `C-c u G' (`tibetan-fetch') — for the unit at point
+or every sentence under the heading at point.
 
-Set to nil to skip the Claude step and rely on a subsequent
-`tibetan-auto-request-claude-translations' run.  Pre-existing files
-(skipped by the structural pass) are NOT re-fired regardless of this
-setting — use `C-u C-c u r' / `C-u C-c s r' for that.
-
-The fire is async and throttled by `tibetan-auto-claude-request-delay'
-(default 1.5s per request); results arrive in the background."
+Non-nil restores the old automatic behaviour everywhere: batch
+creation queues staggered requests for every new file, and opening a
+file whose Claude slots are still placeholders fires on open (two-
+file seg/sent/par openers, the cascade opener).  The fire is async
+and throttled by `tibetan-auto-claude-request-delay'."
   :type 'boolean
   :group 'tibetan-cat)
 
-(defcustom tibetan-auto-fire-dm-on-create t
-  "When non-nil, `tibetan-auto-analyze-document' fires DharmaMitra
-translation for each newly-created segment file after Claude.
+(defcustom tibetan-auto-fire-dm-on-create nil
+  "Whether CREATING or OPENING analysis files fires DharmaMitra.
 
-Phase A.3 of multi-translator-parallel-reading (2026-04-30).
-Mirrors `tibetan-auto-fire-claude-on-create' for the DM
-translator.  Set to nil to opt out of automatic DM translation
-without disabling Claude."
+Mirrors `tibetan-auto-fire-claude-on-create' for the DM translator
+\(Phase A.3, 2026-04-30); default nil since §5.60 (AI on demand —
+`C-c u G' fetches Claude and DharmaMitra explicitly)."
   :type 'boolean
   :group 'tibetan-cat)
 

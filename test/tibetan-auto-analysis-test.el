@@ -309,9 +309,10 @@ from the skip-check `get-filepath' call so the two paths match."
       (delete-directory root t))))
 
 (ert-deftest tibetan-auto-fire-claude-on-create-defcustom-exists ()
-  "The gate defcustom exists and defaults to t."
+  "The gate defcustom exists and defaults to nil since §5.60 (AI on
+demand: C-c u A/B only create, C-c u G fetches)."
   (should (boundp 'tibetan-auto-fire-claude-on-create))
-  (should (eq t (default-value 'tibetan-auto-fire-claude-on-create))))
+  (should (null (default-value 'tibetan-auto-fire-claude-on-create))))
 
 (ert-deftest tibetan-auto--fire-claude-on-new-files-stubbed ()
   "`tibetan-auto--fire-claude-on-new-files' queues one request per pair.
@@ -452,15 +453,16 @@ segment collector, at `^\\*\\* Sentence' instead of `^\\*+ Sentence'."
 ;; (Tibetan + optional Sanskrit) via the umbrella
 ;; `tibetan-dharmamitra-translation-fire-for-segment'.
 ;;
-;; Gated by `tibetan-auto-fire-dm-on-create' (defcustom, default t)
+;; Gated by `tibetan-auto-fire-dm-on-create' (defcustom, default nil
+;; since §5.60)
 ;; so users who don't want DM translations can opt out without
 ;; disabling Claude.
 
 (ert-deftest tibetan-auto-fire-dm-on-create-defcustom-exists ()
-  "`tibetan-auto-fire-dm-on-create' exists and defaults to t.
-Mirrors `tibetan-auto-fire-claude-on-create'."
+  "`tibetan-auto-fire-dm-on-create' exists and defaults to nil since
+§5.60.  Mirrors `tibetan-auto-fire-claude-on-create'."
   (should (boundp 'tibetan-auto-fire-dm-on-create))
-  (should (eq t (default-value 'tibetan-auto-fire-dm-on-create))))
+  (should (null (default-value 'tibetan-auto-fire-dm-on-create))))
 
 (ert-deftest tibetan-auto--fire-dm-on-new-files-stubbed ()
   "`tibetan-auto--fire-dm-on-new-files' calls `fire-for-segment'

@@ -1620,7 +1620,10 @@ fixture doesn't need to reach into gptel.  Asserts:
     ;; Pre-create sent-001 to force a skip; sent-002 will be new.
     (with-temp-file (tibetan-sentence--filepath 1 folder source-file)
       (insert "pre-existing sent-001\n"))
-    (let ((fire-calls '()))
+    ;; §5.60: das Batch-Feuern ist Opt-in (Default nil) — hier wird
+    ;; die Verdrahtung MIT eingeschaltetem Schalter geprüft.
+    (let ((fire-calls '())
+          (tibetan-auto-fire-claude-on-create t))
       (cl-letf (((symbol-function 'tibetan-sentence--fire-claude-on-new-files)
                  (lambda (plists _source)
                    (push plists fire-calls))))
@@ -2299,8 +2302,11 @@ Without a SOURCE-FILE it stays the legacy bare `sent-NNN.org'."
 single-segment sentences through the §5.40 dispatcher (B-1.3).  The
 `>1' conjuncts short-circuited BEFORE the dispatcher, so singletons
 always took the legacy per-sentence call."
+  ;; §5.60: the opener's own fire is opt-in (default nil) — the
+  ;; routing is checked WITH the switch on.
   (let ((dispatcher-calls '())
-        (legacy-calls 0))
+        (legacy-calls 0)
+        (tibetan-auto-fire-claude-on-create t))
     (cl-letf* (((symbol-function 'display-buffer-in-side-window)
                 (lambda (&rest _) nil))
                ((symbol-function 'tibetan-analysis--fire-sentence-level)

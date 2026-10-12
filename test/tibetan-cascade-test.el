@@ -1560,7 +1560,8 @@ the two-file paragraph path runs."
   "A1 (§5.59, Carstens Befund an §220): C-c u A auf `** Section §167'
 einer KASKADEN-Quelle lief in den Two-File-Absatzpfad („Paragraph
 §220 has no `*** Tibetisch' child\").  Jetzt: alle Sätze NUR dieses
-Subtrees angelegt + (gated) gefeuert, der erste Satz geöffnet."
+Subtrees angelegt (Rumpf), der erste Satz geöffnet; seit §5.60 OHNE
+Fire — abgeholt wird mit C-c u G."
   (tibetan-cascade-test--with-sectioned-source "Section §167"
     (goto-char (point-min))
     (re-search-forward "^\\*\\* Section §167")
@@ -1568,7 +1569,9 @@ Subtrees angelegt + (gated) gefeuert, der erste Satz geöffnet."
     (should-not paragraph)
     (should (equal '("sent-004-doc.org" "sent-005-doc.org")
                    (tibetan-cascade-test--sent-files analysis)))
-    (should (equal '(4 5) (sort fired #'<)))
+    ;; §5.60: C-c u A legt nur an und öffnet — abgeholt wird mit
+    ;; C-c u G (`tibetan-fetch').
+    (should-not fired)
     (should (equal 105 opened))))
 
 (ert-deftest tibetan-cascade-cu-a-on-top-heading-analyzes-document ()
@@ -1581,7 +1584,7 @@ org-Hierarchie bestimmt den Umfang, nicht ein fester Level."
     (should (equal '("sent-004-doc.org" "sent-005-doc.org"
                      "sent-006-doc.org")
                    (tibetan-cascade-test--sent-files analysis)))
-    (should (equal '(4 5 6) (sort fired #'<)))))
+    (should-not fired)))
 
 (ert-deftest tibetan-cascade-cu-a-on-section-without-paragraph-sign ()
   "A1 (§5.59): Sanskrit-Quellen tragen Sections ohne „§\"
@@ -1591,34 +1594,8 @@ Segment-Impl („Not in a segment or paragraph\")."
     (goto-char (point-min))
     (re-search-forward "^\\*\\* Section MAv")
     (tibetan-open-segment-analysis)
-    (should (equal '(4 5) (sort fired #'<)))))
-
-(ert-deftest tibetan-cascade-cu-a-subtree-asks-above-threshold ()
-  "A1 (§5.59): über `tibetan-cascade-subtree-confirm-threshold'
-fragt C-c u A mit der Anzahl nach (API-Kosten!); „n\" → kein
-Fire.  Das strukturelle Anlegen ist gratis und bleibt."
-  (tibetan-cascade-test--with-sectioned-source "Section §167"
-    (let ((tibetan-cascade-subtree-confirm-threshold 1)
-          (prompt nil))
-      (cl-letf (((symbol-function 'y-or-n-p)
-                 (lambda (p) (setq prompt p) nil)))
-        (goto-char (point-min))
-        (re-search-forward "^\\* Tibetan Text")
-        (tibetan-open-segment-analysis))
-      (should (and prompt (string-match-p "\\b3\\b" prompt)))
-      (should-not fired)
-      (should (= 3 (length (tibetan-cascade-test--sent-files analysis)))))))
-
-(ert-deftest tibetan-cascade-cu-a-subtree-skips-complete-sentences ()
-  "A1 (§5.59): vollständige Sätze feuern nicht (das A0-Gate
-entscheidet — Zählung und Fire benutzen dasselbe Prädikat)."
-  (tibetan-cascade-test--with-sectioned-source "Section §167"
-    (cl-letf (((symbol-function 'tibetan-cascade--sentence-needs-fire-p)
-               (lambda (file _segs) (string-match-p "sent-005" file))))
-      (goto-char (point-min))
-      (re-search-forward "^\\*\\* Section §167")
-      (tibetan-open-segment-analysis))
-    (should (equal '(5) fired))))
+    (should (equal '("sent-004-doc.org" "sent-005-doc.org")
+                   (tibetan-cascade-test--sent-files analysis)))))
 
 (defmacro tibetan-cascade-test--with-cu-r-stubs (&rest body)
   "Inside `--with-sectioned-source': create the files of Sentences 4

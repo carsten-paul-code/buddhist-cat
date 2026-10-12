@@ -133,6 +133,8 @@ body in the test suite (the transport self-tests only).")
 (condition-case nil (require 'tibetan-translation-doc-test) (error nil))
 ;; §5.59: reading-class handout (2026-10-09)
 (condition-case nil (require 'tibetan-handout-test) (error nil))
+;; §5.60: AI only on demand — C-c u A opens, C-c u G fetches (2026-10-12)
+(condition-case nil (require 'tibetan-fetch-test) (error nil))
 ;; Source<->analysis navigation (2026-09-15)
 (condition-case nil (require 'tibetan-analysis-nav-test) (error nil))
 
