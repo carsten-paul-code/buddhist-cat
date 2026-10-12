@@ -5002,6 +5002,17 @@ unused-arg warning without breaking the public API."
 ;; MAIN COMMANDS
 ;; ============================================================================
 
+(defun tibetan-analysis--no-unit-message ()
+  "Why C-c u A / C-c u R found no analysis unit at point — and how to
+get one.  §5.59-Nachtrag (Tantrāloka, 12.10.): the bare \"Not in a
+segment or paragraph\" in the echo area read as \"nothing happens\"."
+  (concat
+   "Keine Analyse-Einheit an Punkt: "
+   (if (buffer-file-name) (file-name-nondirectory (buffer-file-name)) "Puffer")
+   " hat hier keine `*** Sentence N' / `**** Segment N'-Überschrift "
+   "(CAT-Quelle: Section → Sentence → Segment, Kaskade mit "
+   "#+TIBETAN_LAYOUT: cascade; Sanskrit-Rohtext importiert C-c o k)"))
+
 (declare-function tibetan-cascade-analyze-subtree "tibetan-cascade"
                   (source-file))
 (declare-function tibetan-cascade-reanalyze-subtree "tibetan-cascade"
@@ -5104,7 +5115,7 @@ sentence."
                        (point-min) (point-max))))
 
     (unless seg-data
-      (error "Not in a segment or paragraph"))
+      (user-error "%s" (tibetan-analysis--no-unit-message)))
 
     (let* ((source-file (buffer-file-name))
            ;; §5.23 (2026-05-22):  thread source-file so the lookup
@@ -5310,7 +5321,7 @@ level re-renders the org subtree's sentence files
                        (point-min) (point-max))))
 
     (unless seg-data
-      (error "Not in a segment or paragraph"))
+      (user-error "%s" (tibetan-analysis--no-unit-message)))
 
     ;; §5.23 (2026-05-22):  thread source-file (= current buffer)
     ;; so the lookup resolves to `seg-NNN-SHORT.org'.  Falls back to

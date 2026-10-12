@@ -990,6 +990,34 @@ file only]' fallback template."
   "Test that main analysis function exists."
   (should (fboundp 'tibetan-open-segment-analysis)))
 
+(ert-deftest tibetan-open-segment-analysis-explains-missing-unit ()
+  "§5.59-Nachtrag (Tantrāloka, 12.10.): in einer org-Datei ohne
+Satz-/Segment-Struktur (Vers-Überschrift `*** TĀ 1.1' + Versblock)
+meldete C-c u A nur „Not in a segment or paragraph\" — Carsten las
+das als „passiert nichts\".  Die Meldung muss sagen, was fehlt und
+wie man hinkommt (Sentence/Segment-Gliederung, Kaskaden-Header,
+Sanskrit-Import C-c o k).  C-c u R gleich."
+  (let* ((dir (make-temp-file "no-unit-" t))
+         (file (expand-file-name "reading.org" dir)))
+    (unwind-protect
+        (progn
+          (with-temp-file file
+            (insert "#+TITLE: Lesedatei\n\n* Gruppe\n** Abschnitt\n"
+                    "*** TĀ 1.1\n#+begin_verse\nvimalakalā /\n#+end_verse\n"))
+          (let ((buf (find-file-noselect file)))
+            (unwind-protect
+                (with-current-buffer buf
+                  (goto-char (point-min))
+                  (search-forward "vimalakalā")
+                  (dolist (cmd '(tibetan-open-segment-analysis
+                                 tibetan-reanalyze-segment))
+                    (let ((err (should-error (funcall cmd) :type 'user-error)))
+                      (should (string-match-p "Sentence" (cadr err)))
+                      (should (string-match-p "Segment" (cadr err)))
+                      (should (string-match-p "C-c o k" (cadr err))))))
+              (kill-buffer buf))))
+      (delete-directory dir t))))
+
 (ert-deftest tibetan-reanalyze-segment-callable ()
   "Test that reanalysis function exists."
   (should (fboundp 'tibetan-reanalyze-segment)))
