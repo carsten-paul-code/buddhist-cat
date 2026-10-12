@@ -1,9 +1,9 @@
 #+TITLE: Function Reference — tibetan-cat.el
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-10-12T10:44:39
+#+DATE: 2026-10-12T10:53:35
 #+OPTIONS: toc:2 num:nil
 
-Source tree: ~/Users/cp/tibetan-cat.el~  ·  79 modules  ·  1580 forms
+Source tree: ~/Users/cp/tibetan-cat.el~  ·  80 modules  ·  1606 forms
 
 Regenerated automatically by:
 
@@ -73,6 +73,7 @@ python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/tibetan-ca
   - [[#persist/tibetan-sentence-claude.el][persist/tibetan-sentence-claude.el]]  (29)
   - [[#persist/tibetan-sentence-persist.el][persist/tibetan-sentence-persist.el]]  (62)
   - [[#persist/tibetan-structure-reorg.el][persist/tibetan-structure-reorg.el]]  (15)
+  - [[#persist/tibetan-translation-discussion.el][persist/tibetan-translation-discussion.el]]  (26)
   - [[#persist/tibetan-translation-doc.el][persist/tibetan-translation-doc.el]]  (15)
   - [[#philology/tibetan-bialek-textbook-refs.el][philology/tibetan-bialek-textbook-refs.el]]  (2)
   - [[#philology/tibetan-madhyamaka-terms.el][philology/tibetan-madhyamaka-terms.el]]  (6)
@@ -2917,7 +2918,7 @@ Hash table of Tibetan verbs with grammatical information.
 ** ~tibetan-increase-text-scale~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 442
+:LINE: 447
 :SIGNATURE: (tibetan-increase-text-scale)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -2928,7 +2929,7 @@ Increase Tibetan text scale by 0.1.
 ** ~tibetan-decrease-text-scale~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 448
+:LINE: 453
 :SIGNATURE: (tibetan-decrease-text-scale)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -2939,7 +2940,7 @@ Decrease Tibetan text scale by 0.1 (minimum 1.0).
 ** ~tibetan-thesaurus-prefix-map~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 281
+:LINE: 286
 :DEFAULT: (make-sparse-keymap)
 :END:
 
@@ -2955,7 +2956,7 @@ Keymap for thesaurus commands — prefix `C-c u z'.
 ** ~tibetan-cat-context-menu-map~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 281
+:LINE: 284
 :DEFAULT: (let ((map (make-sparse-keymap "Tibetan")))
     (define-key map [segment-info] '(menu-item "Segment Info" tibetan-segmen
 :END:
@@ -11745,7 +11746,7 @@ Collects all available translations (Lopez, Wangjié, future
 Mitra, plus the user's `* Working Translation' if non-empty),
 asks Claude to score them pairwise (0 = incomparable, 1 =
 identical) and explain divergences, and rewrites the section.
-Bound to `C-c u T'.
+Bound to `C-c u c'.
 
 Requires gptel + a configured Anthropic API key.  Errors are
 surfaced via `message' rather than signalled.
@@ -20457,6 +20458,276 @@ Orphans are moved to analysis/.archive/ subdirectory.
 If non-nil, automatically create analysis for new segments during reorg.
 
 
+* persist/tibetan-translation-discussion.el
+:PROPERTIES:
+:CUSTOM_ID: persist/tibetan-translation-discussion.el
+:SOURCE_PATH: /Users/cp/tibetan-cat.el/persist/tibetan-translation-discussion.el
+:END:
+
+** ~tibetan-discussion--label~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 63
+:SIGNATURE: (tibetan-discussion--label key target)
+:END:
+
+KEY rendered for TARGET language.
+
+** ~tibetan-discussion--pt-children~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 72
+:SIGNATURE: (tibetan-discussion--pt-children file)
+:END:
+
+((NAME . BODY) …) of the `** NAME' children of * Provided
+Translations in FILE, in file order; BODY up to the next `*'/`**'.
+
+** ~tibetan-discussion--references~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 98
+:SIGNATURE: (tibetan-discussion--references file)
+:END:
+
+The reference translations of FILE: every `** NAME' under * Provided
+Translations except the DharmaMitra slot, Claude Particles, the
+discussion itself and Carsten's own rubrics (`Übersetzung …').
+((NAME . TEXT) …), drawers stripped, empty slots dropped.
+
+** ~tibetan-discussion--inputs~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 114
+:SIGNATURE: (tibetan-discussion--inputs file)
+:END:
+
+Everything the discussion of the cascade sentence FILE needs, as a
+plist: :file :source-file :sent-num :lang :target :source-text
+:wylie (bo) :padapatha (sa, from Word Analysis) :claude :dm :refs.
+
+** ~tibetan-discussion--ready-p~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 151
+:SIGNATURE: (tibetan-discussion--ready-p inputs)
+:END:
+
+Non-nil when INPUTS carry reference translation(s), Claude's AND
+DharmaMitra's translation — the discussion compares all three.
+
+** ~tibetan-discussion--present-p~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 160
+:SIGNATURE: (tibetan-discussion--present-p file)
+:END:
+
+Non-nil when FILE already carries a `** Discussion'.
+
+** ~tibetan-discussion--system-prompt~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 168
+:SIGNATURE: (tibetan-discussion--system-prompt target)
+:END:
+
+The system prompt — constant per TARGET language (cache prefix).
+
+** ~tibetan-discussion--build-prompts~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 215
+:SIGNATURE: (tibetan-discussion--build-prompts inputs)
+:END:
+
+(SYSTEM . USER) for the discussion of INPUTS.
+
+** ~tibetan-discussion--parse~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 241
+:SIGNATURE: (tibetan-discussion--parse response)
+:END:
+
+Parse RESPONSE into (:assessment STR :points (POINT …)); POINT =
+(:title STR :items ((LABEL . TEXT) …)).
+
+** ~tibetan-discussion--unquote~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 270
+:SIGNATURE: (tibetan-discussion--unquote s)
+:END:
+
+S without surrounding quote marks.
+
+** ~tibetan-discussion--org-safe~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 274
+:SIGNATURE: (tibetan-discussion--org-safe s)
+:END:
+
+S with line-leading `*' runs and `#' defused for org.
+
+** ~tibetan-discussion--mark~  /function/  ⚡
+:PROPERTIES:
+:KIND: defun
+:LINE: 278
+:SIGNATURE: (tibetan-discussion--mark body quotes)
+:INTERACTIVE: t
+:END:
+
+BODY with each (N . QUOTE) of QUOTES marked: the first verbatim
+(whitespace-tolerant) occurrence gets ⟨N⟩ appended — and is bold,
+marker included, where org's emphasis rules allow.  Quotes not found
+stay unmarked.
+
+** ~tibetan-discussion--ref-label-p~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 306
+:SIGNATURE: (tibetan-discussion--ref-label-p key ref-name)
+:END:
+
+Non-nil when the response line label KEY names the reference
+REF-NAME — exactly, or shortened/extended ("Dyczkowski" for
+"Dyczkowski 2023"); models drift from the label contract.
+
+** ~tibetan-discussion--render~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 316
+:SIGNATURE: (tibetan-discussion--render parsed inputs date)
+:END:
+
+The `** Discussion' subtree for PARSED with INPUTS, stamped DATE.
+
+** ~tibetan-discussion--write~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 360
+:SIGNATURE: (tibetan-discussion--write file block)
+:END:
+
+Put BLOCK as the last child of * Provided Translations in FILE,
+replacing an existing `** Discussion'.  t on success.
+
+** ~tibetan-discussion--land~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 398
+:SIGNATURE: (tibetan-discussion--land file response)
+:END:
+
+Parse RESPONSE and write the discussion into FILE.  t on success.
+
+** ~tibetan-discussion--request~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 415
+:SIGNATURE: (tibetan-discussion--request file &optional force)
+:END:
+
+Queue the discussion request for the cascade sentence FILE.
+No-op while one is in flight, when the inputs are incomplete, or
+when a discussion exists and FORCE is nil.
+
+** ~tibetan-discussion--maybe-fire~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 472
+:SIGNATURE: (tibetan-discussion--maybe-fire file)
+:END:
+
+Hook function: request the discussion of the cascade sentence FILE
+once Claude AND DharmaMitra are there — unless switched off
+(`tibetan-discussion-auto'), MT is deferred, or it exists.
+
+** ~tibetan-translation-compare-dwim~  /function/  ⚡  ↗
+:PROPERTIES:
+:KIND: defun
+:LINE: 488
+:SIGNATURE: (tibetan-translation-compare-dwim)
+:INTERACTIVE: t
+:AUTOLOAD: t
+:END:
+
+C-c u c: discuss the translations of the unit at point.
+In a cascade source or sent-NNN analysis buffer: (re-)create the
+seminar discussion (§5.62) for the sentence at point, or for every
+sentence under the heading at point (confirmed above
+`tibetan-cascade-subtree-confirm-threshold').  In an old par-NNN.org
+file: the pairwise similarity matrix (`tibetan-translation-
+comparison-refresh') as before.
+
+** ~tibetan-discussion-auto~  /customize variable/
+:PROPERTIES:
+:KIND: defcustom
+:LINE: 44
+:TYPE: 'boolean
+:GROUP: tibetan-cat
+:DEFAULT: t
+:END:
+
+When non-nil, the seminar discussion of a cascade sentence is
+requested automatically as soon as Claude AND DharmaMitra have landed
+(and reference translations exist).  One extra Claude call per
+sentence.  C-c u c always works on demand.
+
+** ~gptel-max-tokens~  /variable/
+:PROPERTIES:
+:KIND: defvar
+:LINE: 37
+:END:
+
+/(no docstring)/
+
+** ~gptel-cache~  /variable/
+:PROPERTIES:
+:KIND: defvar
+:LINE: 38
+:END:
+
+/(no docstring)/
+
+** ~tibetan-claude-max-tokens~  /variable/
+:PROPERTIES:
+:KIND: defvar
+:LINE: 39
+:END:
+
+/(no docstring)/
+
+** ~tibetan-discussion--heading~  /constant/
+:PROPERTIES:
+:KIND: defconst
+:LINE: 52
+:DEFAULT: "Discussion"
+:END:
+
+The `** ' heading of the discussion under * Provided Translations.
+
+** ~tibetan-discussion--labels~  /constant/
+:PROPERTIES:
+:KIND: defconst
+:LINE: 55
+:DEFAULT: '
+:END:
+
+/(no docstring)/
+
+** ~tibetan-discussion--inflight~  /variable/
+:PROPERTIES:
+:KIND: defvar
+:LINE: 412
+:DEFAULT: (make-hash-table :test #'equal)
+:END:
+
+Files (truenames) whose discussion request is in flight.
+
+
 * persist/tibetan-translation-doc.el
 :PROPERTIES:
 :CUSTOM_ID: persist/tibetan-translation-doc.el
@@ -21902,7 +22173,7 @@ Holds the result of the WHEN clause for use in THEN assertions.
 ** ~tibetan-cat-setup~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 297
+:LINE: 298
 :SIGNATURE: (tibetan-cat-setup)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -21914,7 +22185,7 @@ Loads glossaries and prepares the system for use.
 ** ~tibetan-cat-version~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 383
+:LINE: 384
 :SIGNATURE: (tibetan-cat-version)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -21925,7 +22196,7 @@ Display Tibetan CAT version and feature summary.
 ** ~tibetan-cat--server-socket-path~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 426
+:LINE: 427
 :SIGNATURE: (tibetan-cat--server-socket-path server-name)
 :END:
 
@@ -21937,7 +22208,7 @@ removed when the server is stopped).
 ** ~tibetan-cat-open-zettel-for-word-at-point~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 437
+:LINE: 438
 :SIGNATURE: (tibetan-cat-open-zettel-for-word-at-point &optional arg)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -21970,7 +22241,7 @@ in the appropriate instance.
 ** ~tibetan-cat-zettel-target-server~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 406
+:LINE: 407
 :TYPE: 'string
 :GROUP: tibetan-cat
 :DEFAULT: "research-emacs"
@@ -21992,7 +22263,7 @@ Empty string disables remote routing entirely.
 ** ~tibetan-cat-version~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 294
+:LINE: 295
 :END:
 
 /(no docstring)/
@@ -22000,7 +22271,7 @@ Empty string disables remote routing entirely.
 ** ~tibetan-cat-version~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 379
+:LINE: 380
 :DEFAULT: "2.1.0"
 :END:
 
@@ -22009,7 +22280,7 @@ Version of Tibetan CAT system.
 ** ~server-socket-dir~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 424
+:LINE: 425
 :END:
 
 /(no docstring)/

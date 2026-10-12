@@ -74,6 +74,9 @@
      ["Fetch Claude + DharmaMitra (C-c u G)" tibetan-fetch
       :active (fboundp 'tibetan-fetch)
       :help "Fetch the missing AI content for the sentence at point or every sentence under the heading at point"]
+     ["Discuss Translations (C-c u c)" tibetan-translation-compare-dwim
+      :active (fboundp 'tibetan-translation-compare-dwim)
+      :help "Seminar discussion of the reference translation(s) vs Claude + DharmaMitra for the sentence / heading at point; in par-NNN.org: the similarity matrix"]
      ["Re-analyze Segment (C-c u R)" tibetan-reanalyze-segment
       :help "Regenerate analysis while preserving your notes"]
      ["Toggle Class View — fold reference sections (C-c u f)" tibetan-analysis-toggle-class-view t]

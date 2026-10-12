@@ -167,9 +167,14 @@
 ;; command below; `C-c u C' is combine-document.  This was previously
 ;; (mis)bound to `C-c u T' as well, which collided with translate-region
 ;; and left this command unreachable.
-(global-set-key (kbd "C-c u c") 'tibetan-translation-comparison-refresh)
-  ;; Refresh the `* Translation Comparison' section of the current
-  ;; par-NNN.org analysis file:
+(global-set-key (kbd "C-c u c") 'tibetan-translation-compare-dwim)
+  ;; §5.62 Kaskade (Quelle oder sent-Datei): Seminar-Diskussion der
+  ;; Referenzübersetzung(en) gegen Claude + DharmaMitra neu anlegen —
+  ;; für den Satz an Punkt bzw. alle Sätze unter der Überschrift
+  ;; (`** Discussion' am Ende von * Provided Translations; kommt nach
+  ;; C-c u G auch automatisch, `tibetan-discussion-auto').
+  ;; In einer par-NNN.org wie bisher: refresh the `* Translation
+  ;; Comparison' section of the current par-NNN.org analysis file:
   ;; - Collects Lopez 2006 / Wangjié & Mulligan / DharmaMitra / etc.
   ;;   from `* Reference Translations' AND the user's own
   ;;   `* Working Translation' (if non-empty)
