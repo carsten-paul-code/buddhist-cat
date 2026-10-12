@@ -598,62 +598,6 @@ appears (headings are German; the slots are named by content)."
 ;; B3 — scope, file, PDF, command
 ;; ============================================================================
 
-(defun tibetan-handout--enclosing-sentence ()
-  "Number of the `Sentence N' heading at or above point, or nil."
-  (save-excursion
-    (unless (org-before-first-heading-p)
-      (org-back-to-heading t)
-      (catch 'found
-        (while t
-          (let ((h (org-get-heading t t t t)))
-            (when (and h (string-match "\\`Sentence \\([0-9]+\\)\\b" h))
-              (throw 'found (string-to-number (match-string 1 h)))))
-          (unless (org-up-heading-safe)
-            (throw 'found nil)))))))
-
-(defun tibetan-handout--scope-at-point ()
-  "What the handout covers, from point: (:source :sent-nums :label
-:lopez).  In a cascade SOURCE the scope follows the org outline
-like C-c u A (§5.59 A1): Segment → its sentence, Sentence → it, any
-higher heading → every sentence below (a Section with
-`:LOPEZ_SECTION:' labels as \"§N\"), before the first heading → the
-document.  In a `sent-NNN' analysis buffer: that sentence."
-  (let ((file (buffer-file-name)))
-    (unless file
-      (user-error "Puffer ohne Datei — Handout braucht eine Kaskaden-Quelle"))
-    (if (string-match-p "\\`sent-[0-9]" (file-name-nondirectory file))
-        (let ((n (tibetan-sentence--sent-id-from-filename file))
-              (src (tibetan-sentence--source-file-from-analysis file)))
-          (unless (and n src)
-            (user-error "Satz/Quelle von %s nicht bestimmbar"
-                        (file-name-nondirectory file)))
-          (list :source src :sent-nums (list n)
-                :label (format "Satz %d" n)))
-      (unless (tibetan-analysis--cascade-p file)
-        (user-error "%s ist kein Kaskaden-Dokument (#+TIBETAN_LAYOUT: cascade)"
-                    (file-name-nondirectory file)))
-      (let ((sent (tibetan-handout--enclosing-sentence)))
-        (if sent
-            (list :source file :sent-nums (list sent)
-                  :label (format "Satz %d" sent))
-          (let* ((sub (tibetan-cascade--subtree-sentences))
-                 (lopez (save-excursion
-                          (unless (org-before-first-heading-p)
-                            (org-back-to-heading t)
-                            (let ((v (org-entry-get (point) "LOPEZ_SECTION")))
-                              (and v (string-match-p "\\`[0-9]+\\'" (string-trim v))
-                                   (string-to-number v)))))))
-            (unless (cdr sub)
-              (user-error "Keine Sätze unter „%s“" (or (car sub) "Dokument")))
-            (list :source file
-                  :sent-nums (mapcar (lambda (s) (plist-get s :sent-num))
-                                     (cdr sub))
-                  :label (cond (lopez (format "§%d" lopez))
-                               ((car sub) (string-remove-prefix
-                                           "Section " (car sub)))
-                               (t "gesamt"))
-                  :lopez lopez)))))))
-
 (defun tibetan-handout--output-file (scope)
   "`<source dir>/handouts/<short>-par-NNN.org' for a Lopez § SCOPE,
 else `<short>-sent-N[-M].org'.  The source short name keeps
@@ -681,7 +625,7 @@ multi-source folders collision-free (§5.23 lesson)."
       (file-name-base source-file)))
 
 (defun tibetan-handout-build (scope &optional date)
-  "Write the handout .org for SCOPE (`tibetan-handout--scope-at-point'
+  "Write the handout .org for SCOPE (`tibetan-cascade--scope-at-point'
 shape) and return its path.  The class wordlist (★) of the source's
 Resources is bound for the whole build; DATE (default today) goes
 into the footer.  An existing target WITHOUT the GENERATED marker is
@@ -758,7 +702,7 @@ undone by a regeneration.  No network, no API call."
 
 (defun tibetan-handout--from-scope (org-only)
   "Body of `tibetan-handout' outside a generated handout buffer."
-  (let ((scope (tibetan-handout--scope-at-point)))
+  (let ((scope (tibetan-cascade--scope-at-point)))
     (when (and (> (length (plist-get scope :sent-nums)) 50)
                (not (y-or-n-p (format "Handout über %d Sätze erzeugen? "
                                       (length (plist-get scope :sent-nums))))))

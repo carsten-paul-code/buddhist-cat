@@ -2302,6 +2302,63 @@ decides the scope (`*' = all, `** Section' = its sentences …)."
           (org-narrow-to-subtree))
         (cons label (tibetan-cascade--collect-sentences))))))
 
+(defun tibetan-cascade--enclosing-sentence ()
+  "Number of the `Sentence N' heading at or above point, or nil."
+  (save-excursion
+    (unless (org-before-first-heading-p)
+      (org-back-to-heading t)
+      (catch 'found
+        (while t
+          (let ((h (org-get-heading t t t t)))
+            (when (and h (string-match "\\`Sentence \\([0-9]+\\)\\b" h))
+              (throw 'found (string-to-number (match-string 1 h)))))
+          (unless (org-up-heading-safe)
+            (throw 'found nil)))))))
+
+(defun tibetan-cascade--scope-at-point ()
+  "The sentences a command at point covers: (:source :sent-nums
+:label :lopez).  Shared by the handout (C-c u H) and the fetch (C-c u
+G) — §5.60 moved it here from tibetan-handout.el.  In a cascade SOURCE the scope follows the org outline
+like C-c u A (§5.59 A1): Segment → its sentence, Sentence → it, any
+higher heading → every sentence below (a Section with
+`:LOPEZ_SECTION:' labels as \"§N\"), before the first heading → the
+document.  In a `sent-NNN' analysis buffer: that sentence."
+  (let ((file (buffer-file-name)))
+    (unless file
+      (user-error "Puffer ohne Datei — braucht eine Kaskaden-Quelle"))
+    (if (string-match-p "\\`sent-[0-9]" (file-name-nondirectory file))
+        (let ((n (tibetan-sentence--sent-id-from-filename file))
+              (src (tibetan-sentence--source-file-from-analysis file)))
+          (unless (and n src)
+            (user-error "Satz/Quelle von %s nicht bestimmbar"
+                        (file-name-nondirectory file)))
+          (list :source src :sent-nums (list n)
+                :label (format "Satz %d" n)))
+      (unless (tibetan-analysis--cascade-p file)
+        (user-error "%s ist kein Kaskaden-Dokument (#+TIBETAN_LAYOUT: cascade)"
+                    (file-name-nondirectory file)))
+      (let ((sent (tibetan-cascade--enclosing-sentence)))
+        (if sent
+            (list :source file :sent-nums (list sent)
+                  :label (format "Satz %d" sent))
+          (let* ((sub (tibetan-cascade--subtree-sentences))
+                 (lopez (save-excursion
+                          (unless (org-before-first-heading-p)
+                            (org-back-to-heading t)
+                            (let ((v (org-entry-get (point) "LOPEZ_SECTION")))
+                              (and v (string-match-p "\\`[0-9]+\\'" (string-trim v))
+                                   (string-to-number v)))))))
+            (unless (cdr sub)
+              (user-error "Keine Sätze unter „%s“" (or (car sub) "Dokument")))
+            (list :source file
+                  :sent-nums (mapcar (lambda (s) (plist-get s :sent-num))
+                                     (cdr sub))
+                  :label (cond (lopez (format "§%d" lopez))
+                               ((car sub) (string-remove-prefix
+                                           "Section " (car sub)))
+                               (t "gesamt"))
+                  :lopez lopez)))))))
+
 ;; (Called by C-c u A since §5.60 WITHOUT any fire; the fetch lives
 ;; in `tibetan-cascade-fetch' / C-c u G.)
 

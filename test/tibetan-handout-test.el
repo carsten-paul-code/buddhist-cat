@@ -482,7 +482,7 @@ Headlines, jede Vokabelzeile hat genau drei Zellen."
   (goto-char (point-min))
   (re-search-forward regexp)
   (beginning-of-line)
-  (tibetan-handout--scope-at-point))
+  (tibetan-cascade--scope-at-point))
 
 (ert-deftest tibetan-handout-scope-at-point ()
   "Umfang wie bei C-c u A (§5.59 A1): Segment → sein Satz; Satz → Satz;
@@ -508,7 +508,7 @@ alle; in einer sent-Analysedatei → dieser Satz."
     (let ((buf (find-file-noselect (tibetan-sentence--filepath 654 folder src))))
       (unwind-protect
           (with-current-buffer buf
-            (let ((s (tibetan-handout--scope-at-point)))
+            (let ((s (tibetan-cascade--scope-at-point)))
               (should (equal '(654) (plist-get s :sent-nums)))
               (should (equal (file-truename src)
                              (file-truename (plist-get s :source))))))
