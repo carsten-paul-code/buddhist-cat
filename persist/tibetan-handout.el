@@ -598,6 +598,8 @@ appears (headings are German; the slots are named by content)."
 ;; B3 — scope, file, PDF, command
 ;; ============================================================================
 
+(declare-function tibetan-cascade--scope-at-point "tibetan-cascade" ())
+
 (defun tibetan-handout--output-file (scope)
   "`<source dir>/handouts/<short>-par-NNN.org' for a Lopez § SCOPE,
 else `<short>-sent-N[-M].org'.  The source short name keeps

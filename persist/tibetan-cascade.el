@@ -2317,12 +2317,13 @@ decides the scope (`*' = all, `** Section' = its sentences …)."
 
 (defun tibetan-cascade--scope-at-point ()
   "The sentences a command at point covers: (:source :sent-nums
-:label :lopez).  Shared by the handout (C-c u H) and the fetch (C-c u
-G) — §5.60 moved it here from tibetan-handout.el.  In a cascade SOURCE the scope follows the org outline
-like C-c u A (§5.59 A1): Segment → its sentence, Sentence → it, any
-higher heading → every sentence below (a Section with
-`:LOPEZ_SECTION:' labels as \"§N\"), before the first heading → the
-document.  In a `sent-NNN' analysis buffer: that sentence."
+:label :lopez).  Shared by the handout (C-c u H) and the fetch
+\(C-c u G) — §5.60 moved it here from tibetan-handout.el.  In a
+cascade SOURCE the scope follows the org outline like C-c u A
+\(§5.59 A1): Segment → its sentence, Sentence → it, any higher
+heading → every sentence below (a Section with `:LOPEZ_SECTION:'
+labels as \"§N\"), before the first heading → the document.  In a
+`sent-NNN' analysis buffer: that sentence."
   (let ((file (buffer-file-name)))
     (unless file
       (user-error "Puffer ohne Datei — braucht eine Kaskaden-Quelle"))
