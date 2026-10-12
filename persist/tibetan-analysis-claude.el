@@ -401,7 +401,8 @@ Safe when SOURCE-FILE is nil or does not exist — returns an empty plist."
   (let (title work author sources ctx vocab corpus target-lang source-mode
               dm-sanskrit-source dm-tibetan-source
               text-type class-mode sentence-detail
-              author-header defer-mt layout section-refs source-lang)
+              author-header defer-mt layout section-refs sentence-refs
+              source-lang)
     (when (and source-file (file-exists-p source-file))
       (condition-case nil
           (with-temp-buffer
@@ -503,6 +504,17 @@ Safe when SOURCE-FILE is nil or does not exist — returns an empty plist."
               (let ((val (string-trim (match-string 1))))
                 (unless (string-empty-p val)
                   (setq section-refs val))))
+            ;; §5.60 (2026-10-12): path (relative to the source) of a
+            ;; per-SENTENCE reference file (`** Sentence N' /
+            ;; `*** <translator>', e.g. Dyczkowski for the Tantrāloka) —
+            ;; materialized into * Provided Translations and given to
+            ;; Claude as context like the §-refs.
+            (goto-char (point-min))
+            (when (re-search-forward
+                   "^#\\+TIBETAN_SENTENCE_REFS:[ \t]*\\(.*\\)$" nil t)
+              (let ((val (string-trim (match-string 1))))
+                (unless (string-empty-p val)
+                  (setq sentence-refs val))))
             (goto-char (point-min))
             (while (re-search-forward
                     "^#\\+TIBETAN_CLAUDE_CONTEXT:[ \t]*\\(.*\\)$" nil t)
@@ -553,6 +565,7 @@ Safe when SOURCE-FILE is nil or does not exist — returns an empty plist."
           :defer-mt defer-mt
           :layout layout
           :section-refs section-refs
+          :sentence-refs sentence-refs
           :source-lang source-lang)))
 
 

@@ -416,8 +416,9 @@ cache-constant).  FOLDER locates the child seg files for grounding."
          ;; document (#+TIBETAN_SECTION_REFS) — USER prompt only, so
          ;; the system prompt stays cache-constant.
          (section-refs-block
-          (when (fboundp 'tibetan-cascade--section-refs-block)
-            (tibetan-cascade--section-refs-block sentence source-file)))
+          ;; §5.60: § refs AND verse refs (Dyczkowski) as context.
+          (when (fboundp 'tibetan-cascade--refs-block)
+            (tibetan-cascade--refs-block (list sentence) source-file)))
          (zettel-block
           (when (and (not sa-p)
                      (fboundp 'tibetan-analysis--collect-zettel-references)

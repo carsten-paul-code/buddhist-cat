@@ -1227,9 +1227,12 @@ Zweiter Lauf: idempotent, Hand-Edits bleiben unangetastet."
                       "*** Übersetzung CP\n:PROPERTIES:\n:STATUS: in Arbeit\n:END:\n"
                       "**** Stufe 1 — wörtlich\nCARSTENS EIGENE RUBRIK.\n\n"
                       "** §8\n*** Lopez 2006\nanderer §.\n"))
+            ;; Die Satzdatei entsteht OHNE Referenz-Kopf (Bestand vor
+            ;; der Materialisierung); seit §5.60 materialisiert
+            ;; `--create-file' sonst selbst — das Kommando ist für
+            ;; bestehende Dateien da.
             (with-temp-file src
-              (insert "#+TITLE: D\n#+TIBETAN_LAYOUT: cascade\n"
-                      "#+TIBETAN_SECTION_REFS: comparative.org\n\n"
+              (insert "#+TITLE: D\n#+TIBETAN_LAYOUT: cascade\n\n"
                       "* Tibetan Text\n"
                       "** Section §7\n"
                       ":PROPERTIES:\n:LOPEZ_SECTION: 7\n:END:\n"
@@ -1237,6 +1240,12 @@ Zweiter Lauf: idempotent, Hand-Edits bleiben unangetastet."
                       "**** Segment 105\nབདག་གིས་ལས་བྱས།\n\n"))
             (let ((file (tibetan-cascade--create-file
                          4 '((105 . "བདག་གིས་ལས་བྱས།")) src)))
+              (with-temp-buffer
+                (insert-file-contents src)
+                (goto-char (point-min))
+                (forward-line 2)
+                (insert "#+TIBETAN_SECTION_REFS: comparative.org\n")
+                (write-region (point-min) (point-max) src nil 'silent))
               (let ((r (tibetan-cascade-materialize-provided-translations
                         file)))
                 (should (= 1 (plist-get r :written))))
@@ -1287,6 +1296,87 @@ Zweiter Lauf: idempotent, Hand-Edits bleiben unangetastet."
                                        (split-string s2 "\n")
                                        :test #'equal))))))
         (delete-directory dir t)))))
+
+;; ============================================================================
+;; B (§5.60): Vers-Referenzen — #+TIBETAN_SENTENCE_REFS (Dyczkowski)
+;; ============================================================================
+
+(defmacro tibetan-cascade-test--with-sentence-refs (&rest body)
+  "Cascade source with `#+TIBETAN_SENTENCE_REFS: refs.org' (verse
+references for Sentences 4 and 40 — never Sentence 5); bind DIR, SRC."
+  (declare (indent 0))
+  `(tibetan-cascade-test--with-stub-renderer
+     (let* ((dir (make-temp-file "cascade-srefs-" t))
+            (src (expand-file-name "doc.org" dir)))
+       (unwind-protect
+           (progn
+             (with-temp-file (expand-file-name "refs.org" dir)
+               (insert "#+TITLE: Dyczkowski 2023, versweise\n\n* TĀ 1\n"
+                       "** Sentence 4\n:PROPERTIES:\n:VERSE: TĀ 1.4\n"
+                       ":STATUS: auto\n:END:\n"
+                       "*** Dyczkowski 2023\nDYC VERSE FOUR: I bow to Parā.\n\n"
+                       "** Sentence 40\n*** Dyczkowski 2023\nFALSCHER VERS.\n"))
+             (with-temp-file src
+               (insert "#+TITLE: D\n#+TIBETAN_LAYOUT: cascade\n"
+                       "#+SOURCE_LANG: sa\n"
+                       "#+TIBETAN_SENTENCE_REFS: refs.org\n\n"
+                       "* Text\n** Section Praise\n"
+                       "*** Sentence 4\n**** Segment 7\nnaumi citpratibhāṃ /\n\n"
+                       "*** Sentence 5\n**** Segment 9\nparāṃ /\n\n"))
+             ,@body)
+         (dolist (b (buffer-list))
+           (when (and (buffer-file-name b)
+                      (string-prefix-p dir (buffer-file-name b)))
+             (with-current-buffer b (set-buffer-modified-p nil))
+             (kill-buffer b)))
+         (delete-directory dir t)))))
+
+(ert-deftest tibetan-cascade-sentence-refs-bodies ()
+  "§5.60: `#+TIBETAN_SENTENCE_REFS:' nennt eine Referenzdatei mit
+`** Sentence N' / `*** <Übersetzer>'; gelesen wird genau Satz N (nicht
+Satz 40), Drawer übersprungen."
+  (tibetan-cascade-test--with-sentence-refs
+    (should (equal "refs.org"
+                   (plist-get (tibetan-analysis--read-source-metadata src)
+                              :sentence-refs)))
+    (should (equal '(("Dyczkowski 2023" . "DYC VERSE FOUR: I bow to Parā."))
+                   (tibetan-cascade--sentence-ref-bodies src 4)))
+    (should-not (tibetan-cascade--sentence-ref-bodies src 5))))
+
+(ert-deftest tibetan-cascade-refs-block-carries-verse-refs ()
+  "§5.60 (Carsten: Dyczkowski auch als Claude-Kontext, wie Lopez):
+der User-Prompt-Block trägt die Vers-Referenzen der Sätze — als
+Kontext, nicht zum Abschreiben; ohne Referenzen nil."
+  (tibetan-cascade-test--with-sentence-refs
+    (let ((block (tibetan-cascade--refs-block
+                  (list (list :sent-num 4 :seg-nums '(7))) src)))
+      (should (string-match-p "DYC VERSE FOUR" block))
+      (should (string-match-p "do NOT copy" block))
+      (should-not (string-match-p "FALSCHER VERS" block)))
+    (should-not (tibetan-cascade--refs-block
+                 (list (list :sent-num 5 :seg-nums '(9))) src))))
+
+(ert-deftest tibetan-cascade-create-file-materializes-verse-refs ()
+  "§5.60 (Carsten: „alle Analysefiles als Rumpf mit der/den
+Übersetzung/en“): eine neu angelegte Satzdatei trägt die Vers-
+Referenz sofort unter * Provided Translations — einmalig: ein
+zweiter Materialisierungslauf schreibt nichts, Hand-Edits bleiben."
+  (tibetan-cascade-test--with-sentence-refs
+    (let ((f4 (tibetan-cascade--create-file
+               4 '((7 . "naumi citpratibhāṃ /")) src))
+          (f5 (tibetan-cascade--create-file 5 '((9 . "parāṃ /")) src)))
+      (let ((s (with-temp-buffer (insert-file-contents f4) (buffer-string))))
+        (should (string-match-p "^\\*\\* Dyczkowski 2023\nDYC VERSE FOUR" s))
+        (should (< (string-match "^\\* Provided Translations$" s)
+                   (string-match "^\\*\\* Dyczkowski 2023$" s)
+                   (string-match "^\\* Working Translation$" s))))
+      (should (= 0 (plist-get (tibetan-cascade-materialize-provided-translations
+                               f4)
+                              :written)))
+      (should-not (string-match-p
+                   "Dyczkowski"
+                   (with-temp-buffer (insert-file-contents f5)
+                                     (buffer-string)))))))
 
 ;; ============================================================================
 ;; C3.2 — cascade fire (dispatcher branch, claim, request, DM)

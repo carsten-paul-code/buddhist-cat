@@ -650,6 +650,15 @@ SOURCE-FILE when the sentence module is not loaded."
     (make-directory (file-name-directory filepath) t)
     (with-temp-file filepath
       (insert body))
+    ;; §5.60: the skeleton carries the provided translation(s) right
+    ;; away (Carsten: „alle Analysefiles als Rumpf mit der/den
+    ;; Übersetzung/en") — once, editable, keep-protected.
+    (when (and (fboundp 'tibetan-analysis--read-source-metadata)
+               (let ((meta (tibetan-analysis--read-source-metadata
+                            source-file)))
+                 (or (plist-get meta :section-refs)
+                     (plist-get meta :sentence-refs))))
+      (tibetan-cascade-materialize-provided-translations filepath))
     filepath))
 
 ;; ============================================================================
@@ -2010,9 +2019,7 @@ Tibetan pair.  Constant per document.")
                        (format "### Segment %d\n%s"
                                (car sp) (string-trim (cdr sp))))
                      all-segs "\n"))
-         (refs (when (fboundp 'tibetan-cascade--section-refs-block)
-                 (tibetan-cascade--section-refs-block
-                  (car sentences) source-file)))
+         (refs (tibetan-cascade--refs-block sentences source-file))
          (user (concat
                 (format "%s (%s — segments %s):\n\n"
                         (if sa-p "Sanskrit passage (IAST)"
@@ -3083,25 +3090,24 @@ anything along the chain is missing."
                         (format "=== %s ===\n%s" (car nb) (cdr nb)))
                       bodies "\n")))))))
 
-(defun tibetan-cascade--section-ref-bodies (refs-file secnum)
-  "Die §-Referenzübersetzungen aus REFS-FILE für Lopez-§ SECNUM:
-\((NAME . BODY) …) in Dateireihenfolge — jedes `*** <name>'-Kind
-des `** §N'-Subtrees AUSSER dem B2-Tibetisch und dem Wylie (also
-Lopez, Wangjié & Mulligan, Thakchoe/Hessel wo vorhanden).
+(defun tibetan-cascade--ref-bodies (refs-file heading-re)
+  "Die Referenzübersetzungen aus REFS-FILE unter der `**'-Überschrift,
+die HEADING-RE trifft: ((NAME . BODY) …) in Dateireihenfolge — jedes
+`*** <name>'-Kind des Subtrees AUSSER Tibetisch und Wylie (also
+Lopez, Wangjié & Mulligan, Thakchoe/Hessel; Dyczkowski bei den
+Vers-Referenzen).
 :PROPERTIES:-Drawer (:READ_ONLY: etc.) werden übersprungen.  nil
 wenn Datei/§/Inhalte fehlen; signalisiert nie.
 
-P1 (§5.58): aus `tibetan-cascade--section-refs-block'
-herausgelöst — Konsumenten sind der User-Prompt (Block-Format
-unverändert) und die Materialisierung nach * Provided
-Translations (P2)."
-  (when (and refs-file (file-readable-p refs-file) secnum)
+P1 (§5.58) aus dem §-Block herausgelöst; §5.60 verallgemeinert
+\(§- UND Vers-Referenzen, `--section-ref-bodies' /
+`--sentence-ref-bodies')."
+  (when (and refs-file (file-readable-p refs-file) heading-re)
     (condition-case nil
         (with-temp-buffer
           (insert-file-contents refs-file)
           (goto-char (point-min))
-          (when (re-search-forward
-                 (format "^\\*\\* §%d\\b" secnum) nil t)
+          (when (re-search-forward heading-re nil t)
             (let ((limit (save-excursion
                            (if (re-search-forward "^\\*\\* " nil t)
                                (line-beginning-position)
@@ -3131,6 +3137,68 @@ Translations (P2)."
                       (push (cons name body) bodies)))))
               (nreverse bodies))))
       (error nil))))
+
+(defun tibetan-cascade--section-ref-bodies (refs-file secnum)
+  "Die §-Referenzübersetzungen aus REFS-FILE für Lopez-§ SECNUM
+\(`** §N'-Subtree; siehe `tibetan-cascade--ref-bodies')."
+  (when secnum
+    (tibetan-cascade--ref-bodies refs-file
+                                 (format "^\\*\\* §%d\\b" secnum))))
+
+(defun tibetan-cascade--refs-file (source-file key)
+  "The reference file named by SOURCE-FILE's metadata KEY
+\(:section-refs / :sentence-refs), resolved relative to the source;
+nil when absent."
+  (let ((rel (and source-file
+                  (fboundp 'tibetan-analysis--read-source-metadata)
+                  (plist-get (tibetan-analysis--read-source-metadata
+                              source-file)
+                             key))))
+    (and rel (expand-file-name rel (file-name-directory
+                                    (expand-file-name source-file))))))
+
+(defun tibetan-cascade--sentence-ref-bodies (source-file sent-num)
+  "The per-SENTENCE reference translations of SENT-NUM: ((NAME . BODY)
+…) from the `#+TIBETAN_SENTENCE_REFS:' file of SOURCE-FILE (its
+`** Sentence N' subtree; §5.60, e.g. Dyczkowski 2023 for the
+Tantrāloka).  nil when absent."
+  (let ((f (tibetan-cascade--refs-file source-file :sentence-refs)))
+    (when (and f sent-num)
+      (tibetan-cascade--ref-bodies
+       f (format "^\\*\\* Sentence %d\\b" sent-num)))))
+
+(defun tibetan-cascade--refs-block (sentences source-file)
+  "The reference-translation context for the USER prompt of
+SENTENCES (walker plists) of SOURCE-FILE: the §-block of the first
+sentence's Section (Lopez/W&M, `--section-refs-block') plus the
+verse/sentence references of every sentence (§5.60, Carsten: auch
+Dyczkowski als Kontext, wie Lopez).  Context only — Claude is told
+not to copy.  nil when there is neither."
+  (let* ((sec (and sentences
+                   (tibetan-cascade--section-refs-block (car sentences)
+                                                        source-file)))
+         (verse (delq nil
+                      (mapcar
+                       (lambda (s)
+                         (let ((n (plist-get s :sent-num)))
+                           (mapconcat
+                            (lambda (nb)
+                              (format "=== %s — Sentence %d ===\n%s"
+                                      (car nb) n (cdr nb)))
+                            (tibetan-cascade--sentence-ref-bodies
+                             source-file n)
+                            "\n")))
+                       sentences)))
+         (verse (delete "" verse)))
+    (when (or sec verse)
+      (concat
+       (or sec "")
+       (when verse
+         (concat
+          "\n\nReference translation(s) of these verses/sentences "
+          "(context ONLY — a published translation; do NOT copy its "
+          "wording, and never reproduce it in your output sections):\n"
+          (mapconcat #'identity verse "\n")))))))
 
 (defun tibetan-cascade--pt-region ()
   "Bounds (START . END) des `* Provided Translations'-Bodys im
@@ -3172,11 +3240,14 @@ des aktuellen Buffers einsetzen; t bei Erfolg."
 
 ;;;###autoload
 (defun tibetan-cascade-materialize-provided-translations (target)
-  "Materialisiere die §-Referenzübersetzungen in TARGET (Satzdatei
+  "Materialisiere die Referenzübersetzungen in TARGET (Satzdatei
 oder analysis/-Ordner): jedes `*** <name>'-Kind des zugehörigen
 `** §N' der `#+TIBETAN_SECTION_REFS:'-Comparative (Lopez 2006,
-Wangjié & Mulligan, …; NIE Tibetisch/Wylie) wird als `** <name>'
-unter `* Provided Translations' der Satzdatei eingesetzt.
+Wangjié & Mulligan, …; NIE Tibetisch/Wylie) und — §5.60 — des
+`** Sentence N' der `#+TIBETAN_SENTENCE_REFS:'-Datei (Dyczkowski
+2023 beim Tantrāloka) wird als `** <name>' unter `* Provided
+Translations' der Satzdatei eingesetzt.  Neue Satzdateien
+materialisieren beim Anlegen selbst (`--create-file').
 
 EINMALIG (Carstens Entscheidung 09.10.): ein bereits vorhandener
 Slot wird nie angefasst — die Kopien sind danach editierbar (z. B.
@@ -3203,19 +3274,16 @@ die §5.54-Poison-Locks halten die Bodies aus Stitcher und
              (secnum (and source sent
                           (tibetan-cascade--sentence-lopez-section
                            source sent)))
-             (refs-rel (and secnum
-                            (fboundp 'tibetan-analysis--read-source-metadata)
-                            (plist-get
-                             (tibetan-analysis--read-source-metadata
-                              source)
-                             :section-refs)))
-             (refs-file (and refs-rel
-                             (expand-file-name
-                              refs-rel (file-name-directory
-                                        (expand-file-name source)))))
-             (bodies (and refs-file
-                          (tibetan-cascade--section-ref-bodies
-                           refs-file secnum))))
+             (refs-file (and secnum (tibetan-cascade--refs-file
+                                     source :section-refs)))
+             ;; §5.60: § refs (Lopez/W&M) AND verse refs (Dyczkowski).
+             (bodies (append
+                      (and refs-file
+                           (tibetan-cascade--section-ref-bodies
+                            refs-file secnum))
+                      (and source sent
+                           (tibetan-cascade--sentence-ref-bodies
+                            source sent)))))
         (if (not bodies)
             (cl-incf missing)
           (let ((buf (tibetan-fresh-file-buffer file))
@@ -3243,7 +3311,7 @@ die §5.54-Poison-Locks halten die Bodies aus Stitcher und
                   (progn (save-buffer) (cl-incf written))
                 (cl-incf skipped)))))))
     (when (called-interactively-p 'any)
-      (message "Provided Translations: %d Datei(en) befüllt, %d übersprungen, %d ohne §-Referenzen"
+      (message "Provided Translations: %d Datei(en) befüllt, %d übersprungen, %d ohne Referenzen"
                written skipped missing))
     (list :written written :skipped skipped :missing missing)))
 
