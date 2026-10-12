@@ -132,5 +132,121 @@ nicht mehr von selbst."
               (should-not calls))))
       (tibetan-fetch-test--cleanup buf))))
 
+;; ----------------------------------------------------------------------------
+;; A2 — C-c u G fetches on demand
+;; ----------------------------------------------------------------------------
+
+(defmacro tibetan-fetch-test--with-cascade-source (&rest body)
+  "Visit a cascade source (Section §167: Sentences 4, 5; Section §168:
+Sentence 6); bind SRC, ANALYSIS; FIRED collects the sent-nums
+`tibetan-cascade--fire-sentence' saw (stubbed, never the network).
+Both auto-fire switches are OFF — fetching must not depend on them."
+  (declare (indent 0))
+  `(let* ((dir (make-temp-file "fetch-src-" t))
+          (src (expand-file-name "doc.org" dir))
+          (analysis (expand-file-name "analysis" dir))
+          (fired '())
+          (tibetan-auto-fire-claude-on-create nil)
+          (tibetan-auto-fire-dm-on-create nil))
+     (unwind-protect
+         (progn
+           (with-temp-file src
+             (insert "#+TITLE: D\n#+TIBETAN_LAYOUT: cascade\n\n"
+                     "* Tibetan Text\n"
+                     "** Section §167\n"
+                     ":PROPERTIES:\n:LOPEZ_SECTION: 167\n:END:\n\n"
+                     "*** Sentence 4\n"
+                     "**** Segment 105\nབདག་གིས་ལས་བྱས།\n\n"
+                     "*** Sentence 5\n"
+                     "**** Segment 107\nམཐའ་མ་འདི་ཡིན།\n\n"
+                     "** Section §168\n"
+                     "*** Sentence 6\n"
+                     "**** Segment 108\nལམ་འདི་ཡིན།\n\n"))
+           (cl-letf (((symbol-function 'tibetan-analysis-generate-content)
+                      (lambda (text &rest _)
+                        (format "** Wylie Transliteration\nW(%s)\n\n" text)))
+                     ((symbol-function 'tibetan-cascade--fire-sentence)
+                      (lambda (sentence &rest _)
+                        (push (plist-get sentence :sent-num) fired)
+                        'fired)))
+             (let ((buf (find-file-noselect src)))
+               (unwind-protect
+                   (with-current-buffer buf ,@body)
+                 (with-current-buffer buf (set-buffer-modified-p nil))
+                 (kill-buffer buf)))))
+       (dolist (b (buffer-list))
+         (when (and (buffer-file-name b)
+                    (string-prefix-p dir (buffer-file-name b)))
+           (with-current-buffer b (set-buffer-modified-p nil))
+           (kill-buffer b)))
+       (delete-directory dir t))))
+
+(ert-deftest tibetan-fetch-section-fetches-subtree ()
+  "C-c u G auf `** Section §167': fehlende Dateien als Rumpf anlegen,
+jeden unvollständigen Satz NUR dieses Subtrees abholen — unabhängig
+von den (ausgeschalteten) Auto-Fire-Schaltern."
+  (tibetan-fetch-test--with-cascade-source
+    (goto-char (point-min))
+    (re-search-forward "^\\*\\* Section §167")
+    (let ((r (tibetan-fetch)))
+      (should (equal '(4 5) (sort fired #'<)))
+      (should (= 2 (plist-get r :fired)))
+      (should (= 2 (length (directory-files analysis nil "\\`sent-")))))))
+
+(ert-deftest tibetan-fetch-at-verse-fetches-one ()
+  "Im Vers (Segment-Zeile) holt C-c u G genau diesen Satz; in seiner
+Analysedatei ebenso."
+  (tibetan-fetch-test--with-cascade-source
+    (goto-char (point-min))
+    (re-search-forward "^མཐའ་མ")
+    (tibetan-fetch)
+    (should (equal '(5) fired))
+    (setq fired nil)
+    (let ((buf (find-file-noselect
+                (car (directory-files analysis t "\\`sent-005")))))
+      (with-current-buffer buf (tibetan-fetch))
+      (should (equal '(5) fired)))))
+
+(ert-deftest tibetan-fetch-skips-complete-sentences ()
+  "Vollständige Sätze werden nicht abgeholt (das geteilte Gate
+`--sentence-needs-fire-p' entscheidet — dieselbe Zahl wie in der
+Rückfrage)."
+  (tibetan-fetch-test--with-cascade-source
+    (cl-letf (((symbol-function 'tibetan-cascade--sentence-needs-fire-p)
+               (lambda (file _segs) (string-match-p "sent-005" file))))
+      (goto-char (point-min))
+      (re-search-forward "^\\* Tibetan Text")
+      (let ((r (tibetan-fetch)))
+        (should (equal '(5) fired))
+        (should (= 2 (plist-get r :complete)))))))
+
+(ert-deftest tibetan-fetch-asks-above-threshold ()
+  "Über `tibetan-cascade-subtree-confirm-threshold' fragt C-c u G mit
+der Anzahl (API-Kosten!); „n“ → kein Abruf (die Rümpfe bleiben)."
+  (tibetan-fetch-test--with-cascade-source
+    (let ((tibetan-cascade-subtree-confirm-threshold 1)
+          (prompt nil))
+      (cl-letf (((symbol-function 'y-or-n-p)
+                 (lambda (p) (setq prompt p) nil)))
+        (goto-char (point-min))
+        (re-search-forward "^\\* Tibetan Text")
+        (tibetan-fetch))
+      (should (and prompt (string-match-p "\\b3\\b" prompt)))
+      (should-not fired)
+      (should (= 3 (length (directory-files analysis nil "\\`sent-")))))))
+
+(ert-deftest tibetan-fetch-two-file-source-points-to-cu-r ()
+  "Zwei-Datei-Quellen (Vorsemester) haben kein Abholen — die Meldung
+verweist auf C-c u R."
+  (let ((buf (tibetan-fetch-test--visit
+              "#+TITLE: T\n\n* Text\n*** Segment 1\nབདག་གིས་ལས་བྱས།\n")))
+    (unwind-protect
+        (with-current-buffer buf
+          (goto-char (point-min))
+          (re-search-forward "^\\*\\*\\* Segment 1")
+          (let ((err (should-error (tibetan-fetch) :type 'user-error)))
+            (should (string-match-p "C-c u R" (cadr err)))))
+      (tibetan-fetch-test--cleanup buf))))
+
 (provide 'tibetan-fetch-test)
 ;;; tibetan-fetch-test.el ends here

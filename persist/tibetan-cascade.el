@@ -2407,6 +2407,88 @@ beides Fehlermeldungen statt Analyse."
       (list :sentences (length sentences) :created created))))
 
 ;;;###autoload
+(defun tibetan-cascade-fetch (scope)
+  "Fetch Claude + DharmaMitra for the sentences of SCOPE (§5.60).
+SCOPE is a `tibetan-cascade--scope-at-point' plist.  Missing cascade
+files are created first (the AI-free skeleton); then every sentence
+whose slots are still incomplete — the shared A0 gate
+`--sentence-needs-fire-p', so the count asked about is exactly what
+fires — gets ONE sentence-level request (FORCE nil: landed content is
+never overwritten; the queue throttles, claim/dedup prevents doubles,
+the leaf still defers under #+TIBETAN_DEFER_MT).  Independent of the
+auto-fire switches — this IS the explicit request.  More than
+`tibetan-cascade-subtree-confirm-threshold' → `y-or-n-p' with the
+count.  Returns (:sentences N :created N :fired N :complete N)."
+  (let* ((src (plist-get scope :source))
+         (label (plist-get scope :label))
+         (nums (plist-get scope :sent-nums))
+         (sentences (cl-remove-if-not
+                     (lambda (s) (memq (plist-get s :sent-num) nums))
+                     (with-temp-buffer
+                       (insert-file-contents src)
+                       (org-mode)
+                       (tibetan-cascade--collect-sentences))))
+         (folder (file-name-as-directory
+                  (expand-file-name "analysis" (file-name-directory src))))
+         (created (tibetan-cascade--ensure-files src sentences))
+         (todo (cl-remove-if-not
+                (lambda (s)
+                  (tibetan-cascade--sentence-needs-fire-p
+                   (tibetan-sentence--filepath (plist-get s :sent-num)
+                                               folder src)
+                   (mapcar #'car (plist-get s :segs))))
+                sentences))
+         (go (and todo
+                  (or (<= (length todo)
+                          tibetan-cascade-subtree-confirm-threshold)
+                      (y-or-n-p
+                       (format "%s: %d Sätze an Claude + DharmaMitra senden? "
+                               label (length todo))))))
+         (fired 0))
+    (when go
+      (dolist (s todo)
+        (condition-case err
+            (when (eq 'fired
+                      (tibetan-cascade--fire-sentence
+                       (tibetan-cascade--fire-plist
+                        (plist-get s :sent-num) (plist-get s :segs))
+                       src folder))
+              (cl-incf fired))
+          (error (message "Abruf übersprungen (Satz %s): %s"
+                          (plist-get s :sent-num)
+                          (error-message-string err))))))
+    (message "%s: %d Satz/Sätze — %d angelegt, %d abgerufen, %d vollständig%s"
+             label (length sentences) created fired
+             (- (length sentences) (length todo))
+             (if (and todo (not go)) " (Abruf abgelehnt)" ""))
+    (list :sentences (length sentences) :created created
+          :fired fired :complete (- (length sentences) (length todo)))))
+
+;;;###autoload
+(defun tibetan-fetch ()
+  "C-c u G: fetch Claude + DharmaMitra for the unit at point (§5.60).
+In a cascade source: the sentence at point, or every sentence under
+the heading at point (§, Section, group, `* Tibetan Text'); in a
+sent-NNN analysis buffer: that sentence.  Only what is still missing
+is fetched (`tibetan-cascade-fetch').  Since §5.60 C-c u A only
+creates/opens — this is THE way AI content arrives (C-u C-c u R
+re-fires explicitly, overwriting)."
+  (interactive)
+  (let ((file (buffer-file-name)))
+    (when (and file
+               (not (string-match-p "\\`sent-[0-9]"
+                                    (file-name-nondirectory file)))
+               (not (tibetan-analysis--cascade-p file)))
+      (user-error
+       "C-c u G holt nur für Kaskaden-Quellen ab; in %s feuert C-c u R (Neuanalyse) Claude/DharmaMitra"
+       (file-name-nondirectory file)))
+    (let ((scope (tibetan-cascade--scope-at-point)))
+      (unless (tibetan-analysis--cascade-p (plist-get scope :source))
+        (user-error
+         "C-c u G holt nur für Kaskaden-Quellen ab; hier feuert C-c u R (Neuanalyse)"))
+      (tibetan-cascade-fetch scope))))
+
+;;;###autoload
 (defun tibetan-cascade-reanalyze-subtree (source-file &optional force)
   "C-c u R on a heading ABOVE sentence level of the cascade SOURCE-FILE.
 Mirrors C-c u R on a sentence (`tibetan-sentence-reanalyze', A1

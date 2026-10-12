@@ -70,7 +70,10 @@
     "---"
     ("Persistent Analysis"
      ["Open/Create Analysis (C-c u A)" tibetan-open-segment-analysis
-      :help "Open or create persistent analysis file for current segment"]
+      :help "Open or create the analysis (no AI since §5.60); on a heading: skeletons for every sentence below"]
+     ["Fetch Claude + DharmaMitra (C-c u G)" tibetan-fetch
+      :active (fboundp 'tibetan-fetch)
+      :help "Fetch the missing AI content for the sentence at point or every sentence under the heading at point"]
      ["Re-analyze Segment (C-c u R)" tibetan-reanalyze-segment
       :help "Regenerate analysis while preserving your notes"]
      ["Toggle Class View — fold reference sections (C-c u f)" tibetan-analysis-toggle-class-view t]
