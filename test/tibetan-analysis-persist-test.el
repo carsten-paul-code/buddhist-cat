@@ -4254,5 +4254,27 @@ POPULATED non-nil means `needs-request-p' reports a filled slot.
       (tibetan-analysis--maybe-fire-dm-for-par "/tmp/par-220.org" "ཀུན་རྫོབ།" t)
       (should (null fired)))))
 
+(ert-deftest tibetan-analysis-comparison-hint-names-bound-key ()
+  "The hint written into `* Translation Comparison' must name the key
+that actually refreshes it.  C-c u T is translate-region; the refresh
+lives on C-c u c (keybindings note) — the hint said C-c u T."
+  (let* ((dir (make-temp-file "ttest-cmp-hint-" t))
+         (file (expand-file-name "par-007.org" dir)))
+    (unwind-protect
+        (progn
+          (with-temp-file file
+            (insert "#+TITLE: par 7\n\n* Reference Translations\n** Lopez\nx\n"))
+          (tibetan-analysis--write-comparison-section file "| a | 1 |" "Diag.")
+          (let ((txt (with-temp-buffer (insert-file-contents file)
+                                       (buffer-string))))
+            (should (string-match-p "Refresh via C-c u c\\." txt))
+            (should-not (string-match-p "C-c u T" txt))))
+      (dolist (b (buffer-list))
+        (when (and (buffer-file-name b)
+                   (string-prefix-p dir (buffer-file-name b)))
+          (with-current-buffer b (set-buffer-modified-p nil))
+          (kill-buffer b)))
+      (delete-directory dir t))))
+
 (provide 'tibetan-analysis-persist-test)
 ;;; tibetan-analysis-persist-test.el ends here

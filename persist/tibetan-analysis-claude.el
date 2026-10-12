@@ -1140,7 +1140,7 @@ it cleanly."
 ;; explaining substantive divergences, and writes the result back
 ;; into the file as an org-table + prose.
 ;;
-;; Bound to `C-c u T'.  Separate from `C-c u R' (reanalyze) so the
+;; Bound to `C-c u c'.  Separate from `C-c u R' (reanalyze) so the
 ;; matrix doesn't get silently overwritten — it's an explicit
 ;; comparison snapshot the user requests.
 
@@ -1316,7 +1316,7 @@ canonical position.  Idempotent."
              (concat
               "* Translation Comparison\n"
               "# Pairwise content + grammatical similarity (0 = "
-              "incomparable, 1 = identical).  Refresh via C-c u T.\n\n"
+              "incomparable, 1 = identical).  Refresh via C-c u c.\n\n"
               (when matrix-org (concat matrix-org "\n\n"))
               (when diagnostic (concat diagnostic "\n\n")))))
         (insert block))
@@ -1329,7 +1329,7 @@ Collects all available translations (Lopez, Wangjié, future
 Mitra, plus the user's `* Working Translation' if non-empty),
 asks Claude to score them pairwise (0 = incomparable, 1 =
 identical) and explain divergences, and rewrites the section.
-Bound to `C-c u T'.
+Bound to `C-c u c'.
 
 Requires gptel + a configured Anthropic API key.  Errors are
 surfaced via `message' rather than signalled."
