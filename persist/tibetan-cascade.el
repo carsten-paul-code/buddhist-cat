@@ -968,8 +968,8 @@ PT-Rest ohne DM/Particles-Duplikate).  Dazu wie gehabt: die drei
 User-L1-Slots, populierte ⟦N⟧-Renderings der noch vorhandenen
 Segmente, editierte Gloss Tables (§5.54-Hash, T4-kanonisch) und
 jede UNBEKANNTE L1-Sektion verbatim (§5.38-H2).  Placeholders
-regenerate freshly.  Idempotent modulo LAST_ANALYZED.  Returns
-FILEPATH."
+regenerate freshly; `#+CREATED:' keeps its date.  Idempotent
+modulo LAST_ANALYZED.  Returns FILEPATH."
   (let* ((keep-l1
           (cl-remove-if-not
            #'cdr
@@ -1003,7 +1003,15 @@ FILEPATH."
          (edited-gloss-tables
           (let ((state (tibetan-cascade--read-gloss-tables filepath)))
             (and (tibetan-cascade--gloss-tables-edited-p state) state)))
-         (unknown (tibetan-cascade--collect-unknown-l1-sections filepath)))
+         (unknown (tibetan-cascade--collect-unknown-l1-sections filepath))
+         ;; §5.61-Nachtrag: the creation date survives regenerate (it
+         ;; used to be re-stamped with today on every run).
+         (created (with-temp-buffer
+                    (insert-file-contents filepath nil 0 4096)
+                    (goto-char (point-min))
+                    (and (re-search-forward
+                          "^#\\+CREATED:[ \t]*\\(.+\\)$" nil t)
+                         (string-trim (match-string 1))))))
     (with-temp-buffer
       ;; C-für-Cascade (2026-09-15): render the Reading lines with
       ;; the file's own preserved Claude Vocabulary in scope, so
@@ -1047,6 +1055,11 @@ FILEPATH."
                             collect (cons (string-trim text)
                                           (cdr entry))))))))
         (insert (tibetan-cascade--scaffold sent-num segs source-file)))
+      (when created
+        (save-excursion
+          (goto-char (point-min))
+          (when (re-search-forward "^#\\+CREATED:.*$" nil t)
+            (replace-match (concat "#+CREATED: " created) t t))))
       (when edited-gloss-tables
         (tibetan-cascade--restore-gloss-tables-in-buffer
          edited-gloss-tables))

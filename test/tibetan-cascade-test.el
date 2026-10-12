@@ -582,6 +582,27 @@ predicate flips."
       (insert body "\n\n"))
     (write-region (point-min) (point-max) file nil 'silent)))
 
+(ert-deftest tibetan-cascade-regenerate-keeps-created-date ()
+  "§5.61-Nachtrag (Bug, beim sa-Neu-Rendern 12.10. gefunden): das
+Regenerate setzte `#+CREATED:' auf HEUTE — Rgyan-Satz 1 wanderte so
+von 2026-08-11 über 09-15 und 10-07 auf 10-09; das Anlagedatum war
+verloren.  Es muss erhalten bleiben (LAST_ANALYZED darf wandern)."
+  (tibetan-cascade-test--with-cascade-file
+    (with-temp-buffer
+      (insert-file-contents cascade-file)
+      (goto-char (point-min))
+      (re-search-forward "^#\\+CREATED: .*$")
+      (replace-match "#+CREATED: 2026-01-01")
+      (write-region (point-min) (point-max) cascade-file nil 'silent))
+    (tibetan-cascade--regenerate
+     cascade-file 4 '((105 . "བདག་གིས་ལས་བྱས། ") (106 . "ཆོས་ཟབ་མོ་ཡིན།"))
+     (expand-file-name "doc.org" dir))
+    (let ((s (with-temp-buffer (insert-file-contents cascade-file)
+                               (buffer-string))))
+      (should (string-match-p "^#\\+CREATED: 2026-01-01$" s))
+      (should (= 1 (cl-count-if (lambda (l) (string-prefix-p "#+CREATED:" l))
+                                (split-string s "\n")))))))
+
 (ert-deftest tibetan-cascade-regenerate-preserves-everything ()
   "Regenerate rebuilds the deterministic sections but preserves: user
 slots, populated sentence-level Claude/DM bodies, populated
