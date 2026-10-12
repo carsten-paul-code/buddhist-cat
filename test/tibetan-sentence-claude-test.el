@@ -408,6 +408,40 @@ single-segment sentences → nil (caller falls back to per-segment)."
       (tibetan-sentence-claude-clear-inflight)
       (delete-directory dir t))))
 
+(defvar gptel-max-tokens)
+
+(ert-deftest tibetan-sentence-claude-request-sets-max-tokens ()
+  "§5.61 (Bug): der Satz-/Kaskaden-Request lief ohne eigenes
+Antwortlimit — gptel-anthropic schickt dann `max_tokens' 4096
+\(gptel-anthropic.el: (or gptel-max-tokens 4096)).  Eine Satz-
+Antwort mit Übersetzung, Vokabular, Grammatik, Partikeln und Concept
+Notes über fünf Segmente reißt daran ab (sent-654, B4-Befund) — und
+die ausführliche Sanskrit-Grammatik bräuchte noch mehr.  Der Request
+muss `tibetan-claude-max-tokens' setzen."
+  (let ((seen 'unset)
+        (added (not (featurep 'gptel))))
+    (when added (provide 'gptel))
+    (unwind-protect
+        (cl-letf (((symbol-function 'tibetan-claude-queue-submit)
+                   (lambda (job &rest _) (funcall job #'ignore)))
+                  ((symbol-function 'tibetan-sentence-claude--build-prompts)
+                   (lambda (&rest _) (cons "SYS" "USER")))
+                  ((symbol-function 'tibetan-analysis--ensure-gptel-ready)
+                   (lambda () t))
+                  ((symbol-function 'gptel-request)
+                   (lambda (&rest _)
+                     (setq seen (and (boundp 'gptel-max-tokens)
+                                     gptel-max-tokens))
+                     nil)))
+          (tibetan-sentence-claude--request
+           (list :sent-num 4 :seg-nums '(105))
+           nil "/tmp/none-sent-004.org" "/tmp/none-doc.org" "/tmp/" nil
+           'cascade)
+          (should (integerp seen))
+          (should (= seen tibetan-claude-max-tokens))
+          (should (> tibetan-claude-max-tokens 4096)))
+      (when added (setq features (delq 'gptel features))))))
+
 (ert-deftest tibetan-sentence-claude-declines-parallel-sanskrit-doc ()
   "A2 (2026-09-24): ein `#+SOURCE_MODE: parallel-sanskrit'-Dokument
 behält seine Drei-Call-Kette — der Sentence-First-Dispatcher muss

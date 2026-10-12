@@ -61,6 +61,8 @@
 ;;; Code:
 
 (require 'cl-lib)
+(defvar gptel-max-tokens)            ; bound per request (§5.61)
+(defvar tibetan-claude-max-tokens)
 (require 'md5)
 (require 'tibetan-utils)                 ; tibetan-fresh-file-buffer
 (require 'tibetan-claude-queue nil t)
@@ -1361,7 +1363,8 @@ surfaced via `message' rather than signalled."
                (tibetan-analysis--ensure-gptel-ready)
                (let* ((prompts (tibetan-analysis--build-comparison-prompts
                                 tibetan-text translations))
-                      (gptel-cache '(system)))
+                      (gptel-cache '(system))
+                      (gptel-max-tokens tibetan-claude-max-tokens))
                  (gptel-request
                   (cdr prompts)
                   :system (car prompts)
@@ -1884,7 +1887,8 @@ after a `message'."
                     ;; request; savings compound from request 2 on.
                     ;; See gptel-anthropic.el line ~213 for the
                     ;; `cache_control: {"type": "ephemeral"}' wiring.
-                    (gptel-cache '(system)))
+                    (gptel-cache '(system))
+                    (gptel-max-tokens tibetan-claude-max-tokens))
                (gptel-request
                 user-prompt
                 :system system-prompt

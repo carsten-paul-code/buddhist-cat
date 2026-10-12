@@ -26,6 +26,8 @@
 ;;; Code:
 
 (require 'cl-lib)
+(defvar gptel-max-tokens)            ; bound per request (§5.61)
+(defvar tibetan-claude-max-tokens)
 (require 'tibetan-analysis-claude nil t)
 
 ;; ----------------------------------------------------------------------------
@@ -681,7 +683,8 @@ and the handler routes to `tibetan-cascade--land-chunk-response'."
                           sentence source-file)
                        (tibetan-sentence-claude--build-prompts
                         sentence source-file folder)))
-                    (gptel-cache '(system)))
+                    (gptel-cache '(system))
+                    (gptel-max-tokens tibetan-claude-max-tokens))
                (gptel-request
                 (cdr prompts)
                 :system (car prompts)

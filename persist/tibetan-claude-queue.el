@@ -74,6 +74,17 @@
   :group 'tibetan-cat
   :prefix "tibetan-claude-queue-")
 
+(defcustom tibetan-claude-max-tokens 16000
+  "Response budget (`max_tokens') of every analysis request to Claude.
+§5.61 (2026-10-12): unset, gptel-anthropic sends 4096 — a sentence-
+level answer (translation, vocabulary, grammar, particles, concept
+notes over several segments) runs past that and arrives cut off
+\(sent-654, the B4 truncation stub); the detailed Sanskrit grammar
+needs even more.  Billing follows the tokens actually produced, not
+this ceiling.  Bound as `gptel-max-tokens' at each request site."
+  :type 'integer
+  :group 'tibetan-cat)
+
 (defcustom tibetan-claude-queue-concurrency 3
   "Maximum number of Claude API requests in flight at once.
 Lower this if you still see HTTP 429 (rate-limited) errors during

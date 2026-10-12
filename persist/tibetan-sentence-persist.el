@@ -56,6 +56,8 @@
 ;;; Code:
 
 (require 'cl-lib)
+(defvar gptel-max-tokens)            ; bound per request (§5.61)
+(defvar tibetan-claude-max-tokens)
 ;; Only require org when not in batch mode (can hang in batch).
 (unless noninteractive
   (require 'org))
@@ -1352,7 +1354,8 @@ no request is queued — returns nil after a `message'."
                     ;; in `tibetan-analysis--request-claude-translation'.
                     ;; 5-min TTL; per-batch savings compound from the
                     ;; second request onward.
-                    (gptel-cache '(system)))
+                    (gptel-cache '(system))
+                    (gptel-max-tokens tibetan-claude-max-tokens))
                (gptel-request
                 user-prompt
                 :system system-prompt
