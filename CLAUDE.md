@@ -3,7 +3,12 @@
 This file briefs Claude Code (or any other Claude surface) picking up
 work on **tibetan-cat.el**, Carsten Paul's Emacs-Lisp Computer-Assisted
 Translation (CAT) system for Classical Tibetan. Read it in full before
-editing. Last updated 2026-10-12 (§5.60: KI NUR AUF ABRUF — C-c u A
+editing. Last updated 2026-10-12 (§5.61: SANSKRIT-ANALYSE — sa-Satzdateien
+tragen `* Sanskrit Analysis', ausführliche Grammatik je Segment (Sandhi /
+Nominal- / Verbalformen / Komposita / Syntax), eigenes Antwortlimit
+16000 statt gptels 4096 (wahrscheinliche Ursache der sent-654-
+Abschneidung), Regenerate erhält #+CREATED; ERT 2489.  Previous:
+§5.60: KI NUR AUF ABRUF — C-c u A
 legt an/öffnet überall ohne Fire (Auto-Fire-Schalter Default nil, auch
 Zwei-Datei-Öffner), C-c u G holt Claude + DharmaMitra; Vers-Referenzen
 #+TIBETAN_SENTENCE_REFS (Dyczkowski für das Tantrāloka) im Rumpf +
@@ -3987,6 +3992,37 @@ migrieren beim nächsten Regenerate (editierte `** Gloss Tables`
 bleiben per §5.54-Schutz stehen).  Suite 2339 → **2345 ERT**
 (0 unexpected, 1 skip); BDD 250; compile clean; REFERENCE.org je
 def-Commit.
+
+### 5.61 Sanskrit-Analyse: Überschrift, ausführliche Grammatik, Antwortlimit (done, 2026-10-12)
+
+Carsten (12.10., Tantrāloka): „Tibetan Analysis als Überschrift ist
+hier falsch" und „da mein Sanskrit sehr schwach ist, wäre eine
+ausführlichere Grammatik-Erklärung (Sandhis, Geschlecht, Stamm,
+Deklination, Verbform …) sehr willkommen".  Commits `d3e54ae` …
+`1014a6c`.
+
+- **Antwortlimit** (`d3e54ae`, Bug): das Tool setzte nie
+  `max_tokens'; gptel-anthropic schickt dann 4096.  Neu
+  `tibetan-claude-max-tokens' (16000, tibetan-claude-queue.el) als
+  `gptel-max-tokens' an allen vier Request-Stellen gebunden.
+  Wahrscheinliche Ursache der abgeschnittenen sent-654-Antwort (B4).
+- **`* Sanskrit Analysis'** (`0698593`): Scaffold nach Quellsprache;
+  `tibetan-analysis--cascade-analysis-heading-re' (beide Namen) NUR in
+  Kaskaden-v2-Pfaden — Zwei-Datei-Parallel-Dateien tragen ein ANDERES
+  `* Sanskrit Analysis' (§5.17) über ihrem `* Tibetan Analysis';
+  `--claude-segment-layout-p' erkennt v2 zusätzlich an `* Translation';
+  `Sanskrit Analysis' in `--known-l1-sections' → Regenerate migriert.
+- **Ausführliche sa-Grammatik** (`93726b0`): `## Grammar' des
+  sa-Kontrakts didaktisch („reader with WEAK Sanskrit"), je Segment
+  *Sandhi:* / *Nominal forms:* / *Verbal forms:* / *Compounds:* /
+  *Syntax:*.  Das Handout zeigt bei sa alle (Fallback des Filters).
+  Achtung: Grammar ist NICHT Teil des Fire-Gates — bereits gelandete
+  Verse (TĀ 1.1) bekommen die neue Grammatik nur per C-u C-c u R.
+- **#+CREATED** (`1014a6c`, Bug): Regenerate stempelte das
+  Anlagedatum mit heute (Rgyan sent-001: 08-11 → … → 10-09);
+  jetzt erhalten.
+Korpus `56ae20d': Tantrāloka 332 + MAv-sa 1 neu gerendert (nur
+Überschrift).
 
 ### 5.60 KI nur auf Abruf (C-c u G) · Vers-Referenzen · Tantrāloka-Rümpfe (done, 2026-10-12)
 
