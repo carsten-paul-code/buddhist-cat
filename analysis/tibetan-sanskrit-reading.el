@@ -48,6 +48,8 @@ romanized |/|| of many e-texts) plus Western sentence punctuation.")
   "UNIT-TEXT (IAST) as a list of surface word strings.
 Whitespace-split; daṇḍas (।/॥ and romanized |/||) and clinging
 punctuation are stripped; empty results drop.  nil-safe.
+Verse numbers (GRETIL `// 1', `// 136c /', Devanagari `॥ ४ ॥') are
+no words and drop too — an IAST word never starts with a digit.
 
 NOTE: the avagraha apostrophe is IAST-meaningful (so \\='pi) — only
 EDGE punctuation is stripped, and a leading apostrophe followed by
@@ -67,7 +69,9 @@ a letter survives via the word-character check."
                  (setq w (replace-regexp-in-string
                           (concat "\\`" tibetan-sanskrit-reading--punct-re)
                           "" w)))
-               (and (not (string-empty-p w)) w)))
+               (and (not (string-empty-p w))
+                    (not (string-match-p "\\`[0-9०-९]+[a-z]?\\'" w))
+                    w)))
            (split-string unit-text "[ \t\n]+" t)))))
 
 (defun tibetan-sanskrit-reading-parse-word-analysis (body)

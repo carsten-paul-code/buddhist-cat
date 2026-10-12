@@ -34,6 +34,21 @@ na svataḥ
                             tibetan-sanskrit-reading-test--wa-md)
   "The same body in the landed org form (`*** Segment N').")
 
+(ert-deftest tibetan-sanskrit-reading-surface-tokenize-drops-verse-numbers ()
+  "§5.59-Nachtrag (Tantrāloka, 12.10.): GRETIL-Verse enden auf
+`// 1' (auch `// 136c /').  Die Versnummer ist kein Wort — sie darf
+keine Glossentabellen-Spalte und keinen Vokabel-Schlüssel bilden.
+Sanskritwörter in IAST beginnen nie mit einer Ziffer."
+  (should (equal '("hṛdayam" "mama" "sasphuratāt")
+                 (tibetan-sanskrit-reading--tokenize-surface
+                  "hṛdayam mama sasphuratāt // 1")))
+  (should (equal '("tām")
+                 (tibetan-sanskrit-reading--tokenize-surface
+                  "tām // 136c /")))
+  (should (equal '("dharmāṇāṃ")
+                 (tibetan-sanskrit-reading--tokenize-surface
+                  "dharmāṇāṃ ॥ ४ ॥"))))
+
 (ert-deftest tibetan-sanskrit-reading-surface-tokenize-strips-danda ()
   "Whitespace split; daṇḍas (Unicode und romanisiert) und
 anhängende Interpunktion fallen weg."
