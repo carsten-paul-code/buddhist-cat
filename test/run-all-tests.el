@@ -158,6 +158,10 @@ body in the test suite (the transport self-tests only).")
 ;; migration and then the thesaurus tests retire.
 (condition-case nil (require 'tibetan-zettel-test) (error nil))
 
+;; Zettel highlighting (2026-10-18) — words with a zettel are underlined
+;; and linked in CAT source and analysis buffers; index from skos_index.py.
+(condition-case nil (require 'tibetan-zettel-highlight-test) (error nil))
+
 ;; Sanskrit-parallel reading workflow (Phase 1, 2026-04-27) — walker
 ;; that extracts the `**** Sanskrit' sibling next to a `**** Segment',
 ;; plus the `#+SOURCE_MODE: parallel-sanskrit' source-mode predicate.
