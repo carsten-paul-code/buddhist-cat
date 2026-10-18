@@ -205,6 +205,7 @@
 ;; ============================================================================
 
 (require 'tibetan-doc-display)         ; Display settings for prepared documents
+(require 'tibetan-zettel-highlight)    ; Words that have a zettel: underlined + linked (2026-10-18)
 (require 'tibetan-doc-format nil t)    ; Document formatting (segmentation at shad)
 (require 'tibetan-ocr-validate nil t)  ; OCR syllable validator (depends on data/dictionaries)
 (require 'tibetan-ocr-correct nil t)   ; Claude-driven OCR correction
@@ -439,6 +440,10 @@ removed when the server is stopped)."
   "Open the zettelkasten entry for the Wylie term under point.
 
 Tries (in order):
+  0. A word marked by `tibetan-zettel-highlight-mode' (text property
+     `tibetan-zettel-id'): opens that zettel directly, routed by
+     `tibetan-zettel-highlight-open' (Research via shared-route when
+     loaded) — Sanskrit and Tibetan alike (2026-10-18).
   1. `tibetan-thesaurus--wylie-at-point' to read a `[wylie]'-bracket
      token from the current line (Detailed Dictionary / Interlinear
      Gloss layout).
@@ -460,6 +465,9 @@ When the lookup returns nil (no zettel for that Wylie), prompts the
 user whether to create one and (if confirmed) delegates to `denote'
 in the appropriate instance."
   (interactive "P")
+  (if-let* ((ids (and (fboundp 'tibetan-zettel-highlight-ids-at-point)
+                      (tibetan-zettel-highlight-ids-at-point))))
+      (tibetan-zettel-highlight-open ids)
   (require 'tibetan-zettel)
   (require 'server)
   (let* ((wylie (or (and (fboundp 'tibetan-thesaurus--wylie-at-point)
@@ -499,7 +507,7 @@ in the appropriate instance."
           (denote wylie))
          (t
           (message "denote not loaded — cannot create zettel for '%s'"
-                   wylie))))))))
+                   wylie)))))))))
 
 ;; Bound under the CAT prefix `C-c u' (lowercase u) which CAT-tool owns.
 ;; `Z' uppercase to distinguish from `z' (already taken by thesaurus

@@ -146,6 +146,14 @@
      ["Reload Zettel Index (C-c u z r)" tibetan-thesaurus-reload
       :help "Force rebuild of the zettel lookup table (automatic after any edit; use when edits happened outside Emacs)"
       :active (fboundp 'tibetan-thesaurus-reload)]
+     "---"
+     ["Highlight Words with Zettel (C-c u z h)" tibetan-zettel-highlight-mode
+      :help "Underline every word that has a zettel in this source or analysis buffer; RET / click opens it (Research instance when running)"
+      :style toggle :selected (bound-and-true-p tibetan-zettel-highlight-mode)
+      :active (fboundp 'tibetan-zettel-highlight-mode)]
+     ["Rebuild Highlight Index (C-c u z H)" tibetan-zettel-highlight-reload
+      :help "Run skos_index.py over the zettelkasten and refontify every highlighting buffer"
+      :active (fboundp 'tibetan-zettel-highlight-reload)]
      ["Initialize from Kramer Glossary (C-c u z i)" tibetan-thesaurus-initialize-from-kramer
       :help "One-time: import Kramer's printed glossary (*kramer-glossary*.org) into the zettelkasten as seed entries"
       :active (fboundp 'tibetan-thesaurus-initialize-from-kramer)]

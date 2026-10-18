@@ -413,6 +413,13 @@
   ;; only — back-link removal is irreversible without grep-bisecting
   ;; history, so we never auto-fire this.  `G' for Garbage-collect.
 
+;; Zettel highlighting (2026-10-18): words that have a zettel are
+;; underlined and linked in CAT source + analysis buffers.  `h' toggles
+;; the buffer-local mode, `H' rebuilds the index (skos_index.py) and
+;; refontifies every mode buffer.
+(define-key tibetan-thesaurus-prefix-map (kbd "h") 'tibetan-zettel-highlight-mode)
+(define-key tibetan-thesaurus-prefix-map (kbd "H") 'tibetan-zettel-highlight-reload)
+
 (global-set-key (kbd "C-c u z") tibetan-thesaurus-prefix-map)
 
 ;; ============================================================================
