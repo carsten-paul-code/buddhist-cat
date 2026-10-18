@@ -3,7 +3,12 @@
 This file briefs Claude Code (or any other Claude surface) picking up
 work on **tibetan-cat.el**, Carsten Paul's Emacs-Lisp Computer-Assisted
 Translation (CAT) system for Classical Tibetan. Read it in full before
-editing. Last updated 2026-10-12 (§5.62: ÜBERSETZUNGS-DISKUSSION — je
+editing. Last updated 2026-10-18 (§5.63: ZETTEL-HERVORHEBUNG — jedes
+Wort mit Zettel in Quelltext und Analyse-Dateien unterstrichen und
+verlinkt (RET/Klick → Research-Instanz); Index `skos_index.py`, keine
+Stamm-Raterei: Analyse über die Word Analysis, Quelltext als Projektion
+des Satz-Padapāṭha; `C-c u z h`/`H`; ERT 2521.  Previous:
+§5.62: ÜBERSETZUNGS-DISKUSSION — je
 Kaskaden-Satz `** Discussion' am Ende von * Provided Translations:
 Einschätzung der Referenzübersetzung(en), Referenz mit vom Tool selbst
 markierten Passagen (⟨N⟩), nummerierte Seminar-Punkte gegen Claude +
@@ -3997,6 +4002,53 @@ migrieren beim nächsten Regenerate (editierte `** Gloss Tables`
 bleiben per §5.54-Schutz stehen).  Suite 2339 → **2345 ERT**
 (0 unexpected, 1 skip); BDD 250; compile clean; REFERENCE.org je
 def-Commit.
+
+### 5.63 Zettel-Hervorhebung: Wörter mit Zettel unterstrichen + verlinkt (done, 2026-10-18)
+
+Carsten (16.10., Tantrāloka als erstes Testprojekt des Research-
+Workflows): „ideal wäre es, wenn im CAT alles, was Zettel hat,
+hervorgehoben und verlinkt wäre."  Entscheidungen (AskUserQuestion):
+Quelltext UND Analyse-Dateien; RET/Klick öffnet in der Research-
+Instanz (shared-route), Fallback lokal.  Plan
+`~/.claude/plans/try-again-greedy-kay.md`; RED-first.
+
+- **Index** = EINE JSON-Datei (`~/.cache/buddhist-studies/zettel-
+  index.json`) aus `skos_index.py` im Tools-Repo (Schlüssel wie
+  skos_context.search normalisiert: klein, Diakritika weg, Tibetisch
+  ohne Tsheg; Homonyme behalten beide IDs; Titel-Schlüssel nur für
+  Begriffs-Typen).  Der Wylie-Index `tibetan-zettel.el` bleibt — er
+  speist den Glossen-Tier; dieses Modul hebt nur hervor.
+- **Modul** `core/tibetan-zettel-highlight.el`, buffer-lokaler Minor-
+  Mode, Font-Lock-Funktionsmatcher (§5.35-Muster, §5.38-H3-Guard),
+  Facespec als ausgewertete Form: jeder Treffer trägt
+  `tibetan-zettel-id`, Keymap (RET/mouse-1/mouse-2), help-echo,
+  rear-nonsticky — alle in `font-lock-extra-managed-props`, damit das
+  Ausschalten keine klickbaren Reste lässt.  Auch
+  `org-open-at-point-functions` (C-c C-o).
+- **Kein Stamm-Raten** (Flexion, nicht Sandhi, ist das Problem;
+  `jñāna` in `vijñāna`, Konsonantstämme).  Analyse-Dateien: Lemma-
+  Hälfte der Word-Analysis-Bullets exakt; Gloss-Tables Zeile 1 und
+  Vocabulary-Headwords über die Lemma-Map derselben Datei
+  (Parser `tibetan-sanskrit-reading-parse-word-analysis`); Komposita
+  gliedweise.  Quelltext: je `*** Sentence N` PROJEKTION der Word
+  Analysis der Satzdatei (suffix-aware über `tibetan-sentence--
+  filepath`): jedes Oberflächen-Glied mit Zettel wird über seine
+  Mitte (erstes/letztes Zeichen weg) im sandhi-verschmolzenen Segment
+  gefunden; Cache je Satz, invalidiert durch
+  `tibetan-cascade-after-land-functions` → ein Vers leuchtet, sobald
+  er per C-c u G analysiert ist.  Quelltext-Erkennung: kein Analyse-
+  Name (die Analyse-Dateien tragen DIESELBEN Kopfzeilen) UND CAT-
+  Kopfzeile.
+- **Tasten/Menü**: `C-c u z h` Toggle, `C-c u z H` Index neu bauen;
+  `C-c u Z` öffnet zuerst das markierte Wort (Homonyme →
+  completing-read über Titel).
+- **Lektion**: `string-trim` ist regex-basiert und überschreibt die
+  Match-Daten — Positionen direkt nach `string-match` sichern.
+
+Phase 2 (offen): Tibetisch-Schrift-Quellen (Tsheg-Längstmatch);
+opt-in Rate-Modus mit eigenem Face für unanalysierte Verse.
+Suite ERT 2505 → **2521** (0 unexpected, 1 Skip); BDD grün; compile
+sauber; REFERENCE.org regeneriert.
 
 ### 5.62 Übersetzungs-Diskussion für das Seminar (done, 2026-10-12)
 

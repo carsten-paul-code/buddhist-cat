@@ -1,9 +1,9 @@
 #+TITLE: Function Reference — tibetan-cat.el
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-10-12T10:57:36
+#+DATE: 2026-10-18T19:09:14
 #+OPTIONS: toc:2 num:nil
 
-Source tree: ~/Users/cp/tibetan-cat.el~  ·  80 modules  ·  1612 forms
+Source tree: ~/Users/cp/tibetan-cat.el~  ·  81 modules  ·  1685 forms
 
 Regenerated automatically by:
 
@@ -44,6 +44,7 @@ python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/tibetan-ca
   - [[#core/tibetan-vocabulary-detailed.el][core/tibetan-vocabulary-detailed.el]]  (35)
   - [[#core/tibetan-vocabulary.el][core/tibetan-vocabulary.el]]  (55)
   - [[#core/tibetan-wylie.el][core/tibetan-wylie.el]]  (4)
+  - [[#core/tibetan-zettel-highlight.el][core/tibetan-zettel-highlight.el]]  (73)
   - [[#core/tibetan-zettel.el][core/tibetan-zettel.el]]  (51)
   - [[#data/tibetan-glossary-loader.el][data/tibetan-glossary-loader.el]]  (14)
   - [[#doc-prep/tibetan-doc-display.el][doc-prep/tibetan-doc-display.el]]  (13)
@@ -2918,7 +2919,7 @@ Hash table of Tibetan verbs with grammatical information.
 ** ~tibetan-increase-text-scale~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 447
+:LINE: 454
 :SIGNATURE: (tibetan-increase-text-scale)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -2929,7 +2930,7 @@ Increase Tibetan text scale by 0.1.
 ** ~tibetan-decrease-text-scale~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 453
+:LINE: 460
 :SIGNATURE: (tibetan-decrease-text-scale)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -2956,7 +2957,7 @@ Keymap for thesaurus commands — prefix `C-c u z'.
 ** ~tibetan-cat-context-menu-map~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 284
+:LINE: 292
 :DEFAULT: (let ((map (make-sparse-keymap "Tibetan")))
     (define-key map [segment-info] '(menu-item "Segment Info" tibetan-segmen
 :END:
@@ -7392,6 +7393,684 @@ Convert a single Tibetan syllable to Wylie.
 Handles implicit ='a=' vowels correctly after each consonant.
 Recognizes Tibetan syllable structure: [prefix] ROOT [subscript]
 [vowel] [suffix]
+
+
+* core/tibetan-zettel-highlight.el
+:PROPERTIES:
+:CUSTOM_ID: core/tibetan-zettel-highlight.el
+:SOURCE_PATH: /Users/cp/tibetan-cat.el/core/tibetan-zettel-highlight.el
+:END:
+
+** ~tibetan-zettel-highlight-mode~  /minor mode/  ↗
+:PROPERTIES:
+:KIND: define-minor-mode
+:LINE: 642
+:SIGNATURE: (tibetan-zettel-highlight-mode …)
+:AUTOLOAD: t
+:END:
+
+Underline and link words that have a zettel (RET / mouse opens it).
+
+** ~tibetan-zettel-highlight--norm-latin~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 95
+:SIGNATURE: (tibetan-zettel-highlight--norm-latin s)
+:END:
+
+Lowercase S, strip Latin diacritics, keep only a-z0-9 (= norm_lemma).
+
+** ~tibetan-zettel-highlight--norm-tibetan~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 101
+:SIGNATURE: (tibetan-zettel-highlight--norm-tibetan s)
+:END:
+
+Drop tsheg, shad, spaces and punctuation from Tibetan S; keep vowel signs.
+
+** ~tibetan-zettel-highlight--norm-key~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 106
+:SIGNATURE: (tibetan-zettel-highlight--norm-key s)
+:END:
+
+Normalized index key for the term S, by script.
+
+** ~tibetan-zettel-highlight--load-index~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 127
+:SIGNATURE: (tibetan-zettel-highlight--load-index file)
+:END:
+
+Build the lookup tables from the JSON FILE.  Returns the entry count.
+
+** ~tibetan-zettel-highlight--run-index-script~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 156
+:SIGNATURE: (tibetan-zettel-highlight--run-index-script)
+:END:
+
+Regenerate the index file with skos_index.py; non-nil on success.
+
+** ~tibetan-zettel-highlight--ensure-index~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 165
+:SIGNATURE: (tibetan-zettel-highlight--ensure-index)
+:END:
+
+Load the index when missing or stale; build the file first if absent.
+Returns non-nil when an index is available.
+
+** ~tibetan-zettel-highlight-lookup~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 184
+:SIGNATURE: (tibetan-zettel-highlight-lookup key)
+:END:
+
+Zettel ids under the normalized KEY, or nil.
+
+** ~tibetan-zettel-highlight-entry~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 189
+:SIGNATURE: (tibetan-zettel-highlight-entry id)
+:END:
+
+The index plist of zettel ID.
+
+** ~tibetan-zettel-highlight--entry-path~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 193
+:SIGNATURE: (tibetan-zettel-highlight--entry-path id)
+:END:
+
+Absolute path of zettel ID, from the index.
+
+** ~tibetan-zettel-highlight--ids-for-term~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 200
+:SIGNATURE: (tibetan-zettel-highlight--ids-for-term term)
+:END:
+
+Ids for TERM as written (any script), or nil.
+
+** ~tibetan-zettel-highlight--strip-lemma~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 205
+:SIGNATURE: (tibetan-zettel-highlight--strip-lemma lemma)
+:END:
+
+LEMMA without a leading root sign.
+
+** ~tibetan-zettel-highlight--member-hits~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 209
+:SIGNATURE: (tibetan-zettel-highlight--member-hits surface lemma-map)
+:END:
+
+Hits in SURFACE, member by member of a hyphenated compound.
+Each hit is (OFFSET LENGTH IDS).  A member resolves by its own key, else
+through LEMMA-MAP (surface → lemma) when given.
+
+** ~tibetan-zettel-highlight--analysis-name-p~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 235
+:SIGNATURE: (tibetan-zettel-highlight--analysis-name-p filename)
+:END:
+
+/(no docstring)/
+
+** ~tibetan-zettel-highlight--buffer-kind~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 241
+:SIGNATURE: (tibetan-zettel-highlight--buffer-kind &optional filename)
+:END:
+
+`analysis' for a per-segment/sentence analysis file, `source' for a CAT
+source document, else nil.  Analysis files carry the same headers as their
+source, so the name decides first.  FILENAME defaults to the buffer's.
+
+** ~tibetan-zettel-highlight--section-body~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 264
+:SIGNATURE: (tibetan-zettel-highlight--section-body heading-re)
+:END:
+
+Body text of the level-2 section whose heading matches HEADING-RE, or nil.
+
+** ~tibetan-zettel-highlight--word-analysis-body~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 277
+:SIGNATURE: (tibetan-zettel-highlight--word-analysis-body)
+:END:
+
+/(no docstring)/
+
+** ~tibetan-zettel-highlight--lemma-pairs~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 280
+:SIGNATURE: (tibetan-zettel-highlight--lemma-pairs body)
+:END:
+
+((SURFACE . LEMMA)…) from a Word Analysis BODY.
+
+** ~tibetan-zettel-highlight--lemma-map~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 294
+:SIGNATURE: (tibetan-zettel-highlight--lemma-map)
+:END:
+
+Hash surface → lemma for the current analysis buffer (cached per edit tick).
+
+** ~tibetan-zettel-highlight--l2-section-at-line~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 306
+:SIGNATURE: (tibetan-zettel-highlight--l2-section-at-line)
+:END:
+
+Symbol of the enclosing level-1/2 section: `word-analysis',
+`gloss-tables', `claude-vocabulary' or nil.
+
+** ~tibetan-zettel-highlight--table-row1-p~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 316
+:SIGNATURE: (tibetan-zettel-highlight--table-row1-p)
+:END:
+
+Non-nil when the current line is the first word row of a table band.
+
+** ~tibetan-zettel-highlight--analysis-line-hits~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 326
+:SIGNATURE: (tibetan-zettel-highlight--analysis-line-hits bol eol)
+:END:
+
+Hits (BEG END IDS) on the analysis line BOL..EOL, sorted by BEG.
+
+** ~tibetan-zettel-highlight--run-matcher~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 366
+:SIGNATURE: (tibetan-zettel-highlight--run-matcher limit line-hits-fn)
+:END:
+
+Font-lock matcher core: next hit at or after point before LIMIT.
+LINE-HITS-FN gets (BOL EOL) and returns sorted hits (BEG END IDS).
+
+** ~tibetan-zettel-highlight--analysis-matcher~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 388
+:SIGNATURE: (tibetan-zettel-highlight--analysis-matcher limit)
+:END:
+
+Font-lock matcher for analysis buffers.
+
+** ~tibetan-zettel-highlight--needle~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 399
+:SIGNATURE: (tibetan-zettel-highlight--needle member)
+:END:
+
+MEMBER without its first and last character (sandhi happens at the edges).
+
+** ~tibetan-zettel-highlight--projection-from-body~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 405
+:SIGNATURE: (tibetan-zettel-highlight--projection-from-body body)
+:END:
+
+((NEEDLE . IDS)…) for the Word Analysis BODY: every surface member that
+has a zettel (by its own key or through its lemma), as the middle of the
+written form.
+
+** ~tibetan-zettel-highlight--analysis-folder~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 426
+:SIGNATURE: (tibetan-zettel-highlight--analysis-folder)
+:END:
+
+/(no docstring)/
+
+** ~tibetan-zettel-highlight--sentence-word-analysis~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 430
+:SIGNATURE: (tibetan-zettel-highlight--sentence-word-analysis sent-num)
+:END:
+
+The `** Word Analysis' body of the analysis file of sentence SENT-NUM, or nil.
+
+** ~tibetan-zettel-highlight--projection~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 442
+:SIGNATURE: (tibetan-zettel-highlight--projection sent-num)
+:END:
+
+Cached projection for SENT-NUM (nil when the sentence has no Word Analysis).
+
+** ~tibetan-zettel-highlight--segment-line-sentence~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 456
+:SIGNATURE: (tibetan-zettel-highlight--segment-line-sentence)
+:END:
+
+Sentence number when the current line is a body line of a `**** Segment'
+heading, else nil.
+
+** ~tibetan-zettel-highlight--source-line-hits~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 471
+:SIGNATURE: (tibetan-zettel-highlight--source-line-hits bol eol)
+:END:
+
+Hits (BEG END IDS) on the source line BOL..EOL from the sentence's projection.
+
+** ~tibetan-zettel-highlight--source-matcher~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 493
+:SIGNATURE: (tibetan-zettel-highlight--source-matcher limit)
+:END:
+
+Font-lock matcher for CAT source buffers.
+
+** ~tibetan-zettel-highlight--invalidate-projections~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 497
+:SIGNATURE: (tibetan-zettel-highlight--invalidate-projections &rest _)
+:END:
+
+Forget cached projections in every source buffer and refontify.
+
+** ~tibetan-zettel-highlight-ids-at-point~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 510
+:SIGNATURE: (tibetan-zettel-highlight-ids-at-point)
+:END:
+
+Zettel ids of the marked word at point, or nil.
+
+** ~tibetan-zettel-highlight--choose-id~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 514
+:SIGNATURE: (tibetan-zettel-highlight--choose-id ids)
+:END:
+
+One id from IDS — asked by title when there are several (homonyms).
+
+** ~tibetan-zettel-highlight--research-reachable-p~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 522
+:SIGNATURE: (tibetan-zettel-highlight--research-reachable-p)
+:END:
+
+Non-nil when the Research instance's server socket exists.
+
+** ~tibetan-zettel-highlight--open-id~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 530
+:SIGNATURE: (tibetan-zettel-highlight--open-id id)
+:END:
+
+Open zettel ID: shared-route (Research), else research socket, else here.
+
+** ~tibetan-zettel-highlight-open~  /function/  ⚡
+:PROPERTIES:
+:KIND: defun
+:LINE: 543
+:SIGNATURE: (tibetan-zettel-highlight-open &optional ids)
+:INTERACTIVE: t
+:END:
+
+Open the zettel of the marked word at point (IDS when given).
+
+** ~tibetan-zettel-highlight-return~  /function/  ⚡
+:PROPERTIES:
+:KIND: defun
+:LINE: 550
+:SIGNATURE: (tibetan-zettel-highlight-return)
+:INTERACTIVE: t
+:END:
+
+RET on a marked word opens its zettel; elsewhere behaves like `org-return'.
+
+** ~tibetan-zettel-highlight-mouse-open~  /function/  ⚡
+:PROPERTIES:
+:KIND: defun
+:LINE: 558
+:SIGNATURE: (tibetan-zettel-highlight-mouse-open event)
+:INTERACTIVE: t
+:END:
+
+Open the zettel of the word clicked in EVENT.
+
+** ~tibetan-zettel-highlight--open-at-point-function~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 564
+:SIGNATURE: (tibetan-zettel-highlight--open-at-point-function)
+:END:
+
+For `org-open-at-point-functions': open the marked word, non-nil when done.
+
+** ~tibetan-zettel-highlight--help-echo~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 578
+:SIGNATURE: (tibetan-zettel-highlight--help-echo ids)
+:END:
+
+/(no docstring)/
+
+** ~tibetan-zettel-highlight--facespec~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 596
+:SIGNATURE: (tibetan-zettel-highlight--facespec)
+:END:
+
+Facespec for the match just found: face plus the clickable properties.
+
+** ~tibetan-zettel-highlight--enable~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 618
+:SIGNATURE: (tibetan-zettel-highlight--enable kind)
+:END:
+
+Install matcher and properties for buffer KIND (`analysis' or `source').
+
+** ~tibetan-zettel-highlight--disable~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 631
+:SIGNATURE: (tibetan-zettel-highlight--disable)
+:END:
+
+/(no docstring)/
+
+** ~tibetan-zettel-highlight--maybe-enable~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 654
+:SIGNATURE: (tibetan-zettel-highlight--maybe-enable)
+:END:
+
+Turn the mode on in CAT source and analysis buffers (org-mode-hook).
+
+** ~tibetan-zettel-highlight-reload~  /function/  ⚡  ↗
+:PROPERTIES:
+:KIND: defun
+:LINE: 667
+:SIGNATURE: (tibetan-zettel-highlight-reload)
+:INTERACTIVE: t
+:AUTOLOAD: t
+:END:
+
+Regenerate the index with skos_index.py and refontify every mode buffer.
+
+** ~tibetan-zettel-highlight-index-file~  /customize variable/
+:PROPERTIES:
+:KIND: defcustom
+:LINE: 62
+:DEFAULT: (expand-file-name "~/.cache/buddhist-studies/zettel-index.json")
+:END:
+
+JSON index written by skos_index.py (tools repo).
+
+** ~tibetan-zettel-highlight-index-script~  /customize variable/
+:PROPERTIES:
+:KIND: defcustom
+:LINE: 67
+:DEFAULT: (expand-file-name "~/buddhist-studies/scripts/zettelkasten/skos_index.py")
+:END:
+
+skos_index.py (submodule mount of the tools repo).
+
+** ~tibetan-zettel-highlight-python~  /customize variable/
+:PROPERTIES:
+:KIND: defcustom
+:LINE: 72
+:DEFAULT: "python3"
+:END:
+
+Python interpreter for the index script.
+
+** ~tibetan-zettel-highlight-auto-enable~  /customize variable/
+:PROPERTIES:
+:KIND: defcustom
+:LINE: 76
+:DEFAULT: t
+:END:
+
+Enable the mode automatically in CAT source and analysis buffers.
+
+** ~tibetan-zettel-highlight-min-needle~  /customize variable/
+:PROPERTIES:
+:KIND: defcustom
+:LINE: 80
+:DEFAULT: 3
+:END:
+
+Shortest projected word middle that is searched in a source line.
+
+** ~tibetan-cat-zettel-target-server~  /variable/
+:PROPERTIES:
+:KIND: defvar
+:LINE: 53
+:END:
+
+/(no docstring)/
+
+** ~server-socket-dir~  /variable/
+:PROPERTIES:
+:KIND: defvar
+:LINE: 54
+:END:
+
+/(no docstring)/
+
+** ~tibetan-cascade-after-land-functions~  /variable/
+:PROPERTIES:
+:KIND: defvar
+:LINE: 55
+:END:
+
+/(no docstring)/
+
+** ~tibetan-zettel-highlight--tibetan-re~  /constant/
+:PROPERTIES:
+:KIND: defconst
+:LINE: 92
+:DEFAULT: "[ༀ-࿿]"
+:END:
+
+One Tibetan-block character.
+
+** ~tibetan-zettel-highlight--index~  /variable/
+:PROPERTIES:
+:KIND: defvar
+:LINE: 116
+:DEFAULT: nil
+:END:
+
+Hash: normalized key → list of zettel ids (file order).
+
+** ~tibetan-zettel-highlight--entries~  /variable/
+:PROPERTIES:
+:KIND: defvar
+:LINE: 118
+:DEFAULT: nil
+:END:
+
+Hash: zettel id → plist (:id :file :title :kind :stub :sanskrit :wylie
+:tibetan :german :english).
+
+** ~tibetan-zettel-highlight--index-mtime~  /variable/
+:PROPERTIES:
+:KIND: defvar
+:LINE: 121
+:DEFAULT: nil
+:END:
+
+Modification time of the index file the tables were built from.
+
+** ~tibetan-zettel-highlight--zk-dir~  /variable/
+:PROPERTIES:
+:KIND: defvar
+:LINE: 123
+:DEFAULT: nil
+:END:
+
+Zettelkasten directory the index was built from.
+
+** ~tibetan-zettel-highlight--warned~  /variable/
+:PROPERTIES:
+:KIND: defvar
+:LINE: 125
+:DEFAULT: nil
+:END:
+
+/(no docstring)/
+
+** ~tibetan-zettel-highlight--source-header-re~  /constant/
+:PROPERTIES:
+:KIND: defconst
+:LINE: 231
+:DEFAULT: "^#\\+\\(?:TIBETAN_LAYOUT\\|SOURCE_LANG\\|TIBETAN_TARGET_LANG\\|TIBETAN_TEXT_TYPE\\):"
+:END:
+
+A CAT source document header (within the first 4 KB).
+
+** ~tibetan-zettel-highlight--lemma-map-cache~  /variable (buffer-local)/
+:PROPERTIES:
+:KIND: defvar-local
+:LINE: 261
+:DEFAULT: nil
+:END:
+
+(TICK . HASH) — surface → lemma from this file's Word Analysis.
+
+** ~tibetan-zettel-highlight--current-ids~  /variable/
+:PROPERTIES:
+:KIND: defvar
+:LINE: 363
+:DEFAULT: nil
+:END:
+
+Ids of the match the facespec is being evaluated for.
+
+** ~tibetan-zettel-highlight--projections~  /variable (buffer-local)/
+:PROPERTIES:
+:KIND: defvar-local
+:LINE: 396
+:DEFAULT: nil
+:END:
+
+Hash sentence number → list of (NEEDLE . IDS), or `none'.
+
+** ~tibetan-zettel-highlight--iast-char~  /constant/
+:PROPERTIES:
+:KIND: defconst
+:LINE: 468
+:DEFAULT: "[[:alpha:]āīūṛṝḷḹṃḥśṣṭḍṇñṅ']"
+:END:
+
+One IAST letter (incl. avagraha).
+
+** ~tibetan-zettel-highlight-map~  /variable/
+:PROPERTIES:
+:KIND: defvar
+:LINE: 570
+:DEFAULT: (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "RET") #'tibetan-zettel-highlight-return)
+    (define-key map
+:END:
+
+Keymap active on a marked word.
+
+** ~tibetan-zettel-highlight--props~  /constant/
+:PROPERTIES:
+:KIND: defconst
+:LINE: 592
+:DEFAULT: '
+:END:
+
+/(no docstring)/
+
+** ~tibetan-zettel-highlight--analysis-keywords~  /constant/
+:PROPERTIES:
+:KIND: defconst
+:LINE: 610
+:DEFAULT: '
+:END:
+
+/(no docstring)/
+
+** ~tibetan-zettel-highlight--source-keywords~  /constant/
+:PROPERTIES:
+:KIND: defconst
+:LINE: 612
+:DEFAULT: '
+:END:
+
+/(no docstring)/
+
+** ~tibetan-zettel-highlight--keywords~  /variable (buffer-local)/
+:PROPERTIES:
+:KIND: defvar-local
+:LINE: 615
+:DEFAULT: nil
+:END:
+
+The keyword list this buffer added, for removal.
+
+** ~tibetan-zettel-highlight~  /customize group/
+:PROPERTIES:
+:KIND: defgroup
+:LINE: 57
+:END:
+
+Highlight and link words that have a zettel.
+
+** ~tibetan-zettel-highlight-face~  /face/
+:PROPERTIES:
+:KIND: defface
+:LINE: 84
+:END:
+
+/(no docstring)/
 
 
 * core/tibetan-zettel.el
@@ -22240,7 +22919,7 @@ Holds the result of the WHEN clause for use in THEN assertions.
 ** ~tibetan-cat-setup~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 298
+:LINE: 299
 :SIGNATURE: (tibetan-cat-setup)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -22252,7 +22931,7 @@ Loads glossaries and prepares the system for use.
 ** ~tibetan-cat-version~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 384
+:LINE: 385
 :SIGNATURE: (tibetan-cat-version)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -22263,7 +22942,7 @@ Display Tibetan CAT version and feature summary.
 ** ~tibetan-cat--server-socket-path~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 427
+:LINE: 428
 :SIGNATURE: (tibetan-cat--server-socket-path server-name)
 :END:
 
@@ -22275,7 +22954,7 @@ removed when the server is stopped).
 ** ~tibetan-cat-open-zettel-for-word-at-point~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 438
+:LINE: 439
 :SIGNATURE: (tibetan-cat-open-zettel-for-word-at-point &optional arg)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -22284,6 +22963,10 @@ removed when the server is stopped).
 Open the zettelkasten entry for the Wylie term under point.
 
 Tries (in order):
+  0. A word marked by `tibetan-zettel-highlight-mode' (text property
+     `tibetan-zettel-id'): opens that zettel directly, routed by
+     `tibetan-zettel-highlight-open' (Research via shared-route when
+     loaded) — Sanskrit and Tibetan alike (2026-10-18).
   1. `tibetan-thesaurus--wylie-at-point' to read a `[wylie]'-bracket
      token from the current line (Detailed Dictionary / Interlinear
      Gloss layout).
@@ -22308,7 +22991,7 @@ in the appropriate instance.
 ** ~tibetan-cat-zettel-target-server~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 407
+:LINE: 408
 :TYPE: 'string
 :GROUP: tibetan-cat
 :DEFAULT: "research-emacs"
@@ -22330,7 +23013,7 @@ Empty string disables remote routing entirely.
 ** ~tibetan-cat-version~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 295
+:LINE: 296
 :END:
 
 /(no docstring)/
@@ -22338,7 +23021,7 @@ Empty string disables remote routing entirely.
 ** ~tibetan-cat-version~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 380
+:LINE: 381
 :DEFAULT: "2.1.0"
 :END:
 
@@ -22347,7 +23030,7 @@ Version of Tibetan CAT system.
 ** ~server-socket-dir~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 425
+:LINE: 426
 :END:
 
 /(no docstring)/
