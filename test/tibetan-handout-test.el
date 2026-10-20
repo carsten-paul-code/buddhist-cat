@@ -399,6 +399,21 @@ defcustom, Kopfzeile Werk · Umfang · Sätze, NIRGENDS „Claude“."
     (should (string-match-p "Stand 2026-10-09" org))
     (should-not (string-match-p "Claude" org))))
 
+(ert-deftest tibetan-handout-header-tibetan-fallback-font ()
+  "Bug (Carsten 20.10., Diskussionspapier bDen Satz 2): Tibetan Unicode
+outside the Uchen line — discussion point titles, concept notes —
+fell back to Libertinus (no Tibetan glyphs → boxes).  The main font
+carries the Tibetan font as luaotfload fallback, so every Tibetan
+character in the document renders; the explicit \\tibfont stays for
+the Uchen line."
+  (let ((h (tibetan-handout--header
+            (list :title "T" :scope "§1" :source-name "x.org" :date "2026-10-20"
+                  :sentences (list (list :sent-num 1 :segs nil))))))
+    (should (string-match-p "luaotfload.add_fallback(\"tibfallback\"" h))
+    (should (string-match-p (regexp-quote tibetan-handout-tibetan-font) h))
+    (should (string-match-p "setmainfont{Libertinus Serif}\\[RawFeature={fallback=tibfallback}\\]" h))
+    (should (string-match-p "newfontfamily\\\\tibfont" h))))
+
 (ert-deftest tibetan-handout-render-text-part ()
   "`* Text': je Segment Uchen (in \\tibfont) über dem Wylie, die
 Segmentnummer am Rand; Wylie LaTeX-sicher (~ _ escaped), in einem

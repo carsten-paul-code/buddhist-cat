@@ -126,6 +126,14 @@ visible; the word Claude and the provided translations never appear."
       (should-not (string-match-p "WT POISON TEXT" s))
       (should-not (string-match-p "Vokabular\\|Grammatik" s)))))
 
+(ert-deftest tibetan-discussion-paper-header-tibetan-fallback-font ()
+  "The paper shares the handout's font setup: Tibetan fallback on the
+main font (discussion titles carry Uchen)."
+  (tibetan-handout-test--with-corpus
+    (let ((s (tibetan-paper-test--render src folder '(654))))
+      (should (string-match-p "luaotfload.add_fallback(\"tibfallback\"" s))
+      (should (string-match-p "setmainfont{Libertinus Serif}\\[RawFeature={fallback=tibfallback}\\]" s)))))
+
 (ert-deftest tibetan-discussion-paper-render-gaps ()
   "Without Concept Notes / discussion / comparison the sections say
 so instead of vanishing silently — except the comparison, which is

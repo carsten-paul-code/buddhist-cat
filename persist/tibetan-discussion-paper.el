@@ -108,10 +108,7 @@ a one-line running head, the shared LaTeX macros."
      ;; A5 (148 × 210 mm) is the reMarkable 2 screen (157.8 × 210.4 mm)
      ;; to within a centimetre — the page fills the display unscaled.
      "#+LATEX_HEADER: \\usepackage[a5paper,left=7mm,right=7mm,top=9mm,bottom=7mm,headsep=3mm,footskip=4mm]{geometry}\n"
-     "#+LATEX_HEADER: \\usepackage{fontspec}\n"
-     "#+LATEX_HEADER: \\usepackage{libertinus}\n"
-     (format "#+LATEX_HEADER: \\newfontfamily\\tibfont{%s}[Renderer=HarfBuzz,Script=Tibetan]\n"
-             tibetan-handout-tibetan-font)
+     (tibetan-handout--latex-fonts)
      "#+LATEX_HEADER: \\usepackage{xcolor,fancyhdr,needspace,newunicodechar,enumitem,titlesec}\n"
      "#+LATEX_HEADER: \\newunicodechar{★}{\\ensuremath{\\star}}\n"
      "#+LATEX_HEADER: \\definecolor{seg}{rgb}{0.55,0.10,0.10}\\definecolor{dim}{gray}{0.40}\n"

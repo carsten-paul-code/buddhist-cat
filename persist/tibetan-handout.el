@@ -450,6 +450,22 @@ are defused with an empty export snippet in front."
         (format "Satz %d" first)
       (format "Sätze %d–%d" first last))))
 
+(defun tibetan-handout--latex-fonts ()
+  "The font lines of the handout/paper preamble: Libertinus as main
+font WITH `tibetan-handout-tibetan-font' as luaotfload fallback —
+every Tibetan character anywhere in the document (discussion point
+titles, concept notes) renders; before 20.10.2026 only the explicit
+\\tibfont Uchen line had Tibetan glyphs, the rest showed boxes.
+`\\tibfont' stays for the Uchen line."
+  (concat
+   "#+LATEX_HEADER: \\usepackage{fontspec}\n"
+   "#+LATEX_HEADER: \\usepackage{libertinus}\n"
+   (format "#+LATEX_HEADER: \\directlua{luaotfload.add_fallback(\"tibfallback\", {\"%s:mode=harf;script=tibt;\"})}\n"
+           tibetan-handout-tibetan-font)
+   "#+LATEX_HEADER: \\setmainfont{Libertinus Serif}[RawFeature={fallback=tibfallback}]\n"
+   (format "#+LATEX_HEADER: \\newfontfamily\\tibfont{%s}[Renderer=HarfBuzz,Script=Tibetan]\n"
+           tibetan-handout-tibetan-font)))
+
 (defun tibetan-handout--header (spec)
   "The org header (marker, keywords, LaTeX preamble, macros) of SPEC."
   (let* ((title (plist-get spec :title))
@@ -470,10 +486,7 @@ are defused with an empty export snippet in front."
      "#+LATEX_CLASS: article\n"
      "#+LATEX_CLASS_OPTIONS: [11pt,a4paper]\n"
      "#+LATEX_HEADER: \\usepackage[a4paper,left=2cm,right=6cm,top=2.2cm,bottom=2.2cm,headsep=8mm]{geometry}\n"
-     "#+LATEX_HEADER: \\usepackage{fontspec}\n"
-     "#+LATEX_HEADER: \\usepackage{libertinus}\n"
-     (format "#+LATEX_HEADER: \\newfontfamily\\tibfont{%s}[Renderer=HarfBuzz,Script=Tibetan]\n"
-             tibetan-handout-tibetan-font)
+     (tibetan-handout--latex-fonts)
      "#+LATEX_HEADER: \\usepackage{xcolor,fancyhdr,setspace,needspace,newunicodechar,longtable,array,enumitem,titlesec}\n"
      "#+LATEX_HEADER: \\newunicodechar{★}{\\ensuremath{\\star}}\n"
      "#+LATEX_HEADER: \\definecolor{seg}{rgb}{0.55,0.10,0.10}\\definecolor{dim}{gray}{0.40}\n"
