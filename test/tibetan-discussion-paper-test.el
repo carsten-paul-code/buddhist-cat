@@ -222,6 +222,30 @@ error, nil."
         (should-not (tibetan-discussion-paper--upload pdf "Rgyan" "Satz 1")))
       (delete-file pdf))))
 
+(ert-deftest tibetan-discussion-paper-rmapi-serial ()
+  "Bug (20.10.2026, erster echter Upload): three papers uploaded at
+once started nine rmapi processes within a second — every rmapi call
+re-authenticates, the cloud answered 429 for all of them.  rmapi
+calls run ONE at a time through a queue: the next starts when the
+previous process has finished."
+  (let ((started '()) (finish nil))
+    (cl-letf (((symbol-function 'tibetan-discussion-paper--rmapi-start)
+               (lambda (args done) (push args started) (setq finish done) t)))
+      (setq tibetan-discussion-paper--rmapi-queue nil
+            tibetan-discussion-paper--rmapi-running nil)
+      (let ((results '()))
+        (dolist (a '(("mkdir" "/A") ("mkdir" "/B") ("put" "x" "/A")))
+          (tibetan-discussion-paper--rmapi a (lambda (code out) (push (cons a code) results))))
+        (should (equal '(("mkdir" "/A")) started))
+        (funcall finish 0 "")                  ; first done → second starts
+        (should (equal '(("mkdir" "/B") ("mkdir" "/A")) started))
+        (should (equal '((("mkdir" "/A") . 0)) results))
+        (funcall finish 1 "429")
+        (funcall finish 0 "")
+        (should (= 3 (length started)))
+        (should (equal 1 (cdr (assoc '("mkdir" "/B") results))))
+        (should-not tibetan-discussion-paper--rmapi-running)))))
+
 (ert-deftest tibetan-discussion-paper-command ()
   "C-c u D: in the source, C-u → only the .org (opened, no export,
 no upload); without prefix → build, export, open the PDF, upload.

@@ -251,21 +251,56 @@ overwritten (user-error)."
         (insert (tibetan-discussion-paper-render spec)))
       out)))
 
+(defvar tibetan-discussion-paper--rmapi-queue nil
+  "Pending rmapi calls, oldest first: ((ARGS . CALLBACK) …).")
+
+(defvar tibetan-discussion-paper--rmapi-running nil
+  "Non-nil while an rmapi process runs.")
+
+(defun tibetan-discussion-paper--rmapi-start (args done)
+  "Start ONE rmapi process with ARGS; DONE gets (EXIT-CODE OUTPUT)."
+  (let ((buf (generate-new-buffer " *rmapi*")))
+    (make-process :name "rmapi" :buffer buf
+                  :command (cons "rmapi" args)
+                  :noquery t
+                  :sentinel
+                  (lambda (p _event)
+                    (unless (process-live-p p)
+                      (let ((out (with-current-buffer buf (buffer-string))))
+                        (kill-buffer buf)
+                        (funcall done (process-exit-status p) out)))))))
+
+(defun tibetan-discussion-paper--rmapi-next ()
+  "Start the next queued rmapi call unless one is running."
+  (unless tibetan-discussion-paper--rmapi-running
+    (let ((job (pop tibetan-discussion-paper--rmapi-queue)))
+      (when job
+        (setq tibetan-discussion-paper--rmapi-running t)
+        (condition-case err
+            (tibetan-discussion-paper--rmapi-start
+             (car job)
+             (lambda (code out)
+               (setq tibetan-discussion-paper--rmapi-running nil)
+               (unwind-protect
+                   (condition-case e
+                       (funcall (cdr job) code out)
+                     (error (message "rmapi callback failed: %s"
+                                     (error-message-string e))))
+                 (tibetan-discussion-paper--rmapi-next))))
+          (error
+           (setq tibetan-discussion-paper--rmapi-running nil)
+           (funcall (cdr job) 1 (error-message-string err))
+           (tibetan-discussion-paper--rmapi-next)))))))
+
 (defun tibetan-discussion-paper--rmapi (args callback)
-  "Run rmapi with ARGS asynchronously; CALLBACK gets (EXIT-CODE OUTPUT)."
-  (let* ((buf (generate-new-buffer " *rmapi*"))
-         (proc (make-process :name "rmapi" :buffer buf
-                             :command (cons "rmapi" args)
-                             :noquery t
-                             :sentinel
-                             (lambda (p _event)
-                               (unless (process-live-p p)
-                                 (let ((out (with-current-buffer buf
-                                              (buffer-string))))
-                                   (kill-buffer buf)
-                                   (funcall callback (process-exit-status p)
-                                            out)))))))
-    proc))
+  "Queue an rmapi call with ARGS; CALLBACK gets (EXIT-CODE OUTPUT).
+Calls run ONE at a time: every rmapi invocation authenticates anew,
+and parallel invocations are throttled by the cloud (429 — the first
+live upload of three papers, 20.10.2026)."
+  (setq tibetan-discussion-paper--rmapi-queue
+        (append tibetan-discussion-paper--rmapi-queue (list (cons args callback))))
+  (tibetan-discussion-paper--rmapi-next)
+  t)
 
 (defun tibetan-discussion-paper--doc-name (label)
   "The reMarkable document name for the scope LABEL (\"Satz 28\",
