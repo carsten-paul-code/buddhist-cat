@@ -4074,13 +4074,35 @@ Commits `6d53470` … `e292b60`.
   Tibetisch V Satz 1 / Sätze 2–3 / Sätze 4–9 liegen in
   `/Reading/bDen pa gnyis la 'jug pa (Satyadvayāvatāra)/`.
 
+- **Nachträge 20.10. nachmittags** (`2978467`, `047be3d`): ASCII-Namen
+  auf dem Gerät (`--doc-name`: der Ordner mit Apostroph/Klammern/ā ließ
+  sich auf dem reMarkable nicht öffnen; jetzt `/Reading/bDen pa gnyis la
+  jug pa Satyadvayavatara/Satz N`).  **Auto-Papier**: C-c u G endet mit
+  dem Ein-Satz-Papier je Satz des Scopes (`tibetan-cascade-fetch-done-
+  functions` → sofort, wenn nichts anzufragen war, sonst `--pending` bis
+  die Landungs-Hooks — Claude, DM, `tibetan-discussion-after-land-
+  functions`, `tibetan-sanskrit-comparison-after-land-functions` —
+  `--complete-p` melden); kein PDF-Öffnen, unverändertes Papier wird
+  nicht erneut hochgeladen; Schalter `tibetan-discussion-paper-auto`.
+  C-c u G fordert jetzt auch die fehlende DISKUSSION an
+  (`tibetan-discussion-fetch` am after-fetch-Haken — Referenz nach der
+  Analyse hinzugefügt, AS/Rahula); Begleit-Haken geben Dateilisten
+  zurück, `:companion`.  **Suite-Schutz**: run-all-tests.el setzt Auto +
+  Upload aus — ein Kaskaden-Fetch-Test hatte echte rmapi-Aufrufe
+  gemacht (Ordner „D" auf dem Gerät).  Headless-Rezept für Nachzieh-
+  Abrufe mit Carstens gptel: `(package-initialize) (require 'gptel)
+  (setq gptel-model "claude-opus-4-8" gptel-use-curl t)` vor
+  tibetan-cat.el, dann `tibetan-cascade-fetch` + Warteschleife
+  (`accept-process-output nil 1`) bis Queue, `--pending` und rmapi-Queue
+  leer sind (Skript im Sitzungs-Scratchpad `update-asam.el`).
+
 **Probelauf** Tantrāloka V. 1–2: 5 A5-Seiten; Vers 1 mit fünf
 Diskussionspunkten knapp zwei Seiten — inhaltsbedingt.  **Offen:**
 Sanskrit-Vergleich noch an keinem echten Satz gefeuert (API nur auf
 Zuruf); erster C-c u G auf MSA I.1 zeigt, ob die Section-weite
 Sanskrit-Eingabe (Vers + Bhāṣya) im Antwortlimit bleibt.
 
-Suite 2521 → **2542 ERT** (0 unexpected, 1 Skip); compile clean;
+Suite 2521 → **2549 ERT** (0 unexpected, 1 Skip); compile clean;
 REFERENCE.org regeneriert.
 
 ### 5.63 Zettel-Hervorhebung: Wörter mit Zettel unterstrichen + verlinkt (done, 2026-10-18)
