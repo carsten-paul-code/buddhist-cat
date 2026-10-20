@@ -4106,13 +4106,24 @@ Commits `6d53470` … `e292b60`.
   Papiere in EINER Sitzung.  Nach einem 429 mindestens 10 Minuten
   warten, nie „noch einmal probieren".
 
+- **Schrift** (`35eefca`): Tibetisch außerhalb der Uchen-Zeile zeigte
+  Kästchen (Libertinus) — gemeinsame Preamble `tibetan-handout--latex-
+  fonts` mit Noto Serif Tibetan als luaotfload-Fallback des Hauptfonts.
+- **rmapi-Lektion Nr. 3**: `rm <pfad>` löscht nur den ERSTEN Treffer;
+  beim Austausch (rm + put gleicher Name) kann ein Duplikat
+  zurückbleiben, das Gerät zeigt dann das alte.  Nach einem Austausch
+  `find` lesen und doppelte Namen erneut löschen.  Live-Stand 20.10.
+  abends: `/Reading/` mit bDen (Satz 1–9), AS Sanskrit (1–3, 1001–1002),
+  AS tib. (1), Tantrāloka (1–4, 1000–1002) — Carsten: „Jetzt passt
+  alles."
+
 **Probelauf** Tantrāloka V. 1–2: 5 A5-Seiten; Vers 1 mit fünf
 Diskussionspunkten knapp zwei Seiten — inhaltsbedingt.  **Offen:**
 Sanskrit-Vergleich noch an keinem echten Satz gefeuert (API nur auf
 Zuruf); erster C-c u G auf MSA I.1 zeigt, ob die Section-weite
 Sanskrit-Eingabe (Vers + Bhāṣya) im Antwortlimit bleibt.
 
-Suite 2521 → **2551 ERT** (0 unexpected, 1 Skip); compile clean;
+Suite 2521 → **2553 ERT** (0 unexpected, 1 Skip); compile clean;
 REFERENCE.org regeneriert.
 
 ### 5.63 Zettel-Hervorhebung: Wörter mit Zettel unterstrichen + verlinkt (done, 2026-10-18)
