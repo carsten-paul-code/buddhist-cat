@@ -4003,6 +4003,76 @@ bleiben per §5.54-Schutz stehen).  Suite 2339 → **2345 ERT**
 (0 unexpected, 1 skip); BDD 250; compile clean; REFERENCE.org je
 def-Commit.
 
+### 5.64 Diskussionspapier fürs reMarkable (C-c u D) + Sanskrit–Tibetisch-Vergleich (done, 2026-10-20)
+
+Carsten (20.10., Reading-Klassen WS26): „In der Klasse habe ich den
+Text im CAT-Tool offen.  Das Handout würde ich gerne in ein
+Diskussionspapier umwandeln — Concept Notes und Diskussion im
+wesentlichen — immer parallel auf dem reMarkable … bei zweisprachigen
+Texten ein Vergleich des Tibetischen mit dem Sanskrit … wenn es auf
+eine Seite passt."  Entscheidungen (AskUserQuestion): reMarkable-
+Format; Text + Übersetzung + Concept Notes + Diskussion; Vergleich als
+eigener Abschnitt der Satzdatei, mit C-c u G geholt; PDF + rmapi.
+Nachtrag: auf dem Gerät Ordner je Werk, der Satz als Dateiname.
+Commits `6d53470` … `e292b60`.
+
+- **Refactors vorneweg** (`6d53470`, `102004a`): Diskussion →
+  `--section-body` / `--parse-points` / `--write-pt-child` /
+  `--submit` (KIND, Prompt-Thunk, Landungsfunktion; In-flight-Schlüssel
+  "KIND:truename"); Handout → `--seg-list`, `--latex-commands`,
+  `--output-file` mit KIND.  Beide ohne Verhaltenswechsel.
+- **Sanskrit-Vergleich** `persist/tibetan-sanskrit-comparison.el`
+  (`8de8ee5`): tibetische Kaskade trägt `#+TIBETAN_PARALLEL_SOURCE:
+  ../Sanskrit/msa-1-cat.org`; gleiche `** Section`-Titel verbinden die
+  Verse.  Claude bekommt den tibetischen Satz (Uchen + Wylie) und ALLE
+  Sanskrit-Sätze der gleichnamigen Section (Satz-zu-Satz-Zuordnung
+  unbekannt) und antwortet `## Correspondence` / `## Divergences`
+  (`### N. <Wylie>`, Zeilen Tibetan / Sanskrit / Divergence /
+  Significance) / `## Assessment`.  Landung `** Sanskrit Comparison`
+  unter * Provided Translations (Labels in der Dokumentsprache,
+  Einschätzung als letztes `***`-Kind; überlebt den Regenerate); die
+  Diskussion schließt den Abschnitt aus ihren Referenzen aus
+  (`tibetan-discussion--comparison-heading` lebt im Diskussionsmodul,
+  Zyklusvermeidung).  Abruf: `tibetan-cascade-after-fetch-functions`
+  am Ende von `tibetan-cascade-fetch` (C-c u G; je Satz des Scopes,
+  auch vollständige; nie nach abgelehntem Abruf; `:compared` +
+  Meldung); Gate (Section mit Gegenstück, noch kein Vergleich) im
+  Haken UND in `--request` — RED zeigte beim Stubben den Titel-Satz
+  mitgezählt.  `tibetan-sanskrit-comparison-dwim` (Menü) erzwingt neu.
+  Korpus: `Mahayanasutralamkara/Tibetisch/mdo-sde-rgyan-1-cat.org`
+  trägt das Keyword (buddhist-studies).
+- **Diskussionspapier** `persist/tibetan-discussion-paper.el`
+  (`d9d1808`), C-c u D: Scope wie C-c u H.  DATA `--sentence-data`
+  (Segmente, Übersetzung, Concept Notes als Klartext, Diskussion,
+  Vergleich — kein Vokabular/Grammatik); RENDERER A5 (= reMarkable-2-
+  Schirm 157,8 × 210,4 mm auf einen Zentimeter), 7-mm-Ränder, 9 pt,
+  kein `* Text`; je Satz Uchen/Wylie-Zeile, Rubrik Übersetzung,
+  `** Begriffe`, `** Sanskrit-Vergleich` (nur wenn vorhanden),
+  `** Diskussion` (geteilter Handout-Block); Lücken sichtbar; nie
+  „Claude", nie Referenz-Volltext.  Datei `handouts/<short>-disk-…org`,
+  Export über `tibetan-handout-export-pdf`; C-u nur die .org; in der
+  erzeugten .org exportiert + lädt C-c u D die bearbeitete Fassung.
+  **Upload** `--upload PDF TITLE LABEL`: rmapi `mkdir /Reading`,
+  `mkdir /Reading/<Werktitel>`, `put <Label>.pdf` („Satz 28", „Sätze
+  24–28", „§220"; Titel/Label aus der #+TITLE-Zeile); schlägt put fehl
+  (Name vergeben) einmal mit Zeitstempel — Notizen auf dem früheren
+  Dokument bleiben; ohne rmapi Meldung.  Asynchron (`--rmapi` via
+  make-process, stubbar).  `tibetan-discussion-paper-remarkable-folder`
+  ("Reading"), `tibetan-discussion-paper-upload` (t).
+- **Bugfix unterwegs** (`e292b60`): Diskussions-Punkttitel mit
+  Markdown-Kursiv (`*mahā jananī*`) wurden ungewandelt fett gerahmt →
+  rohe Sterne (Handout UND Papier, seit §5.62); Titel/Text laufen jetzt
+  durch `--discussion-text`.
+
+**Probelauf** Tantrāloka V. 1–2: 5 A5-Seiten; Vers 1 mit fünf
+Diskussionspunkten knapp zwei Seiten — inhaltsbedingt.  **Offen:**
+Sanskrit-Vergleich noch an keinem echten Satz gefeuert (API nur auf
+Zuruf); erster C-c u G auf MSA I.1 zeigt, ob die Section-weite
+Sanskrit-Eingabe (Vers + Bhāṣya) im Antwortlimit bleibt.
+
+Suite 2521 → **2540 ERT** (0 unexpected, 1 Skip); compile clean;
+REFERENCE.org regeneriert.
+
 ### 5.63 Zettel-Hervorhebung: Wörter mit Zettel unterstrichen + verlinkt (done, 2026-10-18)
 
 Carsten (16.10., Tantrāloka als erstes Testprojekt des Research-
