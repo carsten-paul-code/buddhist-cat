@@ -174,6 +174,31 @@ seminar language."
                                   (plist-put (tibetan-sanskrit-comparison--inputs file)
                                              :target "en")))))))
 
+(ert-deftest tibetan-comparison-counterpart-by-sentence-number ()
+  "Abhidharmasamuccaya (19.10.): both cascades carry the SAME sentence
+numbers.  When the parallel Section has a sentence of the Tibetan
+sentence's number, the inputs name it (:counterpart) and the prompt
+says so; the MSA case (no such sentence) has no :counterpart and the
+prompt leaves the identification to Claude."
+  (tibetan-comparison-test--with-corpus "en"
+    ;; mdo Sentence 2 ↔ msa Section I.1 has Sentences 1 and 2 → counterpart 2.
+    (let* ((in (tibetan-sanskrit-comparison--inputs file))
+           (user (cdr (tibetan-sanskrit-comparison--build-prompts in))))
+      (should (equal 2 (plist-get in :counterpart)))
+      (should (string-match-p "\\[2\\] carries the same number" user)))
+    ;; Renumber the Sanskrit sentences (11, 12): no counterpart.
+    (with-temp-file sa-src
+      (insert (replace-regexp-in-string
+               "Sentence 2\\b" "Sentence 12"
+               (replace-regexp-in-string "Sentence 1\\b" "Sentence 11"
+                                         (tibetan-comparison-test--read sa-src)))))
+    (let* ((in (tibetan-sanskrit-comparison--inputs file))
+           (user (cdr (tibetan-sanskrit-comparison--build-prompts in))))
+      (should-not (plist-get in :counterpart))
+      (should (equal '(11 12) (mapcar #'car (plist-get in :sanskrit))))
+      (should-not (string-match-p "carries the same number" user))
+      (should (string-match-p "Identify the corresponding Sanskrit" user)))))
+
 ;; ----------------------------------------------------------------------------
 ;; Landing, reading, exclusion
 ;; ----------------------------------------------------------------------------

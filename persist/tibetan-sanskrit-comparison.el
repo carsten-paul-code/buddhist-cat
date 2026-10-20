@@ -123,7 +123,12 @@ order; nil list when there is no parallel source or no such Section."
                                            (tibetan-to-wylie-fixed (cdr s))))
                                         segs "\n"))
             :parallel parallel
-            :sanskrit sanskrit))))
+            :sanskrit sanskrit
+            ;; Abhidharmasamuccaya (19.10.): both cascades number their
+            ;; sentences alike — then the Sanskrit sentence of the same
+            ;; number IS the counterpart (MSA: no such sentence, Claude
+            ;; identifies it).
+            :counterpart (and (assq n sanskrit) n)))))
 
 (defun tibetan-sanskrit-comparison--ready-p (inputs)
   "Non-nil when INPUTS has the Tibetan text and Sanskrit of its Section."
@@ -196,7 +201,11 @@ translator's tendencies are in this passage."
     "Sanskrit of the same section (IAST), numbered sentences:\n"
     (mapconcat (lambda (nt) (format "[%d] %s" (car nt) (cdr nt)))
                (plist-get inputs :sanskrit) "\n")
-    "\n\nIdentify the corresponding Sanskrit and produce the three sections now.")))
+    (let ((c (plist-get inputs :counterpart)))
+      (if c
+          (format "\n\nSanskrit sentence [%d] carries the same number as the Tibetan sentence and is its counterpart; the other sentences are context only.  Confirm the correspondence and produce the three sections now."
+                  c)
+        "\n\nIdentify the corresponding Sanskrit and produce the three sections now.")))))
 
 ;; ============================================================================
 ;; Parse, render, land, read
