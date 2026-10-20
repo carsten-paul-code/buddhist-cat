@@ -274,32 +274,54 @@ overwritten (user-error)."
     out))
 
 (defvar tibetan-discussion-paper--rmapi-queue nil
-  "Pending rmapi calls, oldest first: ((ARGS . CALLBACK) …).")
+  "Pending rmapi sessions, oldest first: ((COMMANDS . CALLBACK) …).")
 
 (defvar tibetan-discussion-paper--rmapi-running nil
-  "Non-nil while an rmapi process runs.")
+  "Non-nil while an rmapi session runs.")
 
-(defun tibetan-discussion-paper--rmapi-start (args done)
-  "Start ONE rmapi process with ARGS; DONE gets (EXIT-CODE OUTPUT)."
-  (let ((buf (generate-new-buffer " *rmapi*")))
-    (make-process :name "rmapi" :buffer buf
-                  :command (cons "rmapi" args)
-                  :noquery t
-                  :sentinel
-                  (lambda (p _event)
-                    (unless (process-live-p p)
-                      (let ((out (with-current-buffer buf (buffer-string))))
-                        (kill-buffer buf)
-                        (funcall done (process-exit-status p) out)))))))
+(defun tibetan-discussion-paper--rmapi-quote (arg)
+  "ARG quoted for the rmapi shell (double quotes, inner quotes escaped)."
+  (if (string-match-p "[ \t\"'()]" arg)
+      (concat "\"" (replace-regexp-in-string "\"" "\\\\\"" arg) "\"")
+    arg))
+
+(defun tibetan-discussion-paper--rmapi-script (commands)
+  "The stdin script of an rmapi shell session running COMMANDS (lists
+of args), ending with exit."
+  (concat (mapconcat (lambda (c)
+                       (mapconcat #'tibetan-discussion-paper--rmapi-quote c " "))
+                     commands "\n")
+          "\nexit\n"))
+
+(defun tibetan-discussion-paper--rmapi-session-start (commands done)
+  "Start ONE rmapi shell process, feed it COMMANDS (lists of args) on
+stdin; DONE gets (EXIT-CODE OUTPUT).  One process = one cloud token:
+the token endpoint is rate-limited (429 after a handful of separate
+invocations, 20.10.2026), so every command of an upload rides one
+session."
+  (let* ((buf (generate-new-buffer " *rmapi*"))
+         (proc (make-process :name "rmapi" :buffer buf
+                             :command (list "rmapi")
+                             :noquery t
+                             :connection-type 'pipe
+                             :sentinel
+                             (lambda (p _event)
+                               (unless (process-live-p p)
+                                 (let ((out (with-current-buffer buf (buffer-string))))
+                                   (kill-buffer buf)
+                                   (funcall done (process-exit-status p) out)))))))
+    (process-send-string proc (tibetan-discussion-paper--rmapi-script commands))
+    (process-send-eof proc)
+    proc))
 
 (defun tibetan-discussion-paper--rmapi-next ()
-  "Start the next queued rmapi call unless one is running."
+  "Start the next queued rmapi session unless one is running."
   (unless tibetan-discussion-paper--rmapi-running
     (let ((job (pop tibetan-discussion-paper--rmapi-queue)))
       (when job
         (setq tibetan-discussion-paper--rmapi-running t)
         (condition-case err
-            (tibetan-discussion-paper--rmapi-start
+            (tibetan-discussion-paper--rmapi-session-start
              (car job)
              (lambda (code out)
                (setq tibetan-discussion-paper--rmapi-running nil)
@@ -314,15 +336,29 @@ overwritten (user-error)."
            (funcall (cdr job) 1 (error-message-string err))
            (tibetan-discussion-paper--rmapi-next)))))))
 
-(defun tibetan-discussion-paper--rmapi (args callback)
-  "Queue an rmapi call with ARGS; CALLBACK gets (EXIT-CODE OUTPUT).
-Calls run ONE at a time: every rmapi invocation authenticates anew,
-and parallel invocations are throttled by the cloud (429 — the first
-live upload of three papers, 20.10.2026)."
+(defun tibetan-discussion-paper--rmapi-session (commands callback)
+  "Queue an rmapi shell session running COMMANDS (lists of args);
+CALLBACK gets (EXIT-CODE OUTPUT).  Sessions run ONE at a time, and
+all commands of one logical operation share one session — separate
+rmapi invocations each fetch a token, and the token endpoint answers
+429 after a few of them."
   (setq tibetan-discussion-paper--rmapi-queue
-        (append tibetan-discussion-paper--rmapi-queue (list (cons args callback))))
+        (append tibetan-discussion-paper--rmapi-queue (list (cons commands callback))))
   (tibetan-discussion-paper--rmapi-next)
   t)
+
+(defun tibetan-discussion-paper--put-result (output docname)
+  "What the rmapi shell OUTPUT says about `put' of DOCNAME: `ok' when
+it uploaded, `exists' when the name is taken, else `failed'."
+  (let ((tail (if (string-match "uploading:" output)
+                  (substring output (match-beginning 0))
+                output)))
+    (cond
+     ((string-match-p "already exists" tail) 'exists)
+     ((and (string-match-p "uploading:" tail)
+           (not (string-match-p "Error\\|failed\\|429" tail)))
+      'ok)
+     (t (ignore docname) 'failed))))
 
 (defun tibetan-discussion-paper--doc-name (name)
   "NAME as a reMarkable folder/document name: ASCII letters, digits,
@@ -338,7 +374,7 @@ rest vanish.  Carsten (20.10.): the folder \"bDen pa gnyis la \\='jug pa
                          (pcase c
                            (?ä "ae") (?ö "oe") (?ü "ue") (?Ä "Ae") (?Ö "Oe")
                            (?Ü "Ue") (?ß "ss")
-                           ((and (guard (<= #x2460 c #x2473)))   ; ⑴ … ⒇ circled
+                           ((and (guard (<= #x2460 c #x2473)))   ; ① … ⑳ circled
                             (number-to-string (1+ (- c #x2460))))
                            ((and (guard (<= #x2474 c #x2487)))   ; ⑴ parenthesised
                             (number-to-string (1+ (- c #x2474))))
@@ -352,16 +388,23 @@ rest vanish.  Carsten (20.10.): the folder \"bDen pa gnyis la \\='jug pa
          (s (replace-regexp-in-string " ," "," s)))
     (string-trim s)))
 
+(defun tibetan-discussion-paper--upload-commands (folder-base folder tmp)
+  "The session commands that create FOLDER-BASE and FOLDER and put TMP."
+  (list (list "mkdir" folder-base)
+        (list "mkdir" folder)
+        (list "put" tmp folder)))
+
 (defun tibetan-discussion-paper--upload (pdf title label)
   "Upload PDF to the reMarkable with rmapi: into the folder
 `/<tibetan-discussion-paper-remarkable-folder>/<TITLE>' (one folder
 per work, created when missing), as the document LABEL (the
-sentence or § — \"Satz 28\", \"Sätze 24–28\").  When a document of
-that name already exists there, the new one gets a time stamp
-appended instead, so notes written on the earlier one are never
-overwritten.  Asynchronous; the result is reported as a message.
-Returns non-nil when the upload was started, nil (with a message)
-when rmapi is not installed."
+sentence or § — \"Satz 28\", \"Saetze 24-28\"; names ASCII-only,
+`--doc-name').  ONE rmapi session does mkdir, mkdir, put.  When a
+document of that name already exists there, a second session puts
+it with a time stamp appended instead, so notes written on the
+earlier one are never overwritten.  Asynchronous; the result is
+reported as a message.  Returns non-nil when the upload was started,
+nil (with a message) when rmapi is not installed."
   (if (not (executable-find "rmapi"))
       (progn
         (message "rmapi nicht gefunden — PDF liegt unter %s" pdf)
@@ -376,31 +419,65 @@ when rmapi is not installed."
                   ;; first attempt, nil for the last one.
                   (let ((tmp (expand-file-name (concat docname ".pdf") dir)))
                     (copy-file pdf tmp t)
-                    (tibetan-discussion-paper--rmapi
-                     (list "put" tmp folder)
-                     (lambda (code out)
-                       (cond
-                        ((eq code 0)
-                         (ignore-errors (delete-directory dir t))
-                         (message "reMarkable: %s/%s" folder docname))
-                        ((functionp retry)
-                         ;; Name taken (or any failure): once more with
-                         ;; a time stamp — the earlier document stays.
-                         (funcall retry (format "%s %s" docname
-                                                (format-time-string "%Y-%m-%d %H%M"))))
-                        (t
-                         (ignore-errors (delete-directory dir t))
-                         (message "reMarkable-Upload fehlgeschlagen (%s): %s — PDF liegt unter %s"
-                                  docname (string-trim out) pdf)))))))))
-      (tibetan-discussion-paper--rmapi
-       (list "mkdir" base)
-       (lambda (_c _o)
-         (tibetan-discussion-paper--rmapi
-          (list "mkdir" folder)
-          (lambda (_c _o)
-            (funcall put name
-                     (lambda (stamped) (funcall put stamped nil)))))))
+                    (tibetan-discussion-paper--rmapi-session
+                     (tibetan-discussion-paper--upload-commands base folder tmp)
+                     (lambda (_code out)
+                       (pcase (tibetan-discussion-paper--put-result out docname)
+                         ('ok
+                          (ignore-errors (delete-directory dir t))
+                          (message "reMarkable: %s/%s" folder docname))
+                         ((and 'exists (guard (functionp retry)))
+                          ;; Name taken: once more with a time stamp —
+                          ;; the earlier document stays.
+                          (funcall retry (format "%s %s" docname
+                                                 (format-time-string "%Y-%m-%d %H%M"))))
+                         (_
+                          (ignore-errors (delete-directory dir t))
+                          (message "reMarkable-Upload fehlgeschlagen (%s): %s — PDF liegt unter %s"
+                                   docname
+                                   (string-trim (replace-regexp-in-string
+                                                 "\\[/[^]]*\\]>[ \t]*" "" out))
+                                   pdf)))))))))
+      (funcall put name (lambda (stamped) (funcall put stamped nil)))
       t)))
+
+(defun tibetan-discussion-paper-upload-many (items)
+  "Upload ITEMS ((PDF TITLE LABEL) …) in ONE rmapi session (one token):
+every folder once, then one put per item.  Names as in `--upload';
+no time-stamp retry — an existing name is reported.  Returns the
+session's command list, or nil without rmapi."
+  (when (executable-find "rmapi")
+    (let* ((base (concat "/" (string-trim tibetan-discussion-paper-remarkable-folder
+                                          "/+" "/+")))
+           (dir (make-temp-file "rm-papers-" t))
+           (folders '()) (puts '()))
+      (dolist (it items)
+        (pcase-let ((`(,pdf ,title ,label) it))
+          (let* ((folder (concat base "/" (tibetan-discussion-paper--doc-name title)))
+                 (sub (expand-file-name (tibetan-discussion-paper--doc-name title) dir))
+                 (tmp (expand-file-name
+                       (concat (tibetan-discussion-paper--doc-name label) ".pdf") sub)))
+            (make-directory sub t)
+            (copy-file pdf tmp t)
+            (unless (member folder folders) (push folder folders))
+            (push (list "put" tmp folder) puts))))
+      (let ((commands (append (list (list "mkdir" base))
+                              (mapcar (lambda (f) (list "mkdir" f)) (nreverse folders))
+                              (nreverse puts))))
+        (tibetan-discussion-paper--rmapi-session
+         commands
+         (lambda (_code out)
+           (ignore-errors (delete-directory dir t))
+           (let ((n (cl-count-if (lambda (l) (string-match-p "\\`uploading:" l))
+                                 (split-string out "\n")))
+                 (bad (cl-count-if (lambda (l) (string-match-p "Error\\|failed" l))
+                                   (split-string out "\n"))))
+             (message "reMarkable: %d von %d Papieren hochgeladen%s"
+                      (- n bad) (length items)
+                      (if (> bad 0) (format " — %d Fehler: %s" bad
+                                            (string-trim out))
+                        "")))))
+        commands))))
 
 (defun tibetan-discussion-paper--generated-buffer-p ()
   "Non-nil when the current buffer is a generated discussion paper."

@@ -202,66 +202,98 @@ brackets, umlauts or dashes beyond ASCII."
                   "Chos mngon pa kun las btus pa (Abhidharmasamuccaya) mit Bhāṣya, Teil zu Heft ⑴"))))
 
 (ert-deftest tibetan-discussion-paper-upload ()
-  "Upload (Carsten 20.10.: Ordner je Werk, der Satz als Dateiname):
-mkdir base, mkdir `/Reading/<Werk>', put `<Satz>.pdf' there; when
-the put fails (name taken) once more with a time stamp — notes on the
-earlier document are never overwritten; without rmapi a message, no
-error, nil."
-  (let ((calls '()) (fail-first nil)
+  "Upload (Carsten 20.10.: Ordner je Werk, der Satz als Dateiname): ONE
+rmapi session with mkdir base, mkdir `/Reading/<Werk>', put
+`<Satz>.pdf' there; when the name is taken a second session puts a
+time-stamped copy — notes on the earlier document are never
+overwritten; any other failure is reported; without rmapi a message,
+no error, nil."
+  (let ((sessions '()) (reply "uploading: [x]...\nOK\n")
         (pdf (make-temp-file "paper-" nil ".pdf")))
     (unwind-protect
-        (cl-letf (((symbol-function 'tibetan-discussion-paper--rmapi)
-                   (lambda (args cb)
-                     (push (if (equal (car args) "put")
-                               (list "put" (file-name-nondirectory (cadr args))
-                                     (caddr args))
-                             args)
-                           calls)
-                     (if (and fail-first (equal (car args) "put")
-                              (= 1 (cl-count "put" calls :key #'car :test #'equal)))
-                         (funcall cb 1 "entry already exists")
-                       (funcall cb 0 ""))))
+        (cl-letf (((symbol-function 'tibetan-discussion-paper--rmapi-session)
+                   (lambda (commands cb)
+                     (push (mapcar (lambda (c)
+                                     (if (equal (car c) "put")
+                                         (list "put" (file-name-nondirectory (cadr c)) (caddr c))
+                                       c))
+                                   commands)
+                           sessions)
+                     (funcall cb 0 reply) t))
                   ((symbol-function 'executable-find)
                    (lambda (name &rest _) (and (equal name "rmapi") "/usr/bin/rmapi"))))
           (let ((tibetan-discussion-paper-remarkable-folder "Reading"))
             (should (tibetan-discussion-paper--upload pdf "Klu sgrub dgongs rgyan" "Satz 654"))
-            (should (equal '(("mkdir" "/Reading")
-                             ("mkdir" "/Reading/Klu sgrub dgongs rgyan")
-                             ("put" "Satz 654.pdf" "/Reading/Klu sgrub dgongs rgyan"))
-                           (reverse calls)))
-            ;; Name taken → second put with time stamp.
-            (setq calls '() fail-first t)
+            (should (equal '((("mkdir" "/Reading")
+                              ("mkdir" "/Reading/Klu sgrub dgongs rgyan")
+                              ("put" "Satz 654.pdf" "/Reading/Klu sgrub dgongs rgyan")))
+                           sessions))
+            ;; Name taken → second session with time stamp.
+            (setq sessions '() reply "ERROR: entry already exists\n")
             (should (tibetan-discussion-paper--upload pdf "Rgyan" "Sätze 24–28"))
-            (should (= 2 (cl-count "put" calls :key #'car :test #'equal)))
-            (should (equal "Saetze 24-28.pdf" (cadr (cadr calls))))
+            (should (= 2 (length sessions)))
+            (should (equal "Saetze 24-28.pdf" (cadr (caddr (cadr sessions)))))
             (should (string-match-p "\\`Saetze 24-28 20[0-9-]\\{8\\} [0-9]\\{4\\}\\.pdf\\'"
-                                    (cadr (car calls))))))
+                                    (cadr (caddr (car sessions)))))
+            ;; 429 → reported, no retry loop.
+            (setq sessions '() reply "uploading: [x]...ERROR: request failed with status 429\n")
+            (should (tibetan-discussion-paper--upload pdf "Rgyan" "Satz 1"))
+            (should (= 1 (length sessions)))))
       (cl-letf (((symbol-function 'executable-find) (lambda (&rest _) nil)))
         (should-not (tibetan-discussion-paper--upload pdf "Rgyan" "Satz 1")))
       (delete-file pdf))))
 
+(ert-deftest tibetan-discussion-paper-upload-many-one-session ()
+  "Bulk upload: ONE session — base folder, each work folder once, then
+one put per paper (one token for fifteen papers)."
+  (let ((sessions '()) (a (make-temp-file "a-" nil ".pdf")) (b (make-temp-file "b-" nil ".pdf")))
+    (unwind-protect
+        (cl-letf (((symbol-function 'tibetan-discussion-paper--rmapi-session)
+                   (lambda (commands cb) (push commands sessions) (funcall cb 0 "uploading: [a]...\nOK\nuploading: [b]...\nOK\nuploading: [c]...\nOK\n") t))
+                  ((symbol-function 'executable-find)
+                   (lambda (name &rest _) (and (equal name "rmapi") "/usr/bin/rmapi"))))
+          (let* ((tibetan-discussion-paper-remarkable-folder "Reading")
+                 (cmds (tibetan-discussion-paper-upload-many
+                        (list (list a "Werk A" "Satz 1") (list a "Werk A" "Satz 2")
+                              (list b "Werk B (ā)" "Satz 1")))))
+            (should (= 1 (length sessions)))
+            (should (equal '(("mkdir" "/Reading") ("mkdir" "/Reading/Werk A")
+                             ("mkdir" "/Reading/Werk B a"))
+                           (cl-subseq cmds 0 3)))
+            (should (equal '("Satz 1.pdf" "Satz 2.pdf" "Satz 1.pdf")
+                           (mapcar (lambda (c) (file-name-nondirectory (cadr c)))
+                                   (cl-subseq cmds 3))))
+            (should (equal "/Reading/Werk B a" (caddr (nth 5 cmds))))))
+      (delete-file a) (delete-file b))))
+
+(ert-deftest tibetan-discussion-paper-rmapi-script-and-quoting ()
+  "The session script quotes arguments with spaces or brackets and ends
+with exit."
+  (should (equal "mkdir /Reading\nmkdir \"/Reading/Werk A\"\nput \"/tmp/Satz 1.pdf\" \"/Reading/Werk A\"\nexit\n"
+                 (tibetan-discussion-paper--rmapi-script
+                  '(("mkdir" "/Reading") ("mkdir" "/Reading/Werk A")
+                    ("put" "/tmp/Satz 1.pdf" "/Reading/Werk A"))))))
+
 (ert-deftest tibetan-discussion-paper-rmapi-serial ()
-  "Bug (20.10.2026, erster echter Upload): three papers uploaded at
-once started nine rmapi processes within a second — every rmapi call
-re-authenticates, the cloud answered 429 for all of them.  rmapi
-calls run ONE at a time through a queue: the next starts when the
-previous process has finished."
+  "Bug (20.10.2026, erster echter Upload): parallel rmapi processes hit
+the token rate limit (429) — sessions run ONE at a time through a
+queue: the next starts when the previous process has finished."
   (let ((started '()) (finish nil))
-    (cl-letf (((symbol-function 'tibetan-discussion-paper--rmapi-start)
-               (lambda (args done) (push args started) (setq finish done) t)))
+    (cl-letf (((symbol-function 'tibetan-discussion-paper--rmapi-session-start)
+               (lambda (commands done) (push commands started) (setq finish done) t)))
       (setq tibetan-discussion-paper--rmapi-queue nil
             tibetan-discussion-paper--rmapi-running nil)
       (let ((results '()))
-        (dolist (a '(("mkdir" "/A") ("mkdir" "/B") ("put" "x" "/A")))
-          (tibetan-discussion-paper--rmapi a (lambda (code out) (push (cons a code) results))))
-        (should (equal '(("mkdir" "/A")) started))
+        (dolist (c '((("mkdir" "/A")) (("mkdir" "/B")) (("put" "x" "/A"))))
+          (tibetan-discussion-paper--rmapi-session c (lambda (code _out) (push (cons c code) results))))
+        (should (equal '((("mkdir" "/A"))) started))
         (funcall finish 0 "")                  ; first done → second starts
-        (should (equal '(("mkdir" "/B") ("mkdir" "/A")) started))
-        (should (equal '((("mkdir" "/A") . 0)) results))
+        (should (equal '((("mkdir" "/B")) (("mkdir" "/A"))) started))
+        (should (equal '(((("mkdir" "/A")) . 0)) results))
         (funcall finish 1 "429")
         (funcall finish 0 "")
         (should (= 3 (length started)))
-        (should (equal 1 (cdr (assoc '("mkdir" "/B") results))))
+        (should (equal 1 (cdr (assoc '(("mkdir" "/B")) results))))
         (should-not tibetan-discussion-paper--rmapi-running)))))
 
 (ert-deftest tibetan-discussion-paper-command ()
