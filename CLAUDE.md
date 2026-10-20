@@ -4096,13 +4096,23 @@ Commits `6d53470` … `e292b60`.
   (`accept-process-output nil 1`) bis Queue, `--pending` und rmapi-Queue
   leer sind (Skript im Sitzungs-Scratchpad `update-asam.el`).
 
+- **rmapi-Lektion Nr. 2** (`b1006a1`): auch seriell 429 — jeder
+  rmapi-AUFRUF holt ein Token, der Token-Endpunkt deckelt pro
+  Zeitfenster (und blockiert dann wohl auch den Geräte-Sync desselben
+  Kontos: Carsten sah die Werkordner ohne `/Reading` und konnte sie
+  nicht öffnen).  Darum `--rmapi-session`: EIN rmapi-Prozess im
+  Shell-Modus, Befehle über stdin (`--rmapi-script`, Quoting), ein
+  Token je Upload; `tibetan-discussion-paper-upload-many` = viele
+  Papiere in EINER Sitzung.  Nach einem 429 mindestens 10 Minuten
+  warten, nie „noch einmal probieren".
+
 **Probelauf** Tantrāloka V. 1–2: 5 A5-Seiten; Vers 1 mit fünf
 Diskussionspunkten knapp zwei Seiten — inhaltsbedingt.  **Offen:**
 Sanskrit-Vergleich noch an keinem echten Satz gefeuert (API nur auf
 Zuruf); erster C-c u G auf MSA I.1 zeigt, ob die Section-weite
 Sanskrit-Eingabe (Vers + Bhāṣya) im Antwortlimit bleibt.
 
-Suite 2521 → **2549 ERT** (0 unexpected, 1 Skip); compile clean;
+Suite 2521 → **2551 ERT** (0 unexpected, 1 Skip); compile clean;
 REFERENCE.org regeneriert.
 
 ### 5.63 Zettel-Hervorhebung: Wörter mit Zettel unterstrichen + verlinkt (done, 2026-10-18)
