@@ -77,6 +77,9 @@
      ["Discuss Translations (C-c u c)" tibetan-translation-compare-dwim
       :active (fboundp 'tibetan-translation-compare-dwim)
       :help "Seminar discussion of the reference translation(s) vs Claude + DharmaMitra for the sentence / heading at point; in par-NNN.org: the similarity matrix"]
+     ["Sanskrit–Tibetisch-Vergleich neu anfordern" tibetan-sanskrit-comparison-dwim
+      :active (fboundp 'tibetan-sanskrit-comparison-dwim)
+      :help "§5.64: Vergleich des Tibetischen mit dem Sanskrit der Parallelquelle (#+TIBETAN_PARALLEL_SOURCE) für den Satz / die Überschrift an Punkt — erzwungen neu; C-c u G holt fehlende Vergleiche von selbst"]
      ["Re-analyze Segment (C-c u R)" tibetan-reanalyze-segment
       :help "Regenerate analysis while preserving your notes"]
      ["Toggle Class View — fold reference sections (C-c u f)" tibetan-analysis-toggle-class-view t]

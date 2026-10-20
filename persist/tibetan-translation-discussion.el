@@ -52,6 +52,11 @@ sentence.  C-c u c always works on demand."
 (defconst tibetan-discussion--heading "Discussion"
   "The `** ' heading of the discussion under * Provided Translations.")
 
+(defconst tibetan-discussion--comparison-heading "Sanskrit Comparison"
+  "The `** ' heading of the Sanskrit comparison (§5.64,
+`tibetan-sanskrit-comparison') under * Provided Translations — named
+here so the discussion never mistakes it for a reference translation.")
+
 (defconst tibetan-discussion--labels
   '(("de" . (("Issue" . "Problem") ("Assessment" . "Einschätzung")
              ("Question" . "Frage") ("marked" . "markiert")))
@@ -105,7 +110,8 @@ discussion itself and Carsten's own rubrics (`Übersetzung …').
                   (let ((name (car nb)))
                     (unless (or (member name (list "DharmaMitra Translation"
                                                    "Claude Particles"
-                                                   tibetan-discussion--heading))
+                                                   tibetan-discussion--heading
+                                                   tibetan-discussion--comparison-heading))
                                 (string-prefix-p "Übersetzung" name))
                       (let ((tx (tibetan-cascade--clean-slot-text (cdr nb))))
                         (and tx (cons name tx))))))

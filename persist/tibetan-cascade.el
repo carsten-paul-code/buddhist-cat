@@ -2447,6 +2447,13 @@ beides Fehlermeldungen statt Analyse."
       (list :sentences (length sentences) :created created))))
 
 ;;;###autoload
+(defvar tibetan-cascade-after-fetch-functions nil
+  "Functions called at the end of `tibetan-cascade-fetch' (C-c u G)
+with (SOURCE-FILE SENTENCES FOLDER) — SENTENCES the walker plists of
+the whole scope.  Each returns the number of companion requests it
+queued (or nil); the sum is reported as :compared.  §5.64: the
+Sanskrit comparison registers here.")
+
 (defun tibetan-cascade-fetch (scope)
   "Fetch Claude + DharmaMitra for the sentences of SCOPE (§5.60).
 SCOPE is a `tibetan-cascade--scope-at-point' plist.  Missing cascade
@@ -2497,12 +2504,24 @@ count.  Returns (:sentences N :created N :fired N :complete N)."
           (error (message "Abruf übersprungen (Satz %s): %s"
                           (plist-get s :sent-num)
                           (error-message-string err))))))
-    (message "%s: %d Satz/Sätze — %d angelegt, %d abgerufen, %d vollständig%s"
-             label (length sentences) created fired
-             (- (length sentences) (length todo))
-             (if (and todo (not go)) " (Abruf abgelehnt)" ""))
-    (list :sentences (length sentences) :created created
-          :fired fired :complete (- (length sentences) (length todo)))))
+    ;; §5.64: companion requests (the Sanskrit comparison) ride the
+    ;; same explicit fetch — for every sentence of the scope, complete
+    ;; or not; skipped when the user declined the fetch above.
+    (let ((compared 0))
+      (unless (and todo (not go))
+        (dolist (f tibetan-cascade-after-fetch-functions)
+          (condition-case err
+              (setq compared (+ compared (or (funcall f src sentences folder) 0)))
+            (error (message "Begleit-Abruf übersprungen (%s): %s"
+                            f (error-message-string err))))))
+      (message "%s: %d Satz/Sätze — %d angelegt, %d abgerufen, %d vollständig%s%s"
+               label (length sentences) created fired
+               (- (length sentences) (length todo))
+               (if (> compared 0) (format ", %d Sanskrit-Vergleich(e)" compared) "")
+               (if (and todo (not go)) " (Abruf abgelehnt)" ""))
+      (list :sentences (length sentences) :created created
+            :fired fired :complete (- (length sentences) (length todo))
+            :compared compared))))
 
 ;;;###autoload
 (defun tibetan-fetch ()
