@@ -559,9 +559,12 @@ followed by Problem / Einschätzung / Frage."
                                        (assoc (car it) tibetan-handout--discussion-labels)))
                       items)))
         (concat
-         (format "*%d. %s*%s\n" i title
+         ;; The title is Claude prose like the items — markdown
+         ;; emphasis inside it must become org italics BEFORE the
+         ;; bold wrapper, or org shows raw stars (Tantrāloka V. 1).
+         (format "*%d. %s*%s\n" i (tibetan-handout--discussion-text title)
                  (if (and text (not (equal text title)))
-                     (format " — %s" text)
+                     (format " — %s" (tibetan-handout--discussion-text text))
                    ""))
          (mapconcat (lambda (it)
                       (format "- %s :: “%s”"

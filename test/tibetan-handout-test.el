@@ -558,6 +558,21 @@ poison, no \"Claude\")."
                       :sentences (list (tibetan-handout--sentence-data 1 sa-src))))))
       (should-not (string-match-p "Diskussion" org)))))
 
+(ert-deftest tibetan-handout-discussion-point-title-markdown ()
+  "Bug (20.10.2026, Tantrāloka V. 1 im Diskussionspapier): a point
+title with markdown emphasis (`*mahā jananī* — \"great mother\"') was
+wrapped in a second pair of `*' — org then shows the raw stars.  The
+title goes through the markdown→org converter like every other
+discussion text, so the result is bold with italics inside."
+  (let ((org (tibetan-handout--discussion-block
+              (list :assessment ""
+                    :points (list (list :title "*mahā jananī* — \"great mother\" or \"Vimalā\""
+                                        :items '(("Text" . "mahā jananī")
+                                                 ("Issue" . "Claude reads it as a compound."))))))))
+    (should (string-match-p (regexp-quote "*1. /mahā jananī/ — \"great mother\" or \"Vimalā\"*") org))
+    (should-not (string-match-p (regexp-quote "*1. *") org))
+    (should (string-match-p "^- Problem :: /Übersetzung/ reads" org))))
+
 (ert-deftest tibetan-handout-build-writes-guarded-file ()
   "Build schreibt `handouts/<short>-par-220.org' neben die Quelle:
 GENERATED-Marker, Werktitel aus #+TITLE, Lopez/W&M/DM/Working
