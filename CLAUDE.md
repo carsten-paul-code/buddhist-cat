@@ -4064,13 +4064,23 @@ Commits `6d53470` … `e292b60`.
   rohe Sterne (Handout UND Papier, seit §5.62); Titel/Text laufen jetzt
   durch `--discussion-text`.
 
+- **Nachträge nach dem ersten echten Upload** (`965a560`, `02b2ccd`):
+  gleichnummerierter Sanskrit-Satz = Gegenstück (:counterpart; AS-
+  Kaskaden tragen dieselben Nummern, MSA nicht); rmapi-Aufrufe laufen
+  NACHEINANDER (`--rmapi-queue`/`--rmapi-next`) — drei Papiere parallel
+  = neun Prozesse = 429 für alle, und die parallelen `mkdir /Reading`
+  legten DREI gleichnamige Ordner an (von Hand bereinigt; rmapi löst
+  Pfade mit Dubletten unzuverlässig auf — nie wieder parallel).  Live:
+  Tibetisch V Satz 1 / Sätze 2–3 / Sätze 4–9 liegen in
+  `/Reading/bDen pa gnyis la 'jug pa (Satyadvayāvatāra)/`.
+
 **Probelauf** Tantrāloka V. 1–2: 5 A5-Seiten; Vers 1 mit fünf
 Diskussionspunkten knapp zwei Seiten — inhaltsbedingt.  **Offen:**
 Sanskrit-Vergleich noch an keinem echten Satz gefeuert (API nur auf
 Zuruf); erster C-c u G auf MSA I.1 zeigt, ob die Section-weite
 Sanskrit-Eingabe (Vers + Bhāṣya) im Antwortlimit bleibt.
 
-Suite 2521 → **2540 ERT** (0 unexpected, 1 Skip); compile clean;
+Suite 2521 → **2542 ERT** (0 unexpected, 1 Skip); compile clean;
 REFERENCE.org regeneriert.
 
 ### 5.63 Zettel-Hervorhebung: Wörter mit Zettel unterstrichen + verlinkt (done, 2026-10-18)
