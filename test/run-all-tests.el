@@ -12,6 +12,12 @@
 ;;; Code:
 
 ;; Skip slow external glossary loading during tests
+(defvar tibetan-discussion-paper-auto nil
+  "§5.64: the auto paper after C-c u G stays OFF in the suite — on
+2026-10-20 a cascade fetch test ran the real rmapi (folder `D' on the
+device).  Tests that need it bind it to t and stub the upload.")
+(defvar tibetan-discussion-paper-upload nil
+  "§5.64: never upload from the suite.")
 (defvar tibetan-skip-external-glossaries t
   "When non-nil, skip loading external glossaries during tests.")
 

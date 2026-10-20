@@ -28,6 +28,7 @@
 (require 'tibetan-translation-discussion)
 (require 'tibetan-sanskrit-comparison)
 (require 'tibetan-cascade)
+(require 'ucs-normalize)
 
 (declare-function tibetan-sentence--filepath "tibetan-sentence-persist")
 (declare-function tibetan-cascade--scope-at-point "tibetan-cascade")
@@ -225,31 +226,52 @@ Begriffe, Sanskrit-Vergleich, Diskussion."
 `<short>-disk-sent-N[-M].org' for SCOPE."
   (tibetan-handout--output-file scope "disk"))
 
+(defun tibetan-discussion-paper--render-scope (scope date)
+  "The paper org text for SCOPE dated DATE."
+  (let ((src (plist-get scope :source)))
+    (tibetan-discussion-paper-render
+     (list :title (tibetan-handout--source-title src)
+           :scope (plist-get scope :label)
+           :source-name (file-name-nondirectory src)
+           :date date
+           :sentences (mapcar (lambda (n)
+                                (tibetan-discussion-paper--sentence-data n src))
+                              (plist-get scope :sent-nums))))))
+
+(defun tibetan-discussion-paper--guard-target (out)
+  "Signal a user-error when OUT exists without the GENERATED marker."
+  (when (and (file-exists-p out)
+             (not (with-temp-buffer
+                    (insert-file-contents out nil 0 512)
+                    (string-prefix-p tibetan-discussion-paper-generated-marker
+                                     (buffer-string)))))
+    (user-error "%s existiert und trägt keinen GENERATED-Marker — nicht überschrieben"
+                (file-name-nondirectory out))))
+
+(defun tibetan-discussion-paper--content-key (text)
+  "TEXT without the lines that change with every build (date/footer)."
+  (replace-regexp-in-string
+   "^\\(?:# Quelle:.*\\|#\\+LATEX_HEADER: \\\\fancyfoot.*\\)\n" "" text))
+
+(defun tibetan-discussion-paper--unchanged-p (out text)
+  "Non-nil when the generated paper OUT already holds TEXT (dates aside)."
+  (and (file-exists-p out)
+       (equal (tibetan-discussion-paper--content-key text)
+              (tibetan-discussion-paper--content-key
+               (with-temp-buffer (insert-file-contents out) (buffer-string))))))
+
 (defun tibetan-discussion-paper-build (scope &optional date)
   "Write the discussion paper .org for SCOPE (`tibetan-cascade--scope-
 at-point' shape) and return its path; DATE (default today) goes into
 the footer.  An existing target WITHOUT the GENERATED marker is never
 overwritten (user-error)."
-  (let* ((src (plist-get scope :source))
-         (out (tibetan-discussion-paper--output-file scope)))
-    (when (and (file-exists-p out)
-               (not (with-temp-buffer
-                      (insert-file-contents out nil 0 512)
-                      (string-prefix-p tibetan-discussion-paper-generated-marker
-                                       (buffer-string)))))
-      (user-error "%s existiert und trägt keinen GENERATED-Marker — nicht überschrieben"
-                  (file-name-nondirectory out)))
-    (let ((spec (list :title (tibetan-handout--source-title src)
-                      :scope (plist-get scope :label)
-                      :source-name (file-name-nondirectory src)
-                      :date (or date (format-time-string "%Y-%m-%d"))
-                      :sentences (mapcar (lambda (n)
-                                           (tibetan-discussion-paper--sentence-data n src))
-                                         (plist-get scope :sent-nums)))))
-      (make-directory (file-name-directory out) t)
-      (with-temp-file out
-        (insert (tibetan-discussion-paper-render spec)))
-      out)))
+  (let ((out (tibetan-discussion-paper--output-file scope)))
+    (tibetan-discussion-paper--guard-target out)
+    (make-directory (file-name-directory out) t)
+    (with-temp-file out
+      (insert (tibetan-discussion-paper--render-scope
+               scope (or date (format-time-string "%Y-%m-%d")))))
+    out))
 
 (defvar tibetan-discussion-paper--rmapi-queue nil
   "Pending rmapi calls, oldest first: ((ARGS . CALLBACK) …).")
@@ -302,10 +324,33 @@ live upload of three papers, 20.10.2026)."
   (tibetan-discussion-paper--rmapi-next)
   t)
 
-(defun tibetan-discussion-paper--doc-name (label)
-  "The reMarkable document name for the scope LABEL (\"Satz 28\",
-\"Sätze 24–28\", \"§220\") — slashes and colons replaced."
-  (replace-regexp-in-string "[/:]" "-" (string-trim label)))
+(defun tibetan-discussion-paper--doc-name (name)
+  "NAME as a reMarkable folder/document name: ASCII letters, digits,
+space, comma, point and hyphen only.  Umlauts become ae/oe/ue/ss,
+diacritics are stripped (ā → a, ñ → n), dashes become \"-\", § becomes
+\"Par.\", circled digits their number; apostrophes, brackets and the
+rest vanish.  Carsten (20.10.): the folder \"bDen pa gnyis la \\='jug pa
+\(Satyadvayāvatāra)\" would not open on the device."
+  (let* ((s (string-trim name))
+         (s (replace-regexp-in-string "§[ \t]*" "Par. " s))
+         (s (replace-regexp-in-string "[–—‐‑−]" "-" s))
+         (s (mapconcat (lambda (c)
+                         (pcase c
+                           (?ä "ae") (?ö "oe") (?ü "ue") (?Ä "Ae") (?Ö "Oe")
+                           (?Ü "Ue") (?ß "ss")
+                           ((and (guard (<= #x2460 c #x2473)))   ; ⑴ … ⒇ circled
+                            (number-to-string (1+ (- c #x2460))))
+                           ((and (guard (<= #x2474 c #x2487)))   ; ⑴ parenthesised
+                            (number-to-string (1+ (- c #x2474))))
+                           (_ (string c))))
+                       s ""))
+         ;; Strip diacritics: decompose, drop combining marks.
+         (s (replace-regexp-in-string "\\(?:[\u0300-\u036f]\\)+" ""
+                                      (ucs-normalize-NFKD-string s)))
+         (s (replace-regexp-in-string "[^A-Za-z0-9 ,.-]+" " " s))
+         (s (replace-regexp-in-string " +" " " s))
+         (s (replace-regexp-in-string " ," "," s)))
+    (string-trim s)))
 
 (defun tibetan-discussion-paper--upload (pdf title label)
   "Upload PDF to the reMarkable with rmapi: into the folder
@@ -373,16 +418,110 @@ when rmapi is not installed."
         (cons (match-string 1) (match-string 2))
       (cons (file-name-base org) (file-name-base org)))))
 
-(defun tibetan-discussion-paper--export-and-upload (org)
-  "Export ORG to PDF, open it, upload it when configured (folder =
-the work's title, document = the scope label); return the PDF."
+(defun tibetan-discussion-paper--export-and-upload (org &optional no-open)
+  "Export ORG to PDF, open it (unless NO-OPEN), upload it when
+configured (folder = the work's title, document = the scope label);
+return the PDF."
   (let ((pdf (tibetan-handout-export-pdf org))
         (tl (tibetan-discussion-paper--title-and-label org)))
-    (org-open-file pdf)
+    (unless no-open (org-open-file pdf))
     (if tibetan-discussion-paper-upload
         (tibetan-discussion-paper--upload pdf (car tl) (cdr tl))
       (message "Diskussionspapier: %s" (file-name-nondirectory pdf)))
     pdf))
+
+;; ============================================================================
+;; Auto paper after C-c u G (Carsten 20.10.: „C-c u D kann gleich an
+;; C-c u G mit angehängt werden")
+;; ============================================================================
+
+(defcustom tibetan-discussion-paper-auto t
+  "When non-nil, C-c u G ends with the discussion paper: every
+sentence of the fetched scope gets its one-sentence paper (\"Satz N\")
+— at once when nothing had to be requested, otherwise when its last
+expected part (Claude, discussion, Sanskrit comparison) has landed.
+Built, exported and uploaded without opening the PDF; a paper whose
+content did not change is not uploaded again."
+  :type 'boolean
+  :group 'tibetan-cat)
+
+(defvar tibetan-discussion-paper--pending (make-hash-table :test #'equal)
+  "Cascade files (truenames) whose paper waits for a landing → their
+one-sentence scope.")
+
+(defun tibetan-discussion-paper--sentence-scope (source-file sent-num)
+  "The one-sentence scope of SENT-NUM in SOURCE-FILE."
+  (list :source source-file :sent-nums (list sent-num)
+        :label (format "Satz %d" sent-num)))
+
+(defun tibetan-discussion-paper--complete-p (file)
+  "Non-nil when the cascade sentence FILE has everything its paper
+shows: the translation; the discussion, unless no reference
+translation asks for one; the Sanskrit comparison, unless no parallel
+Section asks for one."
+  (and file (file-exists-p file)
+       (tibetan-cascade--clean-slot-text
+        (plist-get (tibetan-analysis--read-claude-sections file) :translation))
+       (or (tibetan-discussion--present-p file)
+           (null (tibetan-discussion--references file)))
+       (or (tibetan-sanskrit-comparison--present-p file)
+           (not (tibetan-sanskrit-comparison--ready-p
+                 (tibetan-sanskrit-comparison--inputs file))))
+       t))
+
+(defun tibetan-discussion-paper-auto-build (scope &optional date)
+  "Build, export and upload the paper of SCOPE without opening it —
+unless the generated .org would be unchanged (dates aside), then
+nothing happens and nil is returned.  Returns the PDF otherwise."
+  (let* ((out (tibetan-discussion-paper--output-file scope))
+         (text (tibetan-discussion-paper--render-scope
+                scope (or date (format-time-string "%Y-%m-%d")))))
+    (tibetan-discussion-paper--guard-target out)
+    (if (tibetan-discussion-paper--unchanged-p out text)
+        (progn (message "Diskussionspapier %s unverändert — nicht hochgeladen"
+                        (plist-get scope :label))
+               nil)
+      (make-directory (file-name-directory out) t)
+      (with-temp-file out (insert text))
+      (tibetan-discussion-paper--export-and-upload out t))))
+
+(defun tibetan-discussion-paper--after-fetch (source-file sentences folder requested)
+  "Hook for `tibetan-cascade-fetch-done-functions': the paper of every
+sentence that needed no request is built now; the others are
+remembered for `--maybe-build'."
+  (when tibetan-discussion-paper-auto
+    (let ((requested (mapcar #'file-truename requested)))
+      (dolist (s sentences)
+        (let* ((n (plist-get s :sent-num))
+               (file (tibetan-sentence--filepath n folder source-file))
+               (scope (tibetan-discussion-paper--sentence-scope source-file n)))
+          (if (member (file-truename file) requested)
+              (puthash (file-truename file) scope tibetan-discussion-paper--pending)
+            (condition-case err
+                (tibetan-discussion-paper-auto-build scope)
+              (error (message "Diskussionspapier Satz %d übersprungen: %s"
+                              n (error-message-string err))))))))))
+
+(defun tibetan-discussion-paper--maybe-build (file)
+  "Landing hook: when FILE's paper is pending and FILE is complete,
+build it once and forget it."
+  (when (and tibetan-discussion-paper-auto file)
+    (let* ((key (file-truename file))
+           (scope (gethash key tibetan-discussion-paper--pending)))
+      (when (and scope (tibetan-discussion-paper--complete-p file))
+        (remhash key tibetan-discussion-paper--pending)
+        (condition-case err
+            (tibetan-discussion-paper-auto-build scope)
+          (error (message "Diskussionspapier %s übersprungen: %s"
+                          (plist-get scope :label) (error-message-string err))))))))
+
+(add-hook 'tibetan-cascade-fetch-done-functions #'tibetan-discussion-paper--after-fetch)
+(add-hook 'tibetan-cascade-after-land-functions #'tibetan-discussion-paper--maybe-build)
+(add-hook 'tibetan-dharmamitra-translation-after-write-functions
+          #'tibetan-discussion-paper--maybe-build)
+(add-hook 'tibetan-discussion-after-land-functions #'tibetan-discussion-paper--maybe-build)
+(add-hook 'tibetan-sanskrit-comparison-after-land-functions
+          #'tibetan-discussion-paper--maybe-build)
 
 ;;;###autoload
 (defun tibetan-discussion-paper (&optional org-only)

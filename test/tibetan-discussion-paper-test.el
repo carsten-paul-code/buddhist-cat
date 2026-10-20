@@ -183,6 +183,24 @@ is never overwritten."
       (with-temp-file out (insert "# meine Datei\n"))
       (should-error (tibetan-discussion-paper-build scope) :type 'user-error))))
 
+
+(ert-deftest tibetan-discussion-paper-doc-name-ascii ()
+  "Carsten (20.10.): the folder `bDen pa gnyis la 'jug pa
+(Satyadvayāvatāra)' could not be opened on the reMarkable (the desktop
+app shows it) — names on the device carry no diacritics, apostrophes,
+brackets, umlauts or dashes beyond ASCII."
+  (should (equal "bDen pa gnyis la jug pa Satyadvayavatara"
+                 (tibetan-discussion-paper--doc-name
+                  "bDen pa gnyis la 'jug pa (Satyadvayāvatāra)")))
+  (should (equal "Saetze 2-3" (tibetan-discussion-paper--doc-name "Sätze 2–3")))
+  (should (equal "Satz 1" (tibetan-discussion-paper--doc-name "Satz 1")))
+  (should (equal "Par. 220" (tibetan-discussion-paper--doc-name "§220")))
+  (should (equal "Tantraloka, Kapitel 1 vijnanabhid"
+                 (tibetan-discussion-paper--doc-name "Tantrāloka, Kapitel 1 (vijñānabhid)")))
+  (should (equal "Chos mngon pa kun las btus pa Abhidharmasamuccaya mit Bhasya, Teil zu Heft 1"
+                 (tibetan-discussion-paper--doc-name
+                  "Chos mngon pa kun las btus pa (Abhidharmasamuccaya) mit Bhāṣya, Teil zu Heft ⑴"))))
+
 (ert-deftest tibetan-discussion-paper-upload ()
   "Upload (Carsten 20.10.: Ordner je Werk, der Satz als Dateiname):
 mkdir base, mkdir `/Reading/<Werk>', put `<Satz>.pdf' there; when
@@ -215,8 +233,8 @@ error, nil."
             (setq calls '() fail-first t)
             (should (tibetan-discussion-paper--upload pdf "Rgyan" "Sätze 24–28"))
             (should (= 2 (cl-count "put" calls :key #'car :test #'equal)))
-            (should (equal "Sätze 24–28.pdf" (cadr (cadr calls))))
-            (should (string-match-p "\\`Sätze 24–28 20[0-9-]\\{8\\} [0-9]\\{4\\}\\.pdf\\'"
+            (should (equal "Saetze 24-28.pdf" (cadr (cadr calls))))
+            (should (string-match-p "\\`Saetze 24-28 20[0-9-]\\{8\\} [0-9]\\{4\\}\\.pdf\\'"
                                     (cadr (car calls))))))
       (cl-letf (((symbol-function 'executable-find) (lambda (&rest _) nil)))
         (should-not (tibetan-discussion-paper--upload pdf "Rgyan" "Satz 1")))
@@ -253,6 +271,7 @@ IN a generated paper the edited file is exported and uploaded as it
 is."
   (tibetan-handout-test--with-corpus
     (let ((exported nil) (opened nil) (uploaded nil) (where nil)
+          (tibetan-discussion-paper-upload t)
           (org-file (expand-file-name "handouts/rgyan-disk-par-220.org" dir)))
       (cl-letf (((symbol-function 'tibetan-handout-export-pdf)
                  (lambda (org) (setq exported org)
@@ -287,6 +306,114 @@ is."
           (should (string-suffix-p "rgyan-disk-par-220.pdf" uploaded))
           ;; Ordner = Werktitel, Dokument = Scope-Label
           (should (equal '("Klu sgrub dgongs rgyan" . "§220") where)))))))
+
+
+;; ----------------------------------------------------------------------------
+;; Auto paper after C-c u G (§5.64, Carsten 20.10.: „C-c u D kann gleich an
+;; C-c u G mit angehängt werden")
+;; ----------------------------------------------------------------------------
+
+(ert-deftest tibetan-discussion-paper-complete-p ()
+  "A sentence is paper-ready when its translation is there, the
+discussion is there or no reference translation asks for one, and
+the Sanskrit comparison is there or no parallel source asks for one."
+  (tibetan-handout-test--with-corpus
+    (let ((file (tibetan-sentence--filepath 654 folder src)))
+      (should (tibetan-discussion-paper--complete-p file))
+      ;; Discussion removed, Lopez reference still there → waiting.
+      (let ((orig (tibetan-paper-test--read file)))
+        (with-temp-file file
+          (insert (replace-regexp-in-string
+                   "\\*\\* Discussion\\(?:.\\|\n\\)*?\\(\\* Working Translation\\)" "\\1" orig)))
+        (should-not (tibetan-discussion-paper--complete-p file))
+        ;; … and without the Lopez reference → complete again.
+        (with-temp-file file
+          (insert (replace-regexp-in-string
+                   "\\*\\* Lopez 2006\nLOPEZ POISON TEXT\n\n" ""
+                   (tibetan-paper-test--read file))))
+        (should (tibetan-discussion-paper--complete-p file)))
+      ;; No analysis file / no translation → not complete.
+      (should-not (tibetan-discussion-paper--complete-p
+                   (tibetan-sentence--filepath 655 folder src))))))
+
+(defmacro tibetan-paper-test--with-auto-stubs (&rest body)
+  "Stub export, upload and open; bind BUILT (labels of exported
+papers), UPLOADED, OPENED."
+  (declare (indent 0))
+  `(let ((built '()) (uploaded '()) (opened '())
+         (tibetan-discussion-paper-upload t))
+     (cl-letf (((symbol-function 'tibetan-handout-export-pdf)
+                (lambda (org)
+                  (push (cdr (tibetan-discussion-paper--title-and-label org)) built)
+                  (concat (file-name-sans-extension org) ".pdf")))
+               ((symbol-function 'tibetan-discussion-paper--upload)
+                (lambda (pdf _title label) (push label uploaded) t))
+               ((symbol-function 'org-open-file)
+                (lambda (f &rest _) (push f opened))))
+       (ignore built uploaded opened)
+       ,@body)))
+
+(ert-deftest tibetan-discussion-paper-auto-after-fetch ()
+  "C-c u G ends with the paper: sentences of the scope that needed no
+request get their one-sentence paper (\"Satz N\") at once — built,
+uploaded, NOT opened; sentences with a request in flight are
+remembered and get it when their last expected part lands; the
+hand-fired fetch never builds when `tibetan-discussion-paper-auto'
+is off."
+  (tibetan-handout-test--with-corpus
+    (tibetan-paper-test--with-auto-stubs
+      (clrhash tibetan-discussion-paper--pending)
+      (let ((tibetan-discussion-paper-auto t)
+            (file (tibetan-sentence--filepath 654 folder src)))
+        ;; 654 complete, 655 has no file: fetch creates 655's skeleton
+        ;; and fires it (stub) → 654 paper now, 655 pending.
+        (cl-letf (((symbol-function 'tibetan-cascade--fire-sentence)
+                   (lambda (s &rest _) (if (= 655 (plist-get s :sent-num)) 'fired nil))))
+          (tibetan-cascade-fetch (list :source src :sent-nums '(654 655) :label "§220")))
+        (should (equal '("Satz 654") built))
+        (should (equal '("Satz 654") uploaded))
+        (should-not opened)
+        (should (gethash (file-truename (tibetan-sentence--filepath 655 folder src))
+                         tibetan-discussion-paper--pending))
+        (should-not (gethash (file-truename file) tibetan-discussion-paper--pending))
+        ;; A landing in 655 while it is incomplete: nothing.
+        (let ((f655 (tibetan-sentence--filepath 655 folder src)))
+          (tibetan-discussion-paper--maybe-build f655)
+          (should (equal '("Satz 654") built))
+          ;; Make 655 complete (translation; no refs, no parallel) → the
+          ;; landing hook builds it once and forgets it.
+          (with-temp-file f655
+            (insert (replace-regexp-in-string
+                     "\\[Requesting translation\\.\\.\\.\\]" "Satz 655 übersetzt."
+                     (tibetan-paper-test--read f655))))
+          (tibetan-discussion-paper--maybe-build f655)
+          (should (equal '("Satz 655" "Satz 654") built))
+          (tibetan-discussion-paper--maybe-build f655)
+          (should (equal '("Satz 655" "Satz 654") built))))
+      ;; Switched off: nothing.
+      (setq built '() uploaded '())
+      (let ((tibetan-discussion-paper-auto nil))
+        (cl-letf (((symbol-function 'tibetan-cascade--fire-sentence)
+                   (lambda (&rest _) nil)))
+          (tibetan-cascade-fetch (list :source src :sent-nums '(654) :label "Satz 654")))
+        (should-not built)))))
+
+(ert-deftest tibetan-discussion-paper-auto-skips-unchanged ()
+  "A paper whose content did not change since the last build is not
+uploaded again (the date line alone does not count); a change in the
+sentence file does."
+  (tibetan-handout-test--with-corpus
+    (tibetan-paper-test--with-auto-stubs
+      (let ((scope (list :source src :sent-nums '(654) :label "Satz 654"))
+            (file (tibetan-sentence--filepath 654 folder src)))
+        (should (tibetan-discussion-paper-auto-build scope "2026-10-20"))
+        (should-not (tibetan-discussion-paper-auto-build scope "2026-10-21"))
+        (should (equal '("Satz 654") uploaded))
+        (with-temp-file file
+          (insert (replace-regexp-in-string "Durch den Verstand gesehen," "Durch den Verstand erkannt,"
+                                            (tibetan-paper-test--read file))))
+        (should (tibetan-discussion-paper-auto-build scope "2026-10-21"))
+        (should (equal '("Satz 654" "Satz 654") uploaded))))))
 
 (provide 'tibetan-discussion-paper-test)
 ;;; tibetan-discussion-paper-test.el ends here
