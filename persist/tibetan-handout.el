@@ -294,6 +294,19 @@ only grammar there is and goes through the same filter."
           (push (cons (car g) bullets) out))))
     (nreverse out)))
 
+(defun tibetan-handout--seg-list (segs sa)
+  "SEGS ((N . TEXT) …) of a sentence as the renderer's plists (:num
+:wylie :uchen): Wylie from the Uchen for Tibetan, the IAST itself as
+:wylie and no :uchen for Sanskrit (SA).  Shared with the discussion
+paper (§5.64)."
+  (mapcar (lambda (s)
+            (let ((text (string-trim (cdr s))))
+              (list :num (car s)
+                    :wylie (if sa text
+                             (string-trim (tibetan-to-wylie-fixed text)))
+                    :uchen (unless sa text))))
+          segs))
+
 (defun tibetan-handout--sentence-data (sent-num source-file)
   "Everything the handout needs for sentence SENT-NUM of SOURCE-FILE.
 Plist: :sent-num :lang (\"bo\"/\"sa\") :segs ((:num :wylie :uchen) …)
@@ -313,14 +326,7 @@ tool's Translation/Vocabulary/Grammar slots — Provided Translations
                   (expand-file-name "analysis"
                                     (file-name-directory source-file))))
          (file (tibetan-sentence--filepath sent-num folder source-file))
-         (seg-list (mapcar (lambda (s)
-                             (let ((text (string-trim (cdr s))))
-                               (list :num (car s)
-                                     :wylie (if sa text
-                                              (string-trim
-                                               (tibetan-to-wylie-fixed text)))
-                                     :uchen (unless sa text))))
-                           segs))
+         (seg-list (tibetan-handout--seg-list segs sa))
          (base (list :sent-num sent-num :lang lang :segs seg-list)))
     (if (not (file-exists-p file))
         (append base (list :missing t))
@@ -352,6 +358,21 @@ the next C-c u H regenerates it from the analysis files.")
   "Font for the Uchen line of the handout (fontspec name, HarfBuzz)."
   :type 'string
   :group 'tibetan-cat)
+
+(defconst tibetan-handout--latex-commands
+  (concat
+   "#+LATEX_HEADER: \\newcommand{\\segno}[1]{\\noindent\\llap{\\color{seg}\\footnotesize #1\\hspace{3mm}}}\n"
+   "#+LATEX_HEADER: \\newcommand{\\segsup}[1]{\\textsuperscript{\\color{seg}\\scriptsize #1}\\,}\n"
+   "#+LATEX_HEADER: \\newcommand{\\ctx}[1]{{\\footnotesize\\color{dim}(#1)}}\n"
+   "#+LATEX_HEADER: \\newcommand{\\luecke}[1]{{\\color{dim}\\textit{— #1 —}}}\n"
+   "#+LATEX_HEADER: \\newcommand{\\seglabel}[1]{\\par\\smallskip\\Needspace{3\\baselineskip}{\\color{seg}\\footnotesize #1}\\par\\nopagebreak}\n"
+   "#+MACRO: n @@latex:\\segsup{$1}@@\n"
+   "#+MACRO: seg @@latex:\\seglabel{$1}@@\n"
+   "#+MACRO: ctx @@latex:\\ctx{@@$1@@latex:}@@\n"
+   "#+MACRO: luecke @@latex:\\luecke{@@$1@@latex:}@@\n")
+  "The LaTeX commands and org macros the handout body uses (segment
+numbers, context glosses, gaps) — shared with the discussion paper
+\(§5.64), whose geometry differs but whose blocks are the same.")
 
 (defun tibetan-handout--latex-escape (s)
   "S with the LaTeX special characters escaped (raw-LaTeX blocks)."
@@ -466,15 +487,8 @@ are defused with an empty export snippet in front."
      "#+LATEX_HEADER: \\titleformat{\\subsection}{\\Needspace{5\\baselineskip}\\normalsize\\bfseries\\color{seg}}{}{0pt}{}\n"
      "#+LATEX_HEADER: \\titlespacing*{\\section}{0pt}{2.2ex plus .5ex}{1ex}\\titlespacing*{\\subsection}{0pt}{1.4ex plus .3ex}{.5ex}\n"
      "#+LATEX_HEADER: \\setlist[description]{font=\\normalfont\\scshape\\color{seg}\\footnotesize,leftmargin=0pt,labelsep=0.5em,itemsep=2pt,topsep=2pt,parsep=0pt}\n"
-     "#+LATEX_HEADER: \\newcommand{\\segno}[1]{\\noindent\\llap{\\color{seg}\\footnotesize #1\\hspace{3mm}}}\n"
-     "#+LATEX_HEADER: \\newcommand{\\segsup}[1]{\\textsuperscript{\\color{seg}\\scriptsize #1}\\,}\n"
-     "#+LATEX_HEADER: \\newcommand{\\ctx}[1]{{\\footnotesize\\color{dim}(#1)}}\n"
-     "#+LATEX_HEADER: \\newcommand{\\luecke}[1]{{\\color{dim}\\textit{— #1 —}}}\n"
-     "#+LATEX_HEADER: \\newcommand{\\seglabel}[1]{\\par\\smallskip\\Needspace{3\\baselineskip}{\\color{seg}\\footnotesize #1}\\par\\nopagebreak}\n"
-     "#+MACRO: n @@latex:\\segsup{$1}@@\n"
-     "#+MACRO: seg @@latex:\\seglabel{$1}@@\n"
-     "#+MACRO: ctx @@latex:\\ctx{@@$1@@latex:}@@\n"
-     "#+MACRO: luecke @@latex:\\luecke{@@$1@@latex:}@@\n\n")))
+     tibetan-handout--latex-commands
+     "\n")))
 
 (defun tibetan-handout--text-part (sentences)
   "`* Text': every segment — Uchen above Wylie (bo) or the IAST (sa),
@@ -659,15 +673,17 @@ appears (headings are German; the slots are named by content)."
 ;; ============================================================================
 
 
-(defun tibetan-handout--output-file (scope)
+(defun tibetan-handout--output-file (scope &optional kind)
   "`<source dir>/handouts/<short>-par-NNN.org' for a Lopez § SCOPE,
 else `<short>-sent-N[-M].org'.  The source short name keeps
-multi-source folders collision-free (§5.23 lesson)."
+multi-source folders collision-free (§5.23 lesson).  KIND (a word,
+e.g. \"disk\" for the discussion paper, §5.64) goes between the
+short name and the range: `<short>-disk-par-NNN.org'."
   (let* ((src (plist-get scope :source))
          (nums (plist-get scope :sent-nums))
          (short (tibetan-analysis-make-short-name src)))
     (expand-file-name
-     (concat "handouts/" short "-"
+     (concat "handouts/" short "-" (if kind (concat kind "-") "")
              (cond ((plist-get scope :lopez)
                     (format "par-%d" (plist-get scope :lopez)))
                    ((cdr nums)
