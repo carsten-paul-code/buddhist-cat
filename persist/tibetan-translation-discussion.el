@@ -238,34 +238,47 @@ write `[No substantial divergences]' under ## Discussion Points."
 ;; Parse + render
 ;; ============================================================================
 
+(defun tibetan-discussion--section-body (response heading)
+  "The text of RESPONSE under `## HEADING' up to the next `## ' (or the
+end), trimmed; nil when the heading is absent.  Shared by the
+discussion and the Sanskrit comparison (§5.64) — both responses are
+`## ' sections with `### N.' points."
+  (when (and response
+             (string-match (format "^## %s[ \t]*\n\\(\\(?:.\\|\n\\)*?\\)\\(?:^## \\|\\'\\)"
+                                   (regexp-quote heading))
+                           response))
+    (string-trim (match-string 1 response))))
+
+(defun tibetan-discussion--parse-points (body)
+  "The `### N. <title>' points of BODY: ((:title STR :items ((LABEL
+. TEXT) …)) …).  Items are `- Label: text' lines; an indented
+continuation line is folded into the preceding item."
+  (let ((points '()))
+    (dolist (chunk (cdr (split-string (or body "") "^### ")))
+      (let* ((lines (split-string chunk "\n"))
+             (title (string-trim
+                     (replace-regexp-in-string "\\`[0-9]+\\.?[ \t]*" ""
+                                               (car lines))))
+             (items '()))
+        (dolist (l (cdr lines))
+          (cond
+           ((string-match "^-[ \t]+\\([^:\n]+?\\):[ \t]*\\(.*\\)$" l)
+            (push (cons (string-trim (match-string 1 l))
+                        (string-trim (match-string 2 l)))
+                  items))
+           ((and items (string-match-p "^[ \t]+\\S-" l))
+            (setcdr (car items)
+                    (concat (cdar items) " " (string-trim l))))))
+        (when items
+          (push (list :title title :items (nreverse items)) points))))
+    (nreverse points)))
+
 (defun tibetan-discussion--parse (response)
   "Parse RESPONSE into (:assessment STR :points (POINT …)); POINT =
 \(:title STR :items ((LABEL . TEXT) …))."
-  (let ((assessment nil) (points '()))
-    (when (and response
-               (string-match "^## Assessment[ \t]*\n\\(\\(?:.\\|\n\\)*?\\)\\(?:^## \\|\\'\\)"
-                             response))
-      (setq assessment (string-trim (match-string 1 response))))
-    (when (string-match "^## Discussion Points[ \t]*\n" (or response ""))
-      (let ((body (substring response (match-end 0))))
-        (dolist (chunk (cdr (split-string body "^### " )))
-          (let* ((lines (split-string chunk "\n"))
-                 (title (string-trim
-                         (replace-regexp-in-string "\\`[0-9]+\\.?[ \t]*" ""
-                                                   (car lines))))
-                 (items '()))
-            (dolist (l (cdr lines))
-              (cond
-               ((string-match "^-[ \t]+\\([^:\n]+?\\):[ \t]*\\(.*\\)$" l)
-                (push (cons (string-trim (match-string 1 l))
-                            (string-trim (match-string 2 l)))
-                      items))
-               ((and items (string-match-p "^[ \t]+\\S-" l))
-                (setcdr (car items)
-                        (concat (cdar items) " " (string-trim l))))))
-            (when items
-              (push (list :title title :items (nreverse items)) points))))))
-    (list :assessment assessment :points (nreverse points))))
+  (list :assessment (tibetan-discussion--section-body response "Assessment")
+        :points (tibetan-discussion--parse-points
+                 (tibetan-discussion--section-body response "Discussion Points"))))
 
 (defun tibetan-discussion--unquote (s)
   "S without surrounding quote marks."
@@ -360,6 +373,13 @@ REF-NAME — exactly, or shortened/extended (\"Dyczkowski\" for
 (defun tibetan-discussion--write (file block)
   "Put BLOCK as the last child of * Provided Translations in FILE,
 replacing an existing `** Discussion'.  t on success."
+  (tibetan-discussion--write-pt-child file tibetan-discussion--heading block))
+
+(defun tibetan-discussion--write-pt-child (file heading block)
+  "Put BLOCK (a `** HEADING' subtree) as the last child of * Provided
+Translations in FILE, replacing an existing `** HEADING'.  t on
+success, nil when FILE has no * Provided Translations.  Shared by
+the discussion and the Sanskrit comparison (§5.64)."
   (let ((buf (tibetan-fresh-file-buffer file)))
     (with-current-buffer buf
       (save-excursion
@@ -369,11 +389,10 @@ replacing an existing `** Discussion'.  t on success."
                           (if (re-search-forward "^\\* " nil t)
                               (line-beginning-position)
                             (point-max)))))
-            ;; Remove an existing discussion subtree.
+            ;; Remove an existing subtree of the same heading.
             (save-excursion
               (when (re-search-forward
-                     (format "^\\*\\* %s[ \t]*$"
-                             (regexp-quote tibetan-discussion--heading))
+                     (format "^\\*\\* %s[ \t]*$" (regexp-quote heading))
                      pt-end t)
                 (let ((beg (line-beginning-position))
                       (stop (save-excursion
@@ -449,64 +468,86 @@ the handout may quote, never reproduce a provided translation."
 ;; ============================================================================
 
 (defvar tibetan-discussion--inflight (make-hash-table :test #'equal)
-  "Files (truenames) whose discussion request is in flight.")
+  "Requests in flight, keyed \"KIND:truename\" (KIND = discussion /
+comparison) — one request per kind and file at a time.")
+
+(defun tibetan-discussion--inflight-p (kind file)
+  "Non-nil while a KIND request for FILE is in flight."
+  (gethash (concat kind ":" (file-truename file))
+           tibetan-discussion--inflight))
+
+(defun tibetan-discussion--submit (kind file prompts land)
+  "Queue ONE Claude request of KIND for FILE through the Claude queue
+\(budget `tibetan-claude-max-tokens', system prompt cached).
+PROMPTS is a thunk returning (SYSTEM . USER) — called inside the job,
+so the inputs are read when the request actually goes out; LAND is
+called with (FILE RESPONSE) OUTSIDE the gptel sentinel (§5.40).  The
+in-flight mark is cleared on landing, error or failure.  Returns t
+when queued, nil while a KIND request for FILE is in flight.  Shared
+by the discussion (§5.62) and the Sanskrit comparison (§5.64)."
+  (let ((key (concat kind ":" (file-truename file))))
+    (unless (gethash key tibetan-discussion--inflight)
+      (puthash key t tibetan-discussion--inflight)
+      (require 'tibetan-claude-queue)
+      (tibetan-claude-queue-submit
+       (lambda (done)
+         (condition-case err
+             (progn
+               (unless (and (featurep 'gptel) (fboundp 'gptel-request))
+                 (error "gptel not loaded"))
+               (tibetan-analysis--ensure-gptel-ready)
+               (let* ((ps (funcall prompts))
+                      (gptel-cache '(system))
+                      (gptel-max-tokens tibetan-claude-max-tokens))
+                 (gptel-request
+                  (cdr ps)
+                  :system (car ps)
+                  :callback
+                  (lambda (response info)
+                    (cond
+                     ((and (stringp response)
+                           (not (string-empty-p response)))
+                      ;; Land OUTSIDE the gptel sentinel (§5.40).
+                      (run-at-time
+                       0 nil
+                       (lambda ()
+                         (unwind-protect
+                             (condition-case e
+                                 (funcall land file response)
+                               (error (message "%s landing failed (%s): %s"
+                                               (capitalize kind)
+                                               (file-name-nondirectory file)
+                                               (error-message-string e))))
+                           (remhash key tibetan-discussion--inflight))))
+                      (funcall done '(:status ok)))
+                     ((tibetan-analysis--claude-status-rate-limited-p info)
+                      (funcall done '(:status rate-limited)))
+                     (t
+                      (remhash key tibetan-discussion--inflight)
+                      (funcall done (list :status 'error
+                                          :error "no response"))))))))
+           (error
+            (remhash key tibetan-discussion--inflight)
+            (funcall done (list :status 'error
+                                :error (error-message-string err))))))
+       :label (format "%s %s" kind (file-name-nondirectory file))
+       :on-fail (lambda (_status)
+                  (remhash key tibetan-discussion--inflight)))
+      t)))
 
 (defun tibetan-discussion--request (file &optional force)
   "Queue the discussion request for the cascade sentence FILE.
 No-op while one is in flight, when the inputs are incomplete, or
 when a discussion exists and FORCE is nil."
-  (let ((key (file-truename file)))
-    (unless (gethash key tibetan-discussion--inflight)
-      (let ((inputs (tibetan-discussion--inputs file)))
-        (when (and (tibetan-discussion--ready-p inputs)
-                   (or force (not (tibetan-discussion--present-p file))))
-          (puthash key t tibetan-discussion--inflight)
-          (require 'tibetan-claude-queue)
-          (tibetan-claude-queue-submit
-           (lambda (done)
-             (condition-case err
-                 (progn
-                   (unless (and (featurep 'gptel) (fboundp 'gptel-request))
-                     (error "gptel not loaded"))
-                   (tibetan-analysis--ensure-gptel-ready)
-                   (let* ((prompts (tibetan-discussion--build-prompts
-                                    (tibetan-discussion--inputs file)))
-                          (gptel-cache '(system))
-                          (gptel-max-tokens tibetan-claude-max-tokens))
-                     (gptel-request
-                      (cdr prompts)
-                      :system (car prompts)
-                      :callback
-                      (lambda (response info)
-                        (cond
-                         ((and (stringp response)
-                               (not (string-empty-p response)))
-                          ;; Land OUTSIDE the gptel sentinel (§5.40).
-                          (run-at-time
-                           0 nil
-                           (lambda ()
-                             (unwind-protect
-                                 (condition-case e
-                                     (tibetan-discussion--land file response)
-                                   (error (message "Discussion landing failed (%s): %s"
-                                                   (file-name-nondirectory file)
-                                                   (error-message-string e))))
-                               (remhash key tibetan-discussion--inflight))))
-                          (funcall done '(:status ok)))
-                         ((tibetan-analysis--claude-status-rate-limited-p info)
-                          (funcall done '(:status rate-limited)))
-                         (t
-                          (remhash key tibetan-discussion--inflight)
-                          (funcall done (list :status 'error
-                                              :error "no response"))))))))
-               (error
-                (remhash key tibetan-discussion--inflight)
-                (funcall done (list :status 'error
-                                    :error (error-message-string err))))))
-           :label (format "discussion %s" (file-name-nondirectory file))
-           :on-fail (lambda (_status)
-                      (remhash key tibetan-discussion--inflight)))
-          t)))))
+  (unless (tibetan-discussion--inflight-p "discussion" file)
+    (let ((inputs (tibetan-discussion--inputs file)))
+      (when (and (tibetan-discussion--ready-p inputs)
+                 (or force (not (tibetan-discussion--present-p file))))
+        (tibetan-discussion--submit
+         "discussion" file
+         (lambda () (tibetan-discussion--build-prompts
+                     (tibetan-discussion--inputs file)))
+         #'tibetan-discussion--land)))))
 
 (defun tibetan-discussion--maybe-fire (file)
   "Hook function: request the discussion of the cascade sentence FILE
