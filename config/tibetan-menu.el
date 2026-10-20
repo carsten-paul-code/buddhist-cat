@@ -235,6 +235,9 @@
      ["Lese-Handout (PDF) für Satz/§ an Punkt (C-c u H)" tibetan-handout
       :active (fboundp 'tibetan-handout)
       :help "Druckblatt für die Reading-Klasse: Wylie + Uchen, Übersetzung, Vokabular (★ Wortliste zuerst), Grammatik"]
+     ["Diskussionspapier (reMarkable) für Satz/§ an Punkt (C-c u D)" tibetan-discussion-paper
+      :active (fboundp 'tibetan-discussion-paper)
+      :help "§5.64: je Satz Uchen/Wylie, Übersetzung, Begriffe, Sanskrit-Vergleich, Diskussion — A5-PDF, per rmapi aufs reMarkable"]
      "---"
      ["Sanskrit-Quelle importieren… (C-c o k)"
       tibetan-cascade-import-sanskrit

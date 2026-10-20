@@ -104,6 +104,13 @@
   ;; + DharmaMitra für den Satz an Punkt bzw. alle Sätze unter der
   ;; Überschrift (nur Fehlendes; ab 10 Sätzen Rückfrage mit Anzahl).
 
+(global-set-key (kbd "C-c u D") 'tibetan-discussion-paper)
+  ;; Diskussionspapier (§5.64) für das reMarkable: je Satz Uchen/Wylie,
+  ;; Übersetzung, Begriffe (Concept Notes), Sanskrit-Vergleich (bei
+  ;; #+TIBETAN_PARALLEL_SOURCE), Diskussion — A5, nach dem Export per
+  ;; rmapi hochgeladen.  C-u: nur die .org; in der .org exportiert und
+  ;; lädt C-c u D die bearbeitete Fassung hoch.
+
 (global-set-key (kbd "C-c u H") 'tibetan-handout)
   ;; Reading-class handout (§5.59) → PDF: Wylie + Uchen, Übersetzung,
   ;; Vokabular (★ Wortliste zuerst), Grammatik — für den Satz / § /

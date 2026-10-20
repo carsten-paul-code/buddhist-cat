@@ -168,6 +168,7 @@
 (require 'tibetan-handout nil t)        ; §5.59 reading-class handout → PDF (C-c u H)
 (require 'tibetan-translation-discussion nil t) ; §5.62 seminar discussion of reference translations (C-c u c)
 (require 'tibetan-sanskrit-comparison nil t) ; §5.64 Sanskrit–Tibetan comparison per sentence (with C-c u G)
+(require 'tibetan-discussion-paper nil t)    ; §5.64 discussion paper for the reMarkable (C-c u D)
 (require 'tibetan-analysis-nav nil t)    ; Source<->analysis navigation (C-c u j/n/p)
 
 ;; AI Translation (optional - soft load)
