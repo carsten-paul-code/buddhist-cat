@@ -245,17 +245,24 @@ a last `*** ' child."
                  (tibetan-discussion--org-safe a))
        ""))))
 
+(defvar tibetan-sanskrit-comparison-after-land-functions nil
+  "Abnormal hook run with the sentence FILE after a comparison has
+been written into it (§5.64: the discussion paper waits for it).")
+
 (defun tibetan-sanskrit-comparison--land (file response)
   "Parse RESPONSE and write the comparison into FILE.  t on success."
   (let ((parsed (tibetan-sanskrit-comparison--parse response))
         (inputs (tibetan-sanskrit-comparison--inputs file)))
     (when (and inputs (or (plist-get parsed :points)
                           (plist-get parsed :correspondence)))
-      (tibetan-discussion--write-pt-child
-       file tibetan-sanskrit-comparison--heading
-       (tibetan-sanskrit-comparison--render
-        parsed (plist-get inputs :target)
-        (format-time-string "%Y-%m-%d"))))))
+      (prog1
+          (tibetan-discussion--write-pt-child
+           file tibetan-sanskrit-comparison--heading
+           (tibetan-sanskrit-comparison--render
+            parsed (plist-get inputs :target)
+            (format-time-string "%Y-%m-%d")))
+        (run-hook-with-args 'tibetan-sanskrit-comparison-after-land-functions
+                            file)))))
 
 (defun tibetan-sanskrit-comparison-read (file)
   "The written `** Sanskrit Comparison' of FILE as data, nil when
@@ -314,12 +321,12 @@ exists and FORCE is nil."
   "Hook for `tibetan-cascade-after-fetch-functions': request the
 comparison for every sentence of SENTENCES (walker plists) whose
 cascade file in FOLDER exists and has none yet — only when
-SOURCE-FILE declares a parallel source.  Returns the number
+SOURCE-FILE declares a parallel source.  Returns the list of files
 requested."
   (if (not (tibetan-cascade-parallel-source source-file))
-      0
-    (let ((n 0))
-      (dolist (s sentences n)
+      nil
+    (let ((files '()))
+      (dolist (s sentences (nreverse files))
         (let ((file (tibetan-sentence--filepath (plist-get s :sent-num)
                                                 folder source-file)))
           ;; The gate lives here too (not only in `--request'): a
@@ -331,7 +338,7 @@ requested."
                      (tibetan-sanskrit-comparison--ready-p
                       (tibetan-sanskrit-comparison--inputs file))
                      (tibetan-sanskrit-comparison--request file))
-            (cl-incf n)))))))
+            (push file files)))))))
 
 (add-hook 'tibetan-cascade-after-fetch-functions
           #'tibetan-sanskrit-comparison-fetch)

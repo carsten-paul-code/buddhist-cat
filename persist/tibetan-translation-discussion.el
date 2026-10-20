@@ -420,15 +420,21 @@ the discussion and the Sanskrit comparison (§5.64)."
             (save-buffer)
             t))))))
 
+(defvar tibetan-discussion-after-land-functions nil
+  "Abnormal hook run with the sentence FILE after a discussion has
+been written into it (§5.64: the discussion paper waits for it).")
+
 (defun tibetan-discussion--land (file response)
   "Parse RESPONSE and write the discussion into FILE.  t on success."
   (let ((parsed (tibetan-discussion--parse response))
         (inputs (tibetan-discussion--inputs file)))
     (when (and inputs (or (plist-get parsed :points)
                           (plist-get parsed :assessment)))
-      (tibetan-discussion--write
-       file (tibetan-discussion--render parsed inputs
-                                        (format-time-string "%Y-%m-%d"))))))
+      (prog1
+          (tibetan-discussion--write
+           file (tibetan-discussion--render parsed inputs
+                                            (format-time-string "%Y-%m-%d")))
+        (run-hook-with-args 'tibetan-discussion-after-land-functions file)))))
 
 (defun tibetan-discussion--label-key (label)
   "The canonical (English) key of the display LABEL — inverse of
@@ -569,6 +575,24 @@ once Claude AND DharmaMitra are there — unless switched off
 (add-hook 'tibetan-cascade-after-land-functions #'tibetan-discussion--maybe-fire)
 (add-hook 'tibetan-dharmamitra-translation-after-write-functions
           #'tibetan-discussion--maybe-fire)
+
+(defun tibetan-discussion-fetch (source-file sentences folder)
+  "Hook for `tibetan-cascade-after-fetch-functions' (§5.64): request
+the discussion of every sentence of SENTENCES whose cascade file in
+FOLDER is ready (Claude + DharmaMitra + a reference translation) and
+has none — the case of a reference added after the sentence was
+analysed.  Returns the list of files requested."
+  (let ((files '()))
+    (dolist (s sentences (nreverse files))
+      (let ((file (tibetan-sentence--filepath (plist-get s :sent-num)
+                                              folder source-file)))
+        (when (and (file-exists-p file)
+                   (not (tibetan-discussion--present-p file))
+                   (tibetan-discussion--ready-p (tibetan-discussion--inputs file))
+                   (tibetan-discussion--request file))
+          (push file files))))))
+
+(add-hook 'tibetan-cascade-after-fetch-functions #'tibetan-discussion-fetch)
 
 ;;;###autoload
 (defun tibetan-translation-compare-dwim ()

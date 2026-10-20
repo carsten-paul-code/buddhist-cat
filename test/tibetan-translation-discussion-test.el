@@ -360,6 +360,29 @@ file while one is in flight is a no-op."
             (should (= 2 submits)))
         (when added (setq features (delq 'gptel features)))))))
 
+
+(ert-deftest tibetan-discussion-fetched-by-c-c-u-g ()
+  "§5.64: C-c u G requests the missing discussion of a sentence whose
+Claude, DharmaMitra and reference are already there (a reference
+added later — Rahula for the Abhidharmasamuccaya); never when one
+exists; the landing runs `tibetan-discussion-after-land-functions'."
+  (tibetan-discussion-test--with-corpus "en"
+    (let ((requested '()) (landed '()))
+      (cl-letf (((symbol-function 'tibetan-cascade--fire-sentence)
+                 (lambda (&rest _) nil))
+                ((symbol-function 'tibetan-discussion--request)
+                 (lambda (f &optional _force) (push (file-name-nondirectory f) requested) t)))
+        (let ((r (tibetan-cascade-fetch (list :source src :sent-nums '(2) :label "Satz 2"))))
+          (should (equal (list (file-name-nondirectory file)) requested))
+          (should (equal 1 (plist-get r :companion))))
+        (setq requested '())
+        (let ((tibetan-discussion-after-land-functions
+               (list (lambda (f) (push (file-name-nondirectory f) landed)))))
+          (tibetan-discussion--land file tibetan-discussion-test--response))
+        (should (equal (list (file-name-nondirectory file)) landed))
+        (tibetan-cascade-fetch (list :source src :sent-nums '(2) :label "Satz 2"))
+        (should-not requested)))))
+
 (ert-deftest tibetan-discussion-command-at-point ()
   "C-c u c in a cascade source re-creates the discussion for the
 sentence at point (FORCE); in an old par-NNN file the old

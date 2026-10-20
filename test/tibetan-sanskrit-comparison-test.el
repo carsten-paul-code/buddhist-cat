@@ -322,7 +322,7 @@ without a parallel source."
         (let ((r (tibetan-cascade-fetch (list :source src :sent-nums '(1 2)
                                               :label "alles"))))
           (should (equal '("sent-002-mdo.org") requested))
-          (should (equal 1 (plist-get r :compared))))
+          (should (equal 1 (plist-get r :companion))))
         ;; Present → not requested again.
         (setq requested '())
         (tibetan-sanskrit-comparison--land file tibetan-comparison-test--response)
@@ -331,6 +331,15 @@ without a parallel source."
         ;; Sanskrit source itself: no parallel → nothing.
         (tibetan-cascade-fetch (list :source sa-src :sent-nums '(1) :label "Satz 1"))
         (should-not requested)))))
+
+
+(ert-deftest tibetan-comparison-after-land-hook ()
+  (tibetan-comparison-test--with-corpus "en"
+    (let ((landed '()))
+      (let ((tibetan-sanskrit-comparison-after-land-functions
+             (list (lambda (f) (push (file-name-nondirectory f) landed)))))
+        (tibetan-sanskrit-comparison--land file tibetan-comparison-test--response))
+      (should (equal '("sent-002-mdo.org") landed)))))
 
 (ert-deftest tibetan-comparison-command-at-point ()
   "`tibetan-sanskrit-comparison-dwim' (re)requests the comparison for

@@ -2450,9 +2450,17 @@ beides Fehlermeldungen statt Analyse."
 (defvar tibetan-cascade-after-fetch-functions nil
   "Functions called at the end of `tibetan-cascade-fetch' (C-c u G)
 with (SOURCE-FILE SENTENCES FOLDER) — SENTENCES the walker plists of
-the whole scope.  Each returns the number of companion requests it
-queued (or nil); the sum is reported as :compared.  §5.64: the
-Sanskrit comparison registers here.")
+the whole scope.  Each returns the LIST of cascade files it queued a
+companion request for (or nil); the total is reported as :companion.
+§5.64: the Sanskrit comparison and the discussion register here.")
+
+(defvar tibetan-cascade-fetch-done-functions nil
+  "Functions called last in `tibetan-cascade-fetch' with (SOURCE-FILE
+SENTENCES FOLDER REQUESTED) — REQUESTED the cascade files that got a
+request of any kind in this fetch (Claude/DM fire or companion).
+Not run when the user declined the fetch.  §5.64: the discussion
+paper builds the papers of the sentences that needed nothing and
+remembers the rest.")
 
 (defun tibetan-cascade-fetch (scope)
   "Fetch Claude + DharmaMitra for the sentences of SCOPE (§5.60).
@@ -2491,7 +2499,8 @@ count.  Returns (:sentences N :created N :fired N :complete N)."
                       (y-or-n-p
                        (format "%s: %d Sätze an Claude + DharmaMitra senden? "
                                label (length todo))))))
-         (fired 0))
+         (fired 0)
+         (requested '()))
     (when go
       (dolist (s todo)
         (condition-case err
@@ -2500,28 +2509,40 @@ count.  Returns (:sentences N :created N :fired N :complete N)."
                        (tibetan-cascade--fire-plist
                         (plist-get s :sent-num) (plist-get s :segs))
                        src folder))
-              (cl-incf fired))
+              (cl-incf fired)
+              (push (tibetan-sentence--filepath (plist-get s :sent-num)
+                                                folder src)
+                    requested))
           (error (message "Abruf übersprungen (Satz %s): %s"
                           (plist-get s :sent-num)
                           (error-message-string err))))))
-    ;; §5.64: companion requests (the Sanskrit comparison) ride the
-    ;; same explicit fetch — for every sentence of the scope, complete
-    ;; or not; skipped when the user declined the fetch above.
-    (let ((compared 0))
-      (unless (and todo (not go))
+    ;; §5.64: companion requests (Sanskrit comparison, discussion) ride
+    ;; the same explicit fetch — for every sentence of the scope,
+    ;; complete or not; skipped when the user declined the fetch above.
+    (let ((companion 0)
+          (declined (and todo (not go))))
+      (unless declined
         (dolist (f tibetan-cascade-after-fetch-functions)
           (condition-case err
-              (setq compared (+ compared (or (funcall f src sentences folder) 0)))
+              (let ((files (funcall f src sentences folder)))
+                (when (listp files)
+                  (setq companion (+ companion (length files))
+                        requested (append files requested))))
             (error (message "Begleit-Abruf übersprungen (%s): %s"
                             f (error-message-string err))))))
       (message "%s: %d Satz/Sätze — %d angelegt, %d abgerufen, %d vollständig%s%s"
                label (length sentences) created fired
                (- (length sentences) (length todo))
-               (if (> compared 0) (format ", %d Sanskrit-Vergleich(e)" compared) "")
-               (if (and todo (not go)) " (Abruf abgelehnt)" ""))
+               (if (> companion 0)
+                   (format ", %d Begleit-Abruf(e) (Diskussion/Sanskrit-Vergleich)" companion)
+                 "")
+               (if declined " (Abruf abgelehnt)" ""))
+      (unless declined
+        (run-hook-with-args 'tibetan-cascade-fetch-done-functions
+                            src sentences folder (delete-dups requested)))
       (list :sentences (length sentences) :created created
             :fired fired :complete (- (length sentences) (length todo))
-            :compared compared))))
+            :companion companion))))
 
 ;;;###autoload
 (defun tibetan-fetch ()
