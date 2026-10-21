@@ -3,7 +3,11 @@
 This file briefs Claude Code (or any other Claude surface) picking up
 work on **tibetan-cat.el**, Carsten Paul's Emacs-Lisp Computer-Assisted
 Translation (CAT) system for Classical Tibetan. Read it in full before
-editing. Last updated 2026-10-21 (§5.65: METRUM + REZITATIONSPAUSEN —
+editing. Last updated 2026-10-21 (§5.66: WORTBILDUNG ALS 2. ZEILE —
+Sanskrit-Glossentabellen tragen Präfix + √Wurzel + Suffix je Wort
+(Claude-Begleitabruf zu C-c u G, Zettel-Wortbildung als Vorgabe,
+`** Word Formation'); Bugfix Formlabel am ersten Semikolon; ERT 2579.
+Previous: §5.65: METRUM + REZITATIONSPAUSEN —
 Sanskrit-Skansion, Metrum-Erkennung (21 Sama-Metren, Upajāti,
 Puṣpitāgrā, Vaitālīya/Aupacchandasika, Śloka, Āryā-Familie) und
 Pausen ` ¦ ' / ` | ' als `** Metre' vorn in * Reading, im Handout und
@@ -4007,6 +4011,51 @@ migrieren beim nächsten Regenerate (editierte `** Gloss Tables`
 bleiben per §5.54-Schutz stehen).  Suite 2339 → **2345 ERT**
 (0 unexpected, 1 skip); BDD 250; compile clean; REFERENCE.org je
 def-Commit.
+
+### 5.66 Wortbildung (Präfix + √Wurzel) als 2. Zeile der Sanskrit-Glossentabellen (done, 2026-10-21)
+
+Carsten (21.10.): „Mein Sanskrit ist noch sehr, sehr basic.  Ich möchte
+die Reading-Klassen auch dafür nutzen, das zu ändern.  Für die Zettel
+haben wir eine Funktion, die Präfix und Wurzel zerlegt.  Das hätte ich
+gerne in der Tabelle als zusätzliche Zeile (als 2.)."  Commits
+`e8e74a6' (Bugfix vorab) `194c225' `5fbb57d'; Korpus `c14700fd'.
+
+- **Bugfix vorab** (`e8e74a6'): das Formlabel der Word Analysis wurde
+  hinter dem LETZTEN Semikolon gesucht; Kommentar in Klammern mit
+  eigenem Semikolon („(compound; subject …)") landete in Zeile 3.
+  Jetzt: erstes Semikolon bis zur Klammer.  TĀ: 2 Sätze neu gerendert.
+- **Die Zettel-„Funktion" ist keine Rechenregel**: :ETYMOLOGY: schreibt
+  Claude beim Anlegen (SKOS-DESIGN.org).  Die parallele Sitzung (`d86e170',
+  §5.63-Nachtrag) zeigt sie im Tooltip und über C-c u z w.  Für die
+  Tabelle darum dasselbe Prinzip: NEUES Modul
+  `persist/tibetan-word-formation.el' — kleiner Claude-Abruf je
+  Sanskrit-Satz über die Wörter der Word Analysis (Form, Lemma,
+  Label), Antwort `### Segment N' / `- WORT — BILDUNG' in kompakter
+  Notation (vi-√muc-ta · √iṣ-ana · √vid · √kṛ-yā · sva-tantra-ya · —;
+  keine Glossen, keine Endungen).  Lemmata mit Zettel-Wortbildung
+  gehen als CURATED-Vorgabe mit (`--curated' über
+  `tibetan-zettel-highlight--etymology', DRY `5fbb57d').  Landung
+  `** Word Formation' in * Sanskrit Analysis nach der Word Analysis,
+  dann reines Re-Render.  Auslösung: Haken nach der Claude-Landung
+  (`tibetan-word-formation-auto', Default t) und C-c u G für schon
+  analysierte Sätze (meldet KEINEN Begleiter — das Diskussionspapier
+  zeigt die Tabellen nicht und darf nicht darauf warten);
+  `tibetan-word-formation-dwim' (Menü) erzwingt neu.  Abruf über
+  `tibetan-discussion--submit'.
+- **Lesemodul/Tabelle/Regenerate**: Parser `tibetan-sanskrit-reading-
+  parse-word-formation', textkeyed Dynamik `--word-formation', Token
+  :formation; `tibetan-gloss-table--unit-rows' liefert bei sa mit
+  Bildung VIER Zeilen (Wort / Bildung / Glosse / Label), sonst drei;
+  der Kaskaden-Regenerate liest, bindet und setzt `** Word Formation'
+  wieder ein (wie Word Analysis); hartes require des Lesemoduls.
+  Bearbeitete Glossentabellen (§5.54-Schutz) bekommen die Zeile nicht.
+
+**Stand Korpus:** noch kein Satz hat eine Wortbildung — sie kommt mit
+dem nächsten C-c u G (für TĀ 1–4, 1001/1002 nur der kleine Abruf).
+**Offen:** Wortbildung im Handout-Vokabular (nur auf Zuruf).
+
+Suite ERT 2569 → **2579** (0 unexpected, 1 Skip); BDD grün; compile
+sauber; REFERENCE.org regeneriert.
 
 ### 5.65 Metrum und Rezitationspausen für Sanskrit-Verse (done, 2026-10-21)
 
