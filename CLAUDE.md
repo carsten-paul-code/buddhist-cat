@@ -3,7 +3,12 @@
 This file briefs Claude Code (or any other Claude surface) picking up
 work on **tibetan-cat.el**, Carsten Paul's Emacs-Lisp Computer-Assisted
 Translation (CAT) system for Classical Tibetan. Read it in full before
-editing. Last updated 2026-10-18 (§5.63: ZETTEL-HERVORHEBUNG — jedes
+editing. Last updated 2026-10-21 (§5.65: METRUM + REZITATIONSPAUSEN —
+Sanskrit-Skansion, Metrum-Erkennung (21 Sama-Metren, Upajāti,
+Puṣpitāgrā, Vaitālīya/Aupacchandasika, Śloka, Āryā-Familie) und
+Pausen ` ¦ ' / ` | ' als `** Metre' vorn in * Reading, im Handout und
+im reMarkable-Papier; TĀ 1: 344 von 348 Versen erkannt; ERT 2569.
+Previous: §5.63: ZETTEL-HERVORHEBUNG — jedes
 Wort mit Zettel in Quelltext und Analyse-Dateien unterstrichen und
 verlinkt (RET/Klick → Research-Instanz); Index `skos_index.py`, keine
 Stamm-Raterei: Analyse über die Word Analysis, Quelltext als Projektion
@@ -4002,6 +4007,64 @@ migrieren beim nächsten Regenerate (editierte `** Gloss Tables`
 bleiben per §5.54-Schutz stehen).  Suite 2339 → **2345 ERT**
 (0 unexpected, 1 skip); BDD 250; compile clean; REFERENCE.org je
 def-Commit.
+
+### 5.65 Metrum und Rezitationspausen für Sanskrit-Verse (done, 2026-10-21)
+
+Carsten (21.10., Tantrāloka, nach Satz 1001 = Jayarathas erstem
+Einleitungsvers): „Es geht mit einer Rezitation los, da bin ich mit
+der Metrik nicht klar gekommen.  Ginge es, dass wir eine Kennzeichnung
+der Pausen beim Rezitieren reinbekommen?"  1001 ist Śārdūlavikrīḍita
+\(Pause nach der 12. Silbe), die Einleitungsverse wechseln das Metrum,
+TĀ 1.1 ist Nardaṭaka.  Commits `ac176ef' `022efe1' `fe40e90'; Korpus
+`0c5d2a53'.
+
+- **Modul** `analysis/tibetan-sanskrit-metre.el' (rein, IAST):
+  Skansion (`tibetan-metre-syllables'/`-scheme': schwer = langer Vokal,
+  Anusvāra/Visarga, 2+ Konsonanten bis zum nächsten Vokal über
+  Wortgrenzen, Schlusskonsonant; Aspiraten = 1 Konsonant; Avagraha,
+  Daṇḍas, Ziffern keine Silben).  Erkennung `tibetan-metre-identify'
+  über die Zeilen EINES Verses: 21 Sama-Metren mit Yati (Macdonell
+  App. II; Pṛthvī/Praharṣiṇī/Mattamayūra nach Vṛttaratnākara),
+  Upajāti-Mischungen, Puṣpitāgrā, Vaitālīya/Aupacchandasika nach Moren
+  \(6/8 Moren + Schluss), Śloka (Mehrheit der geraden Pādas ⏑ – ⏑ in
+  5–7), Āryā/Gīti/Upagīti/Udgīti/Āryāgīti nach Moren (Zäsur nach 12).
+  PROSA-SPERRE: Zeilenenden müssen Pāda-Grenzen sein; eine Zeile gilt
+  nur mit `//' als Vers (die Durchsicht fand Viveka-Prosa 1081/1099/
+  1106 mit zufällig 32/48 Silben als „Śloka").  Pausen
+  `tibetan-metre-mark-segments': ` ¦ ' Zäsur, ` | ' Pāda-Ende in der
+  Zeile, im Wort an der Silbengrenze (erster Konsonant einer Gruppe
+  schließt: rahas¦yā).  `tibetan-metre-section' (der Block),
+  `-label', `-table'.  Nicht erkannter Vers (`//', Zeilen ≤ 44
+  Silben) → sichtbarer Hinweis mit Skansion je Zeile.
+- **Kaskade**: `tibetan-cascade--reading-section' setzt bei sa
+  `** Metre' als ERSTES Kind von * Reading (vor die Glossentabellen;
+  enthält weder `*** Segment' noch ⟦N⟧, der Edit-Schutz-Restore
+  ersetzt in place).  Deterministisch, Regenerate baut ihn frisch.
+- **Ausdrucke**: `tibetan-handout--seg-list' (geteilt) setzt die
+  markierten Zeilen ein; `--metre' liefert Label + Tabelle; Handout:
+  Metrum-Zeile über jedem Vers im Text-Teil + `** Metrum' mit
+  Silbentabelle je Satz (auch ohne Analysedatei); Papier: Metrum-Zeile
+  + Pausen.  ⏑ → \newunicodechar \smile (Libertinus hat es nicht).
+- **Durchsicht TĀ 1** (Verse + Viveka): Śloka 318, Gīti 4,
+  Vasantatilakā 4, Udgīti 3, Śārdūla 2, Upajāti 2, Upagīti 2, Āryā 2,
+  Aupacchandasika 2 (1.13, 1.333), Nardaṭaka (1.1), Āryāgīti (1.21),
+  Pṛthvī, Sragdharā, Mandākrāntā.  Nicht erkannt: 1.48 (33 Silben —
+  GRETIL *saṃbhaveta*, metrisch *saṃbhavet*), 1.98 (2. Halbvers 29
+  Moren), 1.104 (drei Halbverse), 1.201 (Śloka-Halbzeile + zitierte
+  Rathoddhatā in einem Satz).
+- **Korpus**: alle 444 Satzdateien render-only neu (migrate-structure-
+  v2; Trockenlauf auf Kopie, Diff nur Metre + LAST_ANALYZED + eine
+  verschobene Leerzeile in PT bei 6 Dateien; Zweitlauf idempotent).
+  Die schon hochgeladenen reMarkable-Papiere (TĀ 1–4, 1000–1002)
+  tragen die Pausen erst nach erneutem C-c u D.
+
+**Offen / Ausbau:** Kokilaka (Nardaṭaka mit Yati 7/13) nicht getrennt;
+gemischte Sätze (1.201) je Zeilengruppe erkennen; Vipulā-Formen des
+Śloka benennen statt nur zu vermerken.  MSA/AS-Korpora tragen den
+Abschnitt erst nach ihrem nächsten Regenerate.
+
+Suite ERT 2553 → **2569** (0 unexpected, 1 Skip); BDD grün; compile
+sauber; REFERENCE.org regeneriert.
 
 ### 5.64 Diskussionspapier fürs reMarkable (C-c u D) + Sanskrit–Tibetisch-Vergleich (done, 2026-10-20)
 
