@@ -32,6 +32,8 @@
 
 (declare-function tibetan-cascade--scope-at-point "tibetan-cascade" ())
 (declare-function tibetan-cascade--clean-slot-text "tibetan-cascade" (body))
+(declare-function tibetan-cascade--collect-sentences "tibetan-cascade" ())
+(declare-function tibetan-analysis-make-short-name "tibetan-analysis-persist" (source-file))
 (declare-function tibetan-discussion-read "tibetan-translation-discussion" (file))
 (declare-function tibetan-metre-label "tibetan-sanskrit-metre" (segments))
 (declare-function tibetan-metre-table "tibetan-sanskrit-metre" (segments))
@@ -297,14 +299,16 @@ only grammar there is and goes through the same filter."
           (push (cons (car g) bullets) out))))
     (nreverse out)))
 
-(defun tibetan-handout--seg-list (segs sa)
+(defun tibetan-handout--seg-list (segs sa &optional plain)
   "SEGS ((N . TEXT) …) of a sentence as the renderer's plists (:num
 :wylie :uchen): Wylie from the Uchen for Tibetan, the IAST itself as
 :wylie and no :uchen for Sanskrit (SA) — for a Sanskrit VERSE with
-its recitation pauses (` | ' pāda end, ` ¦ ' yati; §5.65).  Shared
+its recitation pauses (` | ' pāda end, ` ¦ ' yati; §5.65), unless
+PLAIN (the synopsis prints the edition's wording, §5.68).  Shared
 with the discussion paper (§5.64)."
-  (let ((marked (and sa (tibetan-metre-mark-segments
-                         (mapcar (lambda (s) (string-trim (cdr s))) segs)))))
+  (let ((marked (and sa (not plain)
+                     (tibetan-metre-mark-segments
+                      (mapcar (lambda (s) (string-trim (cdr s))) segs)))))
     (cl-loop for s in segs for i from 0
              collect (let ((text (string-trim (cdr s))))
                        (list :num (car s)
@@ -358,6 +362,334 @@ tool's Translation/Vocabulary/Grammar slots — Provided Translations
                       :grammar (tibetan-handout--grammar
                                 (plist-get sections :grammar))
                       :discussion (tibetan-discussion-read file)))))))
+
+;; ----------------------------------------------------------------------------
+;; §5.68 — synopsis data: sibling cascades by Section title, quotations
+;; ----------------------------------------------------------------------------
+;; Carsten (21.10.), after the PhD students' preparation sheet for
+;; MSA IX.60 (Zhoulin Li): the handout gets a front part in their
+;; genre — sigla, the edition locators of the verse, the synoptic
+;; table of the parallel cascades (Sanskrit | Tibetan), and the
+;; commentary (Sthiramati) with the words it quotes from the verse in
+;; bold and those from the bhāṣya underlined.  Everything comes from
+;; the cascade files themselves (same Section titles, `:FOLIO:',
+;; `:VERSE:'); nothing needs an API call.  The quotation marking is a
+;; syllable heuristic — the sheet's human markup is the gold standard
+;; its test is measured against.
+
+(defun tibetan-handout--section-sentences (source-file label)
+  "The sentences of SOURCE-FILE under the Section heading LABEL
+\(e.g. \"Section IX.60\" — the same title in every cascade of a
+reading): the walker's plists (:sent-num :segs :verse :folios …) in
+file order; nil when the file or the Section is missing."
+  (when (and source-file (file-readable-p source-file))
+    (condition-case nil
+        (with-temp-buffer
+          (insert-file-contents source-file)
+          (org-mode)
+          (cl-remove-if-not
+           (lambda (p) (equal (plist-get p :section-label) label))
+           (tibetan-cascade--collect-sentences)))
+      (error nil))))
+
+(defun tibetan-handout--section-id (label)
+  "\"IX.60\" for the Section heading LABEL \"Section IX.60\"."
+  (string-trim (replace-regexp-in-string "\\`Section[ \t]+" "" (or label ""))))
+
+(defconst tibetan-handout--quote-function-syllables
+  '("pa" "ba" "po" "bo" "ma" "pa'i" "ba'i" "po'i" "yang" "kyang" "'ang"
+    "yin" "min" "'o" "no" "to" "do" "ro" "so" "go" "ngo" "lo" "mo"
+    "zhes" "ces" "shes" "bya" "smos")
+  "Wylie syllables that never count as CONTENT when a quotation is
+weighed (§5.68) — on top of the case/converb particles of
+`tibetan-handout--particle-syllables': nominalisers and their
+genitives, concessives, the copula and final particles, the quote
+markers themselves.")
+
+(defun tibetan-handout--quote-function-p (syl)
+  "Non-nil when the Wylie syllable SYL carries no content."
+  (or (member syl tibetan-handout--quote-function-syllables)
+      (member syl (tibetan-handout--particle-syllables))))
+
+(defun tibetan-handout--wylie-tokens (wylie)
+  "The tokens of WYLIE as ((BEG . END) …): syllables and the shad `/'
+\(its own token — the converter attaches it: `dbye ba/ /')."
+  (let ((pos 0) (out '()))
+    (while (string-match "[^ \t\n/]+\\|/" wylie pos)
+      (push (cons (match-beginning 0) (match-end 0)) out)
+      (setq pos (match-end 0)))
+    (nreverse out)))
+
+(defun tibetan-handout--wylie-syllables (strings)
+  "The syllable sequence of the Wylie STRINGS (shad kept as `/' so a
+run never crosses a pāda or daṇḍa boundary)."
+  (cl-loop for s in strings
+           append (mapcar (lambda (p) (substring s (car p) (cdr p)))
+                          (tibetan-handout--wylie-tokens s))))
+
+(defun tibetan-handout--subseq-p (sub seq)
+  "Non-nil when the token list SUB occurs consecutively in SEQ."
+  (let ((n (length sub)) (found nil))
+    (while (and (not found) seq (>= (length seq) n))
+      (when (cl-every #'equal sub seq)
+        (setq found t))
+      (setq seq (cdr seq)))
+    found))
+
+(defun tibetan-handout--mark-quotes (segments verse bhasya)
+  "SEGMENTS (the Wylie strings of a commentary passage, in order)
+with the commentary's quotations marked: per segment a list of
+\(TEXT . KIND) runs that concatenate to the segment verbatim, KIND
+`verse' where the run is the wording of VERSE (Wylie strings of the
+kārikā), `bhasya' where it is that of BHASYA (the base text's prose),
+nil otherwise.
+
+Two rules, applied to the whole passage (lemma and marker are often
+split by a shad and a sentence boundary — `… yin te/ /' `zhes bya ba
+la/'): (1) the LEMMA before a quote marker `zhes/ces/shes bya' or
+`… smos' (back to the previous shad, at most 16 syllables; not the
+closing formula `zhes bya ba'i don to' / `zhes bya ste') is a verse
+quotation when at least two thirds of its content syllables stand in
+the verse (ties go to the verse: a lemma quotes the kārikā first),
+else a bhāṣya quotation by the same measure; (2) elsewhere a RUN of at
+least two content syllables found consecutively in the bhāṣya is a
+bhāṣya echo (ties go to the bhāṣya: prose terms the commentary takes
+up), one found only in the verse a verse echo.  Known limit: the
+commentator's own rendering of the verse (Sthiramati: `thog ma … gnas'
+for `dang po … rten') is not recognised."
+  (let* ((vseq (tibetan-handout--wylie-syllables verse))
+         (bseq (tibetan-handout--wylie-syllables bhasya))
+         (vset (cl-remove "/" vseq :test #'equal))
+         (bset (cl-remove "/" bseq :test #'equal))
+         (toks (apply #'vector
+                      (cl-loop for s in segments for i from 0
+                               append (mapcar (lambda (p)
+                                                (list i (car p) (cdr p)
+                                                      (substring s (car p) (cdr p))
+                                                      nil))
+                                              (tibetan-handout--wylie-tokens s)))))
+         (n (length toks))
+         (str (lambda (i) (nth 3 (aref toks i))))
+         (kind (lambda (i) (nth 4 (aref toks i))))
+         (mark (lambda (i k) (setcar (nthcdr 4 (aref toks i)) k)))
+         (ratio (lambda (content set)
+                  (/ (float (cl-count-if (lambda (s) (member s set)) content))
+                     (length content)))))
+    ;; (1) lemma before a quote marker.
+    (dotimes (i n)
+      (when (and (< (1+ i) n)
+                 (member (funcall str i) '("zhes" "ces" "shes"))
+                 (member (funcall str (1+ i)) '("bya" "smos"))
+                 (not (and (< (+ i 2) n)
+                           (member (funcall str (+ i 2)) '("ba'i" "ste")))))
+        (let ((j (1- i)) (lemma '()))
+          (while (and (>= j 0) (equal (funcall str j) "/"))
+            (setq j (1- j)))
+          (while (and (>= j 0) (< (length lemma) 16)
+                      (not (equal (funcall str j) "/")))
+            (push j lemma)
+            (setq j (1- j)))
+          (let* ((content (cl-remove-if #'tibetan-handout--quote-function-p
+                                        (mapcar str lemma)))
+                 (vr (if content (funcall ratio content vset) 0))
+                 (br (if content (funcall ratio content bset) 0))
+                 (k (cond ((and content (>= vr 0.66) (>= vr br)) 'verse)
+                          ((and content (>= br 0.66)) 'bhasya))))
+            (when k
+              (dolist (idx lemma) (funcall mark idx k)))))))
+    ;; (2) runs of the base text's wording — content syllable to
+    ;; content syllable (`rang bzhin ni chos kyi sku' is two echoes,
+    ;; `rang bzhin' and `chos kyi sku', not one).
+    (let ((i 0))
+      (while (< i n)
+        (if (or (funcall kind i) (equal (funcall str i) "/")
+                (tibetan-handout--quote-function-p (funcall str i)))
+            (setq i (1+ i))
+          (let ((best 0) (best-kind nil) (len 2))
+            (while (and (<= (+ i len) n) (<= len 12))
+              (let* ((idxs (number-sequence i (+ i len -1)))
+                     (run (mapcar str idxs)))
+                (if (or (member "/" run)
+                        (cl-some kind idxs))
+                    (setq len 100)
+                  (when (and (>= (cl-count-if-not #'tibetan-handout--quote-function-p run) 2)
+                             (not (tibetan-handout--quote-function-p (car (last run)))))
+                    (cond ((tibetan-handout--subseq-p run bseq)
+                           (setq best len best-kind 'bhasya))
+                          ((tibetan-handout--subseq-p run vseq)
+                           (setq best len best-kind 'verse))))
+                  (setq len (1+ len)))))
+            (if (zerop best)
+                (setq i (1+ i))
+              (dotimes (d best) (funcall mark (+ i d) best-kind))
+              (setq i (+ i best)))))))
+    ;; Runs per segment, the gaps verbatim.
+    (cl-loop
+     for s in segments for si from 0
+     collect
+     (let ((pos 0) (runs '()) (cur nil) (beg nil) (end nil))
+       (cl-flet ((flush ()
+                   (when cur
+                     (when (> beg pos)
+                       (push (cons (substring s pos beg) nil) runs))
+                     (push (cons (substring s beg end) cur) runs)
+                     (setq pos end cur nil))))
+         (dotimes (i n)
+           (when (= (nth 0 (aref toks i)) si)
+             (let ((k (funcall kind i)))
+               (cond ((and k (eq k cur)) (setq end (nth 2 (aref toks i))))
+                     (k (flush) (setq cur k beg (nth 1 (aref toks i))
+                                      end (nth 2 (aref toks i))))
+                     (t (flush))))))
+         (flush)
+         (when (< pos (length s))
+           (push (cons (substring s pos) nil) runs))
+         (nreverse runs))))))
+
+(defun tibetan-handout--siglum (file)
+  "The siglum of the cascade FILE: its `#+TIBETAN_SIGLUM:', else the
+short name of the file."
+  (or (plist-get (tibetan-analysis--read-source-metadata file) :siglum)
+      (tibetan-analysis-make-short-name file)))
+
+(defun tibetan-handout--folio-locator (sentences)
+  "\"135b5–136a1\" from the first and last `:folios' of SENTENCES (the
+edition letter stripped — the siglum carries it), \"135b5\" when they
+coincide, nil without folios."
+  (let ((folios (cl-loop for s in sentences
+                         append (mapcar #'cdr (plist-get s :folios)))))
+    (when folios
+      (let* ((strip (lambda (f) (string-trim
+                                 (replace-regexp-in-string "\\`[A-Za-z]+" "" f))))
+             (a (funcall strip (car folios)))
+             (b (funcall strip (car (last folios)))))
+        (if (equal a b) a (format "%s–%s" a b))))))
+
+(defun tibetan-handout--synopsis-column (file label)
+  "One column of the synopsis: Section LABEL of the cascade FILE as
+\(:siglum :lang :locator :sentences), :sentences ((:sent-num :verse
+:segs ((:num :wylie) …)) …) — Wylie for Tibetan, the IAST without
+recitation pauses for Sanskrit; :locator the folio range, else the
+verse id, else the Section id."
+  (let* ((lang (tibetan-analysis--resolve-source-lang file))
+         (sa (equal lang "sa"))
+         (sents (tibetan-handout--section-sentences file label))
+         (verse (cl-find-if (lambda (s) (plist-get s :verse)) sents)))
+    (list :siglum (tibetan-handout--siglum file)
+          :lang lang
+          :locator (or (tibetan-handout--folio-locator sents)
+                       (and verse (plist-get verse :verse))
+                       (tibetan-handout--section-id label))
+          :sentences (mapcar (lambda (s)
+                               (list :sent-num (plist-get s :sent-num)
+                                     :verse (plist-get s :verse)
+                                     :segs (tibetan-handout--seg-list
+                                            (plist-get s :segs) sa t)))
+                             sents))))
+
+(defun tibetan-handout--synopsis-commentary (file label reference)
+  "The commentary column of Section LABEL in the cascade FILE: a
+`tibetan-handout--synopsis-column' whose segments carry :runs
+\(`tibetan-handout--mark-quotes' against the verse and prose wording
+of the column REFERENCE — the same language's base text; no marks
+without one) and whose sentences carry :translation — the tool's own
+\(`tibetan-handout--translation'), never a reference translation."
+  (let* ((col (tibetan-handout--synopsis-column file label))
+         (sents (plist-get col :sentences))
+         (wylie-of (lambda (s) (mapcar (lambda (g) (plist-get g :wylie))
+                                       (plist-get s :segs))))
+         (ref-sents (plist-get reference :sentences))
+         (verse (cl-loop for s in ref-sents when (plist-get s :verse)
+                         append (funcall wylie-of s)))
+         (bhasya (cl-loop for s in ref-sents unless (plist-get s :verse)
+                          append (funcall wylie-of s)))
+         (marked (tibetan-handout--mark-quotes
+                  (cl-loop for s in sents append (funcall wylie-of s))
+                  verse bhasya))
+         (folder (file-name-as-directory
+                  (expand-file-name "analysis" (file-name-directory file)))))
+    (plist-put
+     col :sentences
+     (mapcar (lambda (s)
+               (let* ((segs (mapcar (lambda (g)
+                                      (append g (list :runs (pop marked))))
+                                    (plist-get s :segs)))
+                      (sent-file (tibetan-sentence--filepath
+                                  (plist-get s :sent-num) folder file))
+                      (tr (and (file-exists-p sent-file)
+                               (tibetan-handout--translation
+                                sent-file
+                                (mapcar (lambda (g) (plist-get g :num)) segs)
+                                (tibetan-analysis--read-claude-sections sent-file)))))
+                 (list :sent-num (plist-get s :sent-num)
+                       :verse (plist-get s :verse)
+                       :segs segs
+                       :translation tr)))
+             sents))))
+
+(defun tibetan-handout--synopsis-data (source-file label)
+  "The synopsis of Section LABEL for the handout of SOURCE-FILE:
+\(:id :label :lead :parallels :commentaries) — the lead column, one
+column per `#+TIBETAN_SYNOPSIS:', one commentary per
+`#+TIBETAN_COMMENTARY:' (quotations marked against the first column
+of its language).  Paths resolve relative to the source."
+  (let* ((meta (tibetan-analysis--read-source-metadata source-file))
+         (dir (file-name-directory (expand-file-name source-file)))
+         (lead (tibetan-handout--synopsis-column source-file label))
+         (parallels (mapcar (lambda (rel)
+                              (tibetan-handout--synopsis-column
+                               (expand-file-name rel dir) label))
+                            (plist-get meta :synopsis)))
+         (columns (cons lead parallels))
+         (commentaries
+          (mapcar (lambda (rel)
+                    (let* ((f (expand-file-name rel dir))
+                           (lang (tibetan-analysis--resolve-source-lang f))
+                           (ref (cl-find lang columns
+                                         :key (lambda (c) (plist-get c :lang))
+                                         :test #'equal)))
+                      (tibetan-handout--synopsis-commentary f label ref)))
+                  (plist-get meta :commentary))))
+    (list :id (tibetan-handout--section-id label)
+          :label label
+          :lead lead
+          :parallels parallels
+          :commentaries commentaries)))
+
+(defun tibetan-handout--scope-sections (source-file sent-nums)
+  "The Section labels of SENT-NUMS in SOURCE-FILE — each once, in
+order of first appearance; sentences outside any Section skipped."
+  (when (and source-file (file-readable-p source-file))
+    (condition-case nil
+        (with-temp-buffer
+          (insert-file-contents source-file)
+          (org-mode)
+          (let ((all (tibetan-cascade--collect-sentences))
+                (labels '()))
+            (dolist (n sent-nums)
+              (let ((label (plist-get (cl-find n all :key (lambda (p) (plist-get p :sent-num)))
+                                      :section-label)))
+                (when (and label (not (member label labels)))
+                  (push label labels))))
+            (nreverse labels)))
+      (error nil))))
+
+(defun tibetan-handout--sigla-text (source-file meta)
+  "The body of the `#+TIBETAN_SIGLA:' file of SOURCE-FILE (META its
+metadata) — org as Carsten wrote it, keyword and comment lines
+\(`#…') dropped; nil when absent or empty."
+  (let* ((rel (plist-get meta :sigla))
+         (file (and rel (expand-file-name
+                         rel (file-name-directory (expand-file-name source-file))))))
+    (when (and file (file-readable-p file))
+      (let ((body (with-temp-buffer
+                    (insert-file-contents file)
+                    (string-trim
+                     (mapconcat #'identity
+                                (cl-remove-if (lambda (l) (string-prefix-p "#" l))
+                                              (split-string (buffer-string) "\n"))
+                                "\n")))))
+        (unless (string-empty-p body) body)))))
 
 ;; ============================================================================
 ;; B2 — renderer (pure: spec → org string)
@@ -466,18 +798,29 @@ are defused with an empty export snippet in front."
         (format "Satz %d" first)
       (format "Sätze %d–%d" first last))))
 
+(defcustom tibetan-handout-cjk-font "Hiragino Mincho ProN"
+  "Fallback font for CJK characters in the handout (fontspec name),
+e.g. Japanese titles in the sigla (Nagao 2007) — §5.68; nil for
+none."
+  :type '(choice (const nil) string)
+  :group 'tibetan-cat)
+
 (defun tibetan-handout--latex-fonts ()
   "The font lines of the handout/paper preamble: Libertinus as main
-font WITH `tibetan-handout-tibetan-font' as luaotfload fallback —
-every Tibetan character anywhere in the document (discussion point
-titles, concept notes) renders; before 20.10.2026 only the explicit
-\\tibfont Uchen line had Tibetan glyphs, the rest showed boxes.
-`\\tibfont' stays for the Uchen line."
+font WITH `tibetan-handout-tibetan-font' (and
+`tibetan-handout-cjk-font') as luaotfload fallbacks — every Tibetan
+character anywhere in the document (discussion point titles, concept
+notes) renders; before 20.10.2026 only the explicit \\tibfont Uchen
+line had Tibetan glyphs, the rest showed boxes.  `\\tibfont' stays
+for the Uchen line."
   (concat
    "#+LATEX_HEADER: \\usepackage{fontspec}\n"
    "#+LATEX_HEADER: \\usepackage{libertinus}\n"
-   (format "#+LATEX_HEADER: \\directlua{luaotfload.add_fallback(\"tibfallback\", {\"%s:mode=harf;script=tibt;\"})}\n"
-           tibetan-handout-tibetan-font)
+   (format "#+LATEX_HEADER: \\directlua{luaotfload.add_fallback(\"tibfallback\", {\"%s:mode=harf;script=tibt;\"%s})}\n"
+           tibetan-handout-tibetan-font
+           (if tibetan-handout-cjk-font
+               (format ", \"%s:mode=node;\"" tibetan-handout-cjk-font)
+             ""))
    "#+LATEX_HEADER: \\setmainfont{Libertinus Serif}[RawFeature={fallback=tibfallback}]\n"
    (format "#+LATEX_HEADER: \\newfontfamily\\tibfont{%s}[Renderer=HarfBuzz,Script=Tibetan]\n"
            tibetan-handout-tibetan-font)))
@@ -503,7 +846,10 @@ titles, concept notes) renders; before 20.10.2026 only the explicit
      "#+LATEX_CLASS_OPTIONS: [11pt,a4paper]\n"
      "#+LATEX_HEADER: \\usepackage[a4paper,left=2cm,right=6cm,top=2.2cm,bottom=2.2cm,headsep=8mm]{geometry}\n"
      (tibetan-handout--latex-fonts)
-     "#+LATEX_HEADER: \\usepackage{xcolor,fancyhdr,setspace,needspace,newunicodechar,longtable,array,enumitem,titlesec}\n"
+     "#+LATEX_HEADER: \\usepackage{xcolor,fancyhdr,setspace,needspace,newunicodechar,longtable,array,enumitem,titlesec,pdflscape}\n"
+     ;; §5.68: landscape synopsis pages, breakable underline for the
+     ;; bhāṣya quotations (org's `_x_' exports to \uline as well).
+     "#+LATEX_HEADER: \\usepackage[normalem]{ulem}\n"
      "#+LATEX_HEADER: \\newunicodechar{★}{\\ensuremath{\\star}}\n"
      "#+LATEX_HEADER: \\newunicodechar{⏑}{\\ensuremath{\\smile}}\n"
      "#+LATEX_HEADER: \\definecolor{seg}{rgb}{0.55,0.10,0.10}\\definecolor{dim}{gray}{0.40}\n"
@@ -711,16 +1057,142 @@ C-c u A."
           "{{{luecke(noch keine Grammatik)}}}\n\n")
         (tibetan-handout--discussion-block (plist-get d :discussion)))))))
 
+(defun tibetan-handout--md-to-latex (s)
+  "Claude's markdown emphasis in S as LaTeX, the rest escaped —
+for the raw export blocks of the synopsis (§5.68)."
+  (let ((out "") (pos 0) (s (or s "")))
+    (while (string-match "\\*\\*\\([^*\n]+\\)\\*\\*\\|\\*\\([^*\n]+\\)\\*" s pos)
+      (setq out (concat out
+                        (tibetan-handout--latex-escape
+                         (substring s pos (match-beginning 0)))
+                        (if (match-string 1 s)
+                            (format "\\textbf{%s}"
+                                    (tibetan-handout--latex-escape (match-string 1 s)))
+                          (format "\\emph{%s}"
+                                  (tibetan-handout--latex-escape (match-string 2 s)))))
+            pos (match-end 0)))
+    (concat out (tibetan-handout--latex-escape (substring s pos)))))
+
+(defconst tibetan-handout--conventions
+  "/Konventionen:/ *fett* = Wortlaut des Verses, _unterstrichen_ = Wortlaut des Bhāṣya (Zitate im Kommentar); hochgestellte Zahlen = Segmentnummern der jeweiligen Datei."
+  "The conventions line of the synopsis (§5.68), after the PhD
+students' sheet (bold = verse, underlined = bhāṣya).")
+
+(defun tibetan-handout--sigla-part (sigla synopsis)
+  "`* Siglen' — SIGLA (Carsten's org body) and, when there is a
+SYNOPSIS, the conventions line; \"\" without both."
+  (cond ((and (null sigla) (null synopsis)) "")
+        ((null sigla)
+         (concat tibetan-handout--conventions "\n\n"))
+        (t (concat "* Siglen\n" (string-trim-right sigla) "\n\n"
+                   (if synopsis (concat tibetan-handout--conventions "\n\n") "")))))
+
+(defun tibetan-handout--synopsis-cell (col)
+  "The LaTeX of the synopsis column COL: sentences separated by
+\\par, every segment with its number, the verse in bold."
+  (mapconcat
+   (lambda (s)
+     (mapconcat (lambda (g)
+                  (let ((text (tibetan-handout--latex-escape (plist-get g :wylie))))
+                    (format "\\segsup{%d}%s" (plist-get g :num)
+                            (if (plist-get s :verse)
+                                (format "\\textbf{%s}" text)
+                              text))))
+                (plist-get s :segs) " "))
+   (plist-get col :sentences) "\\par\n"))
+
+(defun tibetan-handout--runs-latex (runs)
+  "The LaTeX of the marked RUNS ((TEXT . KIND) …) of a segment."
+  (mapconcat (lambda (r)
+               (let ((text (tibetan-handout--latex-escape (car r))))
+                 (pcase (cdr r)
+                   ('verse (format "\\textbf{%s}" text))
+                   ('bhasya (format "\\uline{%s}" text))
+                   (_ text))))
+             runs ""))
+
+(defun tibetan-handout--commentary-latex (com)
+  "The LaTeX of the commentary column COM: its siglum and locator,
+then per sentence the marked Wylie and, when landed, the tool's
+translation in italics."
+  (concat
+   (format "\\medskip\n{\\color{seg}\\footnotesize\\bfseries %s %s}\\par\\smallskip\n"
+           (tibetan-handout--latex-escape (plist-get com :siglum))
+           (tibetan-handout--latex-escape (plist-get com :locator)))
+   (mapconcat
+    (lambda (s)
+      (let ((tr (plist-get s :translation)))
+        (concat
+         (mapconcat (lambda (g)
+                      (format "\\segsup{%d}%s" (plist-get g :num)
+                              (tibetan-handout--runs-latex
+                               (or (plist-get g :runs)
+                                   (list (cons (plist-get g :wylie) nil))))))
+                    (plist-get s :segs) " ")
+         "\\par\n"
+         (cond
+          ((plist-get tr :by-seg)
+           (concat "{\\small\\itshape "
+                   (mapconcat (lambda (p)
+                                (format "\\segsup{%d}%s" (car p)
+                                        (tibetan-handout--md-to-latex (cdr p))))
+                              (plist-get tr :by-seg) " ")
+                   "}\\par\\smallskip\n"))
+          ((plist-get tr :whole)
+           (format "{\\small\\itshape %s}\\par\\smallskip\n"
+                   (tibetan-handout--md-to-latex (plist-get tr :whole))))
+          (t "\\smallskip\n")))))
+    (plist-get com :sentences) "")))
+
+(defun tibetan-handout--synopsis-part (syn)
+  "`* Synopse <id>' for the synopsis data SYN
+\(`tibetan-handout--synopsis-data'): landscape pages with the locator
+line (siglum + folios of every column and commentary), the synoptic
+longtable of the columns and the commentaries below it."
+  (let* ((columns (cons (plist-get syn :lead) (plist-get syn :parallels)))
+         (coms (plist-get syn :commentaries))
+         (width (/ 0.98 (max 1 (length columns)))))
+    (concat
+     ;; The landscape environment opens BEFORE the heading: pdflscape
+     ;; starts a new page, and a heading set before that would stay
+     ;; behind alone on the portrait page.
+     "#+BEGIN_EXPORT latex\n\\begin{landscape}\n#+END_EXPORT\n"
+     (format "* Synopse %s\n" (plist-get syn :id))
+     "#+BEGIN_EXPORT latex\n"
+     (format "{\\footnotesize\\color{dim}%s}\\par\\medskip\n"
+             (mapconcat (lambda (c)
+                          (tibetan-handout--latex-escape
+                           (format "%s %s" (plist-get c :siglum) (plist-get c :locator))))
+                        (append columns coms) " · "))
+     (format "\\begin{longtable}{@{}%s@{}}\n"
+             (mapconcat (lambda (_) (format "p{%.2f\\linewidth}" width)) columns ""))
+     (mapconcat (lambda (c) (format "\\textbf{%s}"
+                                    (tibetan-handout--latex-escape (plist-get c :siglum))))
+                columns " & ")
+     " \\\\ \\hline\n"
+     (mapconcat #'tibetan-handout--synopsis-cell columns " &\n")
+     " \\\\\n\\end{longtable}\n"
+     (mapconcat #'tibetan-handout--commentary-latex coms "")
+     "\\end{landscape}\n#+END_EXPORT\n\n")))
+
 (defun tibetan-handout-render (spec)
   "The handout org text for SPEC — a plist (:title :scope :source-name
-:date :sentences), :sentences being `tibetan-handout--sentence-data'
-plists.  Pure: no file access.  Layout (Carsten 09.10.): `* Text'
-\(the whole passage: Uchen + Wylie per segment, room for handwriting,
-6 cm free right margin on every page), then per sentence `* Satz N'
-with Übersetzung / Vokabular / Grammatik.  The word \"Claude\" never
-appears (headings are German; the slots are named by content)."
+:date :sentences [:sigla :synopsis]), :sentences being
+`tibetan-handout--sentence-data' plists, :synopsis a list of
+`tibetan-handout--synopsis-data' plists (§5.68).  Pure: no file
+access.  Layout (Carsten 09.10., 21.10.): `* Siglen' and per Section
+`* Synopse' (landscape: locators, synoptic table, commentary with its
+quotations marked), `* Text' (the whole passage: Uchen + Wylie per
+segment, room for handwriting, 6 cm free right margin on every page),
+then per sentence `* Satz N' with Übersetzung / Vokabular / Grammatik.
+The word \"Claude\" never appears (headings are German; the slots are
+named by content)."
   (let ((sentences (plist-get spec :sentences)))
     (concat (tibetan-handout--header spec)
+            (tibetan-handout--sigla-part (plist-get spec :sigla)
+                                         (plist-get spec :synopsis))
+            (mapconcat #'tibetan-handout--synopsis-part
+                       (plist-get spec :synopsis) "")
             (tibetan-handout--text-part sentences)
             (mapconcat #'tibetan-handout--sentence-block sentences ""))))
 
@@ -774,13 +1246,25 @@ never overwritten (user-error) — a generated one is regenerated."
                   (file-name-nondirectory out)))
     (let* ((tibetan-current-resources-vocab (tibetan-handout--load-curated src))
            (tibetan-current-custom-vocab nil)
+           (meta (tibetan-analysis--read-source-metadata src))
+           ;; §5.68: the synopsis only where the source names a
+           ;; synopsis column or a commentary — one per Section of
+           ;; the scope.
+           (labels (and (or (plist-get meta :synopsis)
+                            (plist-get meta :commentary))
+                        (tibetan-handout--scope-sections
+                         src (plist-get scope :sent-nums))))
            (spec (list :title (tibetan-handout--source-title src)
                        :scope (plist-get scope :label)
                        :source-name (file-name-nondirectory src)
                        :date (or date (format-time-string "%Y-%m-%d"))
                        :sentences (mapcar (lambda (n)
                                             (tibetan-handout--sentence-data n src))
-                                          (plist-get scope :sent-nums)))))
+                                          (plist-get scope :sent-nums))
+                       :sigla (tibetan-handout--sigla-text src meta)
+                       :synopsis (mapcar (lambda (l)
+                                           (tibetan-handout--synopsis-data src l))
+                                         labels))))
       (make-directory (file-name-directory out) t)
       (with-temp-file out
         (insert (tibetan-handout-render spec)))

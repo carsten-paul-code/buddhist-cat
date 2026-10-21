@@ -725,5 +725,357 @@ vorhanden sind): die erzeugte .org wird zu einem PDF."
       (should (file-exists-p pdf))
       (should (string-suffix-p "rgyan-sent-654.pdf" pdf)))))
 
+;; ----------------------------------------------------------------------------
+;; §5.68 — Synopse-Vorspann (Siglen, Stellen, Parallele, Kommentar)
+;; ----------------------------------------------------------------------------
+
+(defconst tibetan-handout-test--syn-sa
+  (concat
+   "#+TITLE: Mahāyānasūtrālaṃkāra IX (bodhi) mit Bhāṣya — CAT-Quelle (Sanskrit)\n"
+   "#+TIBETAN_LAYOUT: cascade\n#+SOURCE_LANG: sa\n#+TIBETAN_TARGET_LANG: en\n"
+   "#+TIBETAN_SIGLUM: L\n"
+   "#+TIBETAN_SYNOPSIS: ../bo/mdo.org\n"
+   "#+TIBETAN_COMMENTARY: ../savbh/savbh.org\n"
+   "#+TIBETAN_SIGLA: ../Resources/siglen.org\n\n"
+   "* Tibetan Text\n"
+   "** Section IX.60\n:PROPERTIES:\n:LOPEZ_SECTION: 60\n"
+   ":TOPIC: buddhakāyavibhāge saptaślokāḥ\n:END:\n"
+   "*** Sentence 127\n**** Segment 285\nbuddhakāyavibhāge saptaślokāḥ /\n\n"
+   "*** Sentence 128\n:PROPERTIES:\n:VERSE: MSA IX.60\n:END:\n"
+   "**** Segment 286\nsvābhāviko 'tha sāṃbhogyaḥ kāyo nairmāṇiko 'paraḥ /\n\n"
+   "**** Segment 287\nkāyabhedā hi buddhānāṃ prathamastu dvayāśrayaḥ // 60\n\n"
+   "*** Sentence 129\n**** Segment 288\ntrividhaḥ kāyo buddhānām /\n\n"
+   "** Section IX.61\n:PROPERTIES:\n:LOPEZ_SECTION: 61\n:END:\n"
+   "*** Sentence 130\n:PROPERTIES:\n:VERSE: MSA IX.61\n:END:\n"
+   "**** Segment 292\nsarvadhātuṣu sāṃbhogyo bhinno gaṇaparigrahaiḥ /\n\n")
+  "Sanskrit-Leitquelle mit den §5.68-Keywords (Vers IX.60 des MSA).")
+
+(defconst tibetan-handout-test--syn-bo
+  (concat
+   "#+TITLE: mdo sde rgyan IX — CAT-Quelle (D4026)\n"
+   "#+TIBETAN_LAYOUT: cascade\n#+TIBETAN_SIGLUM: D4026\n\n"
+   "* Tibetan Text\n"
+   "** Section IX.60\n:PROPERTIES:\n:LOPEZ_SECTION: 60\n:END:\n"
+   "*** Sentence 182\n**** Segment 458\n:PROPERTIES:\n:FOLIO: D159a5\n:END:\n"
+   "སངས་རྒྱས་ཀྱི་སྐུ་རབ་ཏུ་དབྱེ་བ་ལ་ཚིགས་སུ་བཅད་པ་བདུན་ནོ། །\n\n"
+   "*** Sentence 183\n:PROPERTIES:\n:VERSE: MSA IX.60\n:END:\n"
+   "**** Segment 459\n:PROPERTIES:\n:FOLIO: D159a5\n:END:\nསངས་རྒྱས་རྣམས་ཀྱི་སྐུ་དབྱེ་བ། །\n\n"
+   "**** Segment 460\n:PROPERTIES:\n:FOLIO: D159a5\n:END:\nརང་བཞིན་ལོངས་སྤྱོད་རྫོགས་པ་དང་། །\n\n"
+   "**** Segment 461\n:PROPERTIES:\n:FOLIO: D159a5\n:END:\nགཞན་ནི་སྤྲུལ་པའི་སྐུ་ཡིན་ཏེ། །\n\n"
+   "**** Segment 462\n:PROPERTIES:\n:FOLIO: D159a6\n:END:\nདང་པོ་གཉིས་པའི་རྟེན་ཡིན་ནོ། །\n\n"
+   "*** Sentence 184\n**** Segment 463\n:PROPERTIES:\n:FOLIO: D159a6\n:END:\n"
+   "སངས་རྒྱས་རྣམས་ཀྱི་སྐུ་ནི་རྣམ་པ་གསུམ་སྟེ།\n\n"
+   "**** Segment 464\n:PROPERTIES:\n:FOLIO: D159a6\n:END:\n"
+   "རང་བཞིན་པ་ནི་ཆོས་ཀྱི་སྐུ་གནས་ཡོངས་སུ་གྱུར་པའི་མཚན་ཉིད་དོ། །\n\n"
+   "*** Sentence 185\n**** Segment 465\n:PROPERTIES:\n:FOLIO: D159a6\n:END:\n"
+   "ལོངས་སྤྱོད་རྫོགས་པ་ནི་གང་གིས་འཁོར་གྱི་དཀྱིལ་འཁོར་དག་ཏུ་ཆོས་ལ་ལོངས་སྤྱོད་རྫོགས་པར་མཛད་པའོ། །\n\n"
+   "*** Sentence 186\n**** Segment 466\n:PROPERTIES:\n:FOLIO: D159a7\n:END:\n"
+   "སྤྲུལ་པ་ནི་གང་གིས་སེམས་ཅན་གྱི་དོན་མཛད་པའོ། །\n\n"
+   "** Section IX.61\n:PROPERTIES:\n:LOPEZ_SECTION: 61\n:END:\n"
+   "*** Sentence 187\n:PROPERTIES:\n:VERSE: MSA IX.61\n:END:\n"
+   "**** Segment 467\n:PROPERTIES:\n:FOLIO: D159a7\n:END:\nལོངས་སྤྱོད་རྫོགས་པ་ཁམས་ཀུན་དུ། །\n\n")
+  "Tibetische Parallele (D4026) mit :FOLIO: je Segment und :VERSE:.")
+
+(defconst tibetan-handout-test--syn-savbh
+  (concat
+   "#+TITLE: Sthiramati IX — CAT-Quelle (D4034)\n"
+   "#+TIBETAN_LAYOUT: cascade\n#+TIBETAN_SIGLUM: D4034\n\n"
+   "* Tibetan Text\n"
+   "** Section IX.60\n:PROPERTIES:\n:LOPEZ_SECTION: 60\n:END:\n"
+   "*** Sentence 754\n"
+   "**** Segment 1780\n:PROPERTIES:\n:FOLIO: D135b5\n:END:\n"
+   "སངས་རྒྱས་ཀྱི་སྐུ་རྣམ་པར་དབྱེ་བའི་ཚིགས་སུ་བཅད་པ་བདུན་ཏེ་ཞེས་བྱ་བ་ལ།\n\n"
+   "**** Segment 1781\n:PROPERTIES:\n:FOLIO: D135b5\n:END:\n"
+   "གོང་དུ་སྐུ་གསུམ་ཐ་དད་དུ་འཇུག་པ་མདོ་ཙམ་དུ་བསྟན་ནས།\n\n"
+   "*** Sentence 755\n"
+   "**** Segment 1783\n:PROPERTIES:\n:FOLIO: D135b6\n:END:\nརང་བཞིན་དང་ནི་ཞེས་བྱ་ནི།\n\n"
+   "**** Segment 1784\n:PROPERTIES:\n:FOLIO: D135b6\n:END:\nརང་བཞིན་ནི་ཆོས་ཀྱི་སྐུ་ལ་བྱ་སྟེ།\n\n"
+   "*** Sentence 757\n**** Segment 1790\n:PROPERTIES:\n:FOLIO: D136a1\n:END:\n"
+   "སྤྲུལ་པའི་སྐུ་ཡང་གཞན་ཡིན་ཏེ། །\n\n"
+   "*** Sentence 758\n**** Segment 1791\n:PROPERTIES:\n:FOLIO: D136a1\n:END:\nཞེས་བྱ་བ་ལ།\n\n"
+   "**** Segment 1792\n:PROPERTIES:\n:FOLIO: D136a1\n:END:\n"
+   "གཞན་གྱི་སྒྲས་ནི་ཆོས་ཀྱི་སྐུ་དང་ལོངས་སྤྱོད་རྫོགས་པའི་སྐུ་འབའ་ཞིག་ཏུ་མ་ཟད་ཀྱི་སྤྲུལ་པའི་སྐུ་ཡང་ཡོད་དོ། །\n\n"
+   "** Section IX.61\n:PROPERTIES:\n:LOPEZ_SECTION: 61\n:END:\n"
+   "*** Sentence 768\n**** Segment 1808\n:PROPERTIES:\n:FOLIO: D136a6\n:END:\n"
+   "རྫོགས་ལོངས་སྤྱོད་པའི་སྐུ་ཆེར་བཤད་པའི་ཕྱིར། །\n\n")
+  "Sthiramatis Kommentar (D4034): Lemma + Marker über Satzgrenzen hinweg.")
+
+(defconst tibetan-handout-test--syn-sent-755
+  (concat
+   "#+TITLE: Sentence 755 Analysis\n#+TIBETAN_LAYOUT: cascade\n"
+   "#+SOURCE: [[file:../savbh.org::*Sentence 755][savbh.org / Sentence 755]]\n"
+   "#+SEGMENTS: 1783, 1784\n\n"
+   "* Translation\nRegarding \"the intrinsic body and\", the intrinsic body refers to the *dharma* body.\n\n"
+   "* Reading\n** Gloss Tables\n"
+   "*** Segment 1783\n| rang bzhin |\n- ⟦1783⟧ Regarding \"the intrinsic body and\",\n\n"
+   "*** Segment 1784\n| chos |\n- ⟦1784⟧ the intrinsic body refers to the *dharma* body.\n\n"
+   "* Tibetan Analysis\n** Claude Vocabulary\n*** Segment 1783\nrang bzhin, noun, \"nature\", Skt. *svabhāva*\n\n"
+   "** Claude Grammar\n*** Segment 1783\n- *Verb backbone:* bya.\n\n"
+   "** Concept Notes\n\n"
+   "* Provided Translations\n** DharmaMitra Translation\nDM POISON\n\n"
+   "** Thurman 2004\nTHURMAN POISON TEXT\n\n"
+   "* Working Translation\nWT POISON\n\n* My Notes\n\n* Footnotes\n")
+  "Gelandete Übersetzung von Sthiramati-Satz 755; Referenzen als Gift.")
+
+(defconst tibetan-handout-test--syn-sigla
+  (concat "- L :: Lévi, Sylvain (1907). /Mahāyāna-Sūtrālaṃkāra/. Paris.\n"
+          "- D4026 :: Derge, sems tsam, phi 129b–260a (Bhāṣya).\n"
+          "- D4034 :: Derge, sems tsam, mi 1b–283a (Sthiramati).\n")
+  "Carstens Siglen-Datei: org-Body ohne Überschriften.")
+
+(defmacro tibetan-handout-test--with-synopsis (&rest body)
+  "Temp-Korpus für §5.68: sa/msa.org (Leitquelle, Keywords), bo/mdo.org
+\(Parallele, D4026), savbh/savbh.org (Kommentar, D4034; Satzdatei 755
+mit Übersetzung), Resources/siglen.org.  Bindet DIR, SA, BO, SAVBH."
+  (declare (indent 0))
+  `(let* ((dir (make-temp-file "handout-syn-" t))
+          (sa (expand-file-name "sa/msa.org" dir))
+          (bo (expand-file-name "bo/mdo.org" dir))
+          (savbh (expand-file-name "savbh/savbh.org" dir)))
+     (unwind-protect
+         (progn
+           (dolist (d '("sa/analysis" "bo/analysis" "savbh/analysis"
+                        "Resources" "sa/Resources"))
+             (make-directory (expand-file-name d dir) t))
+           (with-temp-file sa (insert tibetan-handout-test--syn-sa))
+           (with-temp-file bo (insert tibetan-handout-test--syn-bo))
+           (with-temp-file savbh (insert tibetan-handout-test--syn-savbh))
+           (with-temp-file (expand-file-name "Resources/siglen.org" dir)
+             (insert tibetan-handout-test--syn-sigla))
+           (with-temp-file (tibetan-sentence--filepath
+                            755 (file-name-as-directory
+                                 (expand-file-name "savbh/analysis" dir))
+                            savbh)
+             (insert tibetan-handout-test--syn-sent-755))
+           ,@body)
+       (delete-directory dir t))))
+
+(ert-deftest tibetan-handout-synopsis-metadata-keywords ()
+  "§5.68: die Quelle nennt Synopse-Spalte(n), Kommentar(e), Siglen-Datei
+und ihr eigenes Siglum im Kopf — Pfade relativ zur Quelle, SYNOPSIS und
+COMMENTARY wiederholbar (nicht zu verwechseln mit
+#+TIBETAN_PARALLEL_SOURCE, §5.64); ohne die Keywords bleibt alles nil."
+  (tibetan-handout-test--with-synopsis
+    (let ((m (tibetan-analysis--read-source-metadata sa)))
+      (should (equal '("../bo/mdo.org") (plist-get m :synopsis)))
+      (should (equal '("../savbh/savbh.org") (plist-get m :commentary)))
+      (should (equal "../Resources/siglen.org" (plist-get m :sigla)))
+      (should (equal "L" (plist-get m :siglum))))
+    (let ((m (tibetan-analysis--read-source-metadata bo)))
+      (should (equal "D4026" (plist-get m :siglum)))
+      (should-not (plist-get m :synopsis))
+      (should-not (plist-get m :commentary))
+      (should-not (plist-get m :sigla)))))
+
+(ert-deftest tibetan-handout-section-sentences ()
+  "§5.68: die Sätze einer Section (gleicher Titel in allen Kaskaden)
+mit :verse (die :VERSE:-Property des Satzes) und :folios je Segment
+\(:FOLIO:); fremder Titel → nil."
+  (tibetan-handout-test--with-synopsis
+    (let ((ss (tibetan-handout--section-sentences bo "Section IX.60")))
+      (should (equal '(182 183 184 185 186)
+                     (mapcar (lambda (s) (plist-get s :sent-num)) ss)))
+      (should-not (plist-get (nth 0 ss) :verse))
+      (should (equal "MSA IX.60" (plist-get (nth 1 ss) :verse)))
+      (should (equal '((459 . "D159a5") (460 . "D159a5") (461 . "D159a5")
+                       (462 . "D159a6"))
+                     (plist-get (nth 1 ss) :folios)))
+      (should (equal 459 (car (car (plist-get (nth 1 ss) :segs))))))
+    (should (equal '(187)
+                   (mapcar (lambda (s) (plist-get s :sent-num))
+                           (tibetan-handout--section-sentences bo "Section IX.61"))))
+    (should-not (tibetan-handout--section-sentences bo "Section IX.99"))
+    ;; Sanskrit: keine Folios, der Vers trägt :verse.
+    (let ((ss (tibetan-handout--section-sentences sa "Section IX.60")))
+      (should (equal "MSA IX.60" (plist-get (nth 1 ss) :verse)))
+      (should-not (plist-get (nth 1 ss) :folios)))))
+
+(defconst tibetan-handout-test--syn-verse-wylie
+  '("sangs rgyas rnams kyi sku dbye ba/ /"
+    "rang bzhin longs spyod rdzogs pa dang / /"
+    "gzhan ni sprul pa'i sku yin te/ /"
+    "dang po gnyis pa'i rten yin no/ /")
+  "D4026, Vers IX.60 (Wylie, wie der Konverter es liefert).")
+
+(defconst tibetan-handout-test--syn-bhasya-wylie
+  '("sangs rgyas kyi sku rab tu dbye ba la tshigs su bcad pa bdun no/ /"
+    "sangs rgyas rnams kyi sku ni rnam pa gsum ste/"
+    "rang bzhin pa ni chos kyi sku gnas yongs su gyur pa'i mtshan nyid do/ /"
+    "longs spyod rdzogs pa ni gang gis 'khor gyi dkyil 'khor dag tu chos la longs spyod rdzogs par mdzad pa'o/ /"
+    "sprul pa ni gang gis sems can gyi don mdzad pa'o/ /")
+  "D4026, Bhāṣya zu IX.60 (Wylie).")
+
+(defun tibetan-handout-test--runs (segs)
+  "Die markierten Läufe von `tibetan-handout--mark-quotes' als
+\((TEXT . KIND) …) ohne die unmarkierten Stücke, über alle SEGS."
+  (cl-loop for seg in segs
+           append (cl-remove-if-not #'cdr seg)))
+
+(ert-deftest tibetan-handout-mark-quotes-gold ()
+  "§5.68, Goldstandard vom Blatt der Doktoranden (MSA 10.21, Sthiramati
+zu IX.60): Lemma vor `zhes/ces bya' oder `zhes smos' aus dem Vers →
+fett (verse), aus dem Bhāṣya → unterstrichen (bhasya) — auch wenn
+Lemma und Marker durch Shad und Satzgrenze getrennt sind; Wortläufe ab
+zwei Silben, die im Bhāṣya stehen → bhasya (bei Gleichstand gewinnt
+das Bhāṣya: das sind Begriffsechos), nur im Vers → verse; reine
+Partikelfolgen (`pa ni', `yin no') nie.  Sthiramatis eigene
+Versübersetzung (`thog ma … gnas') wird NICHT erkannt — bekannte
+Grenze.  Die Zwischenstücke bleiben wörtlich (Abstände, Shad)."
+  (let* ((segs '("sangs rgyas kyi sku rnam par dbye ba'i tshigs su bcad pa bdun te zhes bya ba la/"
+                 "gong du sku gsum tha dad du 'jug pa mdo tsam du bstan nas/"
+                 "rang bzhin dang ni zhes bya ni/"
+                 "rang bzhin ni chos kyi sku la bya ste/"
+                 "rdzogs longs spyod ces bya bas rdzogs par longs spyod pa'i sku bstan te/"
+                 "sprul pa'i sku yang gzhan yin te/ /"
+                 "zhes bya ba la/"
+                 "'dzam bu'i gling gi sems can yongs su smin par byed pa ni sprul pa'i sku yin no zhes bya ba'i don to/ /"
+                 "thog ma gnyis po'i gnas yin no/ /"
+                 "zhes bya ba la thog ma ni chos kyi sku la bya ste/"))
+         (marked (tibetan-handout--mark-quotes
+                  segs tibetan-handout-test--syn-verse-wylie
+                  tibetan-handout-test--syn-bhasya-wylie))
+         (runs (tibetan-handout-test--runs marked)))
+    (should (= (length marked) (length segs)))
+    ;; Jedes Segment kommt wörtlich wieder heraus.
+    (should (equal segs (mapcar (lambda (seg) (mapconcat #'car seg "")) marked)))
+    (should (member '("sangs rgyas kyi sku rnam par dbye ba'i tshigs su bcad pa bdun te" . bhasya) runs))
+    (should (member '("rang bzhin dang ni" . verse) runs))
+    (should (member '("rdzogs longs spyod" . verse) runs))
+    (should (member '("sprul pa'i sku yang gzhan yin te" . verse) runs))
+    (should (member '("chos kyi sku" . bhasya) runs))
+    (should (member '("sems can" . bhasya) runs))
+    (should (member '("longs spyod" . bhasya) runs))
+    ;; Segment 2 trägt keine Markierung; Partikelfolgen und Sthiramatis
+    ;; eigene Versübersetzung bleiben unmarkiert.
+    (should-not (cl-some #'cdr (nth 1 marked)))
+    (should-not (cl-some (lambda (r) (member (car r) '("pa ni" "yin no" "ba la"))) runs))
+    (should-not (cl-some (lambda (r) (string-match-p "thog ma" (car r))) runs))))
+
+(ert-deftest tibetan-handout-synopsis-data ()
+  "§5.68: die Synopse einer Section — Leitspalte, Parallelen und
+Kommentare mit Siglum, Stellenangabe aus den :FOLIO: (erstes–letztes
+Segment), Vers markiert; der Kommentar trägt die markierten Läufe und
+die Übersetzung des Werkzeugs, wo sie gelandet ist — Referenzen nie."
+  (tibetan-handout-test--with-synopsis
+    (let* ((d (tibetan-handout--synopsis-data sa "Section IX.60"))
+           (lead (plist-get d :lead))
+           (par (car (plist-get d :parallels)))
+           (com (car (plist-get d :commentaries))))
+      (should (equal "IX.60" (plist-get d :id)))
+      (should (equal "L" (plist-get lead :siglum)))
+      (should (equal "sa" (plist-get lead :lang)))
+      (should (equal "MSA IX.60" (plist-get lead :locator)))
+      (should (equal '(nil t nil)
+                     (mapcar (lambda (s) (and (plist-get s :verse) t))
+                             (plist-get lead :sentences))))
+      (should (equal "svābhāviko 'tha sāṃbhogyaḥ kāyo nairmāṇiko 'paraḥ /"
+                     (plist-get (car (plist-get (nth 1 (plist-get lead :sentences)) :segs))
+                                :wylie)))
+      (should (equal "D4026" (plist-get par :siglum)))
+      (should (equal "bo" (plist-get par :lang)))
+      (should (equal "159a5–159a7" (plist-get par :locator)))
+      (should (equal "sangs rgyas rnams kyi sku dbye ba/ /"
+                     (plist-get (car (plist-get (nth 1 (plist-get par :sentences)) :segs))
+                                :wylie)))
+      (should (equal "D4034" (plist-get com :siglum)))
+      (should (equal "135b5–136a1" (plist-get com :locator)))
+      (should (equal '(754 755 757 758)
+                     (mapcar (lambda (s) (plist-get s :sent-num))
+                             (plist-get com :sentences))))
+      ;; Markierte Läufe über die Satzgrenze 757/758 (Lemma + Marker).
+      (let ((runs (tibetan-handout-test--runs
+                   (mapcar (lambda (s)
+                             (apply #'append
+                                    (mapcar (lambda (g) (plist-get g :runs))
+                                            (plist-get s :segs))))
+                           (plist-get com :sentences)))))
+        (should (member '("sprul pa'i sku yang gzhan yin te" . verse) runs))
+        (should (member '("rang bzhin dang ni" . verse) runs))
+        (should (member '("chos kyi sku" . bhasya) runs)))
+      ;; Übersetzung: 755 gelandet, 754 nicht; Gift nie.
+      (should-not (plist-get (nth 0 (plist-get com :sentences)) :translation))
+      (should (plist-get (nth 1 (plist-get com :sentences)) :translation))
+      (should-not (string-match-p "POISON" (format "%S" d))))))
+
+(ert-deftest tibetan-handout-render-synopsis ()
+  "§5.68: vor `* Text' stehen `* Siglen' (Carstens Datei wörtlich +
+Konventionszeile) und je Section `* Synopse <id>' als Querformat-Block:
+Stellenzeile, zweispaltige Tabelle (Vers fett, Segmentnummern
+hochgestellt), darunter der Kommentar mit Fett/Unterstreichung und der
+Übersetzung des Werkzeugs; Präambel lädt pdflscape und ulem; nirgends
+„Claude“, nie eine Referenz; ohne :synopsis bleibt das Handout wie
+bisher."
+  (tibetan-handout-test--with-synopsis
+    (let* ((syn (tibetan-handout--synopsis-data sa "Section IX.60"))
+           (sent (tibetan-handout--sentence-data 128 sa))
+           (spec (list :title "MSA IX" :scope "Section IX.60" :source-name "msa.org"
+                       :date "2026-10-21" :sentences (list sent)
+                       :sigla tibetan-handout-test--syn-sigla
+                       :synopsis (list syn)))
+           (org (tibetan-handout-render spec)))
+      (should (string-match-p "^#\\+LATEX_HEADER: .*pdflscape" org))
+      (should (string-match-p "^#\\+LATEX_HEADER: \\\\usepackage\\[normalem\\]{ulem}" org))
+      (should (string-match-p "^\\* Siglen$" org))
+      (should (string-match-p "^- D4034 :: Derge, sems tsam, mi 1b–283a (Sthiramati)\\.$" org))
+      (should (string-match-p "Konventionen" org))
+      (should (string-match-p "^\\* Synopse IX\\.60$" org))
+      (should (string-match-p "\\\\begin{landscape}" org))
+      (should (string-match-p "L MSA IX\\.60 · D4026 159a5–159a7 · D4034 135b5–136a1" org))
+      (should (string-match-p "\\\\begin{longtable}" org))
+      (should (string-match-p "\\\\textbf{L} & \\\\textbf{D4026}" org))
+      (should (string-match-p (regexp-quote "\\segsup{286}\\textbf{svābhāviko 'tha sāṃbhogyaḥ kāyo nairmāṇiko 'paraḥ /}") org))
+      (should (string-match-p (regexp-quote "\\segsup{459}\\textbf{sangs rgyas rnams kyi sku dbye ba/ /}") org))
+      (should (string-match-p (regexp-quote "\\segsup{288}trividhaḥ kāyo buddhānām /") org))
+      (should (string-match-p "D4034 135b5–136a1" org))
+      (should (string-match-p (regexp-quote "\\uline{sangs rgyas kyi sku rnam par dbye ba'i tshigs su bcad pa bdun te} zhes bya ba la/") org))
+      (should (string-match-p (regexp-quote "\\textbf{rang bzhin dang ni} zhes bya ni/") org))
+      (should (string-match-p (regexp-quote "the intrinsic body refers to the \\emph{dharma} body.") org))
+      (should (string-match-p "\\\\end{landscape}" org))
+      ;; Reihenfolge: Siglen → Synopse → Text → Satz.
+      (should (< (string-match "^\\* Siglen$" org)
+                 (string-match "^\\* Synopse IX\\.60$" org)
+                 (string-match "^\\* Text$" org)
+                 (string-match "^\\* Satz 128" org)))
+      (should-not (string-match-p "POISON\\|Claude" org))
+      (with-temp-buffer
+        (insert org)
+        (org-mode)
+        (should (equal '("Siglen" "Synopse IX.60" "Text" "Satz 128 (Seg. 286–287)")
+                       (org-element-map (org-element-parse-buffer) 'headline
+                         (lambda (h) (when (= 1 (org-element-property :level h))
+                                       (org-element-property :raw-value h)))))))))
+  ;; Ohne :synopsis/:sigla: unverändert.
+  (let ((org (tibetan-handout-render tibetan-handout-test--spec)))
+    (should-not (string-match-p "Synopse\\|Siglen\\|landscape" org))))
+
+(ert-deftest tibetan-handout-build-synopsis ()
+  "§5.68: `tibetan-handout-build' liest Parallele, Kommentar und Siglen
+aus den Keywords der Quelle und setzt den Vorspann für jede Section
+der Sätze im Umfang (je Section einmal); eine Quelle ohne Keywords
+baut wie bisher."
+  (tibetan-handout-test--with-synopsis
+    (let ((out (tibetan-handout-build
+                (list :source sa :sent-nums '(127 128 129 130)
+                      :label "Sätze 127–130")
+                "2026-10-21")))
+      (with-temp-buffer
+        (insert-file-contents out)
+        (should (string-match-p "^\\* Siglen$" (buffer-string)))
+        (should (string-match-p "^- L :: Lévi" (buffer-string)))
+        (should (= 1 (cl-count-if (lambda (l) (equal l "* Synopse IX.60"))
+                                  (split-string (buffer-string) "\n"))))
+        (should (= 1 (cl-count-if (lambda (l) (equal l "* Synopse IX.61"))
+                                  (split-string (buffer-string) "\n"))))
+        (should (string-match-p "D4026 159a5–159a7 · D4034 135b5–136a1" (buffer-string)))
+        (should-not (string-match-p "POISON" (buffer-string))))))
+  (tibetan-handout-test--with-corpus
+    (let ((out (tibetan-handout-build
+                (list :source src :sent-nums '(654) :label "Satz 654")
+                "2026-10-09")))
+      (with-temp-buffer
+        (insert-file-contents out)
+        (should-not (string-match-p "Synopse\\|Siglen\\|landscape"
+                                    (buffer-string)))))))
+
 (provide 'tibetan-handout-test)
 ;;; tibetan-handout-test.el ends here

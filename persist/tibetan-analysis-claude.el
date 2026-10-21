@@ -414,7 +414,7 @@ Safe when SOURCE-FILE is nil or does not exist — returns an empty plist."
               dm-sanskrit-source dm-tibetan-source
               text-type class-mode sentence-detail
               author-header defer-mt layout section-refs sentence-refs
-              source-lang)
+              source-lang synopsis commentary sigla siglum)
     (when (and source-file (file-exists-p source-file))
       (condition-case nil
           (with-temp-buffer
@@ -527,6 +527,43 @@ Safe when SOURCE-FILE is nil or does not exist — returns an empty plist."
               (let ((val (string-trim (match-string 1))))
                 (unless (string-empty-p val)
                   (setq sentence-refs val))))
+            ;; §5.68 (2026-10-21): the handout's synopsis part.  Sibling
+            ;; cascades of the same reading carry the same Section
+            ;; titles: `#+TIBETAN_SYNOPSIS:' (repeatable) names further
+            ;; columns of the synoptic table, `#+TIBETAN_COMMENTARY:'
+            ;; (repeatable) a commentary printed below it with its
+            ;; quotations marked, `#+TIBETAN_SIGLA:' the sigla file
+            ;; (org body, printed first) and `#+TIBETAN_SIGLUM:' this
+            ;; source's own siglum (its column head).  Paths relative
+            ;; to the source, like the refs.  NOT the §5.64
+            ;; `#+TIBETAN_PARALLEL_SOURCE:' — that one makes C-c u G
+            ;; fetch a Sanskrit comparison; the synopsis never fires.
+            (goto-char (point-min))
+            (while (re-search-forward
+                    "^#\\+TIBETAN_SYNOPSIS:[ \t]*\\(.*\\)$" nil t)
+              (let ((val (string-trim (match-string 1))))
+                (unless (string-empty-p val)
+                  (push val synopsis))))
+            (setq synopsis (nreverse synopsis))
+            (goto-char (point-min))
+            (while (re-search-forward
+                    "^#\\+TIBETAN_COMMENTARY:[ \t]*\\(.*\\)$" nil t)
+              (let ((val (string-trim (match-string 1))))
+                (unless (string-empty-p val)
+                  (push val commentary))))
+            (setq commentary (nreverse commentary))
+            (goto-char (point-min))
+            (when (re-search-forward
+                   "^#\\+TIBETAN_SIGLA:[ \t]*\\(.*\\)$" nil t)
+              (let ((val (string-trim (match-string 1))))
+                (unless (string-empty-p val)
+                  (setq sigla val))))
+            (goto-char (point-min))
+            (when (re-search-forward
+                   "^#\\+TIBETAN_SIGLUM:[ \t]*\\(.*\\)$" nil t)
+              (let ((val (string-trim (match-string 1))))
+                (unless (string-empty-p val)
+                  (setq siglum val))))
             (goto-char (point-min))
             (while (re-search-forward
                     "^#\\+TIBETAN_CLAUDE_CONTEXT:[ \t]*\\(.*\\)$" nil t)
@@ -578,7 +615,11 @@ Safe when SOURCE-FILE is nil or does not exist — returns an empty plist."
           :layout layout
           :section-refs section-refs
           :sentence-refs sentence-refs
-          :source-lang source-lang)))
+          :source-lang source-lang
+          :synopsis synopsis
+          :commentary commentary
+          :sigla sigla
+          :siglum siglum)))
 
 
 (defun tibetan-analysis--defer-mt-p (file)

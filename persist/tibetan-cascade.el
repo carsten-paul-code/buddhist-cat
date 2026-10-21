@@ -1911,10 +1911,13 @@ nested slot.  Returns `fired' / `dedup-hit' / nil (does not apply)."
 
 (defun tibetan-cascade--collect-sentences ()
   "Collect the current buffer's sentences with per-segment texts.
-Ordered list of plists (:sent-num N :segs ((GLOBAL-NUM . TEXT) …)).
-Sentences without segment children are skipped.  Matches both
-`*** Sentence' and legacy `** Sentence' levels; segments at any
-deeper level (the `tibetan-auto--collect-segments' convention)."
+Ordered list of plists (:sent-num N :segs ((GLOBAL-NUM . TEXT) …)
+:verse V :folios ((GLOBAL-NUM . FOLIO) …)) — :verse is the sentence
+heading's `:VERSE:' property (a kārikā, §5.68), :folios the segments'
+`:FOLIO:' markers (both nil when absent).  Sentences without segment
+children are skipped.  Matches both `*** Sentence' and legacy
+`** Sentence' levels; segments at any deeper level (the
+`tibetan-auto--collect-segments' convention)."
   (save-excursion
     (goto-char (point-min))
     (let ((sentences '()))
@@ -1926,13 +1929,27 @@ deeper level (the `tibetan-auto--collect-segments' convention)."
                              (format "^\\*\\{1,%d\\} " level) nil t)
                             (line-beginning-position)
                           (point-max))))
-               (segs '()))
+               (verse (save-excursion
+                        (forward-line 1)
+                        (when (looking-at "^:PROPERTIES:$")
+                          (let ((end (save-excursion
+                                       (re-search-forward "^:END:$" limit t))))
+                            (when (and end
+                                       (re-search-forward
+                                        "^:VERSE:[ \t]*\\(.+\\)$" end t))
+                              (string-trim (match-string 1)))))))
+               (segs '())
+               (folios '()))
           (while (re-search-forward "^\\*+ Segment \\([0-9]+\\)" limit t)
             (let ((n (string-to-number (match-string 1)))
                   (text (and (fboundp 'tibetan-org-get-segment-text)
-                             (tibetan-org-get-segment-text))))
+                             (tibetan-org-get-segment-text)))
+                  (folio (and (fboundp 'tibetan-org-get-segment-folio)
+                              (tibetan-org-get-segment-folio))))
               (when (and text (not (string-empty-p (string-trim text))))
-                (push (cons n text) segs))))
+                (push (cons n text) segs)
+                (when folio
+                  (push (cons n folio) folios)))))
           (when segs
             ;; CH2: record the enclosing Section (position anchor,
             ;; heading label, Lopez number) for chunk grouping.
@@ -1960,6 +1977,8 @@ deeper level (the `tibetan-auto--collect-segments' convention)."
                           (setq lopez (string-to-number
                                        (match-string 1)))))))))
               (push (list :sent-num sent-num :segs (nreverse segs)
+                          :verse verse
+                          :folios (nreverse folios)
                           :section-pos section-pos
                           :section-label section-label
                           :lopez lopez)
