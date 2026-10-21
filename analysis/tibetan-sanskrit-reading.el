@@ -105,7 +105,10 @@ the dictionary form is the look-up key."
              ((string-match "\\`-[ \t]+\\(.+?\\)[ \t]+—[ \t]+\\(.+\\)\\'" l)
               (let* ((word (match-string 1 l))
                      (rest (match-string 2 l))
-                     (label (when (string-match ";[ \t]*\\([^;]+\\)\\'" rest)
+                     ;; Contract `LEMMA; MORPH (commentary)': the label
+                     ;; follows the FIRST semicolon — the commentary may
+                     ;; hold more (`(compound; subject …)', TĀ 1001).
+                     (label (when (string-match ";[ \t]*\\([^;(]+\\)" rest)
                               (string-trim (match-string 1 rest)))))
                 ;; C6b (sa-Dry-Run, 2026-09-24): compact the label —
                 ;; models append parenthetical commentary

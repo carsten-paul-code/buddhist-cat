@@ -209,6 +209,21 @@ yaḥ pracakṣmahe
       (should (equal "PRON.NOM.SG.M" (cdr (assoc "yaḥ" morph))))
       (should (equal "V.PRS.1PL" (cdr (assoc "pracakṣmahe" morph)))))))
 
+(ert-deftest tibetan-sanskrit-reading-morph-label-first-semicolon ()
+  "Bug (TĀ Satz 1001, 21.10.): the commentary in parentheses may hold
+a second semicolon — `LEMMA; MORPH (compound; subject …)'.  The label
+is the text after the FIRST semicolon up to the parenthesis; the
+table showed „subject of implied predicate)\" instead of N.NOM.SG.F."
+  (let* ((wa (tibetan-sanskrit-reading-parse-word-analysis
+              "*** Segment 669
+eṣaṇa-vit-kriyā hi
+- eṣaṇa-vit-kriyā — eṣaṇa-vit-kriyā; N.NOM.SG.F (compound; subject of implied predicate)
+- hi — hi; IND."))
+         (e (cdr (assq 669 wa))))
+    (should (equal (cdr (assoc "eṣaṇa-vit-kriyā" (plist-get e :morph))) "N.NOM.SG.F"))
+    (should (equal (cdr (assoc "eṣaṇa-vit-kriyā" (plist-get e :lemma))) "eṣaṇa-vit-kriyā"))
+    (should (equal (cdr (assoc "hi" (plist-get e :morph))) "IND."))))
+
 (provide 'tibetan-sanskrit-reading-test)
 
 ;;; tibetan-sanskrit-reading-test.el ends here
