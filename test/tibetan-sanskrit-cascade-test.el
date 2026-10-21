@@ -310,6 +310,33 @@ null Grammar-Headings, obwohl jede Landung eine schrieb)."
                (:seg-num 2 :text "na svato nāpi parataḥ ॥"))
     :tibetan-text "dharmāṇāṃ śūnyatā svabhāvaḥ ।na svato nāpi parataḥ ॥"))
 
+(ert-deftest tibetan-sanskrit-cascade-metre-section ()
+  "§5.65 (Carsten, 21.10.: Pausen beim Rezitieren): a Sanskrit VERSE
+gets `** Metre' as the first child of * Reading — before the Gloss
+Tables, so the ⟦N⟧ machinery keeps its place.  Deterministic:
+regenerate rebuilds it (exactly one).  Prose gets none."
+  (tibetan-sanskrit-cascade-test--with-source
+    (let* ((segs '((1 . "dehe vimukta evāsmi śrīmatkalyāṇavāridheḥ /")
+                   (2 . "yasya kāruṇyavipruḍbhiḥ sadguruṃ taṃ hṛdi śraye // 2")))
+           (file (tibetan-cascade--create-file 1 segs src))
+           (s (tibetan-sanskrit-cascade-test--file-string file)))
+      (should (string-match-p "^\\* Reading\n\\*\\* Metre$" s))
+      (should (string-match-p "^Śloka (Anuṣṭubh) — " s))
+      (should (string-match-p "^dehe vimukta evāsmi | śrīmatkalyāṇavāridheḥ /$" s))
+      (should (< (string-match "^\\*\\* Metre$" s)
+                 (string-match "^\\*\\* Gloss Tables$" s)))
+      (should (string-match-p "⟦1⟧" s))
+      (tibetan-cascade--regenerate file 1 segs src)
+      (let ((s2 (tibetan-sanskrit-cascade-test--file-string file)))
+        (should (= 1 (with-temp-buffer
+                       (insert s2)
+                       (count-matches "^\\*\\* Metre$" (point-min) (point-max)))))))
+    (let* ((file (tibetan-cascade--create-file
+                  2 '((3 . "iha khalu śāstrādāvalaukikāśīrvādamukhena samuciteṣṭadevatāṃ parāmṛśati /"))
+                  src)))
+      (should-not (string-match-p "^\\*\\* Metre$"
+                                  (tibetan-sanskrit-cascade-test--file-string file))))))
+
 (ert-deftest tibetan-sanskrit-cascade-sentence-prompt-sa ()
   "C2: der Satz-Prompt eines sa-Dokuments — KEIN 'Wylie:', KEIN
 'Classical Tibetan'; System trägt den Sanskrit-Kontrakt

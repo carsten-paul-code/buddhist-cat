@@ -76,6 +76,7 @@
 ;; behaviour).  sentence-persist requires tibetan-cascade only at
 ;; call time (soft), so there is no load-time cycle.
 (require 'tibetan-sentence-persist)
+(require 'tibetan-sanskrit-metre)       ; §5.65 ** Metre (pure, no deps)
 (defvar tibetan-analysis--cascade-analysis-heading-re) ; §5.61, analysis-claude
 
 (defun tibetan-cascade-split-shad-units (text)
@@ -208,10 +209,10 @@ schreibt."
 (defun tibetan-cascade--reading-section (segs)
   "The full `* Reading' section string for SEGS ((GLOBAL-NUM . TEXT)…).
 
-§5.58 (S2, Reading-Class-Struktur): * Reading trägt NUR noch die
-`** Gloss Tables' — je Einheit das `*** Segment N'-Heading, die
-Drei-Zeilen-Tabelle (sofern renderbar) und die
-⟦N⟧-Sequenzübersetzung darunter (T4).  Die kombinierte
+§5.58 (S2, Reading-Class-Struktur): * Reading trägt die
+`** Gloss Tables' (bei Sanskrit-Versen davor `** Metre', §5.65) —
+je Einheit das `*** Segment N'-Heading, die Drei-Zeilen-Tabelle
+\(sofern renderbar) und die ⟦N⟧-Sequenzübersetzung darunter (T4).  Die kombinierte
 `** Interlinear'-Zeile ist pensioniert: ihre Steinert-Links und
 Glossen wandern in die Tabellen, das Prompt-Grounding wird aus den
 Token-Strömen erzeugt (`tibetan-cascade--generated-reading-lines').
@@ -235,6 +236,13 @@ emittiert frisch."
     (let ((gt-body (tibetan-cascade--gloss-tables-with-renderings
                     segs tables)))
       (concat "* Reading\n"
+              ;; §5.65: Sanskrit verses lead with `** Metre' — scansion
+              ;; and recitation pauses (deterministic, no AI; prose and
+              ;; Tibetan get nothing).
+              (or (and (equal tibetan-analysis--source-lang "sa")
+                       (tibetan-metre-section
+                        (mapcar (lambda (s) (string-trim (cdr s))) segs)))
+                  "")
               "** Gloss Tables\n"
               ":PROPERTIES:\n"
               (format ":GENERATED_HASH: %s\n"
