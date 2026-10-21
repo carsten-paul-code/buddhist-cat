@@ -588,6 +588,46 @@ discussion text, so the result is bold with italics inside."
     (should-not (string-match-p (regexp-quote "*1. *") org))
     (should (string-match-p "^- Problem :: /Übersetzung/ reads" org))))
 
+(defmacro tibetan-handout-test--with-sa-verse (&rest body)
+  "A one-verse Sanskrit cascade source (Jayaratha's śloka, Satz 1002
+of the Tantrāloka reading) in a temp dir; binds VSRC."
+  (declare (indent 0))
+  `(let* ((vdir (make-temp-file "handout-verse-" t))
+          (vsrc (expand-file-name "Verse-sa.org" vdir)))
+     (unwind-protect
+         (progn
+           (make-directory (expand-file-name "analysis" vdir) t)
+           (with-temp-file vsrc
+             (insert "#+TITLE: Verse\n#+TIBETAN_LAYOUT: cascade\n#+SOURCE_LANG: sa\n\n"
+                     "* Tibetan Text\n** Section Einleitung\n"
+                     "*** Sentence 1002\n"
+                     "**** Segment 673\ndehe vimukta evāsmi śrīmatkalyāṇavāridheḥ /\n"
+                     "**** Segment 674\nyasya kāruṇyavipruḍbhiḥ sadguruṃ taṃ hṛdi śraye // 2\n"))
+           ,@body)
+       (delete-directory vdir t))))
+
+(ert-deftest tibetan-handout-metre-pauses ()
+  "§5.65: a Sanskrit verse is printed with its recitation pauses
+\(` | ' pāda end, ` ¦ ' yati) and a metre line above it; the sentence
+block carries `** Metrum' with the syllable table — even before any
+analysis exists (the metre needs none).  Tibetan stays unmarked."
+  (tibetan-handout-test--with-sa-verse
+    (let* ((d (tibetan-handout--sentence-data 1002 vsrc))
+           (org (tibetan-handout-render
+                 (list :title "T" :scope "Satz 1002" :source-name "Verse-sa.org"
+                       :date "2026-10-21" :sentences (list d)))))
+      (should (equal (plist-get (car (plist-get d :segs)) :wylie)
+                     "dehe vimukta evāsmi | śrīmatkalyāṇavāridheḥ /"))
+      (should (string-prefix-p "Śloka (Anuṣṭubh)" (plist-get d :metre)))
+      (should (string-match-p "Śloka (Anuṣṭubh)" org))
+      (should (string-match-p "evāsmi | śrīmatkalyāṇavāridheḥ" org))
+      (should (string-match-p "^\\*\\* Metrum$" org))
+      (should (string-match-p "^| a +| de +| he +|" org))))
+  (tibetan-handout-test--with-corpus
+    (let ((d (tibetan-handout--sentence-data 654 src)))
+      (should-not (plist-get d :metre))
+      (should-not (string-match-p "[¦|]" (plist-get (car (plist-get d :segs)) :wylie))))))
+
 (ert-deftest tibetan-handout-build-writes-guarded-file ()
   "Build schreibt `handouts/<short>-par-220.org' neben die Quelle:
 GENERATED-Marker, Werktitel aus #+TITLE, Lopez/W&M/DM/Working

@@ -509,5 +509,17 @@ with the bare scansion per line — never silence."
                   segments "\n")
        "\n#+end_example\n\n")))))
 
+(defun tibetan-metre-label (segments)
+  "One printable line for the verse SEGMENTS — name · pause rule —
+or nil (prose, unknown metre).  Used by the handout and the
+discussion paper."
+  (when-let ((m (tibetan-metre-identify segments)))
+    (format "%s · %s" (plist-get m :name) (tibetan-metre--pause-rule m))))
+
+(defun tibetan-metre-table (segments)
+  "The syllable table (org) of the verse SEGMENTS, or nil."
+  (when-let ((m (tibetan-metre-identify segments)))
+    (tibetan-metre--table m)))
+
 (provide 'tibetan-sanskrit-metre)
 ;;; tibetan-sanskrit-metre.el ends here

@@ -134,6 +134,17 @@ main font (discussion titles carry Uchen)."
       (should (string-match-p "luaotfload.add_fallback(\"tibfallback\"" s))
       (should (string-match-p "setmainfont{Libertinus Serif}\\[RawFeature={fallback=tibfallback}\\]" s)))))
 
+(ert-deftest tibetan-discussion-paper-metre-pauses ()
+  "§5.65: the reMarkable paper shows a Sanskrit verse with its pauses
+and the metre line (Carsten reads from it in class)."
+  (tibetan-handout-test--with-sa-verse
+    (let ((s (tibetan-discussion-paper-render
+              (list :title "T" :scope "Satz 1002" :source-name "Verse-sa.org"
+                    :date "2026-10-21"
+                    :sentences (list (tibetan-discussion-paper--sentence-data 1002 vsrc))))))
+      (should (string-match-p "Śloka (Anuṣṭubh) · keine feste Binnenpause" s))
+      (should (string-match-p "evāsmi | śrīmatkalyāṇavāridheḥ" s)))))
+
 (ert-deftest tibetan-discussion-paper-render-gaps ()
   "Without Concept Notes / discussion / comparison the sections say
 so instead of vanishing silently — except the comparison, which is

@@ -30,6 +30,7 @@
 (require 'tibetan-cascade)
 (require 'ucs-normalize)
 
+(declare-function tibetan-handout--metre "tibetan-handout" (segs sa))
 (declare-function tibetan-sentence--filepath "tibetan-sentence-persist")
 (declare-function tibetan-cascade--scope-at-point "tibetan-cascade")
 
@@ -69,7 +70,8 @@ placeholder), :discussion (`tibetan-discussion-read') and :comparison
                                     (file-name-directory source-file))))
          (file (tibetan-sentence--filepath sent-num folder source-file))
          (base (list :sent-num sent-num :lang lang
-                     :segs (tibetan-handout--seg-list segs sa))))
+                     :segs (tibetan-handout--seg-list segs sa)
+                     :metre (car (tibetan-handout--metre segs sa)))))
     (if (not (file-exists-p file))
         (append base (list :missing t))
       (let ((sections (tibetan-analysis--read-claude-sections file)))
@@ -166,6 +168,10 @@ one exists), `** Diskussion' — or the visible gap."
      (format "* Satz %d (Seg. %s)\n" (plist-get d :sent-num)
              (tibetan-handout--seg-range segs))
      "#+BEGIN_EXPORT latex\n"
+     (if (plist-get d :metre)
+         (format "{\\footnotesize\\color{dim}\\textit{%s}}\\par\n"
+                 (tibetan-handout--latex-escape (plist-get d :metre)))
+       "")
      (mapconcat
       (lambda (s)
         (let ((num (plist-get s :num))

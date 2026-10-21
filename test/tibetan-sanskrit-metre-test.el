@@ -195,5 +195,16 @@ scansion per line, never silence."
   (let ((s (tibetan-metre-section '("abc def ghi /" "jkl // 3"))))
     (should (string-match-p "nicht erkannt" s))))
 
+(ert-deftest tibetan-metre-label-and-table ()
+  "Public pieces for printouts: a one-line label (name · pause rule)
+and the syllable table; nil for prose."
+  (should (equal (tibetan-metre-label tibetan-metre-test--1001)
+                 "Śārdūlavikrīḍita · Pause (yati) nach der 12. Silbe"))
+  (should (equal (tibetan-metre-label tibetan-metre-test--1002)
+                 "Śloka (Anuṣṭubh) · keine feste Binnenpause — Pause am Pāda-Ende"))
+  (should (string-prefix-p "| a " (tibetan-metre-table tibetan-metre-test--1001)))
+  (should-not (tibetan-metre-label '("iha khalu śāstrādāv alaukika /")))
+  (should-not (tibetan-metre-table '("iha khalu śāstrādāv alaukika /"))))
+
 (provide 'tibetan-sanskrit-metre-test)
 ;;; tibetan-sanskrit-metre-test.el ends here

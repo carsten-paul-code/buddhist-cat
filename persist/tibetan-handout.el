@@ -28,10 +28,13 @@
 (require 'tibetan-cascade)
 (require 'tibetan-translation-doc)
 (require 'tibetan-translation-discussion)  ; §5.62 :discussion
+(require 'tibetan-sanskrit-metre)          ; §5.65 recitation pauses
 
 (declare-function tibetan-cascade--scope-at-point "tibetan-cascade" ())
 (declare-function tibetan-cascade--clean-slot-text "tibetan-cascade" (body))
 (declare-function tibetan-discussion-read "tibetan-translation-discussion" (file))
+(declare-function tibetan-metre-label "tibetan-sanskrit-metre" (segments))
+(declare-function tibetan-metre-table "tibetan-sanskrit-metre" (segments))
 
 ;; ============================================================================
 ;; B1 — data layer
@@ -297,15 +300,26 @@ only grammar there is and goes through the same filter."
 (defun tibetan-handout--seg-list (segs sa)
   "SEGS ((N . TEXT) …) of a sentence as the renderer's plists (:num
 :wylie :uchen): Wylie from the Uchen for Tibetan, the IAST itself as
-:wylie and no :uchen for Sanskrit (SA).  Shared with the discussion
-paper (§5.64)."
-  (mapcar (lambda (s)
-            (let ((text (string-trim (cdr s))))
-              (list :num (car s)
-                    :wylie (if sa text
-                             (string-trim (tibetan-to-wylie-fixed text)))
-                    :uchen (unless sa text))))
-          segs))
+:wylie and no :uchen for Sanskrit (SA) — for a Sanskrit VERSE with
+its recitation pauses (` | ' pāda end, ` ¦ ' yati; §5.65).  Shared
+with the discussion paper (§5.64)."
+  (let ((marked (and sa (tibetan-metre-mark-segments
+                         (mapcar (lambda (s) (string-trim (cdr s))) segs)))))
+    (cl-loop for s in segs for i from 0
+             collect (let ((text (string-trim (cdr s))))
+                       (list :num (car s)
+                             :wylie (if sa (or (nth i marked) text)
+                                      (string-trim (tibetan-to-wylie-fixed text)))
+                             :uchen (unless sa text))))))
+
+(defun tibetan-handout--metre (segs sa)
+  "Label and syllable table of the Sanskrit verse SEGS (§5.65):
+\(LABEL . TABLE), or nil (Tibetan, prose).  Shared with the
+discussion paper."
+  (when sa
+    (let ((texts (mapcar (lambda (s) (string-trim (cdr s))) segs)))
+      (when-let ((label (tibetan-metre-label texts)))
+        (cons label (tibetan-metre-table texts))))))
 
 (defun tibetan-handout--sentence-data (sent-num source-file)
   "Everything the handout needs for sentence SENT-NUM of SOURCE-FILE.
@@ -327,7 +341,9 @@ tool's Translation/Vocabulary/Grammar slots — Provided Translations
                                     (file-name-directory source-file))))
          (file (tibetan-sentence--filepath sent-num folder source-file))
          (seg-list (tibetan-handout--seg-list segs sa))
-         (base (list :sent-num sent-num :lang lang :segs seg-list)))
+         (metre (tibetan-handout--metre segs sa))
+         (base (list :sent-num sent-num :lang lang :segs seg-list
+                     :metre (car metre) :metre-table (cdr metre))))
     (if (not (file-exists-p file))
         (append base (list :missing t))
       (let ((sections (tibetan-analysis--read-claude-sections file))
@@ -489,6 +505,7 @@ titles, concept notes) renders; before 20.10.2026 only the explicit
      (tibetan-handout--latex-fonts)
      "#+LATEX_HEADER: \\usepackage{xcolor,fancyhdr,setspace,needspace,newunicodechar,longtable,array,enumitem,titlesec}\n"
      "#+LATEX_HEADER: \\newunicodechar{★}{\\ensuremath{\\star}}\n"
+     "#+LATEX_HEADER: \\newunicodechar{⏑}{\\ensuremath{\\smile}}\n"
      "#+LATEX_HEADER: \\definecolor{seg}{rgb}{0.55,0.10,0.10}\\definecolor{dim}{gray}{0.40}\n"
      "#+LATEX_HEADER: \\pagestyle{fancy}\\fancyhf{}\\renewcommand{\\headrulewidth}{0.4pt}\n"
      (format "#+LATEX_HEADER: \\fancyhead[L]{\\small\\textit{%s} · %s}\\fancyhead[R]{\\small\\thepage}\n"
@@ -511,6 +528,10 @@ segment number in the margin, wide line spacing for handwriting."
    (mapconcat
     (lambda (d)
       (concat
+       (if (plist-get d :metre)
+           (format "\\noindent{\\footnotesize\\color{dim}\\textit{%s}}\\par\n"
+                   (tibetan-handout--latex-escape (plist-get d :metre)))
+         "")
        (mapconcat
         (lambda (s)
           (let ((num (plist-get s :num))
@@ -592,6 +613,24 @@ followed by Problem / Einschätzung / Frage."
                     prose "\n")
          "\n\n"))))))
 
+(defun tibetan-handout--metre-block (d)
+  "`** Metrum' for the sentence data D (§5.65): the metre line and the
+syllable table (syllables over – / ⏑, `¦' at the caesura) — \"\"
+for Tibetan and prose.  Needs no analysis, so it stands even before
+C-c u A."
+  (let ((table (plist-get d :metre-table)))
+    (if (not table)
+        ""
+      (let ((cells (- (length (split-string (car (split-string table "\n"))
+                                            "|"))
+                      2)))
+        (concat
+         "** Metrum\n"
+         (plist-get d :metre) "\n\n"
+         (format "#+ATTR_LATEX: :font \\scriptsize\\setlength{\\tabcolsep}{1.5pt} :align @{}l%s@{}\n"
+                 (make-string (max 0 (1- cells)) ?c))
+         table "\n\n")))))
+
 (defun tibetan-handout--sentence-block (d)
   "`* Satz N (Seg. …)' for the sentence data D: compact Wylie,
 Übersetzung, Vokabular, Grammatik, Diskussion (when there is one,
@@ -608,6 +647,7 @@ followed by Problem / Einschätzung / Frage."
                           (tibetan-handout--latex-escape (plist-get s :wylie))))
                 segs " ")
      "}\\par\n#+END_EXPORT\n\n"
+     (tibetan-handout--metre-block d)
      (if (plist-get d :missing)
          "{{{luecke(Analysedatei fehlt — C-c u A auf dem Satz)}}}\n\n"
        (concat
