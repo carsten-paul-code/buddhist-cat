@@ -143,6 +143,37 @@ the dictionary form is the look-up key."
         (flush))
       (nreverse result))))
 
+(defvar tibetan-sanskrit-reading--word-formation nil
+  "Text-keyed word formations of the current render (§5.66):
+\((UNIT-TEXT . ((WORD . FORMATION) …)) …), bound by the cascade
+regenerate from the file's `** Word Formation' — the gloss tables'
+row 2 (prefix + √root + suffix, compound members joined by ` · ').")
+
+(defun tibetan-sanskrit-reading-parse-word-formation (body)
+  "Parse a `** Word Formation' BODY (or Claude's markdown answer) into
+\((SEG-NUM . ((WORD . FORMATION) …)) …) in file order: segment
+headings `*** Segment N' or `### Segment N', bullets `- WORD —
+FORMATION' (markdown code/emphasis marks stripped); lines before the
+first segment are ignored.  nil-safe."
+  (when (and body (stringp body) (not (string-empty-p (string-trim body))))
+    (let (result seg pairs)
+      (cl-flet ((flush ()
+                  (when seg (push (cons seg (nreverse pairs)) result))
+                  (setq seg nil pairs nil)))
+        (dolist (line (split-string body "\n"))
+          (let ((l (string-trim line)))
+            (cond
+             ((string-match "\\`\\(?:###\\|\\*\\*\\*\\)[ \t]+Segment[ \t]+\\([0-9]+\\)\\b" l)
+              (flush)
+              (setq seg (string-to-number (match-string 1 l))))
+             ((null seg))
+             ((string-match "\\`-[ \t]+\\(.+?\\)[ \t]+—[ \t]+\\(.+\\)\\'" l)
+              (push (cons (string-trim (match-string 1 l) "[`*_ ]+" "[`*_ ]+")
+                          (string-trim (match-string 2 l) "[`*_ ]+" "[`*_ ]+"))
+                    pairs)))))
+        (flush))
+      (nreverse result))))
+
 (defun tibetan-sanskrit-reading--analysis-for-unit (unit-text)
   "The (:pada … :morph …) entry for UNIT-TEXT from the dynamic
 text-keyed index, or nil."
@@ -163,11 +194,17 @@ consults the Tibetan tokenizer or the Wylie-keyed dictionaries."
                  (tibetan-sanskrit-reading--analysis-for-unit unit-text)))
          (words (or (plist-get wa :pada)
                     (tibetan-sanskrit-reading--tokenize-surface unit-text)))
-         (morph (plist-get wa :morph)))
+         (morph (plist-get wa :morph))
+         ;; §5.66: word formation for the gloss tables' row 2.
+         (formation (and unit-text
+                         tibetan-sanskrit-reading--word-formation
+                         (cdr (assoc (string-trim unit-text)
+                                     tibetan-sanskrit-reading--word-formation)))))
     (mapcar (lambda (w)
               (list :tibetan w :wylie w :kind 'word
                     :label nil :meaning nil
                     :morph (cdr (assoc w morph))
+                    :formation (cdr (assoc w formation))
                     :prev-verb-p nil :curated-p nil :clitic nil))
             words)))
 

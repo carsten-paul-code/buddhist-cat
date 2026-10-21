@@ -47,6 +47,9 @@
 ;; by the scaffold/regenerate below; same shadow hazard as above.
 (defvar tibetan-analysis--source-lang)
 (defvar tibetan-sanskrit-reading--word-analysis)
+(defvar tibetan-sanskrit-reading--word-formation)
+(declare-function tibetan-sanskrit-reading-parse-word-formation
+                  "tibetan-sanskrit-reading" (body))
 ;; T3 (§5.58): die textkeyed Particles-Dynamik der Glossentabellen
 ;; (definiert in tibetan-gloss-table.el) — vom Regenerate gebunden;
 ;; gleiche Shadow-Falle wie oben.
@@ -77,6 +80,7 @@
 ;; call time (soft), so there is no load-time cycle.
 (require 'tibetan-sentence-persist)
 (require 'tibetan-sanskrit-metre)       ; §5.65 ** Metre (pure, no deps)
+(require 'tibetan-sanskrit-reading)      ; §5.66 Word Formation parser (pure)
 (defvar tibetan-analysis--cascade-analysis-heading-re) ; §5.61, analysis-claude
 
 (defun tibetan-cascade-split-shad-units (text)
@@ -992,6 +996,9 @@ modulo LAST_ANALYZED.  Returns FILEPATH."
                    filepath "DharmaMitra Translation"))
          (keep-word-analysis (tibetan-sentence--read-l2-body
                               filepath "Word Analysis"))
+         ;; §5.66: the word formation (gloss tables' row 2).
+         (keep-word-formation (tibetan-sentence--read-l2-body
+                               filepath "Word Formation"))
          (keep-pt-rest (tibetan-cascade--provided-translations-rest
                         filepath))
          ;; R7: dual-format preserve — new-layout ⟦N⟧ lines or legacy
@@ -1061,7 +1068,16 @@ modulo LAST_ANALYZED.  Returns FILEPATH."
                             for entry = (assq n parsed)
                             when entry
                             collect (cons (string-trim text)
-                                          (cdr entry))))))))
+                                          (cdr entry)))))))
+            ;; §5.66: likewise the word formation, keyed by unit text.
+            (tibetan-sanskrit-reading--word-formation
+             (let ((parsed (tibetan-sanskrit-reading-parse-word-formation
+                            keep-word-formation)))
+               (when parsed
+                 (cl-loop for (n . text) in segs
+                          for entry = (assq n parsed)
+                          when entry
+                          collect (cons (string-trim text) (cdr entry)))))))
         (insert (tibetan-cascade--scaffold sent-num segs source-file)))
       (when created
         (save-excursion
@@ -1096,6 +1112,11 @@ modulo LAST_ANALYZED.  Returns FILEPATH."
                  2 "Word Analysis" keep-word-analysis)
           (tibetan-cascade--insert-l2-in-analysis
            "Word Analysis" keep-word-analysis)))
+      (when keep-word-formation
+        (unless (tibetan-cascade--set-body-in-buffer
+                 2 "Word Formation" keep-word-formation)
+          (tibetan-cascade--insert-l2-in-analysis
+           "Word Formation" keep-word-formation)))
       ;; S2: * Provided Translations komponieren — DM-Slot (Body samt
       ;; Drawer preserved) + PT-Rest (Lopez/W&M, Hand-Einträge; ohne
       ;; DM-/Particles-Duplikate).

@@ -80,6 +80,9 @@
      ["Sanskrit–Tibetisch-Vergleich neu anfordern" tibetan-sanskrit-comparison-dwim
       :active (fboundp 'tibetan-sanskrit-comparison-dwim)
       :help "§5.64: Vergleich des Tibetischen mit dem Sanskrit der Parallelquelle (#+TIBETAN_PARALLEL_SOURCE) für den Satz / die Überschrift an Punkt — erzwungen neu; C-c u G holt fehlende Vergleiche von selbst"]
+     ["Wortbildung (Präfix + Wurzel) neu anfordern" tibetan-word-formation-dwim
+      :active (fboundp 'tibetan-word-formation-dwim)
+      :help "Sanskrit: word formation (prefix + √root) for the gloss tables' row 2 — sentence at point or every sentence under the heading; C-c u G fetches missing ones itself"]
      ["Re-analyze Segment (C-c u R)" tibetan-reanalyze-segment
       :help "Regenerate analysis while preserving your notes"]
      ["Toggle Class View — fold reference sections (C-c u f)" tibetan-analysis-toggle-class-view t]

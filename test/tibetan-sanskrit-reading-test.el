@@ -224,6 +224,24 @@ eṣaṇa-vit-kriyā hi
     (should (equal (cdr (assoc "eṣaṇa-vit-kriyā" (plist-get e :lemma))) "eṣaṇa-vit-kriyā"))
     (should (equal (cdr (assoc "hi" (plist-get e :morph))) "IND."))))
 
+(ert-deftest tibetan-sanskrit-reading-word-formation-parse-and-tokens ()
+  "§5.66 (Carsten, 21.10.: Präfix und Wurzel als 2. Tabellenzeile):
+the `** Word Formation' body (org or markdown headings, `- WORD —
+FORMATION' bullets) parses into a segment-keyed alist; the token
+provider carries :formation through the text-keyed dynamic."
+  (let ((wf (tibetan-sanskrit-reading-parse-word-formation
+             "*** Segment 673\n- dehe — √dih-a\n- vimuktaḥ — vi-√muc-ta\n- eva — —\n\n### Segment 674\n- yasya — —")))
+    (should (equal (cdr (assq 673 wf))
+                   '(("dehe" . "√dih-a") ("vimuktaḥ" . "vi-√muc-ta") ("eva" . "—"))))
+    (should (equal (cdr (assq 674 wf)) '(("yasya" . "—")))))
+  (let ((tibetan-sanskrit-reading--word-analysis
+         '(("dehe vimukta" . (:pada ("dehe" "vimuktaḥ")))))
+        (tibetan-sanskrit-reading--word-formation
+         '(("dehe vimukta" . (("vimuktaḥ" . "vi-√muc-ta"))))))
+    (let ((toks (tibetan-sanskrit-reading-unit-tokens " dehe vimukta ")))
+      (should-not (plist-get (car toks) :formation))
+      (should (equal "vi-√muc-ta" (plist-get (cadr toks) :formation))))))
+
 (provide 'tibetan-sanskrit-reading-test)
 
 ;;; tibetan-sanskrit-reading-test.el ends here
