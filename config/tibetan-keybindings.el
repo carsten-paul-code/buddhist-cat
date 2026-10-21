@@ -426,6 +426,10 @@
 ;; refontifies every mode buffer.
 (define-key tibetan-thesaurus-prefix-map (kbd "h") 'tibetan-zettel-highlight-mode)
 (define-key tibetan-thesaurus-prefix-map (kbd "H") 'tibetan-zettel-highlight-reload)
+;; `w' (Wortbildung, 2026-10-21): the Sanskrit decomposition of the marked
+;; word (prefix → meaning, root → meaning) from its zettel's :ETYMOLOGY:,
+;; in the echo area; C-u copies it.
+(define-key tibetan-thesaurus-prefix-map (kbd "w") 'tibetan-zettel-highlight-etymology)
 
 (global-set-key (kbd "C-c u z") tibetan-thesaurus-prefix-map)
 

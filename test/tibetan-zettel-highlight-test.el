@@ -35,22 +35,22 @@
 (defconst tzh-test--index-json
   (format "{\"generated\": \"2026-10-18T10:00:00\", \"zk_dir\": \"/x/zk\", \"count\": 6, \"entries\": [
 {\"id\": \"%s\", \"file\": \"%s--hrdaya__type-concept.org\", \"title\": \"hṛdaya\", \"kind\": \"concept\", \"stub\": false,
- \"sanskrit\": \"hṛdaya\", \"wylie\": \"\", \"tibetan\": \"\", \"german\": \"Herz\", \"english\": \"heart\",
+ \"sanskrit\": \"hṛdaya\", \"wylie\": \"\", \"tibetan\": \"\", \"german\": \"Herz\", \"english\": \"heart\", \"etymology\": \"hṛd (heart; primary noun) + -aya (noun suffix)\",
  \"aliases\": [], \"tags\": [\"type_concept\"], \"schemes\": [], \"keys\": [\"hrdaya\"]},
 {\"id\": \"%s\", \"file\": \"%s--anuttara__type-concept.org\", \"title\": \"anuttara\", \"kind\": \"concept\", \"stub\": false,
- \"sanskrit\": \"anuttara\", \"wylie\": \"\", \"tibetan\": \"\", \"german\": \"das Unübertreffliche\", \"english\": \"\",
+ \"sanskrit\": \"anuttara\", \"wylie\": \"\", \"tibetan\": \"\", \"german\": \"das Unübertreffliche\", \"english\": \"\", \"etymology\": \"an- (not) + uttara (higher; comparative of ud- up)\",
  \"aliases\": [], \"tags\": [\"type_concept\"], \"schemes\": [], \"keys\": [\"anuttara\"]},
 {\"id\": \"%s\", \"file\": \"%s--kula__type-concept.org\", \"title\": \"kula\", \"kind\": \"concept\", \"stub\": false,
- \"sanskrit\": \"kula\", \"wylie\": \"\", \"tibetan\": \"\", \"german\": \"Gesamtheit\", \"english\": \"\",
+ \"sanskrit\": \"kula\", \"wylie\": \"\", \"tibetan\": \"\", \"german\": \"Gesamtheit\", \"english\": \"\", \"etymology\": \"\",
  \"aliases\": [], \"tags\": [\"type_concept\"], \"schemes\": [], \"keys\": [\"kula\"]},
 {\"id\": \"%s\", \"file\": \"%s--sunya__type-concept.org\", \"title\": \"śūnya\", \"kind\": \"concept\", \"stub\": false,
- \"sanskrit\": \"śūnya\", \"wylie\": \"\", \"tibetan\": \"\", \"german\": \"leer\", \"english\": \"empty\",
+ \"sanskrit\": \"śūnya\", \"wylie\": \"\", \"tibetan\": \"\", \"german\": \"leer\", \"english\": \"empty\", \"etymology\": \"\",
  \"aliases\": [], \"tags\": [\"type_concept\"], \"schemes\": [], \"keys\": [\"sunya\"]},
 {\"id\": \"%s\", \"file\": \"%s--sunya-trika__type-concept.org\", \"title\": \"śūnya (Trika)\", \"kind\": \"concept\", \"stub\": false,
- \"sanskrit\": \"śūnya\", \"wylie\": \"\", \"tibetan\": \"\", \"german\": \"Leere\", \"english\": \"void\",
+ \"sanskrit\": \"śūnya\", \"wylie\": \"\", \"tibetan\": \"\", \"german\": \"Leere\", \"english\": \"void\", \"etymology\": \"\",
  \"aliases\": [], \"tags\": [\"type_concept\", \"tradition_saiva\"], \"schemes\": [], \"keys\": [\"sunya\"]},
 {\"id\": \"%s\", \"file\": \"%s--stong-pa-nyid__type-concept.org\", \"title\": \"stong pa nyid\", \"kind\": \"concept\", \"stub\": true,
- \"sanskrit\": \"śūnyatā\", \"wylie\": \"stong pa nyid\", \"tibetan\": \"སྟོང་པ་ཉིད\", \"german\": \"Leerheit\", \"english\": \"\",
+ \"sanskrit\": \"śūnyatā\", \"wylie\": \"stong pa nyid\", \"tibetan\": \"སྟོང་པ་ཉིད\", \"german\": \"Leerheit\", \"english\": \"\", \"etymology\": \"\",
  \"aliases\": [], \"tags\": [\"type_concept\"], \"schemes\": [], \"keys\": [\"sunyata\", \"stongpanyid\", \"སྟོངཔཉིད\"]}]}"
           tzh-test--hrdaya tzh-test--hrdaya tzh-test--anuttara tzh-test--anuttara
           tzh-test--kula tzh-test--kula tzh-test--sunya-b tzh-test--sunya-b
@@ -353,6 +353,38 @@ hṛdaya kula anuttara — these words here must NOT match
                        tzh-test--sunya-b))
         (should (member "śūnya (Trika)" prompted)))
       (should (equal (tibetan-zettel-highlight--choose-id (list tzh-test--kula)) tzh-test--kula)))))
+
+(ert-deftest tzh-entry-and-tooltip-carry-the-wortbildung ()
+  (tzh-test--with-index
+    (should (equal (plist-get (tibetan-zettel-highlight-entry tzh-test--hrdaya) :etymology)
+                   "hṛd (heart; primary noun) + -aya (noun suffix)"))
+    (let ((echo (tibetan-zettel-highlight--help-echo (list tzh-test--hrdaya))))
+      (should (string-match-p "hṛdaya — Herz / heart" echo))
+      (should (string-match-p "\nWortbildung: hṛd (heart; primary noun) \\+ -aya (noun suffix)" echo)))
+    ;; no Wortbildung in the zettel: no line
+    (should-not (string-match-p "Wortbildung" (tibetan-zettel-highlight--help-echo (list tzh-test--kula))))))
+
+(ert-deftest tzh-etymology-command-shows-the-wortbildung-of-the-marked-word ()
+  (tzh-test--with-index
+    (let (said)
+      (cl-letf (((symbol-function 'message) (lambda (fmt &rest args) (setq said (apply #'format fmt args)))))
+        (with-temp-buffer
+          (insert "plain hṛdaya kula")
+          (put-text-property 7 13 'tibetan-zettel-id (list tzh-test--hrdaya))
+          (put-text-property 14 18 'tibetan-zettel-id (list tzh-test--kula))
+          (goto-char 9)
+          (tibetan-zettel-highlight-etymology)
+          (should (equal said "hṛdaya — Herz / heart — hṛd (heart; primary noun) + -aya (noun suffix)"))
+          ;; C-u puts the same text on the kill ring
+          (tibetan-zettel-highlight-etymology t)
+          (should (equal (current-kill 0) said))
+          ;; a zettel without Wortbildung says so
+          (goto-char 15)
+          (tibetan-zettel-highlight-etymology)
+          (should (equal said "kula — Gesamtheit — keine Wortbildung im Zettel"))
+          ;; no zettel at point: a user-error pointing at /term
+          (goto-char 2)
+          (should-error (tibetan-zettel-highlight-etymology) :type 'user-error))))))
 
 (provide 'tibetan-zettel-highlight-test)
 ;;; tibetan-zettel-highlight-test.el ends here

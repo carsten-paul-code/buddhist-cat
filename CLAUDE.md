@@ -4236,6 +4236,26 @@ opt-in Rate-Modus mit eigenem Face für unanalysierte Verse.
 Suite ERT 2505 → **2521** (0 unexpected, 1 Skip); BDD grün; compile
 sauber; REFERENCE.org regeneriert.
 
+**Nachtrag 2026-10-21 — Wortbildung im CAT.**  Carsten (Tantrāloka-
+Reading, 20.10.): bei Sanskrit-Begriffen eine Bedeutungszerlegung
+(englisch: Präfix → Bedeutung, Wurzel → Bedeutung), „kann als Funktion
+dann auch im CAT-Tool genutzt werden".  Die Zerlegung lebt im Zettel
+(`:ETYMOLOGY:` + Zeile `Wortbildung: …` unter der Kopfzeile; Notation
+in `~/emacs-zettelkasten/SKOS-DESIGN.org`, Lint `missing-etymology`),
+`skos_index.py` liefert sie als Feld `etymology`, der Index-Plist
+trägt `:etymology`.  Der Tooltip zeigt sie als zweite Zeile unter
+„title — de / en"; neues Kommando `tibetan-zettel-highlight-etymology`
+(`C-c u z w`, Menü „Wortbildung at Point") gibt `lemma — de / en —
+Zerlegung` im Echo-Bereich aus (`C-u` kopiert; ohne Zettel: Hinweis
+auf /term; ohne Eintrag: „keine Wortbildung im Zettel").  Nicht in v1:
+Zerlegung ad hoc per Claude für Wörter ohne Zettel; Einspeisung in den
+`C-c u G`-Prompt (der Index trägt sie dann schon).  Nach `C-c u z H`
+(Index neu) stehen die Zerlegungen der Chargen vom 21.10. bereit.
+Lektion: `make compile` hinterlässt `.elc` in `core/`; ein Test, der
+nach einer Quelländerung „unerklärlich" rot bleibt, lädt die alte
+`.elc` — erst `make compile`, dann testen.  ERT 2521 → **2571**
+(mit zwei neuen Tests hier; die übrigen kamen aus §5.64/§5.65).
+
 ### 5.62 Übersetzungs-Diskussion für das Seminar (done, 2026-10-12)
 
 Carsten (12.10., Tantrāloka): „Was es perfekt machen würde, wäre eine

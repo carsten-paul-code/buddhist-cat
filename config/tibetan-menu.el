@@ -157,6 +157,9 @@
      ["Rebuild Highlight Index (C-c u z H)" tibetan-zettel-highlight-reload
       :help "Run skos_index.py over the zettelkasten and refontify every highlighting buffer"
       :active (fboundp 'tibetan-zettel-highlight-reload)]
+     ["Wortbildung at Point (C-c u z w)" tibetan-zettel-highlight-etymology
+      :help "Sanskrit decomposition of the marked word (prefix → meaning, root → meaning) from its zettel; C-u copies it"
+      :active (fboundp 'tibetan-zettel-highlight-etymology)]
      ["Initialize from Kramer Glossary (C-c u z i)" tibetan-thesaurus-initialize-from-kramer
       :help "One-time: import Kramer's printed glossary (*kramer-glossary*.org) into the zettelkasten as seed entries"
       :active (fboundp 'tibetan-thesaurus-initialize-from-kramer)]

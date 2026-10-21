@@ -117,7 +117,7 @@
   "Hash: normalized key → list of zettel ids (file order).")
 (defvar tibetan-zettel-highlight--entries nil
   "Hash: zettel id → plist (:id :file :title :kind :stub :sanskrit :wylie
-:tibetan :german :english).")
+:tibetan :german :english :etymology).")
 (defvar tibetan-zettel-highlight--index-mtime nil
   "Modification time of the index file the tables were built from.")
 (defvar tibetan-zettel-highlight--zk-dir nil
@@ -141,7 +141,8 @@
                           :kind (alist-get 'kind e) :stub (alist-get 'stub e)
                           :sanskrit (alist-get 'sanskrit e) :wylie (alist-get 'wylie e)
                           :tibetan (alist-get 'tibetan e) :german (alist-get 'german e)
-                          :english (alist-get 'english e))
+                          :english (alist-get 'english e)
+                          :etymology (alist-get 'etymology e))
                  entries)
         (dolist (k (alist-get 'keys e))
           (puthash k (append (gethash k index) (list id)) index))))
@@ -575,19 +576,49 @@ heading, else nil."
     map)
   "Keymap active on a marked word.")
 
+(defun tibetan-zettel-highlight--entry-line (id)
+  "`title — German / English' of zettel ID (just the id when unknown)."
+  (let ((e (tibetan-zettel-highlight-entry id)))
+    (if e
+        (string-join (delq nil (list (plist-get e :title)
+                                     (let ((de (plist-get e :german)) (en (plist-get e :english)))
+                                       (cond ((and de en (not (string-empty-p de)) (not (string-empty-p en)))
+                                              (format "— %s / %s" de en))
+                                             ((and de (not (string-empty-p de))) (format "— %s" de))
+                                             ((and en (not (string-empty-p en))) (format "— %s" en))))))
+                     " ")
+      id)))
+
+(defun tibetan-zettel-highlight--etymology (id)
+  "The Wortbildung of zettel ID (`:ETYMOLOGY:` in the drawer), or nil when empty."
+  (let ((ety (plist-get (tibetan-zettel-highlight-entry id) :etymology)))
+    (and ety (not (string-empty-p ety)) ety)))
+
 (defun tibetan-zettel-highlight--help-echo (ids)
+  "Tooltip for IDS: one `title — de / en' per zettel, its Wortbildung underneath."
   (mapconcat (lambda (id)
-               (let ((e (tibetan-zettel-highlight-entry id)))
-                 (if e
-                     (string-join (delq nil (list (plist-get e :title)
-                                                  (let ((de (plist-get e :german)) (en (plist-get e :english)))
-                                                    (cond ((and de en (not (string-empty-p de)) (not (string-empty-p en)))
-                                                           (format "— %s / %s" de en))
-                                                          ((and de (not (string-empty-p de))) (format "— %s" de))
-                                                          ((and en (not (string-empty-p en))) (format "— %s" en))))))
-                                  " ")
-                   id)))
+               (let ((ety (tibetan-zettel-highlight--etymology id)))
+                 (concat (tibetan-zettel-highlight--entry-line id)
+                         (if ety (concat "\nWortbildung: " ety) ""))))
              ids "\n"))
+
+(defun tibetan-zettel-highlight-etymology (&optional kill)
+  "Show the Wortbildung of the marked word at point: lemma — de / en — parts.
+The decomposition comes from the zettel's `:ETYMOLOGY:' (via the index), so
+it is the same line the Research panel and the browser view show.  Several
+zettels (homonyms) give one line each.  With prefix KILL the text also goes
+to the kill ring.  Without a zettel at point: /term creates one."
+  (interactive "P")
+  (let ((ids (tibetan-zettel-highlight-ids-at-point)))
+    (unless ids
+      (user-error "Kein Zettel-Wort am Punkt — /term legt einen Zettel an"))
+    (let ((text (mapconcat (lambda (id)
+                             (concat (tibetan-zettel-highlight--entry-line id) " — "
+                                     (or (tibetan-zettel-highlight--etymology id)
+                                         "keine Wortbildung im Zettel")))
+                           ids "\n")))
+      (when kill (kill-new text))
+      (message "%s" text))))
 
 (defconst tibetan-zettel-highlight--props
   '(tibetan-zettel-id keymap mouse-face help-echo rear-nonsticky)
