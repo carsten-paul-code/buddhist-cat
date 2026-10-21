@@ -3,7 +3,14 @@
 This file briefs Claude Code (or any other Claude surface) picking up
 work on **tibetan-cat.el**, Carsten Paul's Emacs-Lisp Computer-Assisted
 Translation (CAT) system for Classical Tibetan. Read it in full before
-editing. Last updated 2026-10-21 (§5.67: BEDEUTUNGEN ALS 3. ZEILE —
+editing. Last updated 2026-10-21 (§5.68: SYNOPSE-VORSPANN IM HANDOUT —
+nach dem Vorbereitungsblatt der Doktoranden: `* Siglen', je Section
+`* Synopse' im Querformat mit Stellenzeile aus :FOLIO:, Skt|Tib-
+Tabelle (Vers fett) und Kommentar (Sthiramati) mit Versworten fett /
+Bhāṣya-Worten unterstrichen (Silbenheuristik, Goldstandard = das
+Blatt); Keywords #+TIBETAN_SYNOPSIS/COMMENTARY/SIGLA/SIGLUM; kein
+Abruf; ERT 2585.
+Previous: §5.67: BEDEUTUNGEN ALS 3. ZEILE —
 unter der Wortbildung stehen die Bedeutungen aller Teile (vi- apart ·
 √muc free · -ta past participle), drittes Feld derselben
 Begleitantwort, Zielsprache des Dokuments; ERT 2579.
@@ -4015,6 +4022,95 @@ migrieren beim nächsten Regenerate (editierte `** Gloss Tables`
 bleiben per §5.54-Schutz stehen).  Suite 2339 → **2345 ERT**
 (0 unexpected, 1 skip); BDD 250; compile clean; REFERENCE.org je
 def-Commit.
+
+### 5.68 Synopse-Vorspann im Handout: Siglen, Stellen, Parallele, Kommentar (done, 2026-10-21)
+
+Carsten (21.10.) legte das Vorbereitungsblatt der Doktoranden zum
+MSA-Reading vor (Zhoulin Li, `Preparations/MSA 10.21.pdf', Vers IX.60
+mit Sthiramati): „Finde ich eigentlich besser als mein Handout, bzw.
+könnte das am Anfang vom Handout stehen."  Befund: zwei Gattungen —
+Vortragsblatt (Siglen, Stellen L/N/D/Q/T, Synopse Skt·Tib·Chin, Apparat,
+Sthiramati lemmaweise mit Versworten **fett** und Bhāṣya-Worten
+_unterstrichen_) gegen Lernblatt (Vokabular, Grammatik, Schreibrand).
+Alles außer Chinesisch, Peking- und Lévi/Nagao-Apparat ist aus den
+Kaskaden ableitbar (gleiche `** Section'-Titel, `:FOLIO:', `:VERSE:').
+Entscheidung: als Vorspann vors Handout, ohne Thurman (die
+Referenzsperre bleibt), ohne KI-Abruf.
+
+- **Keywords** im Kopf der Quelle (Pfade relativ): `#+TIBETAN_SYNOPSIS:
+  <Kaskade>' (wiederholbar — weitere Spalte der Tabelle),
+  `#+TIBETAN_COMMENTARY: <Kaskade>' (wiederholbar — Kommentar unter der
+  Tabelle), `#+TIBETAN_SIGLA: <org>' (Body wörtlich als `* Siglen',
+  `#'-Zeilen weg), `#+TIBETAN_SIGLUM: L' (Spaltenkopf; Fallback
+  Kurzname).  Metadaten-Leser: `:synopsis :commentary :sigla :siglum'.
+  Bewusst NICHT `#+TIBETAN_PARALLEL_SOURCE' (§5.64 — das lässt C-c u G
+  einen Sanskrit-Vergleich holen; die Synopse feuert nie).
+- **Daten**: `tibetan-cascade--collect-sentences' liefert zusätzlich
+  `:verse' (die :VERSE:-Property des Satzes) und `:folios' ((N .
+  "D159a5") …) — additiv, kein Konsument bricht.  Handout:
+  `--section-sentences' (Datei, Section-Titel), `--synopsis-column'
+  (:siglum :lang :locator :sentences; Locator = Folio-Spanne erstes–
+  letztes Segment ohne Editionsbuchstaben, sonst Vers-Id, sonst
+  Section-Id; sa OHNE Rezitationspausen — `--seg-list' PLAIN),
+  `--synopsis-commentary' (Läufe je Segment + Übersetzung des Werkzeugs
+  je Satz, nie Referenzen — Poison-Test), `--synopsis-data' (:id :lead
+  :parallels :commentaries; Kommentar-Zitate gegen die erste Spalte
+  seiner Sprache), `--scope-sections' (Sections der Sätze im Umfang, je
+  einmal), `--sigla-text'.  Build setzt `:sigla'/`:synopsis' nur, wenn
+  die Quelle SYNOPSIS oder COMMENTARY nennt; alles andere unverändert.
+- **Hervorhebung** `tibetan-handout--mark-quotes' (rein; Wylie-Silben,
+  Shad als eigenes Token; über den GANZEN Abschnitt, weil Lemma und
+  Marker oft durch Shad und Satzgrenze getrennt sind: „… yin te/ /"
+  „zhes bya ba la/"): (1) LEMMA vor `zhes/ces/shes bya' bzw. `… smos'
+  (zurück bis zum vorigen Shad, max. 16; nicht die Schlussformeln
+  `… ba'i don to' / `… ste'): ≥ 2/3 der Inhaltssilben im Vers → `verse'
+  (fett), sonst im Bhāṣya → `bhasya' (unterstrichen), Gleichstand →
+  Vers.  (2) LÄUFE ≥ 2 Inhaltssilben, Inhaltssilbe zu Inhaltssilbe:
+  im Bhāṣya → bhasya (Gleichstand → Bhāṣya: Begriffsechos), nur im
+  Vers → verse.  Funktionssilben = `--particle-syllables' +
+  Nominalisierer/Genitive/Kopula/Finalpartikel/Marker.  Ausgabe je
+  Segment ((TEXT . KIND) …), Zwischenstücke wörtlich.  Goldstandard-
+  Test aus dem Blatt (IX.60: Uddeśa-Lemma unterstrichen, „rang bzhin
+  dang ni" / „rdzogs longs spyod" / „sprul pa'i sku yang gzhan yin te"
+  fett, „chos kyi sku" / „sems can" / „longs spyod" unterstrichen,
+  „pa ni"/„yin no" nie).  Bekannte Grenzen: Sthiramatis eigene
+  Versübersetzung („thog ma … gnas" für „dang po … rten") wird nicht
+  erkannt; Begriffsechos („rang bzhin", „sangs rgyas") werden auch dort
+  unterstrichen, wo das Blatt sie frei lässt.
+- **Renderer**: `* Siglen' (+ Konventionszeile), je Section `* Synopse
+  <id>' in `\begin{landscape}' (pdflscape; der Umgebungsbeginn steht
+  VOR der org-Überschrift, sonst bleibt sie allein auf der Hochformat-
+  seite zurück): Stellenzeile „L MSA IX.60 · D4026 159a5–159a7 · D4034
+  135b5–136a6", longtable mit n Spalten (0.98/n `\linewidth'), Vers
+  `\textbf', Segment-Hochzahlen (`\segsup'), dann je Kommentar
+  Siglum+Stelle und die markierten Sätze (`\textbf' / `\uline' aus
+  ulem[normalem]), Übersetzung kursiv, wo gelandet; dann `* Text' und
+  `* Satz N' wie bisher.  `--md-to-latex' für Claude-Prosa in
+  Rohblöcken.  CJK-Fallback `tibetan-handout-cjk-font' (Hiragino
+  Mincho ProN) in der luaotfload-Kette — Nagaos Titel in den Siglen
+  zeigte Kästchen.
+- **Korpus** (buddhist-studies): Keywords in `Sanskrit-9/msa-9-cat.org'
+  (L; SYNOPSIS Tibetisch-9, COMMENTARY Sthiramati-9), `Tibetisch-9/
+  mdo-sde-rgyan-9-cat.org' (D4026; symmetrisch), `Sthiramati-9/
+  savbh-9-cat.org' (D4034; SYNOPSIS beide), neu `Resources/
+  siglen-msa.org'; Probe `Sanskrit-9/handouts/msa-par-60.{org,pdf}'
+  (5 S.).  Vorher die Sthiramati-Grenzen IX.60–62 von Hand gesetzt
+  (`c28d40b2', `3c3529b6'): Beginn beim Uddeśa-Lemma (Satz 754, D135b5;
+  das Skript hatte Pāda c, Satz 757), IX.61 ab 768, IX.62 ab 780 — 61/62
+  fehlten ganz, IX.60 lief über 253 Sätze; die 26 Satzdateien neu
+  materialisiert (Slots löschen, dann `materialize-provided-
+  translations' — EINMALIG-Gate).
+- **Parallel-Session** (21.10.): „Mahāyānasūtrālaṃkāra Reading Materials"
+  materialisierte gleichzeitig Makransky/Radich im selben Ordner;
+  Abstimmung per SendMessage, nur eigene Dateien gestaged, Commits
+  sequenziert.
+
+Suite 2579 → **2585 ERT** (0 unexpected, 1 Skip), BDD grün; `make
+compile' warnungsfrei.
+
+**Offen:** Chinesisch (T1604) und Peking-Apparat bleiben Handarbeit;
+Sthiramatis restliche 24 unerkannte Section-Grenzen (Liste im
+Dateikopf) nach demselben Muster — Lemma statt D4020-Wortlaut.
 
 ### 5.67 Bedeutungen von Präfix, Wurzel und Suffix als 3. Zeile (done, 2026-10-21)
 
