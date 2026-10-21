@@ -62,11 +62,11 @@ in any case; `tibetan-word-formation-dwim' forces a new one."
 ;; ============================================================================
 
 (defun tibetan-word-formation--curated (lemma)
-  "The zettels' Wortbildung (:ETYMOLOGY:) for LEMMA, or nil."
+  "The zettels' Wortbildung (:ETYMOLOGY:) for LEMMA, or nil — read
+through `tibetan-zettel-highlight--etymology', the reader behind the
+tooltip and C-c u z w (one source for zettel, panel and CAT)."
   (when (and lemma (tibetan-zettel-highlight--ensure-index))
-    (cl-some (lambda (id)
-               (let ((e (plist-get (tibetan-zettel-highlight-entry id) :etymology)))
-                 (and e (not (string-empty-p e)) e)))
+    (cl-some #'tibetan-zettel-highlight--etymology
              (tibetan-zettel-highlight--ids-for-term
               (tibetan-zettel-highlight--strip-lemma lemma)))))
 

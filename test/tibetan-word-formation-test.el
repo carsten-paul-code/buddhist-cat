@@ -136,5 +136,30 @@ paper does not wait for it)."
         (tibetan-word-formation-fetch src (list (list :sent-num 1)) analysis-dir)
         (should-not calls)))))
 
+(ert-deftest tibetan-word-formation-curated-from-zettel-index ()
+  "The CURATED formation is the zettel's Wortbildung (:ETYMOLOGY:)
+from the zettel index — through the index reader of §5.63's tooltip
+\(`tibetan-zettel-highlight--etymology'): one source of truth.  An
+empty field or no zettel gives nil."
+  (let ((idx (make-temp-file "wf-index-" nil ".json")))
+    (unwind-protect
+        (progn
+          (with-temp-file idx
+            (insert "{\"generated\":\"x\",\"zk_dir\":\"\",\"count\":2,\"entries\":["
+                    "{\"id\":\"Z1\",\"file\":\"z1.org\",\"title\":\"śūnyatā\",\"kind\":\"concept\","
+                    "\"etymology\":\"śūnya (empty, √śū to swell) + -tā (abstract noun)\","
+                    "\"keys\":[\"sunyata\"]},"
+                    "{\"id\":\"Z2\",\"file\":\"z2.org\",\"title\":\"deva\",\"kind\":\"concept\","
+                    "\"etymology\":\"\",\"keys\":[\"deva\"]}]}"))
+          (let ((tibetan-zettel-highlight-index-file idx)
+                (tibetan-zettel-highlight--index nil)
+                (tibetan-zettel-highlight--entries nil)
+                (tibetan-zettel-highlight--index-mtime nil))
+            (should (equal (tibetan-word-formation--curated "śūnyatā")
+                           "śūnya (empty, √śū to swell) + -tā (abstract noun)"))
+            (should-not (tibetan-word-formation--curated "deva"))
+            (should-not (tibetan-word-formation--curated "anuttara"))))
+      (delete-file idx))))
+
 (provide 'tibetan-word-formation-test)
 ;;; tibetan-word-formation-test.el ends here
