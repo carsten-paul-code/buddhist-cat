@@ -253,8 +253,9 @@ plain Wylie with a merged clitic re-attached (rje'i), row 2 the
 empty — their information is the row-3 label), row 3 the
 `tibetan-gloss-table--token-label' grammar label.  nil when the
 unit yields no tokens.  Sanskrit tokens carrying a word formation
-\(§5.66: prefix + √root, Carsten 21.10.) add it as ROW 2 — word /
-formation / gloss / label; Tibetan never."
+\(§5.66: prefix + √root, Carsten 21.10.) add it as ROW 2 and the
+meanings of its parts as ROW 3 (§5.67) — word / formation /
+meanings / gloss / label; Tibetan never."
   (let ((toks (tibetan-reading--unit-tokens unit-text)))
     (when toks
       ;; T3 (§5.58): Claude-Particles-Tupel dieser Einheit +
@@ -327,9 +328,16 @@ formation / gloss / label; Tibetan never."
                                  (tibetan-gloss-table--cell
                                   (or (plist-get tok :formation) "")))
                                toks))))
-          (if rf
-              (list (nreverse r1) rf (nreverse r2) (nreverse r3))
-            (list (nreverse r1) (nreverse r2) (nreverse r3))))))))
+          (let ((rm (and rf
+                         (cl-some (lambda (tok) (plist-get tok :formation-meaning)) toks)
+                         (mapcar (lambda (tok)
+                                   (tibetan-gloss-table--cell
+                                    (or (plist-get tok :formation-meaning) "")))
+                                 toks))))
+            (append (list (nreverse r1))
+                    (and rf (list rf))
+                    (and rm (list rm))
+                    (list (nreverse r2) (nreverse r3)))))))))
 
 (defcustom tibetan-gloss-table-max-width 160
   "Maximum rendered line width of a gloss table, in columns.

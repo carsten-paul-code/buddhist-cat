@@ -225,22 +225,33 @@ eṣaṇa-vit-kriyā hi
     (should (equal (cdr (assoc "hi" (plist-get e :morph))) "IND."))))
 
 (ert-deftest tibetan-sanskrit-reading-word-formation-parse-and-tokens ()
-  "§5.66 (Carsten, 21.10.: Präfix und Wurzel als 2. Tabellenzeile):
-the `** Word Formation' body (org or markdown headings, `- WORD —
-FORMATION' bullets) parses into a segment-keyed alist; the token
-provider carries :formation through the text-keyed dynamic."
+  "§5.66 (Carsten, 21.10.: Präfix und Wurzel als 2. Tabellenzeile) +
+§5.67 (die Bedeutungen der Teile als 3. Zeile): the `** Word
+Formation' body (org or markdown headings) has bullets `- WORD —
+FORMATION — MEANINGS', the meanings optional (two-field entries stay
+valid); `—' alone = no formation.  Parsed per segment into (WORD
+:formation F :meaning M); the token provider carries both through the
+text-keyed dynamic."
   (let ((wf (tibetan-sanskrit-reading-parse-word-formation
-             "*** Segment 673\n- dehe — √dih-a\n- vimuktaḥ — vi-√muc-ta\n- eva — —\n\n### Segment 674\n- yasya — —")))
+             "*** Segment 673\n- dehe — √dih-a — √dih smear · -a noun\n- vimuktaḥ — vi-√muc-ta — vi- apart · √muc free · -ta past participle\n- eva — —\n\n### Segment 674\n- yasya — — —\n- hṛdi — hṛd")))
     (should (equal (cdr (assq 673 wf))
-                   '(("dehe" . "√dih-a") ("vimuktaḥ" . "vi-√muc-ta") ("eva" . "—"))))
-    (should (equal (cdr (assq 674 wf)) '(("yasya" . "—")))))
+                   '(("dehe" :formation "√dih-a" :meaning "√dih smear · -a noun")
+                     ("vimuktaḥ" :formation "vi-√muc-ta"
+                      :meaning "vi- apart · √muc free · -ta past participle")
+                     ("eva" :formation "—" :meaning nil))))
+    (should (equal (cdr (assq 674 wf))
+                   '(("yasya" :formation "—" :meaning nil)
+                     ("hṛdi" :formation "hṛd" :meaning nil)))))
   (let ((tibetan-sanskrit-reading--word-analysis
          '(("dehe vimukta" . (:pada ("dehe" "vimuktaḥ")))))
         (tibetan-sanskrit-reading--word-formation
-         '(("dehe vimukta" . (("vimuktaḥ" . "vi-√muc-ta"))))))
+         '(("dehe vimukta" . (("vimuktaḥ" :formation "vi-√muc-ta"
+                               :meaning "vi- apart · √muc free"))))))
     (let ((toks (tibetan-sanskrit-reading-unit-tokens " dehe vimukta ")))
       (should-not (plist-get (car toks) :formation))
-      (should (equal "vi-√muc-ta" (plist-get (cadr toks) :formation))))))
+      (should (equal "vi-√muc-ta" (plist-get (cadr toks) :formation)))
+      (should (equal "vi- apart · √muc free"
+                     (plist-get (cadr toks) :formation-meaning))))))
 
 (provide 'tibetan-sanskrit-reading-test)
 

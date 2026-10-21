@@ -386,28 +386,36 @@ wäre Lookup-Müll."
       (should (string-match-p "| dharmāṇām *|" out)))))
 
 (ert-deftest tibetan-gloss-table-sa-word-formation-row ()
-  "§5.66: with word formation the Sanskrit table gets it as ROW 2 —
-word / formation / gloss / label; a unit without formation keeps
-the three rows; Tibetan never gets the row."
+  "§5.66/§5.67: with word formation the Sanskrit table gets it as ROW
+2 and the meanings of its parts as ROW 3 — word / formation /
+meanings / gloss / label; formation without meanings → four rows; a
+unit without formation keeps three; Tibetan never gets the rows."
   (tibetan-gloss-table-test--with-tokens
       `(("U1" . ((:tibetan "vimuktaḥ" :wylie "vimuktaḥ" :kind word
-                  :morph "PTCP.NOM.SG.M" :meaning "freed" :formation "vi-√muc-ta")
+                  :morph "PTCP.NOM.SG.M" :meaning "freed" :formation "vi-√muc-ta"
+                  :formation-meaning "vi- apart · √muc free · -ta past participle")
                  (:tibetan "eva" :wylie "eva" :kind word
                   :morph "IND." :meaning "just" :formation "—")))
         ("U2" . ((:tibetan "dehe" :wylie "dehe" :kind word
-                  :morph "N.LOC.SG.M" :meaning "body"))))
+                  :morph "N.LOC.SG.M" :meaning "body")))
+        ("U3" . ((:tibetan "eva" :wylie "eva" :kind word
+                  :morph "IND." :meaning "just" :formation "—"))))
     (let* ((tibetan-analysis--source-lang "sa")
            (rows (split-string (tibetan-gloss-table-render '("U1")) "\n"))
-           (rows2 (split-string (tibetan-gloss-table-render '("U2")) "\n")))
-      (should (= 4 (length rows)))
+           (rows2 (split-string (tibetan-gloss-table-render '("U2")) "\n"))
+           (rows3 (split-string (tibetan-gloss-table-render '("U3")) "\n")))
+      (should (= 5 (length rows)))
       (should (string-match-p "^| vimuktaḥ +| eva +|$" (nth 0 rows)))
       (should (string-match-p "^| vi-√muc-ta +| — +|$" (nth 1 rows)))
-      (should (string-match-p "freed" (nth 2 rows)))
-      (should (string-match-p "PTCP\\.NOM\\.SG\\.M" (nth 3 rows)))
-      (should (= 3 (length rows2)))))
+      (should (string-match-p "^| vi- apart · √muc free · -ta past participle +| +|$"
+                              (nth 2 rows)))
+      (should (string-match-p "freed" (nth 3 rows)))
+      (should (string-match-p "PTCP\\.NOM\\.SG\\.M" (nth 4 rows)))
+      (should (= 3 (length rows2)))
+      (should (= 4 (length rows3)))))
   (tibetan-gloss-table-test--with-tokens
       `(("U1" . ((:tibetan "བློས" :wylie "blos" :kind word :meaning "mind"
-                  :formation "IGNORED"))))
+                  :formation "IGNORED" :formation-meaning "IGNORED"))))
     (should (= 3 (length (split-string (tibetan-gloss-table-render '("U1")) "\n"))))))
 
 (ert-deftest tibetan-gloss-table-cell-strips-literal-escape-sequences ()

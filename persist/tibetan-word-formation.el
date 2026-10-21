@@ -45,6 +45,7 @@
 (declare-function tibetan-sentence--sent-id-from-filename "tibetan-sentence-persist")
 (declare-function tibetan-analysis--resolve-source-lang "tibetan-analysis-claude")
 (declare-function tibetan-analysis--defer-mt-p "tibetan-analysis-claude")
+(declare-function tibetan-analysis--read-source-metadata "tibetan-analysis-claude")
 
 (defcustom tibetan-word-formation-auto t
   "When non-nil, the word formation of a Sanskrit cascade sentence is
@@ -71,13 +72,16 @@ tooltip and C-c u z w (one source for zettel, panel and CAT)."
               (tibetan-zettel-highlight--strip-lemma lemma)))))
 
 (defun tibetan-word-formation--inputs (file)
-  "(:file :source-file :sa :segments) for the cascade sentence FILE —
+  "(:file :source-file :sa :target :segments) for the cascade sentence FILE —
 :segments the parsed `** Word Analysis' ((SEG :pada :morph :lemma) …)
 — or nil when FILE is no cascade sentence file."
   (when (and file (file-exists-p file) (tibetan-cascade-file-p file))
     (let* ((src (tibetan-sentence--source-file-from-analysis file))
            (sa (and src (equal (tibetan-analysis--resolve-source-lang src) "sa"))))
       (list :file file :source-file src :sa sa
+            :target (or (and src (plist-get (tibetan-analysis--read-source-metadata src)
+                                            :target-lang))
+                        "en")
             :segments (and sa (tibetan-sanskrit-reading-parse-word-analysis
                                (tibetan-sentence--read-l2-body file "Word Analysis")))))))
 
@@ -98,16 +102,20 @@ tooltip and C-c u z w (one source for zettel, panel and CAT)."
 ;; Prompt
 ;; ============================================================================
 
-(defconst tibetan-word-formation--system-prompt
-  "You decompose Sanskrit words for a reader who is learning Sanskrit.
+(defun tibetan-word-formation--system-prompt (target)
+  "The system prompt for the TARGET language (\"de\" or other) —
+constant per language (cache prefix)."
+  (format
+   "You decompose Sanskrit words for a reader who is learning Sanskrit.
 For each word you get its form in the text (padapāṭha), its lemma and
-its grammatical label.  Give its WORD FORMATION in this compact
-notation — no glosses, no explanations:
+its grammatical label.  Give its WORD FORMATION and the MEANINGS of
+the parts.
 
+FORMATION — compact notation, no glosses:
 - verbal prefixes (upasarga) hyphened before the root, the root
   marked with √:  vi-√muc,  sam-ā-√viś,  ud-√i
-- a derivational suffix hyphened after the root:  vi-√muc-ta (past
-  participle),  √kṛ-ti,  √jñā-ana,  √iṣ-ana
+- a derivational suffix hyphened after the root:  vi-√muc-ta,  √kṛ-ti,
+  √jñā-ana,  √iṣ-ana
 - secondary suffixes likewise after the stem:  sva-tantra-ya,  śūnya-tā
 - compound members joined by \" · \", each decomposed the same way:
   √iṣ-ana · √vid · √kṛ-yā
@@ -116,6 +124,13 @@ notation — no glosses, no explanations:
 - inflectional endings are NOT shown (the grammatical label has them)
 - pronouns, particles, indeclinables, numerals: —
 
+MEANINGS — every part of the formation, in its order, as PART meaning,
+joined by \" · \"; one to three words each: a prefix its basic sense,
+a root its basic meaning, a suffix its function, a stem its meaning:
+  vi- apart · √muc free · -ta past participle
+  √iṣ wish · -ana action noun · √vid know · √kṛ do · -yā action noun
+Write the meanings in %s.  For a word with formation —, write —.
+
 When a CURATED word formation is given for a lemma, follow it
 (converted to this notation).
 
@@ -123,8 +138,8 @@ Answer exactly in this shape, one line per word, in the given order,
 each WORD exactly as given:
 
 ### Segment N
-- WORD — FORMATION"
-  "System prompt — constant (cache prefix).")
+- WORD — FORMATION — MEANINGS"
+   (if (equal target "de") "German" "English")))
 
 (defun tibetan-word-formation--build-prompts (inputs)
   "(SYSTEM . USER) for INPUTS."
@@ -137,7 +152,7 @@ each WORD exactly as given:
                                         (and c (cons l c))))
                                     lemmas))))
     (cons
-     tibetan-word-formation--system-prompt
+     (tibetan-word-formation--system-prompt (plist-get inputs :target))
      (concat
       "Words of the sentence, per segment (form — lemma; grammatical label):\n\n"
       (mapconcat
@@ -170,8 +185,13 @@ each WORD exactly as given:
       (let ((body (mapconcat
                    (lambda (seg)
                      (concat (format "*** Segment %d\n" (car seg))
-                             (mapconcat (lambda (p) (format "- %s — %s" (car p) (cdr p)))
-                                        (cdr seg) "\n")))
+                             (mapconcat
+                              (lambda (p)
+                                (let ((f (plist-get (cdr p) :formation))
+                                      (m (plist-get (cdr p) :meaning)))
+                                  (if m (format "- %s — %s — %s" (car p) f m)
+                                    (format "- %s — %s" (car p) f))))
+                              (cdr seg) "\n")))
                    parsed "\n\n")))
         (with-current-buffer (tibetan-fresh-file-buffer file)
           (unless (tibetan-cascade--set-body-in-buffer

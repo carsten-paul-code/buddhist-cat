@@ -145,16 +145,19 @@ the dictionary form is the look-up key."
 
 (defvar tibetan-sanskrit-reading--word-formation nil
   "Text-keyed word formations of the current render (§5.66):
-\((UNIT-TEXT . ((WORD . FORMATION) …)) …), bound by the cascade
-regenerate from the file's `** Word Formation' — the gloss tables'
-row 2 (prefix + √root + suffix, compound members joined by ` · ').")
+\((UNIT-TEXT . ((WORD :formation F :meaning M) …)) …), bound by the
+cascade regenerate from the file's `** Word Formation' — the gloss
+tables' row 2 (prefix + √root + suffix, compound members joined by
+` · ') and row 3 (the meanings of those parts, §5.67).")
 
 (defun tibetan-sanskrit-reading-parse-word-formation (body)
   "Parse a `** Word Formation' BODY (or Claude's markdown answer) into
-\((SEG-NUM . ((WORD . FORMATION) …)) …) in file order: segment
-headings `*** Segment N' or `### Segment N', bullets `- WORD —
-FORMATION' (markdown code/emphasis marks stripped); lines before the
-first segment are ignored.  nil-safe."
+\((SEG-NUM . ((WORD :formation F :meaning M) …)) …) in file order:
+segment headings `*** Segment N' or `### Segment N', bullets `- WORD
+— FORMATION — MEANINGS' with the meanings optional (§5.67; two-field
+bullets stay valid, an empty or `—' meaning is nil); markdown
+code/emphasis marks stripped; lines before the first segment are
+ignored.  nil-safe."
   (when (and body (stringp body) (not (string-empty-p (string-trim body))))
     (let (result seg pairs)
       (cl-flet ((flush ()
@@ -168,9 +171,22 @@ first segment are ignored.  nil-safe."
               (setq seg (string-to-number (match-string 1 l))))
              ((null seg))
              ((string-match "\\`-[ \t]+\\(.+?\\)[ \t]+—[ \t]+\\(.+\\)\\'" l)
-              (push (cons (string-trim (match-string 1 l) "[`*_ ]+" "[`*_ ]+")
-                          (string-trim (match-string 2 l) "[`*_ ]+" "[`*_ ]+"))
-                    pairs)))))
+              (let* ((word (string-trim (match-string 1 l) "[`*_ ]+" "[`*_ ]+"))
+                     (rest (match-string 2 l))
+                     ;; FORMATION never contains ` —' (it uses
+                     ;; hyphens and ` · '); the lone `—' is its
+                     ;; empty marker.
+                     (fm (if (string-match "\\`\\(.+?\\)[ \t]+—[ \t]*\\(.*\\)\\'" rest)
+                             (cons (match-string 1 rest) (match-string 2 rest))
+                           (cons rest nil)))
+                     (meaning (and (cdr fm)
+                                   (string-trim (cdr fm) "[`*_ ]+" "[`*_ ]+"))))
+                (when (member meaning '("" "—"))
+                  (setq meaning nil))
+                (push (cons word
+                            (list :formation (string-trim (car fm) "[`*_ ]+" "[`*_ ]+")
+                                  :meaning meaning))
+                      pairs))))))
         (flush))
       (nreverse result))))
 
@@ -204,7 +220,8 @@ consults the Tibetan tokenizer or the Wylie-keyed dictionaries."
               (list :tibetan w :wylie w :kind 'word
                     :label nil :meaning nil
                     :morph (cdr (assoc w morph))
-                    :formation (cdr (assoc w formation))
+                    :formation (plist-get (cdr (assoc w formation)) :formation)
+                    :formation-meaning (plist-get (cdr (assoc w formation)) :meaning)
                     :prev-verb-p nil :curated-p nil :clitic nil))
             words)))
 

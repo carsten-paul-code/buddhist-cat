@@ -25,15 +25,15 @@
   "## Word Formation
 
 ### Segment 1
-- dharmāṇām — √dhṛ-ma
-- śūnyatā — śūnya-tā
-- svabhāvaḥ — sva · √bhū-a
+- dharmāṇām — √dhṛ-ma — √dhṛ halten · -ma Nomen
+- śūnyatā — śūnya-tā — śūnya leer · -tā Abstraktum
+- svabhāvaḥ — sva · √bhū-a — sva eigen · √bhū werden · -a Nomen
 
 ### Segment 2
 - na — —
-- svataḥ — sva-tas
+- svataḥ — sva-tas — sva selbst · -tas von … her
 - api — —
-- parataḥ — para-tas"
+- parataḥ — para-tas — para anderer · -tas von … her"
   "A canned Claude answer for the fixture's two segments.")
 
 (defun tibetan-word-formation-test--file (src &optional no-wa)
@@ -71,6 +71,11 @@ zettel etymology (the zettels' Wortbildung) for consistency."
           (should-not (tibetan-word-formation--present-p file))
           (should (string-match-p "vi-√muc" (car ps)))
           (should (string-match-p " · " (car ps)))
+          ;; §5.67: the meanings of the parts, in the document's
+          ;; target language (the fixture is German).
+          (should (string-match-p "√muc free" (car ps)))
+          (should (string-match-p "WORD — FORMATION — MEANINGS" (car ps)))
+          (should (string-match-p "German" (car ps)))
           (should (string-match-p "^### Segment 1$" (cdr ps)))
           (should (string-match-p "^- dharmāṇām — dharma; N\\.GEN\\.PL$" (cdr ps)))
           (should (string-match-p "^### Segment 2$" (cdr ps)))
@@ -95,9 +100,11 @@ formation.  The regenerate keeps exactly one section and the row."
                    (string-match "^\\*\\* Word Analysis$" s)
                    (string-match "^\\*\\* Word Formation$" s)
                    (string-match "^\\* Provided Translations$" s)))
-        (should (string-match-p "^- svabhāvaḥ — sva · √bhū-a$" s))
+        (should (string-match-p "^- svabhāvaḥ — sva · √bhū-a — sva eigen · √bhū werden · -a Nomen$" s))
+        (should (string-match-p "^- na — —$" s))
         (should (string-match-p "^| dharmāṇām +| śūnyatā +| svabhāvaḥ +|$" s))
-        (should (string-match-p "^| √dhṛ-ma +| śūnya-tā +| sva · √bhū-a +|$" s)))
+        (should (string-match-p "^| √dhṛ-ma +| śūnya-tā +| sva · √bhū-a +|$" s))
+        (should (string-match-p "^| √dhṛ halten · -ma Nomen +| śūnya leer · -tā Abstraktum +| sva eigen · √bhū werden · -a Nomen +|$" s)))
       (tibetan-cascade--regenerate
        file 1 '((1 . "dharmāṇāṃ śūnyatā svabhāvaḥ ।") (2 . "na svato nāpi parataḥ ॥")) src)
       (let ((s (tibetan-word-formation-test--read file)))
