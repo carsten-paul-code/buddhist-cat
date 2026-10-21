@@ -3,7 +3,11 @@
 This file briefs Claude Code (or any other Claude surface) picking up
 work on **tibetan-cat.el**, Carsten Paul's Emacs-Lisp Computer-Assisted
 Translation (CAT) system for Classical Tibetan. Read it in full before
-editing. Last updated 2026-10-21 (§5.66: WORTBILDUNG ALS 2. ZEILE —
+editing. Last updated 2026-10-21 (§5.67: BEDEUTUNGEN ALS 3. ZEILE —
+unter der Wortbildung stehen die Bedeutungen aller Teile (vi- apart ·
+√muc free · -ta past participle), drittes Feld derselben
+Begleitantwort, Zielsprache des Dokuments; ERT 2579.
+Previous: §5.66: WORTBILDUNG ALS 2. ZEILE —
 Sanskrit-Glossentabellen tragen Präfix + √Wurzel + Suffix je Wort
 (Claude-Begleitabruf zu C-c u G, Zettel-Wortbildung als Vorgabe,
 `** Word Formation'); Bugfix Formlabel am ersten Semikolon; ERT 2579.
@@ -4011,6 +4015,33 @@ migrieren beim nächsten Regenerate (editierte `** Gloss Tables`
 bleiben per §5.54-Schutz stehen).  Suite 2339 → **2345 ERT**
 (0 unexpected, 1 skip); BDD 250; compile clean; REFERENCE.org je
 def-Commit.
+
+### 5.67 Bedeutungen von Präfix, Wurzel und Suffix als 3. Zeile (done, 2026-10-21)
+
+Carsten (21.10., zu §5.66): „schön wäre es, wenn ich auch noch die
+Bedeutung der Root hätte" — auf Nachfrage: „Zeile 3, dann kann gleich
+auch die Bedeutung der Prä- und Suffixe mit rein".  Commit `c67b3dc'.
+
+- **Ein Feld mehr, kein neuer Abruf**: die Begleitantwort aus §5.66
+  trägt je Wort `- WORT — BILDUNG — BEDEUTUNGEN'; die Bedeutungen
+  folgen der Reihenfolge der Bildung, je Teil ein bis drei Wörter,
+  Präfix = Grundsinn, Wurzel = Grundbedeutung, Suffix = Funktion,
+  Stamm = Bedeutung (`vi- apart · √muc free · -ta past participle').
+  Pronomen/Partikeln: `- yasya — —'.  Sprache = `#+TIBETAN_TARGET_LANG'
+  des Quelldokuments (de → German, sonst English);
+  `tibetan-word-formation--system-prompt' ist jetzt eine Funktion der
+  Zielsprache, je Sprache konstant (Cache-Präfix); `--inputs' trägt
+  :target.
+- **Parser**: Einträge sind Plists `(WORT :formation F :meaning M)';
+  zweiteilige Zeilen bleiben gültig (keine Bedeutung → keine Zeile 3),
+  leeres oder `—'-Feld = nil.  Token :formation-meaning.
+- **Tabelle**: sa mit Bildung UND Bedeutungen → FÜNF Zeilen (Wort /
+  Bildung / Bedeutungen / Glosse / Label); nur Bildung → vier; sonst
+  drei; Tibetisch unverändert.
+
+**Stand Korpus:** wie §5.66 — Zeilen 2 und 3 erscheinen mit dem
+nächsten C-c u G.  Suite **2579 ERT** (0 unexpected, 1 Skip; Tests
+angepasst, keine neuen); compile sauber; REFERENCE.org regeneriert.
 
 ### 5.66 Wortbildung (Präfix + √Wurzel) als 2. Zeile der Sanskrit-Glossentabellen (done, 2026-10-21)
 
