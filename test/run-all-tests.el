@@ -218,6 +218,7 @@ body in the test suite (the transport self-tests only).")
 
 ;; Sanskrit-Kaskade: Token-Provider (Padapāṭha/Word Analysis, 2026-09-24)
 (condition-case nil (require 'tibetan-sanskrit-reading-test) (error nil))
+(condition-case nil (require 'tibetan-sanskrit-metre-test) (error nil))
 
 ;; Sanskrit-Kaskade: Scaffold/Regenerate/Landung (2026-09-24)
 (condition-case nil (require 'tibetan-sanskrit-cascade-test) (error nil))
