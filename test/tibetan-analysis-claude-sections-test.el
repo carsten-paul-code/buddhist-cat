@@ -682,6 +682,50 @@ to the same `:concepts' slot for migration."
         (should     (string-match-p "^\\*\\* Concept Notes$"     (buffer-string)))
         (should-not (string-match-p "^\\*\\*\\* Claude Context$" (buffer-string)))))))
 
+(ert-deftest tibetan-claude-sections-landing-keeps-org-element-cache-in-sync ()
+  "Bug (Carsten 26.10.): nach C-c u G hing Emacs bei 100 % CPU in
+`org-indent-initialize-agent' (Timer-Protokoll), nicht abbrechbar.
+Ursache auf unserer Seite: beide Landungs-Writer schrieben die
+Satzdatei mit `inhibit-modification-hooks' t — der org-element-Cache
+sah die Änderung nicht (sein Änderungszähler blieb hinter dem des
+Puffers zurück), und org 9.7 ruft in `org-at-item-p', also je Zeile
+des org-indent-Agenten, `org-element-at-point' auf einem Cache mit
+verschobenen Positionen auf (Batch-Nachspiel: „Invalid search bound
+\(wrong side of point)“).  Der Grund für die abgeschalteten Hooks
+\(Match-Daten vor `replace-match', 2026-05) ist weg: ersetzt wird mit
+`delete-region' + `insert'.  Beide Writer landen mit laufenden Hooks:
+danach stimmt der Zähler des Caches mit dem Puffer überein."
+  (dolist (writer '(insert restore))
+    (tibetan-sections-test--with-analysis
+        (tibetan-sections-test--sentence-scaffold
+         "[Requesting translation...]" nil nil)
+      (let* ((org-element-use-cache t)
+             (buf (find-file-noselect analysis-file)))
+        (unwind-protect
+            (progn
+              (with-current-buffer buf
+                (org-mode)
+                (org-element-cache-reset)
+                (org-element-at-point))
+              (pcase writer
+                ('insert
+                 (tibetan-analysis--insert-claude-sections
+                  (concat "## Translation\nDone.\n\n"
+                          "## Vocabulary\nbdag, noun, \"I\"\n\n"
+                          "## Grammar\nERG.\n")
+                  analysis-file))
+                ('restore
+                 (tibetan-analysis--restore-claude-sections
+                  analysis-file (list :translation "Restored."
+                                      :grammar "ERG."))))
+              (with-current-buffer buf
+                (should (= org-element--cache-change-tic
+                           (buffer-chars-modified-tick)))
+                (goto-char (point-max))
+                (should (org-element-at-point))))
+          (with-current-buffer buf (set-buffer-modified-p nil))
+          (kill-buffer buf))))))
+
 (ert-deftest tibetan-claude-sections-insert-round-trip-sentence ()
   "Sentence layout: insert a four-section response and read all four back.
 

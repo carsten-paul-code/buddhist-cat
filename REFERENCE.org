@@ -1,9 +1,9 @@
 #+TITLE: Function Reference — tibetan-cat.el
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-10-21T14:53:14
+#+DATE: 2026-10-26T15:35:29
 #+OPTIONS: toc:2 num:nil
 
-Source tree: ~/Users/cp/tibetan-cat.el~  ·  85 modules  ·  1830 forms
+Source tree: ~/Users/cp/tibetan-cat.el~  ·  85 modules  ·  1833 forms
 
 Regenerated automatically by:
 
@@ -70,7 +70,7 @@ python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/tibetan-ca
   - [[#persist/tibetan-cascade.el][persist/tibetan-cascade.el]]  (116)
   - [[#persist/tibetan-claude-queue.el][persist/tibetan-claude-queue.el]]  (22)
   - [[#persist/tibetan-compound-analysis.el][persist/tibetan-compound-analysis.el]]  (29)
-  - [[#persist/tibetan-discussion-paper.el][persist/tibetan-discussion-paper.el]]  (37)
+  - [[#persist/tibetan-discussion-paper.el][persist/tibetan-discussion-paper.el]]  (40)
   - [[#persist/tibetan-handout.el][persist/tibetan-handout.el]]  (67)
   - [[#persist/tibetan-portfolio.el][persist/tibetan-portfolio.el]]  (5)
   - [[#persist/tibetan-sanskrit-comparison.el][persist/tibetan-sanskrit-comparison.el]]  (19)
@@ -13462,7 +13462,7 @@ reanalyse.
 ** ~tibetan-analysis--parse-claude-vocabulary~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 3280
+:LINE: 3281
 :SIGNATURE: (tibetan-analysis--parse-claude-vocabulary vocab-text)
 :END:
 
@@ -13475,7 +13475,7 @@ with `---' are skipped.
 ** ~tibetan-analysis--read-claude-section-body~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 3312
+:LINE: 3313
 :SIGNATURE: (tibetan-analysis--read-claude-section-body filepath heading &optional level)
 :END:
 
@@ -13490,7 +13490,7 @@ and known error markers so we don't re-persist dead content.
 ** ~tibetan-analysis--read-claude-sections~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 3358
+:LINE: 3359
 :SIGNATURE: (tibetan-analysis--read-claude-sections filepath)
 :END:
 
@@ -13521,7 +13521,7 @@ read / restore helpers in
 ** ~tibetan-analysis--parse-claude-particles~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 3452
+:LINE: 3453
 :SIGNATURE: (tibetan-analysis--parse-claude-particles body)
 :END:
 
@@ -13535,7 +13535,7 @@ passages — those shouldn't crash the caller).
 ** ~tibetan-analysis--split-body-by-segment~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 3471
+:LINE: 3472
 :SIGNATURE: (tibetan-analysis--split-body-by-segment body)
 :END:
 
@@ -13550,7 +13550,7 @@ Lese-Handout (Vokabular/Grammatik je Segment).
 ** ~tibetan-analysis--parse-claude-particles-by-segment~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 3496
+:LINE: 3497
 :SIGNATURE: (tibetan-analysis--parse-claude-particles-by-segment body)
 :END:
 
@@ -13568,7 +13568,7 @@ der flache Parser verlor sie.  Gruppierung über den geteilten
 ** ~tibetan-analysis--read-claude-translation~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 3524
+:LINE: 3525
 :SIGNATURE: (tibetan-analysis--read-claude-translation filepath)
 :END:
 
@@ -13580,7 +13580,7 @@ migrated yet.
 ** ~tibetan-analysis--claude-needs-request-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 3531
+:LINE: 3532
 :SIGNATURE: (tibetan-analysis--claude-needs-request-p filepath)
 :END:
 
@@ -13600,7 +13600,7 @@ on files already populated.
 ** ~tibetan-analysis--should-fire-claude-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 3549
+:LINE: 3550
 :SIGNATURE: (tibetan-analysis--should-fire-claude-p re-request-claude filepath)
 :END:
 
@@ -13620,7 +13620,7 @@ Returns non-nil when a request SHOULD be dispatched.
 ** ~tibetan-analysis--restore-claude-sections~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 3568
+:LINE: 3569
 :SIGNATURE: (tibetan-analysis--restore-claude-sections filepath sections)
 :END:
 
@@ -13638,7 +13638,7 @@ L3 (via the else branch of `--claude-effective-section-order').
 ** ~tibetan-analysis--restore-claude-translation~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 3597
+:LINE: 3598
 :SIGNATURE: (tibetan-analysis--restore-claude-translation filepath translation)
 :END:
 
@@ -19639,24 +19639,49 @@ Version of the compound analysis file format.
 Everything the paper needs for sentence SENT-NUM of SOURCE-FILE.
 Plist: :sent-num :lang :segs (`tibetan-handout--seg-list') and, when
 the cascade file exists, :translation (`tibetan-handout--translation'),
-:concepts (the Concept Notes as plain text, nil when still a
-placeholder), :discussion (`tibetan-discussion-read') and :comparison
+:vocab (`tibetan-handout--vocab', ★ wordlist first — the caller binds
+the wordlist state, `--render-scope' does), :concepts (the Concept
+Notes as plain text, nil when still a placeholder), :discussion
+(`tibetan-discussion-read') and :comparison
 (`tibetan-sanskrit-comparison-read'); otherwise :missing t.
 
 ** ~tibetan-discussion-paper--header~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 90
+:LINE: 104
 :SIGNATURE: (tibetan-discussion-paper--header spec)
 :END:
 
 The org header of SPEC: reMarkable page (A5, 7 mm margins, 9 pt),
 a one-line running head, the shared LaTeX macros.
 
+** ~tibetan-discussion-paper--vocab-entry~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 149
+:SIGNATURE: (tibetan-discussion-paper--vocab-entry e)
+:END:
+
+One vocabulary ENTRY as compact org: *term* [★ ]gloss {{{ctx(…)}}}
+{{{dim(info)}}}.
+
+** ~tibetan-discussion-paper--vocab-block~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 166
+:SIGNATURE: (tibetan-discussion-paper--vocab-block d)
+:END:
+
+The compact `Vokabular' rubric of the sentence data D (Carsten
+26.10.: unter dem Text, vor der Übersetzung): per segment one line
+(segment number in front when the sentence has several), entries
+separated by · — ★ wordlist first, the context gloss small where it
+differs, part of speech / Sanskrit dim.  A visible gap when empty.
+
 ** ~tibetan-discussion-paper--comparison-block~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 133
+:LINE: 186
 :SIGNATURE: (tibetan-discussion-paper--comparison-block comp)
 :END:
 
@@ -19667,7 +19692,7 @@ Tibetisch / Sanskrit / Abweichung / Bedeutung lines, the assessment.
 ** ~tibetan-discussion-paper--sentence-block~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 161
+:LINE: 214
 :SIGNATURE: (tibetan-discussion-paper--sentence-block d)
 :END:
 
@@ -19678,7 +19703,7 @@ one exists), `** Diskussion' — or the visible gap.
 ** ~tibetan-discussion-paper-render~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 212
+:LINE: 266
 :SIGNATURE: (tibetan-discussion-paper-render spec)
 :END:
 
@@ -19692,7 +19717,7 @@ Begriffe, Sanskrit-Vergleich, Diskussion.
 ** ~tibetan-discussion-paper--output-file~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 227
+:LINE: 281
 :SIGNATURE: (tibetan-discussion-paper--output-file scope)
 :END:
 
@@ -19702,16 +19727,17 @@ Begriffe, Sanskrit-Vergleich, Diskussion.
 ** ~tibetan-discussion-paper--render-scope~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 232
+:LINE: 286
 :SIGNATURE: (tibetan-discussion-paper--render-scope scope date)
 :END:
 
-The paper org text for SCOPE dated DATE.
+The paper org text for SCOPE dated DATE.  The class wordlist (★) of
+the source's Resources is bound for the whole render.
 
 ** ~tibetan-discussion-paper--guard-target~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 244
+:LINE: 301
 :SIGNATURE: (tibetan-discussion-paper--guard-target out)
 :END:
 
@@ -19720,7 +19746,7 @@ Signal a user-error when OUT exists without the GENERATED marker.
 ** ~tibetan-discussion-paper--content-key~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 254
+:LINE: 311
 :SIGNATURE: (tibetan-discussion-paper--content-key text)
 :END:
 
@@ -19729,7 +19755,7 @@ TEXT without the lines that change with every build (date/footer).
 ** ~tibetan-discussion-paper--unchanged-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 259
+:LINE: 316
 :SIGNATURE: (tibetan-discussion-paper--unchanged-p out text)
 :END:
 
@@ -19738,7 +19764,7 @@ Non-nil when the generated paper OUT already holds TEXT (dates aside).
 ** ~tibetan-discussion-paper-build~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 266
+:LINE: 323
 :SIGNATURE: (tibetan-discussion-paper-build scope &optional date)
 :END:
 
@@ -19750,7 +19776,7 @@ overwritten (user-error).
 ** ~tibetan-discussion-paper--rmapi-quote~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 285
+:LINE: 342
 :SIGNATURE: (tibetan-discussion-paper--rmapi-quote arg)
 :END:
 
@@ -19759,7 +19785,7 @@ ARG quoted for the rmapi shell (double quotes, inner quotes escaped).
 ** ~tibetan-discussion-paper--rmapi-script~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 291
+:LINE: 348
 :SIGNATURE: (tibetan-discussion-paper--rmapi-script commands)
 :END:
 
@@ -19769,7 +19795,7 @@ of args), ending with exit.
 ** ~tibetan-discussion-paper--rmapi-session-start~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 299
+:LINE: 356
 :SIGNATURE: (tibetan-discussion-paper--rmapi-session-start commands done)
 :END:
 
@@ -19782,7 +19808,7 @@ session.
 ** ~tibetan-discussion-paper--rmapi-next~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 320
+:LINE: 377
 :SIGNATURE: (tibetan-discussion-paper--rmapi-next)
 :END:
 
@@ -19791,7 +19817,7 @@ Start the next queued rmapi session unless one is running.
 ** ~tibetan-discussion-paper--rmapi-session~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 342
+:LINE: 399
 :SIGNATURE: (tibetan-discussion-paper--rmapi-session commands callback)
 :END:
 
@@ -19804,7 +19830,7 @@ rmapi invocations each fetch a token, and the token endpoint answers
 ** ~tibetan-discussion-paper--put-result~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 353
+:LINE: 410
 :SIGNATURE: (tibetan-discussion-paper--put-result output docname)
 :END:
 
@@ -19814,7 +19840,7 @@ it uploaded, `exists' when the name is taken, else `failed'.
 ** ~tibetan-discussion-paper--doc-name~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 366
+:LINE: 423
 :SIGNATURE: (tibetan-discussion-paper--doc-name name)
 :END:
 
@@ -19828,7 +19854,7 @@ rest vanish.  Carsten (20.10.): the folder "bDen pa gnyis la \='jug pa
 ** ~tibetan-discussion-paper--upload-commands~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 394
+:LINE: 451
 :SIGNATURE: (tibetan-discussion-paper--upload-commands folder-base folder tmp)
 :END:
 
@@ -19837,7 +19863,7 @@ The session commands that create FOLDER-BASE and FOLDER and put TMP.
 ** ~tibetan-discussion-paper--upload~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 400
+:LINE: 457
 :SIGNATURE: (tibetan-discussion-paper--upload pdf title label)
 :END:
 
@@ -19855,7 +19881,7 @@ nil (with a message) when rmapi is not installed.
 ** ~tibetan-discussion-paper-upload-many~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 447
+:LINE: 504
 :SIGNATURE: (tibetan-discussion-paper-upload-many items)
 :END:
 
@@ -19867,7 +19893,7 @@ session's command list, or nil without rmapi.
 ** ~tibetan-discussion-paper--generated-buffer-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 485
+:LINE: 542
 :SIGNATURE: (tibetan-discussion-paper--generated-buffer-p)
 :END:
 
@@ -19876,7 +19902,7 @@ Non-nil when the current buffer is a generated discussion paper.
 ** ~tibetan-discussion-paper--title-and-label~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 491
+:LINE: 548
 :SIGNATURE: (tibetan-discussion-paper--title-and-label org)
 :END:
 
@@ -19886,7 +19912,7 @@ Non-nil when the current buffer is a generated discussion paper.
 ** ~tibetan-discussion-paper--export-and-upload~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 501
+:LINE: 558
 :SIGNATURE: (tibetan-discussion-paper--export-and-upload org &optional no-open)
 :END:
 
@@ -19897,7 +19923,7 @@ return the PDF.
 ** ~tibetan-discussion-paper--sentence-scope~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 532
+:LINE: 589
 :SIGNATURE: (tibetan-discussion-paper--sentence-scope source-file sent-num)
 :END:
 
@@ -19906,7 +19932,7 @@ The one-sentence scope of SENT-NUM in SOURCE-FILE.
 ** ~tibetan-discussion-paper--complete-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 537
+:LINE: 594
 :SIGNATURE: (tibetan-discussion-paper--complete-p file)
 :END:
 
@@ -19918,7 +19944,7 @@ Section asks for one.
 ** ~tibetan-discussion-paper-auto-build~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 552
+:LINE: 609
 :SIGNATURE: (tibetan-discussion-paper-auto-build scope &optional date)
 :END:
 
@@ -19926,10 +19952,23 @@ Build, export and upload the paper of SCOPE without opening it —
 unless the generated .org would be unchanged (dates aside), then
 nothing happens and nil is returned.  Returns the PDF otherwise.
 
+** ~tibetan-discussion-paper--temp-source-p~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 625
+:SIGNATURE: (tibetan-discussion-paper--temp-source-p file)
+:END:
+
+Non-nil when FILE lives under `temporary-file-directory' — a test
+fixture, never a reading-class source.  26.10.: an ERT run in an
+interactive Emacs (the batch runner switches the auto paper off, a
+live session does not) uploaded fixture papers (`Reading/D/Satz 4')
+to the device.
+
 ** ~tibetan-discussion-paper--after-fetch~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 568
+:LINE: 635
 :SIGNATURE: (tibetan-discussion-paper--after-fetch source-file sentences folder requested)
 :END:
 
@@ -19940,7 +19979,7 @@ remembered for `--maybe-build'.
 ** ~tibetan-discussion-paper--maybe-build~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 585
+:LINE: 653
 :SIGNATURE: (tibetan-discussion-paper--maybe-build file)
 :END:
 
@@ -19950,7 +19989,7 @@ build it once and forget it.
 ** ~tibetan-discussion-paper~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 607
+:LINE: 676
 :SIGNATURE: (tibetan-discussion-paper &optional org-only)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -19992,7 +20031,7 @@ with rmapi (`tibetan-discussion-paper-remarkable-folder').
 ** ~tibetan-discussion-paper-auto~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 518
+:LINE: 575
 :TYPE: 'boolean
 :GROUP: tibetan-cat
 :DEFAULT: t
@@ -20018,7 +20057,7 @@ for the handout; C-c u D inside a generated paper exports it as it is).
 ** ~tibetan-discussion-paper--rmapi-queue~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 279
+:LINE: 336
 :DEFAULT: nil
 :END:
 
@@ -20027,7 +20066,7 @@ Pending rmapi sessions, oldest first: ((COMMANDS . CALLBACK) …).
 ** ~tibetan-discussion-paper--rmapi-running~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 282
+:LINE: 339
 :DEFAULT: nil
 :END:
 
@@ -20036,7 +20075,7 @@ Non-nil while an rmapi session runs.
 ** ~tibetan-discussion-paper--pending~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 528
+:LINE: 585
 :DEFAULT: (make-hash-table :test #'equal)
 :END:
 

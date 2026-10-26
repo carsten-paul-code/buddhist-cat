@@ -3185,15 +3185,17 @@ reanalyse."
            ;; (batch-deadlock class; see `tibetan-fresh-file-buffer').
            (buf (tibetan-fresh-file-buffer analysis-file)))
       (with-current-buffer buf
-        ;; 2026-05-21:  suppress before/after-change-functions during
-        ;; the regex-driven write loop.  Org-mode's incremental
-        ;; fontification (and other after-change hooks) can clobber
-        ;; match data set by `re-search-forward' before `replace-match'
-        ;; runs — signalling `Match data clobbered by buffer
-        ;; modification hooks' and dropping the Claude response on the
-        ;; floor.  Discovered when a batch run on Milarepa segs 62-72
-        ;; logged `Claude insert failed: Match data clobbered' on every
-        ;; segment despite the API returning content cleanly.
+        ;; 2026-05-21 … 2026-10-26: the write loop used to run with
+        ;; `inhibit-modification-hooks' t (fontification clobbered the
+        ;; match data of a `replace-match').  That reason is gone —
+        ;; the body writer deletes and inserts by position — and the
+        ;; inhibit itself was the bug behind the 26.10. hang: the
+        ;; org-element cache never saw the landing (its change tick
+        ;; stayed behind the buffer's), and org 9.7's `org-at-item-p'
+        ;; — called per line by the org-indent agent — then worked on
+        ;; a cache with shifted positions at 100 % CPU, not
+        ;; interruptible.  The change hooks stay ON (test
+        ;; `tibetan-claude-sections-landing-keeps-org-element-cache-in-sync').
         ;; §5.25 (2026-05-24):  post-process the Concept Notes body
         ;; to append `[[id:ZID][zettel ↗]]' links to bolded Tibetan
         ;; terms that have a thesaurus zettel — safety net for
@@ -3205,15 +3207,14 @@ reanalyse."
                 (plist-put sections :concepts
                            (tibetan-analysis--cross-link-zettels-in-body
                             (plist-get sections :concepts)))))
-        (let ((inhibit-modification-hooks t))
-          (tibetan-analysis--ensure-claude-headings buf)
-          (dolist (entry (tibetan-analysis--claude-effective-section-order buf))
-            (let ((key (nth 0 entry))
-                  (heading (nth 1 entry))
-                  (level (nth 2 entry)))
-              (when (plist-get sections key)
-                (tibetan-analysis--replace-claude-section-body
-                 buf heading (plist-get sections key) level)))))
+        (tibetan-analysis--ensure-claude-headings buf)
+        (dolist (entry (tibetan-analysis--claude-effective-section-order buf))
+          (let ((key (nth 0 entry))
+                (heading (nth 1 entry))
+                (level (nth 2 entry)))
+            (when (plist-get sections key)
+              (tibetan-analysis--replace-claude-section-body
+               buf heading (plist-get sections key) level))))
         ;; `--merge-claude-vocabulary' call retired 2026-05-20
         ;; (§5.21 Commit 2/7).  The merge targeted `** Word /
         ;; Particle List' which §5.10 retired — net no-op since
@@ -3580,14 +3581,14 @@ L3 (via the else branch of `--claude-effective-section-order')."
     (let ((buf (tibetan-fresh-file-buffer filepath)))
       (with-current-buffer buf
         (tibetan-analysis--ensure-claude-headings buf)
-        (let ((inhibit-modification-hooks t))
-          (dolist (entry (tibetan-analysis--claude-effective-section-order buf))
-            (let ((key (nth 0 entry))
-                  (heading (nth 1 entry))
-                  (level (nth 2 entry)))
-              (when (plist-get sections key)
-                (tibetan-analysis--replace-claude-section-body
-                 buf heading (plist-get sections key) level)))))
+        ;; Change hooks ON — see the insert path (26.10. hang).
+        (dolist (entry (tibetan-analysis--claude-effective-section-order buf))
+          (let ((key (nth 0 entry))
+                (heading (nth 1 entry))
+                (level (nth 2 entry)))
+            (when (plist-get sections key)
+              (tibetan-analysis--replace-claude-section-body
+               buf heading (plist-get sections key) level))))
         ;; `--merge-claude-vocabulary' call retired 2026-05-20
         ;; (§5.21 Commit 2/7) — see insert path for rationale.
         (save-buffer)))))
