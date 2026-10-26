@@ -622,11 +622,22 @@ nothing happens and nil is returned.  Returns the PDF otherwise."
       (with-temp-file out (insert text))
       (tibetan-discussion-paper--export-and-upload out t))))
 
+(defun tibetan-discussion-paper--temp-source-p (file)
+  "Non-nil when FILE lives under `temporary-file-directory' — a test
+fixture, never a reading-class source.  26.10.: an ERT run in an
+interactive Emacs (the batch runner switches the auto paper off, a
+live session does not) uploaded fixture papers (`Reading/D/Satz 4')
+to the device."
+  (and file
+       (string-prefix-p (file-truename (file-name-as-directory temporary-file-directory))
+                        (file-truename file))))
+
 (defun tibetan-discussion-paper--after-fetch (source-file sentences folder requested)
   "Hook for `tibetan-cascade-fetch-done-functions': the paper of every
 sentence that needed no request is built now; the others are
 remembered for `--maybe-build'."
-  (when tibetan-discussion-paper-auto
+  (when (and tibetan-discussion-paper-auto
+             (not (tibetan-discussion-paper--temp-source-p source-file)))
     (let ((requested (mapcar #'file-truename requested)))
       (dolist (s sentences)
         (let* ((n (plist-get s :sent-num))
@@ -642,7 +653,8 @@ remembered for `--maybe-build'."
 (defun tibetan-discussion-paper--maybe-build (file)
   "Landing hook: when FILE's paper is pending and FILE is complete,
 build it once and forget it."
-  (when (and tibetan-discussion-paper-auto file)
+  (when (and tibetan-discussion-paper-auto file
+             (not (tibetan-discussion-paper--temp-source-p file)))
     (let* ((key (file-truename file))
            (scope (gethash key tibetan-discussion-paper--pending)))
       (when (and scope (tibetan-discussion-paper--complete-p file))

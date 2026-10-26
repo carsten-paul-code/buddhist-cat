@@ -428,6 +428,9 @@ is off."
     (tibetan-paper-test--with-auto-stubs
       (clrhash tibetan-discussion-paper--pending)
       (let ((tibetan-discussion-paper-auto t)
+            ;; The corpus lives in a temp dir — the fixture guard
+            ;; (`--temp-source-p') would veto; pretend it is elsewhere.
+            (temporary-file-directory "/var/empty/")
             (file (tibetan-sentence--filepath 654 folder src)))
         ;; 654 complete, 655 has no file: fetch creates 655's skeleton
         ;; and fires it (stub) → 654 paper now, 655 pending.
@@ -461,6 +464,25 @@ is off."
                    (lambda (&rest _) nil)))
           (tibetan-cascade-fetch (list :source src :sent-nums '(654) :label "Satz 654")))
         (should-not built)))))
+
+(ert-deftest tibetan-discussion-paper-auto-skips-temp-sources ()
+  "26.10.: a test fixture (title `D', temp dir) ran C-c u G in an
+interactive Emacs — the auto paper uploaded `Reading/D/Satz 4' to the
+device.  Sources under `temporary-file-directory' never get an auto
+paper, whatever the switch says."
+  (tibetan-handout-test--with-corpus
+    (tibetan-paper-test--with-auto-stubs
+      (clrhash tibetan-discussion-paper--pending)
+      (let ((tibetan-discussion-paper-auto t))
+        (cl-letf (((symbol-function 'tibetan-cascade--fire-sentence)
+                   (lambda (&rest _) nil)))
+          (tibetan-cascade-fetch (list :source src :sent-nums '(654) :label "Satz 654")))
+        (should-not built)
+        (should-not uploaded)
+        (should (= 0 (hash-table-count tibetan-discussion-paper--pending)))
+        ;; The explicit command still works on such a source.
+        (should (tibetan-discussion-paper-auto-build
+                 (tibetan-discussion-paper--sentence-scope src 654)))))))
 
 (ert-deftest tibetan-discussion-paper-auto-skips-unchanged ()
   "A paper whose content did not change since the last build is not
