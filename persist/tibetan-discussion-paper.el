@@ -61,7 +61,8 @@ Plist: :sent-num :lang :segs (`tibetan-handout--seg-list') and, when
 the cascade file exists, :translation (`tibetan-handout--translation'),
 :vocab (`tibetan-handout--vocab', ★ wordlist first — the caller binds
 the wordlist state, `--render-scope' does), :concepts (the Concept
-Notes as plain text, nil when still a placeholder), :discussion (`tibetan-discussion-read') and :comparison
+Notes as plain text, nil when still a placeholder), :discussion
+\(`tibetan-discussion-read') and :comparison
 \(`tibetan-sanskrit-comparison-read'); otherwise :missing t."
   (let* ((lang (tibetan-analysis--resolve-source-lang source-file))
          (sa (equal lang "sa"))
