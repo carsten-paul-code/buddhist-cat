@@ -988,9 +988,19 @@ without the §5.31/§5.35 face setup."
         "analysis/\\(?:seg\\|sent\\)-[0-9][^/]*\\.org$" filename)))
 
 ;; Hook to apply faces + the class view when buffer is displayed
+(defvar org-element-cache-persistent)
+
 (defun tibetan-analysis-mode-hook ()
-  "Hook to run when entering an analysis buffer."
+  "Hook to run when entering an analysis buffer.
+Analysis files are written by the tool; their org-element cache is
+never persisted (§5.70, 26.10.2026): org-persist had kept 465 caches
+of sentence files from sessions in which the landing still wrote with
+the change hooks off — stale positions under the hash of the final
+content — and every later visit restored the corrupt cache, on which
+the org-indent agent then looped forever.  A 16 KB file's cache is
+rebuilt in milliseconds."
   (when (tibetan-analysis--analysis-buffer-name-p (buffer-file-name))
+    (setq-local org-element-cache-persistent nil)
     (tibetan-analysis-setup-faces)
     (when tibetan-analysis-class-view-on-open
       (tibetan-analysis-class-fold))))

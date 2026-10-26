@@ -1053,6 +1053,31 @@ Sanskrit-Import C-c o k).  C-c u R gleich."
         (tibetan-analysis-mode-hook)
       (error (should-not (format "Mode hook should not error in buffer: %s" err))))))
 
+(ert-deftest tibetan-analysis-mode-hook-no-persistent-org-element-cache ()
+  "Bug (Carsten 26.10., Hänger nach C-c u A/G): org-persist hatte 465
+org-element-Caches von Satzdateien auf Platte — aus Sitzungen, in denen
+die Landung noch mit abgeschalteten Hooks schrieb, also mit verdorbenen
+Positionen, aber dem Hash des Endinhalts.  Jeder Besuch der Datei
+stellte den verdorbenen Cache wieder her, und der org-indent-Agent kreiste
+in `org-element--parse-to' auf einem nullbreiten Element (Backtrace
+~/backtrace.txt).  Der Cache einer Satzdatei ist in Millisekunden neu
+gebaut: in Analyse-Puffern ist `org-element-cache-persistent' lokal nil;
+andere org-Puffer behalten den globalen Wert."
+  ;; org-element muss geladen sein, sonst bindet `let' die Variable
+  ;; lexikalisch statt dynamisch (Testreihenfolge).
+  (require 'org-element)
+  (let ((org-element-cache-persistent t))
+    (with-temp-buffer
+      (setq buffer-file-name "/tmp/x/analysis/sent-001-foo.org")
+      (tibetan-analysis-mode-hook)
+      (should (local-variable-p 'org-element-cache-persistent))
+      (should-not org-element-cache-persistent))
+    (with-temp-buffer
+      (setq buffer-file-name "/tmp/x/notes.org")
+      (tibetan-analysis-mode-hook)
+      (should-not (local-variable-p 'org-element-cache-persistent))
+      (should org-element-cache-persistent))))
+
 (ert-deftest tibetan-analysis-mode-hook-preserves-content ()
   "Test that mode-hook doesn't modify buffer content."
   (with-temp-buffer
