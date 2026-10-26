@@ -59,8 +59,9 @@ with rmapi (`tibetan-discussion-paper-remarkable-folder')."
   "Everything the paper needs for sentence SENT-NUM of SOURCE-FILE.
 Plist: :sent-num :lang :segs (`tibetan-handout--seg-list') and, when
 the cascade file exists, :translation (`tibetan-handout--translation'),
-:concepts (the Concept Notes as plain text, nil when still a
-placeholder), :discussion (`tibetan-discussion-read') and :comparison
+:vocab (`tibetan-handout--vocab', ★ wordlist first — the caller binds
+the wordlist state, `--render-scope' does), :concepts (the Concept
+Notes as plain text, nil when still a placeholder), :discussion (`tibetan-discussion-read') and :comparison
 \(`tibetan-sanskrit-comparison-read'); otherwise :missing t."
   (let* ((lang (tibetan-analysis--resolve-source-lang source-file))
          (sa (equal lang "sa"))
@@ -69,15 +70,27 @@ placeholder), :discussion (`tibetan-discussion-read') and :comparison
                   (expand-file-name "analysis"
                                     (file-name-directory source-file))))
          (file (tibetan-sentence--filepath sent-num folder source-file))
+         ;; ★ lookups need the class wordlist: use the caller's binding
+         ;; (`--render-scope' binds it once per paper), else load it here.
+         (tibetan-current-resources-vocab
+          (or tibetan-current-resources-vocab
+              (tibetan-handout--load-curated source-file)))
          (base (list :sent-num sent-num :lang lang
                      :segs (tibetan-handout--seg-list segs sa)
                      :metre (car (tibetan-handout--metre segs sa)))))
     (if (not (file-exists-p file))
         (append base (list :missing t))
-      (let ((sections (tibetan-analysis--read-claude-sections file)))
+      (let ((sections (tibetan-analysis--read-claude-sections file))
+            (wa (and sa (tibetan-sanskrit-reading-parse-word-analysis
+                         (tibetan-sentence--read-l2-body file "Word Analysis")))))
         (append base
                 (list :translation (tibetan-handout--translation
                                     file (mapcar #'car segs) sections)
+                      ;; Carsten 26.10.: das Vokabular kommt ins Papier —
+                      ;; ★ Klassenwortliste zuerst, Kontextglosse nur wo
+                      ;; sie abweicht (`tibetan-handout--vocab').
+                      :vocab (tibetan-handout--vocab
+                              (plist-get sections :vocabulary) sa wa)
                       :concepts (tibetan-cascade--clean-slot-text
                                  (plist-get sections :concepts))
                       :discussion (tibetan-discussion-read file)
@@ -126,9 +139,48 @@ a one-line running head, the shared LaTeX macros."
      "#+LATEX_HEADER: \\setlist[description]{font=\\normalfont\\scshape\\color{seg}\\scriptsize,leftmargin=0pt,labelsep=0.4em,itemsep=0pt,topsep=1pt,parsep=0pt}\n"
      "#+LATEX_HEADER: \\setlist[itemize]{leftmargin=1em,itemsep=0pt,topsep=1pt,parsep=0pt}\n"
      "#+LATEX_HEADER: \\newcommand{\\rubrik}[1]{{\\scriptsize\\scshape\\color{seg}#1}\\enspace}\n"
+     "#+LATEX_HEADER: \\newcommand{\\dimtext}[1]{{\\footnotesize\\color{dim}#1}}\n"
      tibetan-handout--latex-commands
      "#+MACRO: rubrik @@latex:\\rubrik{$1}@@\n"
+     "#+MACRO: dim @@latex:\\dimtext{@@$1@@latex:}@@\n"
      "\n")))
+
+(defun tibetan-discussion-paper--vocab-entry (e)
+  "One vocabulary ENTRY as compact org: *term* [★ ]gloss {{{ctx(…)}}}
+{{{dim(info)}}}."
+  (concat "*" (tibetan-handout--cell (plist-get e :term)) "*"
+          " " (if (plist-get e :star) "★ " "")
+          (tibetan-handout--cell (plist-get e :gloss))
+          (if (plist-get e :context)
+              (format " {{{ctx(%s)}}}"
+                      (tibetan-handout--macro-arg
+                       (tibetan-handout--cell (plist-get e :context))))
+            "")
+          (let ((info (plist-get e :info)))
+            (if (and info (not (string-empty-p (string-trim info))))
+                (format " {{{dim(%s)}}}"
+                        (tibetan-handout--macro-arg (tibetan-handout--cell info)))
+              ""))))
+
+(defun tibetan-discussion-paper--vocab-block (d)
+  "The compact `Vokabular' rubric of the sentence data D (Carsten
+26.10.: unter dem Text, vor der Übersetzung): per segment one line
+\(segment number in front when the sentence has several), entries
+separated by · — ★ wordlist first, the context gloss small where it
+differs, part of speech / Sanskrit dim.  A visible gap when empty."
+  (let ((vocab (plist-get d :vocab))
+        (multi (cdr (plist-get d :segs))))
+    (concat
+     "{{{rubrik(Vokabular)}}}"
+     (if vocab
+         (concat
+          (mapconcat
+           (lambda (g)
+             (concat (if (and multi (car g)) (format "{{{n(%d)}}} " (car g)) "")
+                     (mapconcat #'tibetan-discussion-paper--vocab-entry (cdr g) " · ")))
+           vocab " \\\\\n")
+          "\n\n")
+       "{{{luecke(noch kein Vokabular — C-c u G)}}}\n\n"))))
 
 (defun tibetan-discussion-paper--comparison-block (comp)
   "`** Sanskrit-Vergleich' for COMP (`tibetan-sanskrit-comparison-read'),
@@ -186,6 +238,7 @@ one exists), `** Diskussion' — or the visible gap."
      (if (plist-get d :missing)
          "{{{luecke(Analysedatei fehlt — C-c u A auf dem Satz)}}}\n\n"
        (concat
+        (tibetan-discussion-paper--vocab-block d)
         "{{{rubrik(Übersetzung)}}}"
         (cond
          ((plist-get tr :by-seg)
@@ -230,8 +283,11 @@ Begriffe, Sanskrit-Vergleich, Diskussion."
   (tibetan-handout--output-file scope "disk"))
 
 (defun tibetan-discussion-paper--render-scope (scope date)
-  "The paper org text for SCOPE dated DATE."
-  (let ((src (plist-get scope :source)))
+  "The paper org text for SCOPE dated DATE.  The class wordlist (★) of
+the source's Resources is bound for the whole render."
+  (let* ((src (plist-get scope :source))
+         (tibetan-current-resources-vocab (tibetan-handout--load-curated src))
+         (tibetan-current-custom-vocab nil))
     (tibetan-discussion-paper-render
      (list :title (tibetan-handout--source-title src)
            :scope (plist-get scope :label)

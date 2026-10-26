@@ -64,7 +64,11 @@ visible gap."
       (should (string-match-p "kun rdzob" (plist-get d :concepts)))
       (should (plist-get d :discussion))
       (should-not (plist-get d :comparison))
-      (should-not (plist-member d :vocab))
+      ;; Carsten 26.10.: das Vokabular kommt ins Papier (★ Wortliste zuerst).
+      (let ((blos (car (cdr (assq 1970 (plist-get d :vocab))))))
+        (should (plist-get blos :star))
+        (should (equal "Verstand // mind / awareness" (plist-get blos :gloss)))
+        (should (equal "durch den Verstand" (plist-get blos :context))))
       (should-not (plist-member d :grammar)))
     (tibetan-paper-test--add-comparison (tibetan-sentence--filepath 654 folder src))
     (let ((c (plist-get (tibetan-discussion-paper--sentence-data 654 src) :comparison)))
@@ -124,7 +128,15 @@ visible; the word Claude and the provided translations never appear."
       (should-not (string-match-p "LOPEZ POISON TEXT" s))
       (should-not (string-match-p "DM POISON TEXT" s))
       (should-not (string-match-p "WT POISON TEXT" s))
-      (should-not (string-match-p "Vokabular\\|Grammatik" s)))))
+      (should-not (string-match-p "Grammatik" s))
+      ;; Vokabular: unter dem Text, vor der Übersetzung (Carsten 26.10.),
+      ;; kompakt je Segment, ★ Wortliste zuerst, Kontextglosse klein.
+      (should (< (string-match "{{{rubrik(Vokabular)}}}" s)
+                 (string-match "{{{rubrik(Übersetzung)}}}" s)))
+      (should (string-match-p "{{{n(1970)}}} \\*blos\\* ★ Verstand // mind / awareness {{{ctx(durch den Verstand)}}}" s))
+      (should (string-match-p "{{{dim(ergative/instrumental; Skt\\. buddhi)}}}" s))
+      (should (string-match-p "{{{n(1971)}}} \\*kun rdzob\\* ★ scheinbar" s))
+      (should-not (string-match-p "POISON-NA" s)))))
 
 (ert-deftest tibetan-discussion-paper-header-tibetan-fallback-font ()
   "The paper shares the handout's font setup: Tibetan fallback on the
@@ -159,6 +171,7 @@ only shown when the source is bilingual (a comparison exists)."
     (let ((s (tibetan-paper-test--render src folder '(654))))
       (should (string-match-p "^\\*\\* Begriffe$" s))
       (should (string-match-p "luecke(noch keine Begriffe" s))
+      (should (string-match-p "rubrik(Vokabular)" s))
       (should (string-match-p "^\\*\\* Diskussion$" s))
       (should (string-match-p "luecke(noch keine Diskussion" s))
       (should-not (string-match-p "Sanskrit-Vergleich" s)))))
