@@ -3,7 +3,17 @@
 This file briefs Claude Code (or any other Claude surface) picking up
 work on **tibetan-cat.el**, Carsten Paul's Emacs-Lisp Computer-Assisted
 Translation (CAT) system for Classical Tibetan. Read it in full before
-editing. Last updated 2026-10-21 (§5.68: SYNOPSE-VORSPANN IM HANDOUT —
+editing. Last updated 2026-10-26 (§5.70: HÄNGER NACH C-c u G BEHOBEN —
+Emacs stand bei 100 % CPU in `org-indent-initialize-agent', nicht
+abbrechbar: die Landung schrieb die Satzdateien mit
+`inhibit-modification-hooks' t, der org-element-Cache sah nichts, org
+9.7 parst in `org-at-item-p' je Zeile; jetzt landen beide Writer mit
+laufenden Hooks; Diagnoseweg (sample, Timer-Protokoll) dokumentiert;
+ERT 2587.
+Previous: §5.69: VOKABULAR IM DISKUSSIONSPAPIER — Rubrik „Vokabular"
+zwischen Text und Übersetzung (★ zuerst), rmapi-Upload-Limit je
+Sitzung, kein Auto-Papier für Test-Fixtures; ERT 2586.
+Previous: §5.68: SYNOPSE-VORSPANN IM HANDOUT —
 nach dem Vorbereitungsblatt der Doktoranden: `* Siglen', je Section
 `* Synopse' im Querformat mit Stellenzeile aus :FOLIO:, Skt|Tib-
 Tabelle (Vers fett) und Kommentar (Sthiramati) mit Versworten fett /
@@ -4022,6 +4032,55 @@ migrieren beim nächsten Regenerate (editierte `** Gloss Tables`
 bleiben per §5.54-Schutz stehen).  Suite 2339 → **2345 ERT**
 (0 unexpected, 1 skip); BDD 250; compile clean; REFERENCE.org je
 def-Commit.
+
+### 5.70 Hänger nach C-c u G: Landung ohne Änderungs-Hooks (done, 2026-10-26)
+
+Carsten (26.10.): „Irgendwie stürzt Emacs jetzt nach C-c u G hin und
+wieder ab" — später „nach erstem C-c u G wieder nicht bedienbar".
+Kein Absturz: Emacs bei 100 % CPU, Speicher +30 MB/s, weder `C-g'
+noch `emacsclient' kamen durch, kein Crash-Report.
+
+**Diagnoseweg** (ohne Lisp-Backtrace, lldb-Attach ist auf macOS
+verboten):
+- `sample PID 5` (C-Stack): `command_loop → … → sit_for →
+  wait_reading_process_output → timer_check → Ffuncall → exec_byte_code'
+  = eine TIMER-Funktion, die nicht zurückkehrt; Blätter `plist-get',
+  `gethash', `buffer-base-buffer', `cl-type-of', `make-vector',
+  `skip_chars' = org-element.  Timer laufen in jeder Eingabe-Wartephase
+  weiter, deshalb kein `C-g'; `kill -INT' ×3 erzwingt zwar den Quit
+  (`signal_or_quit → call_debugger'), aber der Debugger wartet wieder
+  auf Eingabe, und der Timer läuft weiter.
+- Timer-Protokoll: `(advice-add 'timer-event-handler :around …)' mit
+  START/END je Timer nach `~/timer-trace.log' (Datei
+  `scratchpad/timer-trace.el' der Session; per `emacsclient -e (load
+  …)' in den laufenden Emacs geladen — NICHT per `C-x C-e', das wertet
+  nur einen Ausdruck aus und ließ die Advice ins Leere laufen).  Die
+  letzte START-Zeile ohne END: **`org-indent-initialize-agent'**.
+- org 9.7.11: `org-at-item-p' ruft `org-element-at-point' — der
+  org-indent-Agent tut das je Zeile.  `org-element--cache-active-p'
+  vergleicht `org-element--cache-change-tic' mit
+  `buffer-chars-modified-tick'; Schreiben mit
+  `inhibit-modification-hooks' t lässt den Zähler zurück → Cache mit
+  verschobenen Positionen.  Batch-Nachspiel an sent-754: „Invalid
+  search bound (wrong side of point) … Resetting"; im interaktiven
+  Emacs (Folding, jit-lock, Scrollen) kehrt der Agent nicht zurück.
+
+**Ursache im Tool:** `tibetan-analysis--insert-claude-sections' und
+`--restore-claude-sections' schrieben die Satzdatei unter
+`(let ((inhibit-modification-hooks t)) …)' — seit 2026-05-21 gegen
+„Match data clobbered" vor einem `replace-match', das es längst nicht
+mehr gibt (`--replace-claude-section-body' löscht und fügt nach
+Position ein; die Überschriften-Helfer nutzen nach `insert' keine
+Match-Daten).  **Fix:** die Bindung weg, Hooks laufen.  RED-Test
+`tibetan-claude-sections-landing-keeps-org-element-cache-in-sync'
+\(beide Writer; danach Zähler gleich, `org-element-at-point' am
+Dateiende antwortet) — vorher scheiterte er mit genau der org-Warnung
+„Unregistered buffer modifications detected".
+
+**Regel:** nie `inhibit-modification-hooks'/`with-silent-modifications'
+um TEXT-Änderungen in org-Puffern (Text-Properties sind ok — so
+arbeitet die Zettel-Hervorhebung).  Suite 2586 → **2587 ERT**
+\(0 unexpected, 1 Skip), BDD grün.
 
 ### 5.69 Vokabular im Diskussionspapier (done, 2026-10-26)
 
