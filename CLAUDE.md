@@ -4045,7 +4045,16 @@ Vokabular und Grammatik angelegt worden war.
 
 Tests: sentence-data (★/Glosse/Kontext), render (Reihenfolge, Einträge,
 kein POISON-NA), render-gaps (Rubrik auch ohne Vokabular).
-Suite 2585 (0 unexpected, 1 Skip).
+
+**Nachträge 26.10.** (`4678c62`): (1) rmapi-Lektion Nr. 4 — auch
+INNERHALB einer Sitzung deckelt der Upload-Endpunkt: von 22 puts
+scheiterten drei mit 429 (TĀ Satz 3, 4, 1001; nach 12 min einzeln
+nachgeladen).  Sammel-Sitzungen auf ≈15 puts begrenzen.  (2) Auf dem
+Gerät lagen `Reading/D/Satz 4, 6` = Kaskaden-Test-Fixture: ein ERT-Lauf
+im interaktiven Emacs hat über den Auto-Haken hochgeladen (der Schutz
+in run-all-tests.el gilt nur im Batch).  `--temp-source-p`: Quellen
+unter `temporary-file-directory` bekommen nie ein Auto-Papier.
+Suite 2586 (0 unexpected, 1 Skip).
 
 ### 5.68 Synopse-Vorspann im Handout: Siglen, Stellen, Parallele, Kommentar (done, 2026-10-21)
 
