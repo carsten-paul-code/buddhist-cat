@@ -4023,6 +4023,30 @@ bleiben per §5.54-Schutz stehen).  Suite 2339 → **2345 ERT**
 (0 unexpected, 1 skip); BDD 250; compile clean; REFERENCE.org je
 def-Commit.
 
+### 5.69 Vokabular im Diskussionspapier (done, 2026-10-26)
+
+Carsten (26.10.): „in den Handouts unter dem Text, vor der Übersetzung
+noch das Vocabulary einfügen" — gemeint ist das Diskussionspapier
+(C-c u D / Auto-Papier nach C-c u G), das am 20.10. bewusst ohne
+Vokabular und Grammatik angelegt worden war.
+
+- `--sentence-data` trägt jetzt `:vocab` (`tibetan-handout--vocab`:
+  ★ Klassenwortliste zuerst, Kontextglosse nur wo sie abweicht, sa
+  ohne ★ mit Lemma/Morph aus Word Analysis).  Die Wortliste bindet
+  `--render-scope` einmal je Papier; `--sentence-data` lädt sie selbst,
+  wenn der Aufrufer sie nicht gebunden hat (Tests, Einzelaufrufe).
+- Renderer `--vocab-block`: Rubrik „Vokabular" zwischen Textblock und
+  Übersetzung, je Segment eine Zeile (Segmentziffer vorn bei mehreren),
+  Einträge mit · getrennt: `*term* [★ ]Glosse {{{ctx(Kontext)}}}
+  {{{dim(Wortart; Skt.)}}}`; neues Makro `dim`/`\dimtext`.  Grammatik
+  bleibt draußen (steht im CAT-Tool).
+- Alle 22 Papiere neu gebaut und in EINER rmapi-Sitzung auf dem Gerät
+  ersetzt (rm + put je Name; danach `find` auf Dubletten geprüft).
+
+Tests: sentence-data (★/Glosse/Kontext), render (Reihenfolge, Einträge,
+kein POISON-NA), render-gaps (Rubrik auch ohne Vokabular).
+Suite 2585 (0 unexpected, 1 Skip).
+
 ### 5.68 Synopse-Vorspann im Handout: Siglen, Stellen, Parallele, Kommentar (done, 2026-10-21)
 
 Carsten (21.10.) legte das Vorbereitungsblatt der Doktoranden zum
