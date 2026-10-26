@@ -4065,7 +4065,8 @@ verboten):
   search bound (wrong side of point) … Resetting"; im interaktiven
   Emacs (Folding, jit-lock, Scrollen) kehrt der Agent nicht zurück.
 
-**Ursache im Tool:** `tibetan-analysis--insert-claude-sections' und
+**Ursache im Tool (Hälfte 1, `e89c7e6'):**
+`tibetan-analysis--insert-claude-sections' und
 `--restore-claude-sections' schrieben die Satzdatei unter
 `(let ((inhibit-modification-hooks t)) …)' — seit 2026-05-21 gegen
 „Match data clobbered" vor einem `replace-match', das es längst nicht
@@ -4077,10 +4078,56 @@ Match-Daten).  **Fix:** die Bindung weg, Hooks laufen.  RED-Test
 Dateiende antwortet) — vorher scheiterte er mit genau der org-Warnung
 „Unregistered buffer modifications detected".
 
-**Regel:** nie `inhibit-modification-hooks'/`with-silent-modifications'
+**Hälfte 2 — warum es danach WEITER hing (der Lisp-Backtrace):** mit
+dem Fix geladen hing Emacs schon nach C-c u A auf `sent-1005-tantralo'
+\(16 KB).  Lisp-Backtrace (s. u., wie er zustande kam):
+`org-indent-initialize-agent → org-indent-initialize-buffer →
+org-indent-add-properties → org-at-item-p → org-element-at-point →
+org-element--parse-to(1223) → org-element--cache-put' eines
+**nullbreiten `node-property'-Elements bei 537** — mitten in der
+Überschrift `** Metre' — Runde um Runde (daher +30 MB/s).  Der Cache
+des Puffers war mit Positionen aus einer ANDEREN Fassung der Datei
+gefüllt: `org-element-cache-persistent' t (Carstens
+`init-org-stable.el') + org-persist (`~/.cache/org-persist/',
+517 Cache-Einträge, 465 davon Satzdateien) — in früheren Sitzungen
+mit der Hälfte-1-Macke verdorbene Caches wurden unter dem md5 des
+Endinhalts persistiert und bei jedem Besuch wiederhergestellt
+\(org-persist prüft nur den Hash des Inhalts, nicht die Konsistenz).
+Im Batch nie reproduzierbar: dort ist `org-persist-directory' ein
+Temp-Verzeichnis.  **Gegenmittel:** live `(org-persist-unregister
+'org-element--cache 'all :remove-related t)' + `org-persist-gc'
+\(517 → 1 Einträge), `org-element-cache-reset' im Puffer;
+dauerhaft: `tibetan-analysis-mode-hook' setzt in Analyse-Puffern
+`org-element-cache-persistent' lokal nil (RED-Test
+`tibetan-analysis-mode-hook-no-persistent-org-element-cache').
+Empfehlung an Carsten: global nil (die Dateien sind klein und werden
+ständig neu geschrieben).
+
+**Wie der Backtrace zustande kam** (`scripts/timer-trace.el', per
+`(load …)' aus der Init oder `emacsclient -e'): (1) Advice um
+`timer-event-handler' protokolliert START/END je Timer mit Puffer
+→ `~/timer-trace.log' (Täter = START ohne END); (2) Timer laufen mit
+`inhibit-quit' t (timer.el) — Advice `my/with-quit' hebt das für den
+Agenten auf; (3) `org-element--parse-to' verschluckt C-g fünfmal
+\(Meldung „Suppressed C-g … Press C-g N more times") —
+`debug-on-message' auf genau diese Meldung öffnet den Debugger beim
+ERSTEN C-g mitten in der Schleife; (4) Advice um
+`debugger-setup-buffer' schreibt `~/backtrace-names.txt'
+\(`mapbacktrace', nur Namen, kann nicht hängen) und `~/backtrace.txt'
+\(gekürzt gedruckt).  Im Debugger ist Emacs per `emacsclient'
+ansprechbar (Cache-Inhalt via `avl-tree-flatten org-element--cache').
+NICHT: `kill -INT' an ein GUI-Emacs ohne Terminal — das ist kein C-g,
+sondern setzt `quit-flag' auf `kill-emacs'; `kill -USR2' wird in einer
+Timer-Schleife nie verarbeitet; `lldb -p' ist auf macOS verboten;
+`sample PID' liefert nur den C-Stack (immerhin: `timer_check →
+Ffuncall' = Timer, `signal_or_quit → call_debugger' = Debugger).
+`C-x C-e' wertet EINEN Ausdruck aus — eine Advice ohne ihre `defun'
+machte Emacs unbenutzbar.
+
+**Regeln:** nie `inhibit-modification-hooks'/`with-silent-modifications'
 um TEXT-Änderungen in org-Puffern (Text-Properties sind ok — so
-arbeitet die Zettel-Hervorhebung).  Suite 2586 → **2587 ERT**
-\(0 unexpected, 1 Skip), BDD grün.
+arbeitet die Zettel-Hervorhebung); Tool-Dateien nie persistent
+cachen.  Suite 2586 → **2588 ERT** (0 unexpected, 1 Skip), BDD grün.
 
 ### 5.69 Vokabular im Diskussionspapier (done, 2026-10-26)
 
