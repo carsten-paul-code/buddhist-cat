@@ -1,9 +1,9 @@
 #+TITLE: Function Reference — tibetan-cat.el
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-10-26T16:25:32
+#+DATE: 2026-10-27T07:36:19
 #+OPTIONS: toc:2 num:nil
 
-Source tree: ~/Users/cp/tibetan-cat.el~  ·  86 modules  ·  1845 forms
+Source tree: ~/Users/cp/tibetan-cat.el~  ·  86 modules  ·  1846 forms
 
 Regenerated automatically by:
 
@@ -45,7 +45,7 @@ python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/tibetan-ca
   - [[#core/tibetan-vocabulary-detailed.el][core/tibetan-vocabulary-detailed.el]]  (35)
   - [[#core/tibetan-vocabulary.el][core/tibetan-vocabulary.el]]  (55)
   - [[#core/tibetan-wylie.el][core/tibetan-wylie.el]]  (4)
-  - [[#core/tibetan-zettel-highlight.el][core/tibetan-zettel-highlight.el]]  (76)
+  - [[#core/tibetan-zettel-highlight.el][core/tibetan-zettel-highlight.el]]  (77)
   - [[#core/tibetan-zettel.el][core/tibetan-zettel.el]]  (51)
   - [[#data/tibetan-glossary-loader.el][data/tibetan-glossary-loader.el]]  (14)
   - [[#doc-prep/tibetan-doc-display.el][doc-prep/tibetan-doc-display.el]]  (13)
@@ -7757,7 +7757,7 @@ Recognizes Tibetan syllable structure: [prefix] ROOT [subscript]
 ** ~tibetan-zettel-highlight-mode~  /minor mode/  ↗
 :PROPERTIES:
 :KIND: define-minor-mode
-:LINE: 673
+:LINE: 714
 :SIGNATURE: (tibetan-zettel-highlight-mode …)
 :AUTOLOAD: t
 :END:
@@ -7864,21 +7864,39 @@ Ids for TERM as written (any script), or nil.
 
 LEMMA without a leading root sign.
 
-** ~tibetan-zettel-highlight--member-hits~  /function/
+** ~tibetan-zettel-highlight--stem-in-lemma-ids~  /function/
 :PROPERTIES:
 :KIND: defun
 :LINE: 210
+:SIGNATURE: (tibetan-zettel-highlight--stem-in-lemma-ids member fused)
+:END:
+
+Ids of the stem the inflected last MEMBER shares with the FUSED lemma.
+The last member of a hyphenated compound is inflected (`kulam', `hṛdayena')
+while the analysis gives the compound as one fused lemma — as a stem
+(`śūnyahṛdaya') or itself inflected (`anuttarāmṛtakulam').  A stem counts
+when it has a zettel, occurs inside the lemma, and the member starts with it
+(its final vowel may be swallowed by the ending: hṛdaya → hṛdayena).
+Candidates are the prefixes of the member and the tails of the lemma,
+longest first; nothing is guessed across sandhi.
+
+** ~tibetan-zettel-highlight--member-hits~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 237
 :SIGNATURE: (tibetan-zettel-highlight--member-hits surface lemma-map)
 :END:
 
 Hits in SURFACE, member by member of a hyphenated compound.
 Each hit is (OFFSET LENGTH IDS).  A member resolves by its own key, else
-through LEMMA-MAP (surface → lemma) when given.
+through LEMMA-MAP (surface → lemma) when given; the last member of a
+compound whose lemma is fused resolves by its stem inside that lemma
+(`tibetan-zettel-highlight--stem-in-lemma-ids').
 
 ** ~tibetan-zettel-highlight--analysis-name-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 236
+:LINE: 271
 :SIGNATURE: (tibetan-zettel-highlight--analysis-name-p filename)
 :END:
 
@@ -7887,7 +7905,7 @@ through LEMMA-MAP (surface → lemma) when given.
 ** ~tibetan-zettel-highlight--buffer-kind~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 242
+:LINE: 277
 :SIGNATURE: (tibetan-zettel-highlight--buffer-kind &optional filename)
 :END:
 
@@ -7898,7 +7916,7 @@ source, so the name decides first.  FILENAME defaults to the buffer's.
 ** ~tibetan-zettel-highlight--section-body~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 265
+:LINE: 300
 :SIGNATURE: (tibetan-zettel-highlight--section-body heading-re)
 :END:
 
@@ -7907,7 +7925,7 @@ Body text of the level-2 section whose heading matches HEADING-RE, or nil.
 ** ~tibetan-zettel-highlight--word-analysis-body~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 278
+:LINE: 313
 :SIGNATURE: (tibetan-zettel-highlight--word-analysis-body)
 :END:
 
@@ -7916,7 +7934,7 @@ Body text of the level-2 section whose heading matches HEADING-RE, or nil.
 ** ~tibetan-zettel-highlight--lemma-pairs~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 281
+:LINE: 316
 :SIGNATURE: (tibetan-zettel-highlight--lemma-pairs body)
 :END:
 
@@ -7925,7 +7943,7 @@ Body text of the level-2 section whose heading matches HEADING-RE, or nil.
 ** ~tibetan-zettel-highlight--lemma-map~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 295
+:LINE: 330
 :SIGNATURE: (tibetan-zettel-highlight--lemma-map)
 :END:
 
@@ -7934,7 +7952,7 @@ Hash surface → lemma for the current analysis buffer (cached per edit tick).
 ** ~tibetan-zettel-highlight--l2-section-at-line~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 307
+:LINE: 342
 :SIGNATURE: (tibetan-zettel-highlight--l2-section-at-line)
 :END:
 
@@ -7944,7 +7962,7 @@ Symbol of the enclosing level-1/2 section: `word-analysis',
 ** ~tibetan-zettel-highlight--table-row1-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 317
+:LINE: 352
 :SIGNATURE: (tibetan-zettel-highlight--table-row1-p)
 :END:
 
@@ -7953,7 +7971,7 @@ Non-nil when the current line is the first word row of a table band.
 ** ~tibetan-zettel-highlight--analysis-line-hits~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 327
+:LINE: 362
 :SIGNATURE: (tibetan-zettel-highlight--analysis-line-hits bol eol)
 :END:
 
@@ -7962,7 +7980,7 @@ Hits (BEG END IDS) on the analysis line BOL..EOL, sorted by BEG.
 ** ~tibetan-zettel-highlight--run-matcher~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 367
+:LINE: 408
 :SIGNATURE: (tibetan-zettel-highlight--run-matcher limit line-hits-fn)
 :END:
 
@@ -7972,7 +7990,7 @@ LINE-HITS-FN gets (BOL EOL) and returns sorted hits (BEG END IDS).
 ** ~tibetan-zettel-highlight--analysis-matcher~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 389
+:LINE: 430
 :SIGNATURE: (tibetan-zettel-highlight--analysis-matcher limit)
 :END:
 
@@ -7981,7 +7999,7 @@ Font-lock matcher for analysis buffers.
 ** ~tibetan-zettel-highlight--needle~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 400
+:LINE: 441
 :SIGNATURE: (tibetan-zettel-highlight--needle member)
 :END:
 
@@ -7990,7 +8008,7 @@ MEMBER without its first and last character (sandhi happens at the edges).
 ** ~tibetan-zettel-highlight--projection-from-body~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 406
+:LINE: 447
 :SIGNATURE: (tibetan-zettel-highlight--projection-from-body body)
 :END:
 
@@ -8001,7 +8019,7 @@ written form.
 ** ~tibetan-zettel-highlight--analysis-folder~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 427
+:LINE: 468
 :SIGNATURE: (tibetan-zettel-highlight--analysis-folder)
 :END:
 
@@ -8010,7 +8028,7 @@ written form.
 ** ~tibetan-zettel-highlight--sentence-word-analysis~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 431
+:LINE: 472
 :SIGNATURE: (tibetan-zettel-highlight--sentence-word-analysis sent-num)
 :END:
 
@@ -8019,7 +8037,7 @@ The `** Word Analysis' body of the analysis file of sentence SENT-NUM, or nil.
 ** ~tibetan-zettel-highlight--projection~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 443
+:LINE: 484
 :SIGNATURE: (tibetan-zettel-highlight--projection sent-num)
 :END:
 
@@ -8028,7 +8046,7 @@ Cached projection for SENT-NUM (nil when the sentence has no Word Analysis).
 ** ~tibetan-zettel-highlight--segment-line-sentence~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 457
+:LINE: 498
 :SIGNATURE: (tibetan-zettel-highlight--segment-line-sentence)
 :END:
 
@@ -8038,7 +8056,7 @@ heading, else nil.
 ** ~tibetan-zettel-highlight--source-line-hits~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 472
+:LINE: 513
 :SIGNATURE: (tibetan-zettel-highlight--source-line-hits bol eol)
 :END:
 
@@ -8047,7 +8065,7 @@ Hits (BEG END IDS) on the source line BOL..EOL from the sentence's projection.
 ** ~tibetan-zettel-highlight--source-matcher~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 494
+:LINE: 535
 :SIGNATURE: (tibetan-zettel-highlight--source-matcher limit)
 :END:
 
@@ -8056,7 +8074,7 @@ Font-lock matcher for CAT source buffers.
 ** ~tibetan-zettel-highlight--invalidate-projections~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 498
+:LINE: 539
 :SIGNATURE: (tibetan-zettel-highlight--invalidate-projections &rest _)
 :END:
 
@@ -8065,7 +8083,7 @@ Forget cached projections in every source buffer and refontify.
 ** ~tibetan-zettel-highlight-ids-at-point~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 511
+:LINE: 552
 :SIGNATURE: (tibetan-zettel-highlight-ids-at-point)
 :END:
 
@@ -8074,7 +8092,7 @@ Zettel ids of the marked word at point, or nil.
 ** ~tibetan-zettel-highlight--choose-id~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 515
+:LINE: 556
 :SIGNATURE: (tibetan-zettel-highlight--choose-id ids)
 :END:
 
@@ -8083,7 +8101,7 @@ One id from IDS — asked by title when there are several (homonyms).
 ** ~tibetan-zettel-highlight--research-reachable-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 523
+:LINE: 564
 :SIGNATURE: (tibetan-zettel-highlight--research-reachable-p)
 :END:
 
@@ -8092,7 +8110,7 @@ Non-nil when the Research instance's server socket exists.
 ** ~tibetan-zettel-highlight--open-id~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 531
+:LINE: 572
 :SIGNATURE: (tibetan-zettel-highlight--open-id id)
 :END:
 
@@ -8101,7 +8119,7 @@ Open zettel ID: shared-route (Research), else research socket, else here.
 ** ~tibetan-zettel-highlight-open~  /function/  ⚡
 :PROPERTIES:
 :KIND: defun
-:LINE: 544
+:LINE: 585
 :SIGNATURE: (tibetan-zettel-highlight-open &optional ids)
 :INTERACTIVE: t
 :END:
@@ -8111,7 +8129,7 @@ Open the zettel of the marked word at point (IDS when given).
 ** ~tibetan-zettel-highlight-return~  /function/  ⚡
 :PROPERTIES:
 :KIND: defun
-:LINE: 551
+:LINE: 592
 :SIGNATURE: (tibetan-zettel-highlight-return)
 :INTERACTIVE: t
 :END:
@@ -8121,7 +8139,7 @@ RET on a marked word opens its zettel; elsewhere behaves like `org-return'.
 ** ~tibetan-zettel-highlight-mouse-open~  /function/  ⚡
 :PROPERTIES:
 :KIND: defun
-:LINE: 559
+:LINE: 600
 :SIGNATURE: (tibetan-zettel-highlight-mouse-open event)
 :INTERACTIVE: t
 :END:
@@ -8131,7 +8149,7 @@ Open the zettel of the word clicked in EVENT.
 ** ~tibetan-zettel-highlight--open-at-point-function~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 565
+:LINE: 606
 :SIGNATURE: (tibetan-zettel-highlight--open-at-point-function)
 :END:
 
@@ -8140,7 +8158,7 @@ For `org-open-at-point-functions': open the marked word, non-nil when done.
 ** ~tibetan-zettel-highlight--entry-line~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 579
+:LINE: 620
 :SIGNATURE: (tibetan-zettel-highlight--entry-line id)
 :END:
 
@@ -8149,7 +8167,7 @@ For `org-open-at-point-functions': open the marked word, non-nil when done.
 ** ~tibetan-zettel-highlight--etymology~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 592
+:LINE: 633
 :SIGNATURE: (tibetan-zettel-highlight--etymology id)
 :END:
 
@@ -8158,7 +8176,7 @@ The Wortbildung of zettel ID (`:ETYMOLOGY:` in the drawer), or nil when empty.
 ** ~tibetan-zettel-highlight--help-echo~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 597
+:LINE: 638
 :SIGNATURE: (tibetan-zettel-highlight--help-echo ids)
 :END:
 
@@ -8167,7 +8185,7 @@ Tooltip for IDS: one `title — de / en' per zettel, its Wortbildung underneath.
 ** ~tibetan-zettel-highlight-etymology~  /function/  ⚡
 :PROPERTIES:
 :KIND: defun
-:LINE: 605
+:LINE: 646
 :SIGNATURE: (tibetan-zettel-highlight-etymology &optional kill)
 :INTERACTIVE: t
 :END:
@@ -8181,7 +8199,7 @@ to the kill ring.  Without a zettel at point: /term creates one.
 ** ~tibetan-zettel-highlight--facespec~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 627
+:LINE: 668
 :SIGNATURE: (tibetan-zettel-highlight--facespec)
 :END:
 
@@ -8190,7 +8208,7 @@ Facespec for the match just found: face plus the clickable properties.
 ** ~tibetan-zettel-highlight--enable~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 649
+:LINE: 690
 :SIGNATURE: (tibetan-zettel-highlight--enable kind)
 :END:
 
@@ -8199,7 +8217,7 @@ Install matcher and properties for buffer KIND (`analysis' or `source').
 ** ~tibetan-zettel-highlight--disable~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 662
+:LINE: 703
 :SIGNATURE: (tibetan-zettel-highlight--disable)
 :END:
 
@@ -8208,7 +8226,7 @@ Install matcher and properties for buffer KIND (`analysis' or `source').
 ** ~tibetan-zettel-highlight--maybe-enable~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 685
+:LINE: 726
 :SIGNATURE: (tibetan-zettel-highlight--maybe-enable)
 :END:
 
@@ -8217,7 +8235,7 @@ Turn the mode on in CAT source and analysis buffers (org-mode-hook).
 ** ~tibetan-zettel-highlight-reload~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 698
+:LINE: 739
 :SIGNATURE: (tibetan-zettel-highlight-reload)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -8352,7 +8370,7 @@ Zettelkasten directory the index was built from.
 ** ~tibetan-zettel-highlight--source-header-re~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 232
+:LINE: 267
 :DEFAULT: "^#\\+\\(?:TIBETAN_LAYOUT\\|SOURCE_LANG\\|TIBETAN_TARGET_LANG\\|TIBETAN_TEXT_TYPE\\):"
 :END:
 
@@ -8361,7 +8379,7 @@ A CAT source document header (within the first 4 KB).
 ** ~tibetan-zettel-highlight--lemma-map-cache~  /variable (buffer-local)/
 :PROPERTIES:
 :KIND: defvar-local
-:LINE: 262
+:LINE: 297
 :DEFAULT: nil
 :END:
 
@@ -8370,7 +8388,7 @@ A CAT source document header (within the first 4 KB).
 ** ~tibetan-zettel-highlight--current-ids~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 364
+:LINE: 405
 :DEFAULT: nil
 :END:
 
@@ -8379,7 +8397,7 @@ Ids of the match the facespec is being evaluated for.
 ** ~tibetan-zettel-highlight--projections~  /variable (buffer-local)/
 :PROPERTIES:
 :KIND: defvar-local
-:LINE: 397
+:LINE: 438
 :DEFAULT: nil
 :END:
 
@@ -8388,7 +8406,7 @@ Hash sentence number → list of (NEEDLE . IDS), or `none'.
 ** ~tibetan-zettel-highlight--iast-char~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 469
+:LINE: 510
 :DEFAULT: "[[:alpha:]āīūṛṝḷḹṃḥśṣṭḍṇñṅ']"
 :END:
 
@@ -8397,7 +8415,7 @@ One IAST letter (incl. avagraha).
 ** ~tibetan-zettel-highlight-map~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 571
+:LINE: 612
 :DEFAULT: (let ((map (make-sparse-keymap)))
     (define-key map (kbd "RET") #'tibetan-zettel-highlight-return)
     (define-key map
@@ -8408,7 +8426,7 @@ Keymap active on a marked word.
 ** ~tibetan-zettel-highlight--props~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 623
+:LINE: 664
 :DEFAULT: '
 :END:
 
@@ -8417,7 +8435,7 @@ Keymap active on a marked word.
 ** ~tibetan-zettel-highlight--analysis-keywords~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 641
+:LINE: 682
 :DEFAULT: '
 :END:
 
@@ -8426,7 +8444,7 @@ Keymap active on a marked word.
 ** ~tibetan-zettel-highlight--source-keywords~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 643
+:LINE: 684
 :DEFAULT: '
 :END:
 
@@ -8435,7 +8453,7 @@ Keymap active on a marked word.
 ** ~tibetan-zettel-highlight--keywords~  /variable (buffer-local)/
 :PROPERTIES:
 :KIND: defvar-local
-:LINE: 646
+:LINE: 687
 :DEFAULT: nil
 :END:
 

@@ -233,9 +233,10 @@ hṛdaya kula anuttara — these words here must NOT match
       (let ((hits (tzh-test--collect-matches #'tibetan-zettel-highlight--analysis-matcher)))
         ;; Gloss Tables row 1: hṛdayam (via lemma map), anuttara (member), kulam (member via map)
         ;; Claude Vocabulary: headword hṛdayam
-        ;; Word Analysis: lemma hṛdaya, member anuttara (of the lemma? no — lemma is fused), kula
+        ;; Word Analysis: lemma hṛdaya; the fused lemma anuttarāmṛtakulam gives nothing, but the
+        ;; hyphenated surface does: anuttara (own key), kulam (stem kula inside the fused lemma); kula
         (should (equal (mapcar #'car hits)
-                       '("hṛdayam" "anuttara" "kulam" "hṛdayam" "hṛdaya" "kula")))
+                       '("hṛdayam" "anuttara" "kulam" "hṛdayam" "hṛdaya" "anuttara" "kulam" "kula")))
         (should (equal (cdr (nth 0 hits)) (list tzh-test--hrdaya)))
         (should (equal (cdr (nth 2 hits)) (list tzh-test--kula)))
         ;; rows 2-3 of the table, the ⟦2⟧ line and the pronoun never match
@@ -385,6 +386,41 @@ hṛdaya kula anuttara — these words here must NOT match
           ;; no zettel at point: a user-error pointing at /term
           (goto-char 2)
           (should-error (tibetan-zettel-highlight-etymology) :type 'user-error))))))
+
+(ert-deftest tzh-member-hits-resolve-the-last-member-through-the-fused-lemma ()
+  (tzh-test--with-index
+    (let ((map (make-hash-table :test 'equal)))
+      ;; the analysis fuses the compound: the inflected last member has no key of its own
+      (puthash "mantra-kulam" "mantrakula" map)
+      (puthash "śūnya-hṛdayena" "śūnyahṛdaya" map)
+      (puthash "para-kulam" "parakula" map)
+      (let ((hits (tibetan-zettel-highlight--member-hits "mantra-kulam" map)))
+        ;; mantra has no zettel in the fixture; kulam → stem kula, a prefix of the member inside the lemma
+        (should (equal hits (list (list 7 5 (list tzh-test--kula))))))
+      (let ((hits (tibetan-zettel-highlight--member-hits "śūnya-hṛdayena" map)))
+        (should (equal (mapcar (lambda (h) (nth 2 h)) hits)
+                       (list (list tzh-test--sunya-b tzh-test--sunya-t) (list tzh-test--hrdaya)))))
+      ;; a prefix that is NOT inside the fused lemma never counts (no guessing across sandhi)
+      (puthash "para-kulam" "parakalā" map)
+      (should-not (tibetan-zettel-highlight--member-hits "para-kulam" map))
+      ;; without a map the last member stays unresolved
+      (should-not (tibetan-zettel-highlight--member-hits "mantra-kulam" nil)))))
+
+(ert-deftest tzh-word-analysis-line-marks-the-surface-members-of-a-fused-compound ()
+  (tzh-test--with-index
+    (with-temp-buffer
+      (insert "** Word Analysis\n*** Segment 1\n\n- anuttara-amṛta-kulam — anuttarāmṛtakulam; N.NOM.SG.N\n- devīm — devī; N.ACC.SG.F\n")
+      (org-mode)
+      (setq buffer-file-name nil)
+      (goto-char (point-min))
+      (search-forward "- anuttara")
+      (let ((hits (tibetan-zettel-highlight--analysis-line-hits (line-beginning-position) (line-end-position))))
+        (should (equal (mapcar (lambda (h) (buffer-substring-no-properties (nth 0 h) (nth 1 h))) hits)
+                       '("anuttara" "kulam")))
+        (should (equal (nth 2 (nth 1 hits)) (list tzh-test--kula))))
+      ;; an uncompounded surface is not marked twice: only the lemma half carries the hit
+      (search-forward "- devīm")
+      (should-not (tibetan-zettel-highlight--analysis-line-hits (line-beginning-position) (line-end-position))))))
 
 (provide 'tibetan-zettel-highlight-test)
 ;;; tibetan-zettel-highlight-test.el ends here

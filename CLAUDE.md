@@ -4571,6 +4571,21 @@ nach einer Quelländerung „unerklärlich" rot bleibt, lädt die alte
 `.elc` — erst `make compile`, dann testen.  ERT 2521 → **2571**
 (mit zwei neuen Tests hier; die übrigen kamen aus §5.64/§5.65).
 
+**Nachtrag 2026-10-27 — Kompositionsglieder.**  Carsten (TĀ-Reading):
+„Mantra fehlt" — der Zettel existierte, aber /mantra/ leuchtete im
+Kompositum nicht, weil die Word Analysis Komposita als EIN fusioniertes
+Lemma gibt (`- mantra-vīryam — mantravīrya;`): der Lemma-Schlüssel
+`mantravirya` hat keinen Zettel.  Jetzt (1) markiert die Word-Analysis-
+Zeile bei Bindestrich-Oberfläche zusätzlich die Oberflächenglieder
+einzeln (`--analysis-line-hits`), und (2) löst `--member-hits` das
+flektierte Endglied über `--stem-in-lemma-ids` auf: Kandidaten sind die
+Präfixe des Glieds und die Schwänze des fusionierten Lemmas; ein Stamm
+zählt, wenn er einen Zettel hat, im Lemma vorkommt und das Glied mit ihm
+beginnt (Endvokal darf vom Suffix geschluckt sein: hṛdaya → hṛdayena).
+Kein Raten über Sandhi hinweg (`kulam` in `parakalā` → nichts).  Gilt
+für Analyse-Zeilen, Gloss-Tables-Zeile 1, Vocabulary und die
+Quelltext-Projektion.  Zwei Tests; ERT (mit den Suiten anderer Sessions seit dem 21.10.) **2590**, 0 unexpected, 1 Skip; BDD grün.
+
 ### 5.62 Übersetzungs-Diskussion für das Seminar (done, 2026-10-12)
 
 Carsten (12.10., Tantrāloka): „Was es perfekt machen würde, wäre eine

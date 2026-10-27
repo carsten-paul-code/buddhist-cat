@@ -207,19 +207,54 @@ Returns non-nil when an index is available."
   "LEMMA without a leading root sign."
   (string-trim-left (or lemma "") "[√ ]+"))
 
+(defun tibetan-zettel-highlight--stem-in-lemma-ids (member fused)
+  "Ids of the stem the inflected last MEMBER shares with the FUSED lemma.
+The last member of a hyphenated compound is inflected (`kulam', `hṛdayena')
+while the analysis gives the compound as one fused lemma — as a stem
+(`śūnyahṛdaya') or itself inflected (`anuttarāmṛtakulam').  A stem counts
+when it has a zettel, occurs inside the lemma, and the member starts with it
+(its final vowel may be swallowed by the ending: hṛdaya → hṛdayena).
+Candidates are the prefixes of the member and the tails of the lemma,
+longest first; nothing is guessed across sandhi."
+  (let* ((lemma-key (tibetan-zettel-highlight--norm-key fused))
+         (member-key (tibetan-zettel-highlight--norm-key member))
+         (cands (append (cl-loop for n from (length member-key) downto 3 collect (substring member-key 0 n))
+                        (cl-loop for n from (length lemma-key) downto 3
+                                 collect (substring lemma-key (- (length lemma-key) n)))))
+         ids)
+    (dolist (stem (sort (delete-dups cands) (lambda (a b) (> (length a) (length b)))))
+      (unless ids
+        (let ((common (let ((i 0))
+                        (while (and (< i (length stem)) (< i (length member-key))
+                                    (eq (aref stem i) (aref member-key i)))
+                          (setq i (1+ i)))
+                        i)))
+          (when (and (>= common 3) (>= common (1- (length stem)))
+                     (string-match-p (regexp-quote stem) lemma-key))
+            (setq ids (tibetan-zettel-highlight-lookup stem))))))
+    ids))
+
 (defun tibetan-zettel-highlight--member-hits (surface lemma-map)
   "Hits in SURFACE, member by member of a hyphenated compound.
 Each hit is (OFFSET LENGTH IDS).  A member resolves by its own key, else
-through LEMMA-MAP (surface → lemma) when given."
-  (let ((pos 0) hits)
-    (dolist (member (split-string surface "-"))
+through LEMMA-MAP (surface → lemma) when given; the last member of a
+compound whose lemma is fused resolves by its stem inside that lemma
+(`tibetan-zettel-highlight--stem-in-lemma-ids')."
+  (let* ((members (split-string surface "-"))
+         (fused (and lemma-map (cdr members)
+                     (let ((lem (gethash surface lemma-map)))
+                       (and lem (tibetan-zettel-highlight--strip-lemma lem)))))
+         (pos 0) hits)
+    (dolist (member members)
       (let ((len (length member)))
         (when (> len 0)
           (let ((ids (or (tibetan-zettel-highlight--ids-for-term member)
                          (and lemma-map
                               (let ((lem (gethash member lemma-map)))
                                 (and lem (tibetan-zettel-highlight--ids-for-term
-                                          (tibetan-zettel-highlight--strip-lemma lem))))))))
+                                          (tibetan-zettel-highlight--strip-lemma lem)))))
+                         (and fused (eq member (car (last members)))
+                              (tibetan-zettel-highlight--stem-in-lemma-ids member fused)))))
             (when ids
               (push (list pos len ids) hits))))
         (setq pos (+ pos len 1))))
@@ -336,9 +371,15 @@ source, so the name decides first.  FILENAME defaults to the buffer's."
       (pcase section
         ('word-analysis
          (when (string-match "\\`[ \t]*-[ \t]+\\(.+?\\)[ \t]+—[ \t]+\\(.+?\\);" line)
-           (let* ((raw (match-string 2 line))
+           (let* ((surface (match-string 1 line))
+                  (sbeg (match-beginning 1))
+                  (raw (match-string 2 line))
                   (start (match-beginning 2))
                   (skip (- (length raw) (length (tibetan-zettel-highlight--strip-lemma raw)))))
+             ;; a hyphenated surface lights member by member — the fused lemma of a
+             ;; compound (anuttarāmṛtakulam) has no key of its own
+             (when (string-match-p "-" surface)
+               (add sbeg surface (tibetan-zettel-highlight--lemma-map)))
              (add (+ start skip) (tibetan-zettel-highlight--strip-lemma raw) nil))))
         ('gloss-tables
          (when (tibetan-zettel-highlight--table-row1-p)
