@@ -1,9 +1,9 @@
 #+TITLE: Function Reference — tibetan-cat.el
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-10-28T16:22:11
+#+DATE: 2026-10-28T16:26:09
 #+OPTIONS: toc:2 num:nil
 
-Source tree: ~/Users/cp/tibetan-cat.el~  ·  86 modules  ·  1846 forms
+Source tree: ~/Users/cp/tibetan-cat.el~  ·  86 modules  ·  1849 forms
 
 Regenerated automatically by:
 
@@ -19,7 +19,7 @@ python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/tibetan-ca
   - [[#analysis/tibetan-clause-segmenter.el][analysis/tibetan-clause-segmenter.el]]  (20)
   - [[#analysis/tibetan-enhanced-display.el][analysis/tibetan-enhanced-display.el]]  (16)
   - [[#analysis/tibetan-enhanced-parser.el][analysis/tibetan-enhanced-parser.el]]  (16)
-  - [[#analysis/tibetan-gloss-table.el][analysis/tibetan-gloss-table.el]]  (20)
+  - [[#analysis/tibetan-gloss-table.el][analysis/tibetan-gloss-table.el]]  (23)
   - [[#analysis/tibetan-interlinear.el][analysis/tibetan-interlinear.el]]  (22)
   - [[#analysis/tibetan-mitra-translation.el][analysis/tibetan-mitra-translation.el]]  (24)
   - [[#analysis/tibetan-particles-bialek.el][analysis/tibetan-particles-bialek.el]]  (8)
@@ -1209,10 +1209,35 @@ boundary past half the budget (else hard cut), dangling
 punctuation stripped, `…' appended so the reader knows where to
 find the full gloss.
 
+** ~tibetan-gloss-table--truncate-to~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 236
+:SIGNATURE: (tibetan-gloss-table--truncate-to s budget)
+:END:
+
+S capped at BUDGET characters (see `tibetan-gloss-table--truncate-cell').
+
+** ~tibetan-gloss-table--formation-meaning-cell~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 254
+:SIGNATURE: (tibetan-gloss-table--formation-meaning-cell tok)
+:END:
+
+Row-3 cell of TOK: the meanings of its word-formation parts,
+capped at the width of its row-2 formation cell (at least
+`tibetan-gloss-table-cell-formation-width').  Uncapped, a long
+compound (ṣaḍ-ākāra-atīta-vartamāna-upabhoga-dhāraṇatām: 270
+characters) widened its column past `tibetan-gloss-table-max-width'
+— one word per band, every line wrapped in the window (Carsten
+28.10., asam sent-004 Segment 35).  The full list stays in
+`** Word Formation'.
+
 ** ~tibetan-gloss-table--unit-rows~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 247
+:LINE: 270
 :SIGNATURE: (tibetan-gloss-table--unit-rows unit-text &optional vocab-alist)
 :END:
 
@@ -1231,7 +1256,7 @@ meanings / gloss / label; Tibetan never.
 ** ~tibetan-gloss-table--visible-width~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 360
+:LINE: 381
 :SIGNATURE: (tibetan-gloss-table--visible-width s)
 :END:
 
@@ -1244,7 +1269,7 @@ Ein-Spalten-Breite und die Pipes fluchteten nur im Rohstring.
 ** ~tibetan-gloss-table--band-width~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 370
+:LINE: 391
 :SIGNATURE: (tibetan-gloss-table--band-width widths n)
 :END:
 
@@ -1255,7 +1280,7 @@ K-th column of any band; separators and edges cost 3·N + 1.
 ** ~tibetan-gloss-table--columns-per-band~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 381
+:LINE: 402
 :SIGNATURE: (tibetan-gloss-table--columns-per-band widths)
 :END:
 
@@ -1266,7 +1291,7 @@ column still renders alone.
 ** ~tibetan-gloss-table--format-rows~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 391
+:LINE: 412
 :SIGNATURE: (tibetan-gloss-table--format-rows rows)
 :END:
 
@@ -1284,7 +1309,7 @@ the segment visually and for org's table commands (§15 review,
 ** ~tibetan-gloss-table-render~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 440
+:LINE: 461
 :SIGNATURE: (tibetan-gloss-table-render units &optional vocab-alist)
 :END:
 
@@ -1297,7 +1322,7 @@ nothing renders.  VOCAB-ALIST feeds the Claude-POS label tier.
 ** ~tibetan-gloss-table-render-captioned~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 457
+:LINE: 478
 :SIGNATURE: (tibetan-gloss-table-render-captioned segs &optional vocab-alist
                                                   heading-level)
 :END:
@@ -1332,10 +1357,22 @@ Interlinear.  Wide uncapped cells force the shared-grid wrap
 into 2-column bands, which is what fragmented the SS15 tables
 (review 2026-09-17).
 
+** ~tibetan-gloss-table-cell-formation-width~  /customize variable/
+:PROPERTIES:
+:KIND: defcustom
+:LINE: 248
+:TYPE: 'integer
+:GROUP: tibetan-cat
+:DEFAULT: 60
+:END:
+
+Minimum budget of a row-3 cell (meanings of the word-formation
+parts), in characters; a wider formation cell (row 2) raises it.
+
 ** ~tibetan-gloss-table-max-width~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 342
+:LINE: 363
 :TYPE: 'integer
 :GROUP: tibetan-cat
 :DEFAULT: 160

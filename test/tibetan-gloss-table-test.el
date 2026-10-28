@@ -418,6 +418,27 @@ unit without formation keeps three; Tibetan never gets the rows."
                   :formation "IGNORED" :formation-meaning "IGNORED"))))
     (should (= 3 (length (split-string (tibetan-gloss-table-render '("U1")) "\n"))))))
 
+(ert-deftest tibetan-gloss-table-sa-formation-meaning-capped ()
+  "Row 3 (meanings of the parts) is capped at the width of the
+formation cell (min. `tibetan-gloss-table-cell-formation-width'), so a
+long compound no longer widens its column past the max width
+\(asam sent-004 Segment 35, 28.10.)."
+  (let ((long (concat "ṣaḍ six · ā- toward · √kṛ make · -a action noun · "
+                      "ati- beyond · √i go · -ta past participle · √vṛt turn · "
+                      "-amāna present participle · upa- near · √bhuj enjoy · "
+                      "-a action noun · √dhṛ hold · -aṇa action noun · -tā abstract")))
+    (tibetan-gloss-table-test--with-tokens
+        `(("U1" . ((:tibetan "x" :wylie "ṣaḍākārātītavartamānopabhogadhāraṇatām"
+                    :kind word :morph "N.ACC.SG.F" :meaning "holding"
+                    :formation "ṣaḍ · ā-√kṛ-a · ati-√i-ta · √vṛt-amāna · upa-√bhuj-a · √dhṛ-aṇa-tā"
+                    :formation-meaning ,long))))
+      (let* ((tibetan-analysis--source-lang "sa")
+             (rows (split-string (tibetan-gloss-table-render '("U1")) "\n")))
+        (should (= 5 (length rows)))
+        (should (string-match-p "…" (nth 2 rows)))
+        (should (= (length (nth 1 rows)) (length (nth 2 rows))))
+        (should (<= (length (nth 2 rows)) tibetan-gloss-table-max-width))))))
+
 (ert-deftest tibetan-gloss-table-cell-strips-literal-escape-sequences ()
   "A gloss carrying LITERAL backslash-escape sequences (\\n, \\t —
 serialization junk from upstream vocabulary strings) renders

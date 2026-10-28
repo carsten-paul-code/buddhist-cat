@@ -231,18 +231,41 @@ Within budget → verbatim.  Over budget → cut at the last word
 boundary past half the budget (else hard cut), dangling
 punctuation stripped, `…' appended so the reader knows where to
 find the full gloss."
-  (let ((budget tibetan-gloss-table-cell-gloss-width)
-        (gloss (and gloss
-                    (string-trim
-                     (tibetan-gloss-table--strip-escapes gloss)))))
-    (if (or (null gloss) (<= (length gloss) budget))
-        gloss
-      (let* ((cut (substring gloss 0 budget))
+  (tibetan-gloss-table--truncate-to gloss tibetan-gloss-table-cell-gloss-width))
+
+(defun tibetan-gloss-table--truncate-to (s budget)
+  "S capped at BUDGET characters (see `tibetan-gloss-table--truncate-cell')."
+  (let ((s (and s (string-trim (tibetan-gloss-table--strip-escapes s)))))
+    (if (or (null s) (<= (length s) budget))
+        s
+      (let* ((cut (substring s 0 budget))
              (space (cl-position ?\s cut :from-end t))
              (head (if (and space (> space (/ budget 2)))
                        (substring cut 0 space)
                      cut)))
         (concat (string-trim-right head "[ \t;,:/(·—-]+") "…")))))
+
+(defcustom tibetan-gloss-table-cell-formation-width 60
+  "Minimum budget of a row-3 cell (meanings of the word-formation
+parts), in characters; a wider formation cell (row 2) raises it."
+  :type 'integer
+  :group 'tibetan-cat)
+
+(defun tibetan-gloss-table--formation-meaning-cell (tok)
+  "Row-3 cell of TOK: the meanings of its word-formation parts,
+capped at the width of its row-2 formation cell (at least
+`tibetan-gloss-table-cell-formation-width').  Uncapped, a long
+compound (ṣaḍ-ākāra-atīta-vartamāna-upabhoga-dhāraṇatām: 270
+characters) widened its column past `tibetan-gloss-table-max-width'
+— one word per band, every line wrapped in the window (Carsten
+28.10., asam sent-004 Segment 35).  The full list stays in
+`** Word Formation'."
+  (tibetan-gloss-table--cell
+   (or (tibetan-gloss-table--truncate-to
+        (plist-get tok :formation-meaning)
+        (max tibetan-gloss-table-cell-formation-width
+             (length (or (plist-get tok :formation) ""))))
+       "")))
 
 (defun tibetan-gloss-table--unit-rows (unit-text &optional vocab-alist)
   "Three cell-string lists (Wylie / gloss / label) for UNIT-TEXT.
@@ -330,9 +353,7 @@ meanings / gloss / label; Tibetan never."
                                toks))))
           (let ((rm (and rf
                          (cl-some (lambda (tok) (plist-get tok :formation-meaning)) toks)
-                         (mapcar (lambda (tok)
-                                   (tibetan-gloss-table--cell
-                                    (or (plist-get tok :formation-meaning) "")))
+                         (mapcar #'tibetan-gloss-table--formation-meaning-cell
                                  toks))))
             (append (list (nreverse r1))
                     (and rf (list rf))
