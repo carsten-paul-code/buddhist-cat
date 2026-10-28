@@ -347,6 +347,9 @@ source, so the name decides first.  FILENAME defaults to the buffer's."
     (when (re-search-backward "^\\*\\{1,2\\} " nil t)
       (cond ((looking-at-p "^\\*\\* Word Analysis[ \t]*$") 'word-analysis)
             ((looking-at-p "^\\*\\* Gloss Tables?[ \t]*$") 'gloss-tables)
+            ;; §5.74: template-built files hold each table under its
+            ;; own `** Segment N' in `* Segments'.
+            ((looking-at-p "^\\*\\* Segment [0-9]+[ \t]*$") 'gloss-tables)
             ((looking-at-p "^\\*\\* Claude Vocabulary[ \t]*$") 'claude-vocabulary)))))
 
 (defun tibetan-zettel-highlight--table-row1-p ()

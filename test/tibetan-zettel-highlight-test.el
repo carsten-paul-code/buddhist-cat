@@ -243,6 +243,22 @@ hṛdaya kula anuttara — these words here must NOT match
         (should-not (cl-find "heart" hits :key #'car))
         (should-not (cl-find "mama" hits :key #'car))))))
 
+(ert-deftest tzh-analysis-matcher-template-layout ()
+  "§5.74: in a template-built sentence file the tables stand under
+`** Segment N' in `* Segments' (no `** Gloss Tables') — their row 1 is
+highlighted the same; rows 2–3 and the translation block are not."
+  (tzh-test--with-index
+    (with-temp-buffer
+      (insert "#+CAT_TEMPLATE: tibetan\n* Text\n#+begin_verse\nmama anuttara\n#+end_verse\n\n"
+              "* Segments\n** Segment 2\n"
+              "| mama | anuttara |\n| my | unsurpassed |\n| PRON | ADJ |\n\n"
+              "⟦2⟧ anuttara \\\\\n*Ref:* anuttara\n\n"
+              "* Sentence\n** Grammar\nanuttara\n")
+      (org-mode)
+      (setq buffer-file-name nil)
+      (let ((hits (tzh-test--collect-matches #'tibetan-zettel-highlight--analysis-matcher)))
+        (should (equal (mapcar #'car hits) '("anuttara")))))))
+
 (ert-deftest tzh-matcher-makes-progress-on-final-line-without-newline ()
   (tzh-test--with-index
     (with-temp-buffer
