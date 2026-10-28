@@ -44,25 +44,32 @@ the old pipeline."
   :type 'boolean
   :group 'buddhist-cat)
 
-(defun bcat-sentence-template-name (source-file)
-  "The template a new sentence file of SOURCE-FILE is built from, or
-nil for the old layout: \"tibetan\" for Tibetan cascade sources while
-`bcat-sentence-templates' is on."
-  (when (and bcat-sentence-templates source-file
-             (fboundp 'tibetan-analysis--cascade-p)
-             (tibetan-analysis--cascade-p source-file)
-             (not (equal (tibetan-analysis--resolve-source-lang source-file) "sa")))
-    "tibetan"))
-
-(defun bcat-sentence-file-p (file)
-  "The template FILE was built from (its #+CAT_TEMPLATE:), or nil for a
-file in the old layout."
+(defun bcat-sentence--template-line (file)
+  "The value of FILE's #+CAT_TEMPLATE: line, or nil."
   (when (and file (file-readable-p file))
     (with-temp-buffer
       (insert-file-contents file nil 0 4096)
       (goto-char (point-min))
       (when (re-search-forward "^#\\+CAT_TEMPLATE:[ \t]*\\([^ \t\n]+\\)" nil t)
         (match-string 1)))))
+
+(defun bcat-sentence-template-name (source-file)
+  "The template new sentence files of SOURCE-FILE are built from, or nil
+for the old layout.  A source switches it on explicitly with
+#+CAT_TEMPLATE: NAME in its header (Carsten 28.10.2026: the reading
+classes; the Masterarbeit sources keep the old layout) — only for
+cascade sources and while `bcat-sentence-templates' is on."
+  (when (and bcat-sentence-templates source-file
+             (fboundp 'tibetan-analysis--cascade-p)
+             (tibetan-analysis--cascade-p source-file))
+    (bcat-sentence--template-line source-file)))
+
+(defun bcat-sentence-file-p (file)
+  "The template the sentence FILE (sent-NNN…) was built from (its
+#+CAT_TEMPLATE:), or nil for a file in the old layout — and for
+anything that is no sentence file (a source carries the line too)."
+  (when (and file (string-match-p "\\`sent-[0-9]" (file-name-nondirectory file)))
+    (bcat-sentence--template-line file)))
 
 ;; ----------------------------------------------------------------------------
 ;; Field values without AI (C-c u A)

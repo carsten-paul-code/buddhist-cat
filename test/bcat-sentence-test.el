@@ -27,6 +27,7 @@
 (defconst bcat-sentence-test--source
   (concat "#+TITLE: bDen pa gnyis la 'jug pa — CAT-Quelle\n"
           "#+TIBETAN_LAYOUT: cascade\n"
+          "#+CAT_TEMPLATE: tibetan\n"
           "#+TIBETAN_TARGET_LANG: en\n"
           "#+TIBETAN_SENTENCE_REFS: refs.org\n\n"
           "* Tibetan Text\n** Section Verse 9\n"
@@ -104,16 +105,26 @@ slots — and none of the old sections.  No AI request is made."
           (should-not fired))))))
 
 (ert-deftest bcat-sentence-old-layout-where-no-template ()
-  "Sanskrit sources (their template comes later) and a switched-off
-`bcat-sentence-templates' keep the old layout."
+  "Carsten 28.10.: the template only where a source switches it on
+\(#+CAT_TEMPLATE: tibetan — the reading classes; the Masterarbeit
+sources keep the old layout).  A source without the line, a Sanskrit
+source and a switched-off `bcat-sentence-templates' keep the old
+layout."
   (bcat-sentence-test--with-source
     (let ((bcat-sentence-templates nil))
       (should-not (string-match-p "CAT_TEMPLATE" (bcat-sentence-test--create src)))))
   (bcat-sentence-test--with-source
     (with-temp-file src
+      (insert (replace-regexp-in-string "#\\+CAT_TEMPLATE: tibetan\n" ""
+                                        bcat-sentence-test--source)))
+    (should-not (bcat-sentence-template-name src))
+    (should-not (string-match-p "CAT_TEMPLATE" (bcat-sentence-test--create src))))
+  (bcat-sentence-test--with-source
+    (with-temp-file src
+      ;; A Sanskrit source as the reading classes have them today: no
+      ;; #+CAT_TEMPLATE line yet (its template comes later).
       (insert (replace-regexp-in-string
-               "#\\+TIBETAN_LAYOUT: cascade\n"
-               "#+TIBETAN_LAYOUT: cascade\n#+SOURCE_LANG: sa\n"
+               "#\\+CAT_TEMPLATE: tibetan\n" "#+SOURCE_LANG: sa\n"
                bcat-sentence-test--source)))
     (should-not (bcat-sentence-template-name src))
     (should-not (string-match-p "CAT_TEMPLATE" (bcat-sentence-test--create src)))))
@@ -128,6 +139,8 @@ materializer skips it."
            (file (tibetan-sentence--filepath 9 folder src))
            (fired nil))
       (should (equal "tibetan" (bcat-sentence-file-p file)))
+      ;; The source carries the same line — it is no sentence file.
+      (should-not (bcat-sentence-file-p src))
       (tibetan-cascade--regenerate file 9 (tibetan-cascade--segs-for-sentence src 9) src)
       (tibetan-cascade--regenerate-after-land file)
       (should (plist-get (tibetan-cascade-materialize-provided-translations file) :skipped))
