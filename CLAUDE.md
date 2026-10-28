@@ -1,9 +1,17 @@
-# CLAUDE.md — Agent handoff for tibetan-cat.el
+# CLAUDE.md — Agent handoff for Buddhist CAT (buddhist-cat, formerly tibetan-cat.el)
 
 This file briefs Claude Code (or any other Claude surface) picking up
-work on **tibetan-cat.el**, Carsten Paul's Emacs-Lisp Computer-Assisted
-Translation (CAT) system for Classical Tibetan. Read it in full before
-editing. Last updated 2026-10-28 (§5.72: PDF-EXPORT DER SATZDATEIEN —
+work on **Buddhist CAT** (`~/buddhist-cat`, GitHub
+`carsten-paul-code/buddhist-cat`; until 28.10.2026 *tibetan-cat.el* in
+`~/tibetan-cat.el`, which is now a symlink), Carsten Paul's Emacs-Lisp
+Computer-Assisted Translation (CAT) system for Classical Tibetan and
+Sanskrit. Read it in full before editing. Symbols keep their
+`tibetan-' prefix until their module is rebuilt; new and rebuilt
+modules use `bcat-' (§5.73). Last updated 2026-10-28 (§5.73: UMBENENNUNG IN
+BUDDHIST CAT — erster Schritt: die Hülle (Hauptdatei/Feature
+buddhist-cat, alter Name lädt weiter, Customize-Gruppe, Menü, Repo,
+Verzeichnis, Carstens Configs); ERT 2597.
+Previous: §5.72: PDF-EXPORT DER SATZDATEIEN —
 steinert:-Links schützen `#'/`%' in \href (tabularx las sie als
 Kommentar, C-c C-e l p brach ab); ⟦N⟧ via STIX Two Math in Carstens
 Export-Init; ERT 2593.
@@ -322,7 +330,7 @@ These are hard preferences. Treat them as rules, not suggestions.
 ## 3. Repository shape
 
 ```
-tibetan-cat.el/
+buddhist-cat/      (formerly tibetan-cat.el/; ~/tibetan-cat.el is a symlink)
 ├── core/         primitives: wylie, vocabulary, verb-classifier,
 │                 steinert (SQLite), doc-display, etc.
 ├── analysis/     segment / compound / clause / round1+round2 analysis
@@ -336,7 +344,8 @@ tibetan-cat.el/
 ├── data/         dictionaries/steinert.db (SQLite, built via make)
 ├── Resources/    per-document vocabulary lists (user-curated)
 ├── Makefile      `make test` = ERT (test-quick) + BDD (test-bdd)
-└── tibetan-cat.el  top-level loader
+├── buddhist-cat.el top-level loader (feature buddhist-cat + tibetan-cat)
+└── tibetan-cat.el  old name: loads buddhist-cat.el from its own directory
 ```
 
 Key invariants:
@@ -4038,6 +4047,55 @@ migrieren beim nächsten Regenerate (editierte `** Gloss Tables`
 bleiben per §5.54-Schutz stehen).  Suite 2339 → **2345 ERT**
 (0 unexpected, 1 skip); BDD 250; compile clean; REFERENCE.org je
 def-Commit.
+
+### 5.73 Umbenennung in Buddhist CAT — erster Schritt: die Hülle (done, 2026-10-28)
+
+Carsten (28.10.): „Ich will jetzt sowieso das CAT-Tool umbauen
+(lassen). Der erste Schritt wäre jetzt schon mal es von
+Tibetan-CAT-Tool in Buddhist-CAT-Tool umzubenennen." Umfang per
+Rückfrage entschieden:
+
+- **Hülle jetzt, Präfix beim Umbau.**  Hauptdatei `git mv
+  tibetan-cat.el buddhist-cat.el', Feature `buddhist-cat'; die 1772
+  `tibetan-'-Symbole bleiben, bis ihr Modul umgebaut wird.  Neue und
+  umgebaute Module: Präfix **`bcat-'**.  Wirklich tibetische Module
+  (Wylie, Steinert, Bialek, Hill-Verben, tibetisches Vokabular) bleiben
+  `tibetan-'.  NICHT `buddhist-': Carstens `~/.emacs.d' hat 36 eigene
+  `buddhist-*'-Funktionen.
+- **Alter Name lädt weiter:** `tibetan-cat.el' ist ein kleiner Lader, der
+  `buddhist-cat' aus SEINEM Verzeichnis lädt (Carstens frühere Init lud
+  per Pfad ohne `load-path'); `buddhist-cat.el' meldet BEIDE Features an
+  (`36012de' — sonst liefen `with-eval-after-load 'tibetan-cat' und
+  `featurep'-Prüfungen ins Leere, wenn die Init direkt buddhist-cat.el
+  lädt).
+- **Customize-Gruppe `buddhist-cat'** mit `defgroup' — die alte Gruppe
+  `tibetan-cat' wurde in 57 defcustoms benutzt, aber nie definiert.
+  Modulgruppen (`tibetan-thesaurus' usw.) bleiben bis zum Umbau.
+- **Menü und Kontextmenü „Buddhist CAT"**; Makefile, CI, install.sh,
+  Setup-Assistent (schreibt buddhist-cat.el in die Init, erkennt beide
+  Namen), Doku-Generatoren, laufende Doku.  `test/tibetan-ocr-correct-
+  test.el' las den Lader `../tibetan-cat.el' — jetzt `../buddhist-cat.el'.
+- **GitHub** `tibetan-cat.el' → `buddhist-cat' (`gh repo rename', die
+  alte URL leitet weiter), Remote umgestellt.
+- **Verzeichnis** `~/tibetan-cat.el' → `~/buddhist-cat'; unter dem alten
+  Namen ein **Symlink**, damit laufende Emacs-Instanzen, andere Sessions,
+  Claude-Code-Einstellungen und noch nicht angepasste Pfade weiterlaufen.
+  Entfernen erst, wenn nichts mehr darauf zeigt.
+- **Carstens Configs:** `~/.emacs.d' (Lader, Menü-/Tasten-/Glossarpfade,
+  Präsentationsordner, Treemacs-Standardprojekt — der laufende
+  Arbeitsbereich wurde live umgestellt, sonst stünden nach dem Neustart
+  beide Projekte da), `~/emacs-zettelkasten' (Kommentar, CLAUDE.md) +
+  Gitlink im Korpus.
+
+**Offen (eigener Schritt, entschieden):** Kopfzeilen `#+CAT_*' — neue
+Dateien bekommen sie, das Werkzeug liest `#+TIBETAN_*' und `#+CAT_*'
+\(211 Stellen in 27 Dateien, 324 in Tests), der Korpus wird NICHT
+umgeschrieben (7621 Dateien, MA-Readings gesperrt).
+
+Tests: `test/buddhist-cat-test.el' (Feature + alter Name; Laden per
+Pfad in frischem `emacs -Q' über beide Dateinamen; Gruppe; Menütitel),
+vorher rot.  ERT 2597 (0 unexpected, 1 Skip), BDD grün, compile ohne
+Warnung.  Commits `4c2ca4e', `36012de'.
 
 ### 5.72 PDF-Export der Satzdateien: steinert:-Links in tabularx (done, 2026-10-28)
 
