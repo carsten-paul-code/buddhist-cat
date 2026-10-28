@@ -84,8 +84,13 @@ Prefixes don't get implicit \='a\=' vowel."
         ("ག" . ("ཅ" "ཉ" "ཏ" "ད" "ན" "ཙ" "ཞ" "ཟ" "ཡ" "ཤ" "ས"))
         ;; ད prefix
         ("ད" . ("ཀ" "ག" "ང" "པ" "བ" "མ"))
-        ;; བ prefix
-        ("བ" . ("ཀ" "ག" "ཅ" "ཏ" "ད" "ཙ" "ཞ" "ཟ" "ཤ" "ས"))
+        ;; བ prefix — also before the superscripts ར/ལ (བརྗོད brjod,
+        ;; བརྩོན brtson, བལྟ blta); without them བ counted as the root
+        ;; of every ra-mgo stack not spelled out in the stack table and
+        ;; got an implicit `a' (\"barjod\", 28.10.2026).  A syllable-
+        ;; final ར stays a suffix: the prefix branch needs 3+
+        ;; consonants or a vowel after the second (བར → bar).
+        ("བ" . ("ཀ" "ག" "ཅ" "ཏ" "ད" "ཙ" "ཞ" "ཟ" "ཤ" "ས" "ར" "ལ"))
         ;; མ prefix
         ("མ" . ("ཁ" "ག" "ང" "ཆ" "ཇ" "ཉ" "ཐ" "ད" "ན" "ཚ" "ཛ"))
         ;; འ prefix (can precede many consonants)
@@ -125,6 +130,9 @@ Recognizes Tibetan syllable structure: [prefix] ROOT [subscript]
         ("རྣ" . "rn") ("རྦ" . "rb") ("རྨ" . "rm") ("རྩ" . "rts")
         ("རྫ" . "rdz") ("རྗ" . "rj") ("རྙ" . "rny") ("རླ" . "rl")
         ("ལྟ" . "lt") ("ལྡ" . "ld") ("ལྗ" . "lj") ("ལྕ" . "lc") ("ལྷ" . "lh")
+        ;; the other five la-mgo stacks (missing until 28.10.2026: the
+        ;; subjoined letter matched nothing and was dropped — ལྔ → \"la\")
+        ("ལྐ" . "lk") ("ལྒ" . "lg") ("ལྔ" . "lng") ("ལྤ" . "lp") ("ལྦ" . "lb")
         ;; ha-btags (subjoined ha, U+0FB7).  ལྷ lha is very common ("deity",
         ;; place names like ལྷོ "south");  the others are Sanskrit aspirates
         ;; in mantras/loanwords.  Handled as stacks (not via the subjoined

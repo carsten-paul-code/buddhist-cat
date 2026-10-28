@@ -334,5 +334,49 @@ the rendering; expected `'dra ba'."
     (tibetan-to-wylie-fixed "འདྲ་བ་བསླབས་")
     "'dra ba bslabs ")))
 
+(ert-deftest tibetan-wylie-ba-prefix-before-superscript-ra ()
+  "Bug (Carsten 28.10., bDen Satz 9, Segment 38): བརྗོད → \"barjod\".
+`tibetan-is-prefix' allowed only the ten root letters after the
+prefix བ, not the superscripts ར/ལ — so བ before a ra-mgo stack counted
+as the root and got an implicit `a'.  Only བརྒ/བརྟ/བརྡ worked, being
+spelled out in the stack table.  Some 450 hits in the reading files
+\(bartsa, barnya, barjo …).  The syllable-final ར stays a suffix."
+  (dolist (pair '(("བརྗོད" . "brjod")
+                  ("བརྗོད་དུ་མེད་པ" . "brjod du med pa")
+                  ("བརྩོན" . "brtson")
+                  ("བརྙས" . "brnyas")
+                  ("བརྣབ" . "brnab")
+                  ("བརྐོས" . "brkos")
+                  ("བརྫུན" . "brdzun")
+                  ("བརྔ" . "brnga")
+                  ("བརླབས" . "brlabs")
+                  ;; Regressions: already right, must stay right.
+                  ("བར" . "bar")
+                  ("བརྒྱུད" . "brgyud")
+                  ("བརྟན" . "brtan")
+                  ("བསྟན" . "bstan")
+                  ("བསྙེན" . "bsnyen")
+                  ("བལ" . "bal")
+                  ("བལྟ" . "blta")))
+    (should (equal (cdr pair) (tibetan-to-wylie-fixed (car pair))))))
+
+(ert-deftest tibetan-wylie-la-mgo-stacks ()
+  "Bug (28.10.): ལྐ ལྒ ལྔ ལྤ ལྦ were missing from the stack table — the
+subjoined letter matched nothing and was silently dropped: ལྔ (\"five\")
+→ \"la\", ལྤགས → \"lags\".  All ten la-mgo stacks now transliterate."
+  (dolist (pair '(("ལྔ" . "lnga")
+                  ("ལྔ་བ" . "lnga ba")
+                  ("ལྐོག" . "lkog")
+                  ("ལྒང" . "lgang")
+                  ("ལྤགས" . "lpags")
+                  ("ལྦུ" . "lbu")
+                  ;; Regressions.
+                  ("ལྟ" . "lta")
+                  ("ལྡན" . "ldan")
+                  ("ལྕགས" . "lcags")
+                  ("ལྗོངས" . "ljongs")
+                  ("ལྷ" . "lha")))
+    (should (equal (cdr pair) (tibetan-to-wylie-fixed (car pair))))))
+
 (provide 'tibetan-wylie-test)
 ;;; tibetan-wylie-test.el ends here

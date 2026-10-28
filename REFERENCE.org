@@ -1,6 +1,6 @@
 #+TITLE: Function Reference — buddhist-cat
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-10-28T16:39:08
+#+DATE: 2026-10-28T17:22:10
 #+OPTIONS: toc:2 num:nil
 
 Source tree: ~/Users/cp/buddhist-cat~  ·  86 modules  ·  1850 forms
@@ -7910,7 +7910,7 @@ Prefixes don't get implicit ='a=' vowel.
 ** ~tibetan-syllable-to-wylie~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 97
+:LINE: 102
 :SIGNATURE: (tibetan-syllable-to-wylie syllable)
 :END:
 
