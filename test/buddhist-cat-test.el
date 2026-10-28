@@ -40,6 +40,13 @@ find buddhist-cat.el next to itself.  Fresh `emacs -Q' subprocess."
     (should (zerop (call-process
                     emacs nil nil nil "-Q" "--batch"
                     "--eval" (format "(load-file %S)" old)
+                    "--eval" "(kill-emacs (if (and (featurep 'buddhist-cat) (featurep 'tibetan-cat)) 0 3))")))
+    ;; The new way (Carsten's init since 28.10.: load-file buddhist-cat.el)
+    ;; must ALSO announce the old feature — code that waits on it
+    ;; (`with-eval-after-load 'tibetan-cat', `featurep') keeps working.
+    (should (zerop (call-process
+                    emacs nil nil nil "-Q" "--batch"
+                    "--eval" (format "(load-file %S)" (expand-file-name "buddhist-cat.el" root))
                     "--eval" "(kill-emacs (if (and (featurep 'buddhist-cat) (featurep 'tibetan-cat)) 0 3))")))))
 
 (ert-deftest buddhist-cat-customize-group ()

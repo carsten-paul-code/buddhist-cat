@@ -531,4 +531,8 @@ in the appropriate instance."
 (global-set-key (kbd "C-c u Z") #'tibetan-cat-open-zettel-for-word-at-point)
 
 (provide 'buddhist-cat)
+;; The old feature name, announced too: code that waits on it
+;; (`with-eval-after-load' / `featurep' on `tibetan-cat') keeps working
+;; when the system is loaded as buddhist-cat (§5.73).
+(provide 'tibetan-cat)
 ;;; buddhist-cat.el ends here

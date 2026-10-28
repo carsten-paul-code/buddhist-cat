@@ -683,7 +683,7 @@ Key bindings:
 (with-eval-after-load 'cat-mode
   (define-key cat-mode-map (kbd "C-c o") tibetan-doc-prep-map))
 
-(with-eval-after-load 'tibetan-cat
+(with-eval-after-load 'buddhist-cat
   (define-key (current-global-map) (kbd "C-c o") tibetan-doc-prep-map))
 
 (provide 'tibetan-doc-prep)

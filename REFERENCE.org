@@ -1,14 +1,14 @@
-#+TITLE: Function Reference — tibetan-cat.el
+#+TITLE: Function Reference — buddhist-cat
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-10-28T16:35:51
+#+DATE: 2026-10-28T16:39:08
 #+OPTIONS: toc:2 num:nil
 
-Source tree: ~/Users/cp/tibetan-cat.el~  ·  86 modules  ·  1850 forms
+Source tree: ~/Users/cp/buddhist-cat~  ·  86 modules  ·  1850 forms
 
 Regenerated automatically by:
 
 #+begin_src bash
-python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/tibetan-cat.el /Users/cp/tibetan-cat.el/REFERENCE.org
+python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/buddhist-cat /Users/cp/buddhist-cat/REFERENCE.org
 #+end_src
 
 * Quick Index
@@ -103,7 +103,7 @@ python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/tibetan-ca
 * INIT-EXAMPLE.el
 :PROPERTIES:
 :CUSTOM_ID: INIT-EXAMPLE.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/INIT-EXAMPLE.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/INIT-EXAMPLE.el
 :END:
 
 ** ~cp/setup-tibetan-cat~  /function/  ⚡
@@ -120,7 +120,7 @@ Setup Tibetan Computer-Assisted Translation system.
 * analysis/tibetan-classroom.el
 :PROPERTIES:
 :CUSTOM_ID: analysis/tibetan-classroom.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/analysis/tibetan-classroom.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/analysis/tibetan-classroom.el
 :END:
 
 ** ~tibetan-cache-key~  /function/
@@ -253,7 +253,7 @@ Last segment ID analyzed in auto mode, to avoid redundant updates.
 * analysis/tibetan-clause-analysis.el
 :PROPERTIES:
 :CUSTOM_ID: analysis/tibetan-clause-analysis.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/analysis/tibetan-clause-analysis.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/analysis/tibetan-clause-analysis.el
 :END:
 
 ** ~tibetan-clause--clean-text~  /function/
@@ -414,7 +414,7 @@ and converbial constructions.
 * analysis/tibetan-clause-segmenter.el
 :PROPERTIES:
 :CUSTOM_ID: analysis/tibetan-clause-segmenter.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/analysis/tibetan-clause-segmenter.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/analysis/tibetan-clause-segmenter.el
 :END:
 
 ** ~tibetan-clause-seg--verb-at~  /function/
@@ -651,7 +651,7 @@ verb-first slot-filled tree.
 * analysis/tibetan-enhanced-display.el
 :PROPERTIES:
 :CUSTOM_ID: analysis/tibetan-enhanced-display.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/analysis/tibetan-enhanced-display.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/analysis/tibetan-enhanced-display.el
 :END:
 
 ** ~tibetan-verb-detect--minimal-entry~  /function/
@@ -898,7 +898,7 @@ leading `to X' polysemy flattening.
 * analysis/tibetan-enhanced-parser.el
 :PROPERTIES:
 :CUSTOM_ID: analysis/tibetan-enhanced-parser.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/analysis/tibetan-enhanced-parser.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/analysis/tibetan-enhanced-parser.el
 :END:
 
 ** ~tibetan-load-json-dict~  /function/
@@ -1107,7 +1107,7 @@ Key: Tibetan text, Value: alist with wylie, english, sanskrit, category.
 * analysis/tibetan-gloss-table.el
 :PROPERTIES:
 :CUSTOM_ID: analysis/tibetan-gloss-table.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/analysis/tibetan-gloss-table.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/analysis/tibetan-gloss-table.el
 :END:
 
 ** ~tibetan-gloss-table--claude-pos~  /function/
@@ -1431,7 +1431,7 @@ Clause-Segmenter-Klassen.
 * analysis/tibetan-interlinear.el
 :PROPERTIES:
 :CUSTOM_ID: analysis/tibetan-interlinear.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/analysis/tibetan-interlinear.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/analysis/tibetan-interlinear.el
 :END:
 
 ** ~tibetan-interlinear--portfolio-key~  /function/
@@ -1823,7 +1823,7 @@ Modification time of the Portfolio file when cache was built.
 * analysis/tibetan-mitra-translation.el
 :PROPERTIES:
 :CUSTOM_ID: analysis/tibetan-mitra-translation.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/analysis/tibetan-mitra-translation.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/analysis/tibetan-mitra-translation.el
 :END:
 
 ** ~tibetan-mitra-clear-cache~  /function/  ⚡  ↗
@@ -2085,7 +2085,7 @@ Gemma-2-Mitra-E translation integration.
 * analysis/tibetan-particles-bialek.el
 :PROPERTIES:
 :CUSTOM_ID: analysis/tibetan-particles-bialek.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/analysis/tibetan-particles-bialek.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/analysis/tibetan-particles-bialek.el
 :END:
 
 ** ~tibetan-particles-safe-substring~  /function/
@@ -2205,7 +2205,7 @@ Returns list of all grammatical features detected.
 * analysis/tibetan-reading.el
 :PROPERTIES:
 :CUSTOM_ID: analysis/tibetan-reading.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/analysis/tibetan-reading.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/analysis/tibetan-reading.el
 :END:
 
 ** ~tibetan-reading--particle-label~  /function/
@@ -2519,7 +2519,7 @@ the W6 Portfolio finding).
 * analysis/tibetan-sanskrit-metre.el
 :PROPERTIES:
 :CUSTOM_ID: analysis/tibetan-sanskrit-metre.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/analysis/tibetan-sanskrit-metre.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/analysis/tibetan-sanskrit-metre.el
 :END:
 
 ** ~tibetan-metre--units~  /function/
@@ -2836,7 +2836,7 @@ The syllable table (org) of the verse SEGMENTS, or nil.
 * analysis/tibetan-sanskrit-reading.el
 :PROPERTIES:
 :CUSTOM_ID: analysis/tibetan-sanskrit-reading.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/analysis/tibetan-sanskrit-reading.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/analysis/tibetan-sanskrit-reading.el
 :END:
 
 ** ~tibetan-sanskrit-reading--tokenize-surface~  /function/
@@ -2966,7 +2966,7 @@ tables' row 2 (prefix + √root + suffix, compound members joined by
 * analysis/tibetan-sentence-tree.el
 :PROPERTIES:
 :CUSTOM_ID: analysis/tibetan-sentence-tree.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/analysis/tibetan-sentence-tree.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/analysis/tibetan-sentence-tree.el
 :END:
 
 ** ~tibetan-frame-slots~  /function/
@@ -3105,7 +3105,7 @@ Returns nil when the substrate is unavailable or no clause is found.
 * analysis/tibetan-translation-engine.el
 :PROPERTIES:
 :CUSTOM_ID: analysis/tibetan-translation-engine.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/analysis/tibetan-translation-engine.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/analysis/tibetan-translation-engine.el
 :END:
 
 ** ~tibetan-cat--get-arguments-from-structure~  /function/
@@ -3214,7 +3214,7 @@ Generate CAT translation for Tibetan text in region from START to END.
 * analysis/tibetan-translation-suggest.el
 :PROPERTIES:
 :CUSTOM_ID: analysis/tibetan-translation-suggest.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/analysis/tibetan-translation-suggest.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/analysis/tibetan-translation-suggest.el
 :END:
 
 ** ~tibetan-suggest-translation~  /function/
@@ -3245,7 +3245,7 @@ This helps students understand HOW to translate converbs correctly.
 * analysis/tibetan-verb-classifier.el
 :PROPERTIES:
 :CUSTOM_ID: analysis/tibetan-verb-classifier.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/analysis/tibetan-verb-classifier.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/analysis/tibetan-verb-classifier.el
 :END:
 
 ** ~tibetan-verb-database--initialize~  /function/
@@ -3303,7 +3303,7 @@ Hash table of Tibetan verbs with grammatical information.
 * buddhist-cat.el
 :PROPERTIES:
 :CUSTOM_ID: buddhist-cat.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/buddhist-cat.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/buddhist-cat.el
 :END:
 
 ** ~tibetan-cat-setup~  /function/  ⚡  ↗
@@ -3438,7 +3438,7 @@ source texts (formerly Tibetan CAT).
 * config/tibetan-keybindings.el
 :PROPERTIES:
 :CUSTOM_ID: config/tibetan-keybindings.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/config/tibetan-keybindings.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/config/tibetan-keybindings.el
 :END:
 
 ** ~tibetan-increase-text-scale~  /function/  ⚡  ↗
@@ -3476,7 +3476,7 @@ Keymap for thesaurus commands — prefix `C-c u z'.
 * config/tibetan-menu.el
 :PROPERTIES:
 :CUSTOM_ID: config/tibetan-menu.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/config/tibetan-menu.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/config/tibetan-menu.el
 :END:
 
 ** ~tibetan-cat-context-menu-map~  /variable/
@@ -3493,7 +3493,7 @@ Context menu for Buddhist CAT operations.
 * core/tibetan-dharmamitra-api.el
 :PROPERTIES:
 :CUSTOM_ID: core/tibetan-dharmamitra-api.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/core/tibetan-dharmamitra-api.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/core/tibetan-dharmamitra-api.el
 :END:
 
 ** ~tibetan-dharmamitra-api--cache-key~  /function/
@@ -3713,7 +3713,7 @@ DharmaMitra HTTP client configuration.
 * core/tibetan-dharmamitra-translation.el
 :PROPERTIES:
 :CUSTOM_ID: core/tibetan-dharmamitra-translation.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/core/tibetan-dharmamitra-translation.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/core/tibetan-dharmamitra-translation.el
 :END:
 
 ** ~tibetan-dharmamitra-translation--sanitize-body~  /function/
@@ -4081,7 +4081,7 @@ translation has been written into its nested slot (§5.62).
 * core/tibetan-org-structure.el
 :PROPERTIES:
 :CUSTOM_ID: core/tibetan-org-structure.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/core/tibetan-org-structure.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/core/tibetan-org-structure.el
 :END:
 
 ** ~tibetan-org-at-segment-p~  /function/
@@ -4612,7 +4612,7 @@ Regex capturing the paragraph number from a `** §N' heading.
 * core/tibetan-sanskrit-parallel-dharmamitra.el
 :PROPERTIES:
 :CUSTOM_ID: core/tibetan-sanskrit-parallel-dharmamitra.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/core/tibetan-sanskrit-parallel-dharmamitra.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/core/tibetan-sanskrit-parallel-dharmamitra.el
 :END:
 
 ** ~tibetan-sanskrit-parallel-dm--shape-result~  /function/
@@ -5042,7 +5042,7 @@ to the top candidate.
 * core/tibetan-sanskrit-parallel.el
 :PROPERTIES:
 :CUSTOM_ID: core/tibetan-sanskrit-parallel.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/core/tibetan-sanskrit-parallel.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/core/tibetan-sanskrit-parallel.el
 :END:
 
 ** ~tibetan-sanskrit-parallel--has-devanagari-p~  /function/
@@ -5561,7 +5561,7 @@ keeps the toggle one-keystroke.
 * core/tibetan-sanskrit-script.el
 :PROPERTIES:
 :CUSTOM_ID: core/tibetan-sanskrit-script.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/core/tibetan-sanskrit-script.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/core/tibetan-sanskrit-script.el
 :END:
 
 ** ~tibetan-sanskrit-script-devanagari-to-iast~  /function/
@@ -5643,7 +5643,7 @@ The Devanagari virāma (vowel killer).
 * core/tibetan-steinert.el
 :PROPERTIES:
 :CUSTOM_ID: core/tibetan-steinert.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/core/tibetan-steinert.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/core/tibetan-steinert.el
 :END:
 
 ** ~tibetan-steinert-available-p~  /function/
@@ -5828,7 +5828,7 @@ Cached open SQLite handle. Opened lazily on first lookup.
 * core/tibetan-text-classifier.el
 :PROPERTIES:
 :CUSTOM_ID: core/tibetan-text-classifier.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/core/tibetan-text-classifier.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/core/tibetan-text-classifier.el
 :END:
 
 ** ~tibetan-detect-text-type~  /function/
@@ -5937,7 +5937,7 @@ Returns plist with :description, :features, :tools.
 * core/tibetan-thesaurus.el
 :PROPERTIES:
 :CUSTOM_ID: core/tibetan-thesaurus.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/core/tibetan-thesaurus.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/core/tibetan-thesaurus.el
 :END:
 
 ** ~tibetan-thesaurus--first-match~  /function/
@@ -6488,7 +6488,7 @@ User-editable multilingual thesaurus for Tibetan translation work.
 * core/tibetan-utils.el
 :PROPERTIES:
 :CUSTOM_ID: core/tibetan-utils.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/core/tibetan-utils.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/core/tibetan-utils.el
 :END:
 
 ** ~tibetan-get-current-line-as-segment~  /function/
@@ -6665,7 +6665,7 @@ from save time to open time.
 * core/tibetan-vocabulary-detailed.el
 :PROPERTIES:
 :CUSTOM_ID: core/tibetan-vocabulary-detailed.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/core/tibetan-vocabulary-detailed.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/core/tibetan-vocabulary-detailed.el
 :END:
 
 ** ~tibetan-vocab-clear-cache~  /function/  ⚡  ↗
@@ -7181,7 +7181,7 @@ corpus boost.
 * core/tibetan-vocabulary.el
 :PROPERTIES:
 :CUSTOM_ID: core/tibetan-vocabulary.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/core/tibetan-vocabulary.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/core/tibetan-vocabulary.el
 :END:
 
 ** ~tibetan-get-buffer-dict-priority~  /function/
@@ -7874,7 +7874,7 @@ Current buffer's Resources vocabulary hash-table, or nil if none.
 * core/tibetan-wylie.el
 :PROPERTIES:
 :CUSTOM_ID: core/tibetan-wylie.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/core/tibetan-wylie.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/core/tibetan-wylie.el
 :END:
 
 ** ~tibetan-safe-substring~  /function/
@@ -7923,7 +7923,7 @@ Recognizes Tibetan syllable structure: [prefix] ROOT [subscript]
 * core/tibetan-zettel-highlight.el
 :PROPERTIES:
 :CUSTOM_ID: core/tibetan-zettel-highlight.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/core/tibetan-zettel-highlight.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/core/tibetan-zettel-highlight.el
 :END:
 
 ** ~tibetan-zettel-highlight-mode~  /minor mode/  ↗
@@ -8651,7 +8651,7 @@ Highlight and link words that have a zettel.
 * core/tibetan-zettel.el
 :PROPERTIES:
 :CUSTOM_ID: core/tibetan-zettel.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/core/tibetan-zettel.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/core/tibetan-zettel.el
 :END:
 
 ** ~tibetan-zettel--glossar-tagged-p~  /function/
@@ -9426,7 +9426,7 @@ Integration of the zettelkasten into the CAT translation workflow.
 * data/tibetan-glossary-loader.el
 :PROPERTIES:
 :CUSTOM_ID: data/tibetan-glossary-loader.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/data/tibetan-glossary-loader.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/data/tibetan-glossary-loader.el
 :END:
 
 ** ~tibetan-glossary--load-tsv~  /function/
@@ -9590,7 +9590,7 @@ call `load-all-glossaries' again to force a fresh load.
 * doc-prep/tibetan-doc-display.el
 :PROPERTIES:
 :CUSTOM_ID: doc-prep/tibetan-doc-display.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/doc-prep/tibetan-doc-display.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/doc-prep/tibetan-doc-display.el
 :END:
 
 ** ~tibetan-doc-display-mode~  /minor mode/  ↗
@@ -9725,7 +9725,7 @@ Use C-c u + / C-c u - to adjust interactively.
 * doc-prep/tibetan-doc-format.el
 :PROPERTIES:
 :CUSTOM_ID: doc-prep/tibetan-doc-format.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/doc-prep/tibetan-doc-format.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/doc-prep/tibetan-doc-format.el
 :END:
 
 ** ~tibetan-doc-format--split-at-shad~  /function/
@@ -9937,7 +9937,7 @@ Tibetan tsheg (syllable separator).
 * doc-prep/tibetan-doc-prep-init.el
 :PROPERTIES:
 :CUSTOM_ID: doc-prep/tibetan-doc-prep-init.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/doc-prep/tibetan-doc-prep-init.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/doc-prep/tibetan-doc-prep-init.el
 :END:
 
 ** ~tibetan-doc-prep-init-status~  /function/  ⚡
@@ -9971,7 +9971,7 @@ Load comprehensive glossaries if available.
 * doc-prep/tibetan-doc-prep.el
 :PROPERTIES:
 :CUSTOM_ID: doc-prep/tibetan-doc-prep.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/doc-prep/tibetan-doc-prep.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/doc-prep/tibetan-doc-prep.el
 :END:
 
 ** ~tibetan-doc-prep--resolve-work-in-progress-target~  /function/
@@ -10387,7 +10387,7 @@ Tibetan document preparation pipeline.
 * doc-prep/tibetan-document-genres.el
 :PROPERTIES:
 :CUSTOM_ID: doc-prep/tibetan-document-genres.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/doc-prep/tibetan-document-genres.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/doc-prep/tibetan-document-genres.el
 :END:
 
 ** ~tibetan-document-genres-keys~  /function/
@@ -10487,7 +10487,7 @@ ivy/marginalia UI honours the alist mapping back to keys.
 * doc-prep/tibetan-document-prep-claude.el
 :PROPERTIES:
 :CUSTOM_ID: doc-prep/tibetan-document-prep-claude.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/doc-prep/tibetan-document-prep-claude.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/doc-prep/tibetan-document-prep-claude.el
 :END:
 
 ** ~tibetan-document-prep--extract-body-excerpt~  /function/
@@ -10695,7 +10695,7 @@ Async Claude metadata pre-fill for the document-preparation wizard.
 * doc-prep/tibetan-document-prep-wizard.el
 :PROPERTIES:
 :CUSTOM_ID: doc-prep/tibetan-document-prep-wizard.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/doc-prep/tibetan-document-prep-wizard.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/doc-prep/tibetan-document-prep-wizard.el
 :END:
 
 ** ~tibetan-document-prep-wizard--read-route~  /function/
@@ -11015,7 +11015,7 @@ filled-in rows are auto-loaded by `tibetan-load-resources-vocab'.
 * doc-prep/tibetan-ocr-correct.el
 :PROPERTIES:
 :CUSTOM_ID: doc-prep/tibetan-ocr-correct.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/doc-prep/tibetan-ocr-correct.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/doc-prep/tibetan-ocr-correct.el
 :END:
 
 ** ~tibetan-ocr-correct--format-flagged~  /function/
@@ -11168,7 +11168,7 @@ Claude AI correction for Tibetan OCR.
 * doc-prep/tibetan-ocr-runner.el
 :PROPERTIES:
 :CUSTOM_ID: doc-prep/tibetan-ocr-runner.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/doc-prep/tibetan-ocr-runner.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/doc-prep/tibetan-ocr-runner.el
 :END:
 
 ** ~tibetan-ocr--find-app~  /function/
@@ -11357,7 +11357,7 @@ BDRC OCR runner settings.
 * doc-prep/tibetan-ocr-validate.el
 :PROPERTIES:
 :CUSTOM_ID: doc-prep/tibetan-ocr-validate.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/doc-prep/tibetan-ocr-validate.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/doc-prep/tibetan-ocr-validate.el
 :END:
 
 ** ~tibetan-ocr-validate--load-json~  /function/
@@ -11590,7 +11590,7 @@ Tibetan OCR validation settings.
 * doc-prep/tibetan-segment-migrate.el
 :PROPERTIES:
 :CUSTOM_ID: doc-prep/tibetan-segment-migrate.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/doc-prep/tibetan-segment-migrate.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/doc-prep/tibetan-segment-migrate.el
 :END:
 
 ** ~tibetan-migrate--format-segment~  /function/
@@ -11789,7 +11789,7 @@ colon immediately after the keyword name).
 * doc-prep/tibetan-sentence-structure.el
 :PROPERTIES:
 :CUSTOM_ID: doc-prep/tibetan-sentence-structure.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/doc-prep/tibetan-sentence-structure.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/doc-prep/tibetan-sentence-structure.el
 :END:
 
 ** ~tibetan-sentence--verse-line-closes-sentence-p~  /function/
@@ -12144,7 +12144,7 @@ manual override (C-c s m) remains the instrument of record.
 * doc-prep/tibetan-wylie-ingest.el
 :PROPERTIES:
 :CUSTOM_ID: doc-prep/tibetan-wylie-ingest.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/doc-prep/tibetan-wylie-ingest.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/doc-prep/tibetan-wylie-ingest.el
 :END:
 
 ** ~tibetan-wylie-ingest--python-available-p~  /function/
@@ -12547,7 +12547,7 @@ Wylie → Tibetan Unicode ingest settings.
 * persist/tibetan-analysis-claude.el
 :PROPERTIES:
 :CUSTOM_ID: persist/tibetan-analysis-claude.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/persist/tibetan-analysis-claude.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/persist/tibetan-analysis-claude.el
 :END:
 
 ** ~tibetan-analysis--read-source-metadata~  /function/
@@ -13989,7 +13989,7 @@ changes.  Locked by ERT in test/tibetan-cascade-test.el.
 * persist/tibetan-analysis-combine.el
 :PROPERTIES:
 :CUSTOM_ID: persist/tibetan-analysis-combine.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/persist/tibetan-analysis-combine.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/persist/tibetan-analysis-combine.el
 :END:
 
 ** ~tibetan-analysis-combine--read-auto-sections~  /function/
@@ -14202,7 +14202,7 @@ heading in the combined document, in characters.
 * persist/tibetan-analysis-combined.el
 :PROPERTIES:
 :CUSTOM_ID: persist/tibetan-analysis-combined.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/persist/tibetan-analysis-combined.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/persist/tibetan-analysis-combined.el
 :END:
 
 ** ~tibetan-analysis-combined--build-prompts~  /function/
@@ -14410,7 +14410,7 @@ at build time.  Constant per document → Anthropic-cache friendly.
 * persist/tibetan-analysis-persist.el
 :PROPERTIES:
 :CUSTOM_ID: persist/tibetan-analysis-persist.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/persist/tibetan-analysis-persist.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/persist/tibetan-analysis-persist.el
 :END:
 
 ** ~tibetan-analysis--clean-word-token~  /function/
@@ -16843,7 +16843,7 @@ always for seg/sent files) keeps headingless tables.
 * persist/tibetan-analysis-sanskrit.el
 :PROPERTIES:
 :CUSTOM_ID: persist/tibetan-analysis-sanskrit.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/persist/tibetan-analysis-sanskrit.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/persist/tibetan-analysis-sanskrit.el
 :END:
 
 ** ~tibetan-analysis-sanskrit--build-prompts~  /function/
@@ -17184,7 +17184,7 @@ caching.
 * persist/tibetan-auto-analysis.el
 :PROPERTIES:
 :CUSTOM_ID: persist/tibetan-auto-analysis.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/persist/tibetan-auto-analysis.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/persist/tibetan-auto-analysis.el
 :END:
 
 ** ~tibetan-auto--report-progress~  /function/
@@ -17592,7 +17592,7 @@ Called with (CURRENT TOTAL MESSAGE).
 * persist/tibetan-cascade.el
 :PROPERTIES:
 :CUSTOM_ID: persist/tibetan-cascade.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/persist/tibetan-cascade.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/persist/tibetan-cascade.el
 :END:
 
 ** ~tibetan-cascade-split-shad-units~  /function/
@@ -19241,7 +19241,7 @@ editorial bracket like `[He] spoke').
 * persist/tibetan-claude-queue.el
 :PROPERTIES:
 :CUSTOM_ID: persist/tibetan-claude-queue.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/persist/tibetan-claude-queue.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/persist/tibetan-claude-queue.el
 :END:
 
 ** ~tibetan-claude-queue-status~  /function/  ↗
@@ -19511,7 +19511,7 @@ Throttling and retry policy for Claude API requests.
 * persist/tibetan-compound-analysis.el
 :PROPERTIES:
 :CUSTOM_ID: persist/tibetan-compound-analysis.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/persist/tibetan-compound-analysis.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/persist/tibetan-compound-analysis.el
 :END:
 
 ** ~tibetan-compound-get-context~  /function/
@@ -19832,7 +19832,7 @@ Version of the compound analysis file format.
 * persist/tibetan-discussion-paper.el
 :PROPERTIES:
 :CUSTOM_ID: persist/tibetan-discussion-paper.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/persist/tibetan-discussion-paper.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/persist/tibetan-discussion-paper.el
 :END:
 
 ** ~tibetan-discussion-paper--sentence-data~  /function/
@@ -20292,7 +20292,7 @@ one-sentence scope.
 * persist/tibetan-handout.el
 :PROPERTIES:
 :CUSTOM_ID: persist/tibetan-handout.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/persist/tibetan-handout.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/persist/tibetan-handout.el
 :END:
 
 ** ~tibetan-handout--vocab-fields~  /function/
@@ -21082,7 +21082,7 @@ students' sheet (bold = verse, underlined = bhāṣya).
 * persist/tibetan-portfolio.el
 :PROPERTIES:
 :CUSTOM_ID: persist/tibetan-portfolio.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/persist/tibetan-portfolio.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/persist/tibetan-portfolio.el
 :END:
 
 ** ~tibetan-portfolio--protocol-path~  /function/
@@ -21154,7 +21154,7 @@ directory (an absolute path is used as-is).
 * persist/tibetan-sanskrit-comparison.el
 :PROPERTIES:
 :CUSTOM_ID: persist/tibetan-sanskrit-comparison.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/persist/tibetan-sanskrit-comparison.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/persist/tibetan-sanskrit-comparison.el
 :END:
 
 ** ~tibetan-sanskrit-comparison--label~  /function/
@@ -21358,7 +21358,7 @@ been written into it (§5.64: the discussion paper waits for it).
 * persist/tibetan-sentence-claude.el
 :PROPERTIES:
 :CUSTOM_ID: persist/tibetan-sentence-claude.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/persist/tibetan-sentence-claude.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/persist/tibetan-sentence-claude.el
 :END:
 
 ** ~tibetan-sentence-claude--split-subsections~  /function/
@@ -21726,7 +21726,7 @@ crash only suppresses until `tibetan-sentence-claude-clear-inflight'.
 * persist/tibetan-sentence-persist.el
 :PROPERTIES:
 :CUSTOM_ID: persist/tibetan-sentence-persist.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/persist/tibetan-sentence-persist.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/persist/tibetan-sentence-persist.el
 :END:
 
 ** ~tibetan-sentence--get-folder~  /function/
@@ -22623,7 +22623,7 @@ particle-level tagging.
 * persist/tibetan-structure-reorg.el
 :PROPERTIES:
 :CUSTOM_ID: persist/tibetan-structure-reorg.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/persist/tibetan-structure-reorg.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/persist/tibetan-structure-reorg.el
 :END:
 
 ** ~tibetan-reorg--collect-document-segments~  /function/
@@ -22810,7 +22810,7 @@ If non-nil, automatically create analysis for new segments during reorg.
 * persist/tibetan-translation-discussion.el
 :PROPERTIES:
 :CUSTOM_ID: persist/tibetan-translation-discussion.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/persist/tibetan-translation-discussion.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/persist/tibetan-translation-discussion.el
 :END:
 
 ** ~tibetan-discussion--label~  /function/
@@ -23198,7 +23198,7 @@ comparison) — one request per kind and file at a time.
 * persist/tibetan-translation-doc.el
 :PROPERTIES:
 :CUSTOM_ID: persist/tibetan-translation-doc.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/persist/tibetan-translation-doc.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/persist/tibetan-translation-doc.el
 :END:
 
 ** ~tibetan-translation-doc--source-outline~  /function/
@@ -23408,7 +23408,7 @@ Visible placeholder for a sentence without an analysis file.
 * persist/tibetan-word-formation.el
 :PROPERTIES:
 :CUSTOM_ID: persist/tibetan-word-formation.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/persist/tibetan-word-formation.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/persist/tibetan-word-formation.el
 :END:
 
 ** ~tibetan-word-formation--curated~  /function/
@@ -23556,7 +23556,7 @@ The `** ' heading in * Sanskrit Analysis.
 * philology/tibetan-bialek-textbook-refs.el
 :PROPERTIES:
 :CUSTOM_ID: philology/tibetan-bialek-textbook-refs.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/philology/tibetan-bialek-textbook-refs.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/philology/tibetan-bialek-textbook-refs.el
 :END:
 
 ** ~tibetan-bialek-textbook-ref~  /function/
@@ -23594,7 +23594,7 @@ absent, emit Portfolio side only'.
 * philology/tibetan-madhyamaka-terms.el
 :PROPERTIES:
 :CUSTOM_ID: philology/tibetan-madhyamaka-terms.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/philology/tibetan-madhyamaka-terms.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/philology/tibetan-madhyamaka-terms.el
 :END:
 
 ** ~tibetan-initialize-madhyamaka-vocabulary~  /function/
@@ -23670,7 +23670,7 @@ Populated from tibetan-madhyamaka-core-terms and tibetan-gelugpa-specific-usage.
 * philology/tibetan-verse-philology.el
 :PROPERTIES:
 :CUSTOM_ID: philology/tibetan-verse-philology.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/philology/tibetan-verse-philology.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/philology/tibetan-verse-philology.el
 :END:
 
 ** ~tibetan-count-syllables~  /function/
@@ -23822,7 +23822,7 @@ Bound to C-c v v.
 * scripts/regenerate-tigress-analysis.el
 :PROPERTIES:
 :CUSTOM_ID: scripts/regenerate-tigress-analysis.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/scripts/regenerate-tigress-analysis.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/scripts/regenerate-tigress-analysis.el
 :END:
 
 ** ~regenerate-tigress-segment~  /function/
@@ -23865,7 +23865,7 @@ Directory containing analysis files.
 * scripts/test-analysis-output.el
 :PROPERTIES:
 :CUSTOM_ID: scripts/test-analysis-output.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/scripts/test-analysis-output.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/scripts/test-analysis-output.el
 :END:
 
 ** ~test-text~  /variable/
@@ -23881,7 +23881,7 @@ Seg-032 text.
 * scripts/timer-trace.el
 :PROPERTIES:
 :CUSTOM_ID: scripts/timer-trace.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/scripts/timer-trace.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/scripts/timer-trace.el
 :END:
 
 ** ~my/timer-trace--clip~  /function/
@@ -23988,7 +23988,7 @@ Current buffer, plus the org-indent agent's queue for FN.
 * setup/tibetan-cat-setup.el
 :PROPERTIES:
 :CUSTOM_ID: setup/tibetan-cat-setup.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/setup/tibetan-cat-setup.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/setup/tibetan-cat-setup.el
 :END:
 
 ** ~tibetan-cat-setup--check-emacs-version~  /function/
@@ -24135,7 +24135,7 @@ Base directory of the Buddhist CAT installation.
 * setup/tibetan-cat-ui.el
 :PROPERTIES:
 :CUSTOM_ID: setup/tibetan-cat-ui.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/setup/tibetan-cat-ui.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/setup/tibetan-cat-ui.el
 :END:
 
 ** ~tibetan-cat-ui--ensure-package~  /function/
@@ -24340,7 +24340,7 @@ Activate all UI enhancements (packages must already be installed).
 * spec/generate-docs.el
 :PROPERTIES:
 :CUSTOM_ID: spec/generate-docs.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/spec/generate-docs.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/spec/generate-docs.el
 :END:
 
 ** ~tibetan-bdd-generate-docs~  /function/
@@ -24356,7 +24356,7 @@ Generate markdown documentation from all spec suites.
 * spec/generate-living-doc.el
 :PROPERTIES:
 :CUSTOM_ID: spec/generate-living-doc.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/spec/generate-living-doc.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/spec/generate-living-doc.el
 :END:
 
 ** ~tibetan-bdd--extract-all-suites~  /function/
@@ -24456,7 +24456,7 @@ Runs all specs and produces a browsable HTML report.
 * spec/run-specs.el
 :PROPERTIES:
 :CUSTOM_ID: spec/run-specs.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/spec/run-specs.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/spec/run-specs.el
 :END:
 
 ** ~tibetan-cat-data-dir~  /variable/
@@ -24472,7 +24472,7 @@ Directory containing Tibetan CAT data files.
 * spec/suites/particle-analysis-spec.el
 :PROPERTIES:
 :CUSTOM_ID: spec/suites/particle-analysis-spec.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/spec/suites/particle-analysis-spec.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/spec/suites/particle-analysis-spec.el
 :END:
 
 ** ~tibetan-bdd--get-particle-annotation~  /function/
@@ -24488,7 +24488,7 @@ Get particle annotation for WORD using analysis-persist function.
 * spec/suites/sanskrit-cascade-spec.el
 :PROPERTIES:
 :CUSTOM_ID: spec/suites/sanskrit-cascade-spec.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/spec/suites/sanskrit-cascade-spec.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/spec/suites/sanskrit-cascade-spec.el
 :END:
 
 ** ~sanskrit-cascade-spec--corpus~  /function/
@@ -24543,7 +24543,7 @@ Gecannte sa-Satz-Antwort im vollen C2-Kontrakt.
 * spec/suites/sentence-first-spec.el
 :PROPERTIES:
 :CUSTOM_ID: spec/suites/sentence-first-spec.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/spec/suites/sentence-first-spec.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/spec/suites/sentence-first-spec.el
 :END:
 
 ** ~sentence-first-spec--corpus~  /function/
@@ -24612,7 +24612,7 @@ absorbs it, the landing gate is broken.
 * spec/suites/tigress-story-spec.el
 :PROPERTIES:
 :CUSTOM_ID: spec/suites/tigress-story-spec.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/spec/suites/tigress-story-spec.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/spec/suites/tigress-story-spec.el
 :END:
 
 ** ~tibetan-bdd-assert-particle-in-analysis~  /function/
@@ -24664,7 +24664,7 @@ Assert that PATTERN does NOT match in RESULT.
 * spec/tibetan-bdd.el
 :PROPERTIES:
 :CUSTOM_ID: spec/tibetan-bdd.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/spec/tibetan-bdd.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/spec/tibetan-bdd.el
 :END:
 
 ** ~define-bdd-suite~  /macro/
@@ -24889,7 +24889,7 @@ Holds the result of the WHEN clause for use in THEN assertions.
 * workspace/tibetan-analysis-nav.el
 :PROPERTIES:
 :CUSTOM_ID: workspace/tibetan-analysis-nav.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/workspace/tibetan-analysis-nav.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/workspace/tibetan-analysis-nav.el
 :END:
 
 ** ~tibetan-analysis-nav--source-link~  /function/
@@ -24957,7 +24957,7 @@ Open the PREVIOUS sentence's analysis file (C-c u p).
 * workspace/tibetan-sentence-workspace.el
 :PROPERTIES:
 :CUSTOM_ID: workspace/tibetan-sentence-workspace.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/workspace/tibetan-sentence-workspace.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/workspace/tibetan-sentence-workspace.el
 :END:
 
 ** ~tibetan-get-sentence-at-point-any-format~  /function/
