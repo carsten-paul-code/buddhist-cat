@@ -64,6 +64,9 @@
 ;; the ERT runner does; goes with the old pipeline (step 5).
 (defvar bcat-sentence-templates nil)
 (setq bcat-sentence-templates nil)
+(defvar bcat-export-auto nil)
+(defvar bcat-export-upload nil)
+(setq bcat-export-auto nil bcat-export-upload nil)
 (with-eval-after-load 'tibetan-dharmamitra-api
   (defun tibetan-dharmamitra-api--http-post (&rest _)
     "Test stub — no network during the spec run."

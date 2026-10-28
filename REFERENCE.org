@@ -1,9 +1,9 @@
 #+TITLE: Function Reference — buddhist-cat
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-10-28T18:18:10
+#+DATE: 2026-10-28T18:21:16
 #+OPTIONS: toc:2 num:nil
 
-Source tree: ~/Users/cp/buddhist-cat~  ·  89 modules  ·  1925 forms
+Source tree: ~/Users/cp/buddhist-cat~  ·  90 modules  ·  1942 forms
 
 Regenerated automatically by:
 
@@ -63,6 +63,7 @@ python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/buddhist-c
   - [[#doc-prep/tibetan-sentence-structure.el][doc-prep/tibetan-sentence-structure.el]]  (25)
   - [[#doc-prep/tibetan-wylie-ingest.el][doc-prep/tibetan-wylie-ingest.el]]  (26)
   - [[#persist/bcat-analysis.el][persist/bcat-analysis.el]]  (14)
+  - [[#persist/bcat-export.el][persist/bcat-export.el]]  (15)
   - [[#persist/bcat-sentence.el][persist/bcat-sentence.el]]  (40)
   - [[#persist/bcat-template.el][persist/bcat-template.el]]  (17)
   - [[#persist/tibetan-analysis-claude.el][persist/tibetan-analysis-claude.el]]  (77)
@@ -94,7 +95,7 @@ python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/buddhist-c
   - [[#setup/tibetan-cat-ui.el][setup/tibetan-cat-ui.el]]  (23)
   - [[#spec/generate-docs.el][spec/generate-docs.el]]  (1)
   - [[#spec/generate-living-doc.el][spec/generate-living-doc.el]]  (10)
-  - [[#spec/run-specs.el][spec/run-specs.el]]  (2)
+  - [[#spec/run-specs.el][spec/run-specs.el]]  (4)
   - [[#spec/suites/particle-analysis-spec.el][spec/suites/particle-analysis-spec.el]]  (1)
   - [[#spec/suites/sanskrit-cascade-spec.el][spec/suites/sanskrit-cascade-spec.el]]  (5)
   - [[#spec/suites/sentence-first-spec.el][spec/suites/sentence-first-spec.el]]  (5)
@@ -3447,7 +3448,7 @@ source texts (formerly Tibetan CAT).
 ** ~tibetan-increase-text-scale~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 465
+:LINE: 466
 :SIGNATURE: (tibetan-increase-text-scale)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -3458,7 +3459,7 @@ Increase Tibetan text scale by 0.1.
 ** ~tibetan-decrease-text-scale~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 471
+:LINE: 472
 :SIGNATURE: (tibetan-decrease-text-scale)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -3469,7 +3470,7 @@ Decrease Tibetan text scale by 0.1 (minimum 1.0).
 ** ~tibetan-thesaurus-prefix-map~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 293
+:LINE: 294
 :DEFAULT: (make-sparse-keymap)
 :END:
 
@@ -12692,6 +12693,165 @@ Claude skipped keeps its rump fields.
 :KIND: defconst
 :LINE: 139
 :DEFAULT: '
+:END:
+
+/(no docstring)/
+
+
+* persist/bcat-export.el
+:PROPERTIES:
+:CUSTOM_ID: persist/bcat-export.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/persist/bcat-export.el
+:END:
+
+** ~bcat-export--latex-escape~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 55
+:SIGNATURE: (bcat-export--latex-escape s)
+:END:
+
+S with the LaTeX special characters escaped.
+
+** ~bcat-export-head-lines~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 66
+:SIGNATURE: (bcat-export-head-lines folder work sent-num verse)
+:END:
+
+The #+LATEX_HEADER lines of the running head: FOLDER · WORK
+(italic) · Satz SENT-NUM · VERSE (left), the page number (right).
+
+** ~bcat-export-info~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 79
+:SIGNATURE: (bcat-export-info file)
+:END:
+
+What the PDF of the sentence FILE is labelled with: (:source :folder
+:work :sent-num :verse :label) — folder and work title from the source
+(its #+TITLE before „ — “), the verse from its :VERSE:.
+
+** ~bcat-export-pdf~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 109
+:SIGNATURE: (bcat-export-pdf file &optional head)
+:END:
+
+Export the sentence FILE to PDF beside it and return the PDF path.
+HEAD (lines from `bcat-export-head-lines') goes into the export copy,
+never into the file.  LuaLaTeX, two runs (longtable), tables flush
+left at natural width — bound here, Carsten's own export settings
+(centring, tabularx) stay untouched outside.
+
+** ~bcat-export-file~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 137
+:SIGNATURE: (bcat-export-file file)
+:END:
+
+C-c u H for the sentence FILE: PDF with running head, then onto the
+reMarkable (`bcat-export-upload').  Returns the PDF path.
+
+** ~bcat-export-after-fetch~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 151
+:SIGNATURE: (bcat-export-after-fetch file)
+:END:
+
+Hook for `bcat-sentence-after-fetch-functions': C-c u G ends with
+C-c u H (when `bcat-export-auto').  Never signals — a LaTeX or rmapi
+failure must not spoil the landed analysis.
+
+** ~bcat-export~  /function/  ⚡  ↗
+:PROPERTIES:
+:KIND: defun
+:LINE: 164
+:SIGNATURE: (bcat-export)
+:INTERACTIVE: t
+:AUTOLOAD: t
+:END:
+
+C-c u H: the sentence file(s) as PDF onto the reMarkable (§5.74).
+In a template sentence file: that file (saved first).  In a source
+with a template: the file of the sentence at point, or of every
+sentence under the heading at point — files still in the old layout
+are skipped (C-c u G first).  Sources without a template yet keep the
+old handout.
+
+** ~bcat-export-auto~  /customize variable/
+:PROPERTIES:
+:KIND: defcustom
+:LINE: 39
+:TYPE: 'boolean
+:GROUP: buddhist-cat
+:DEFAULT: t
+:END:
+
+When non-nil, C-c u G ends with C-c u H: the freshly analysed
+sentence file goes to PDF and onto the reMarkable.
+
+** ~bcat-export-upload~  /customize variable/
+:PROPERTIES:
+:KIND: defcustom
+:LINE: 45
+:TYPE: 'boolean
+:GROUP: buddhist-cat
+:DEFAULT: t
+:END:
+
+When non-nil, C-c u H uploads the PDF with rmapi (folder = the work,
+document „Satz N“); nil only writes the PDF next to the file.
+
+** ~org-latex-compiler~  /variable/
+:PROPERTIES:
+:KIND: defvar
+:LINE: 32
+:END:
+
+/(no docstring)/
+
+** ~org-latex-pdf-process~  /variable/
+:PROPERTIES:
+:KIND: defvar
+:LINE: 33
+:END:
+
+/(no docstring)/
+
+** ~org-latex-tables-centered~  /variable/
+:PROPERTIES:
+:KIND: defvar
+:LINE: 34
+:END:
+
+/(no docstring)/
+
+** ~org-export-filter-table-functions~  /variable/
+:PROPERTIES:
+:KIND: defvar
+:LINE: 35
+:END:
+
+/(no docstring)/
+
+** ~org-export-before-processing-functions~  /variable/
+:PROPERTIES:
+:KIND: defvar
+:LINE: 36
+:END:
+
+/(no docstring)/
+
+** ~tibetan-cascade-subtree-confirm-threshold~  /variable/
+:PROPERTIES:
+:KIND: defvar
+:LINE: 37
 :END:
 
 /(no docstring)/
@@ -25254,6 +25414,24 @@ Directory containing Tibetan CAT data files.
 :PROPERTIES:
 :KIND: defvar
 :LINE: 65
+:DEFAULT: nil
+:END:
+
+/(no docstring)/
+
+** ~bcat-export-auto~  /variable/
+:PROPERTIES:
+:KIND: defvar
+:LINE: 67
+:DEFAULT: nil
+:END:
+
+/(no docstring)/
+
+** ~bcat-export-upload~  /variable/
+:PROPERTIES:
+:KIND: defvar
+:LINE: 68
 :DEFAULT: nil
 :END:
 

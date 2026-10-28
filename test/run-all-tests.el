@@ -24,6 +24,12 @@ device).  Tests that need it bind it to t and stub the upload.")
 ;; wins over the defcustom whatever the load order); the template tests
 ;; bind it to t.  Goes when step 5 retires the old pipeline.
 (setq bcat-sentence-templates nil)
+(defvar bcat-export-auto nil)
+(defvar bcat-export-upload nil)
+;; §5.74: never export or upload from the suite (C-c u G would end with
+;; C-c u H); the tests that need it bind them and stub LaTeX/rmapi.
+(setq bcat-export-auto nil
+      bcat-export-upload nil)
 (defvar tibetan-skip-external-glossaries t
   "When non-nil, skip loading external glossaries during tests.")
 

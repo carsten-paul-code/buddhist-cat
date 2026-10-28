@@ -111,11 +111,12 @@
   ;; rmapi hochgeladen.  C-u: nur die .org; in der .org exportiert und
   ;; lädt C-c u D die bearbeitete Fassung hoch.
 
-(global-set-key (kbd "C-c u H") 'tibetan-handout)
-  ;; Reading-class handout (§5.59) → PDF: Wylie + Uchen, Übersetzung,
-  ;; Vokabular (★ Wortliste zuerst), Grammatik — für den Satz / § /
-  ;; jede Überschrift an Punkt.  C-u: nur die .org (zum Kürzen); in
-  ;; der .org exportiert C-c u H die bearbeitete Fassung.
+(global-set-key (kbd "C-c u H") 'bcat-export)
+  ;; §5.74: die Satzdatei selbst als PDF auf den reMarkable (Kopfzeile
+  ;; Ordner · Werk · Satz · Vers, Tabellen linksbündig) — für die Datei
+  ;; an Punkt bzw. jeden Satz unter der Überschrift; C-c u G endet damit.
+  ;; Quellen ohne Vorlage (Sanskrit, vorerst) bekommen das alte Handout
+  ;; (§5.59, `tibetan-handout').
   ;; Masterarbeit single-screen workflow, 2026-09-15.
 
 (global-set-key (kbd "C-c u R") 'tibetan-reanalyze-segment)
