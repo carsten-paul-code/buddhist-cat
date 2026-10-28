@@ -246,7 +246,13 @@ steinert:-Pseudolinks."
         (text (or desc path)))
     (pcase backend
       ('html (format "<a href=\"%s\">%s</a>" url text))
-      ('latex (format "\\href{%s}{%s}" url text))
+      ;; `#' and `%' escaped, as org does for its own \href paths
+      ;; (`org-latex--protect-text'): raw they break as soon as \href
+      ;; sits in another command's argument — tabularx collects its
+      ;; body that way, `%' turns into a comment (28.10., sent-009).
+      ('latex (format "\\href{%s}{%s}"
+                      (replace-regexp-in-string "[%#]" "\\\\\\&" url)
+                      text))
       (_ text))))
 
 (defun tibetan-steinert-register-link-type ()

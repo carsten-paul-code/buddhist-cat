@@ -181,8 +181,56 @@ exportierten die Tabellen tote steinert:-Links."
         (other (tibetan-steinert-link-export "mnyam med" nil 'ascii)))
     (should (string-match-p "\\`<a href=\"https://dictionary\\.christian-steinert\\.de/#" html))
     (should (string-match-p ">mnyam med</a>\\'" html))
-    (should (string-prefix-p "\\href{https://dictionary.christian-steinert.de/#" latex))
+    ;; `#' geschützt (28.10., s. --latex-escapes-url).
+    (should (string-prefix-p "\\href{https://dictionary.christian-steinert.de/\\#" latex))
     (should (equal other "mnyam med"))))
+
+(ert-deftest tibetan-steinert-link-export-latex-escapes-url ()
+  "Bug (Carsten 28.10.): C-c C-e l p auf sent-009-bden.org brach ab
+\(„File ended while scanning use of \\TX@get@body“).  Die URL trägt `#'
+und viele `%' (`#%7B%22activeTerm…'); roh in \\href ist das nur gut,
+solange \\href nicht im Argument eines anderen Befehls steht.  Carstens
+Export macht Tabellen ab drei Spalten zu tabularx — das liest seinen
+Inhalt vorab als Argument, `%' wird zum Kommentar, frisst die
+schließende Klammer, LaTeX läuft bis zum Dateiende.  Wie org es für
+die eigenen Links tut (`org-latex--protect-text'): `%' und `#' als
+\\% und \\#; hyperref schreibt die echte URL ins PDF."
+  (let ((latex (tibetan-steinert-link-export "'gyur ba med pa" "'gyur ba med pa"
+                                             'latex)))
+    (should (string-prefix-p "\\href{https://dictionary.christian-steinert.de/\\#" latex))
+    ;; Kein einziges ungeschütztes % oder #.
+    (should-not (string-match-p "\\(?:^\\|[^\\]\\)[%#]" latex))
+    ;; Entschützt ist es genau die URL.
+    (should (equal (replace-regexp-in-string
+                    "\\\\\\([%#]\\)" "\\1"
+                    (progn (string-match "\\`\\\\href{\\([^}]*\\)}" latex)
+                           (match-string 1 latex)))
+                   (tibetan-steinert-url "'gyur ba med pa")))))
+
+(ert-deftest tibetan-steinert-link-export-latex-compiles-in-tabularx ()
+  "Der echte Fall aus sent-009: ein exportierter steinert:-Link in einer
+tabularx-Zelle übersetzt (nur wo lualatex vorhanden ist)."
+  (skip-unless (executable-find "lualatex"))
+  (let* ((dir (make-temp-file "steinert-tex-" t))
+         (tex (expand-file-name "t.tex" dir)))
+    (unwind-protect
+        (progn
+          (with-temp-file tex
+            (insert "\\documentclass{article}\n"
+                    "\\usepackage{tabularx}\\usepackage{hyperref}\n"
+                    "\\begin{document}\n"
+                    "\\begin{tabularx}{\\textwidth}{lXX}\n"
+                    (tibetan-steinert-link-export "'gyur ba med pa" "'gyur ba med pa" 'latex)
+                    " & "
+                    (tibetan-steinert-link-export "'dus" "'dus" 'latex)
+                    " & x\\\\\n"
+                    "\\end{tabularx}\n\\end{document}\n"))
+          (let ((default-directory (file-name-as-directory dir)))
+            (should (zerop (call-process "lualatex" nil nil nil
+                                         "-interaction=nonstopmode" "-halt-on-error"
+                                         "t.tex"))))
+          (should (file-exists-p (expand-file-name "t.pdf" dir))))
+      (delete-directory dir t))))
 
 (provide 'tibetan-steinert-test)
 ;;; tibetan-steinert-test.el ends here

@@ -1,6 +1,6 @@
 #+TITLE: Function Reference — tibetan-cat.el
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-10-27T07:36:19
+#+DATE: 2026-10-28T16:22:11
 #+OPTIONS: toc:2 num:nil
 
 Source tree: ~/Users/cp/tibetan-cat.el~  ·  86 modules  ·  1846 forms
@@ -5590,7 +5590,7 @@ steinert:-Pseudolinks.
 ** ~tibetan-steinert-register-link-type~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 252
+:LINE: 258
 :SIGNATURE: (tibetan-steinert-register-link-type)
 :END:
 
