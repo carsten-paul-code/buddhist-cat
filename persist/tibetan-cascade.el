@@ -61,6 +61,9 @@
 (declare-function tibetan-analysis--sanitize-claude-body-stars
                   "tibetan-analysis-claude")
 (declare-function tibetan-fresh-file-buffer "tibetan-utils")
+(declare-function bcat-sentence-template-name "bcat-sentence" (source-file))
+(declare-function bcat-sentence-create-file "bcat-sentence" (sent-num segs source-file filepath))
+(declare-function bcat-sentence-file-p "bcat-sentence" (file))
 
 ;; The §184-handout gloss tables (Masterarbeit three-view plan,
 ;; 2026-09-15).  Soft — the emitter is fboundp-guarded and
@@ -659,8 +662,19 @@ SOURCE-FILE when the sentence module is not loaded."
                        (tibetan-sentence--filepath sent-num folder
                                                    source-file)
                      (expand-file-name (format "sent-%03d.org" sent-num)
-                                       folder)))
-         (body (tibetan-cascade--scaffold sent-num segs source-file)))
+                                       folder))))
+    (if (and (fboundp 'bcat-sentence-template-name)
+             (bcat-sentence-template-name source-file))
+        ;; §5.74: languages with a template get the new form
+        ;; (whole original / segments / sentence) — no AI, the
+        ;; references already under Translations compared.
+        (bcat-sentence-create-file sent-num segs source-file filepath)
+      (tibetan-cascade--create-file-legacy sent-num segs source-file filepath))))
+
+(defun tibetan-cascade--create-file-legacy (sent-num segs source-file filepath)
+  "The pre-template sentence file (old layout) for SENT-NUM at FILEPATH;
+returns FILEPATH.  Still used for languages without a template yet."
+  (let ((body (tibetan-cascade--scaffold sent-num segs source-file)))
     (make-directory (file-name-directory filepath) t)
     (with-temp-file filepath
       (insert body))
@@ -962,6 +976,16 @@ Hand-Einträge: verbatim erhalten."
           (unless (string-empty-p rest) rest))))))
 
 (defun tibetan-cascade--regenerate (filepath sent-num segs source-file)
+  "Regenerate FILEPATH (old layout) — every re-render path ends here
+\(C-c u R, the after-land re-render, migrations).  A template-built
+file (§5.74, `bcat-sentence-file-p') is returned untouched: Carsten
+28.10.2026 — changes to such a file only through C-c u G.  Returns
+FILEPATH."
+  (if (and (fboundp 'bcat-sentence-file-p) (bcat-sentence-file-p filepath))
+      filepath
+    (tibetan-cascade--regenerate-legacy filepath sent-num segs source-file)))
+
+(defun tibetan-cascade--regenerate-legacy (filepath sent-num segs source-file)
   "Regenerate FILEPATH's deterministic sections; preserve everything
 user-valuable.  PRESERVE → REBUILD (via `tibetan-cascade--scaffold')
 → RESTORE, the §5.18 sentence pattern.
@@ -1885,6 +1909,12 @@ nested slot.  Returns `fired' / `dedup-hit' / nil (does not apply)."
                     (fboundp 'tibetan-sentence--filepath)
                     (tibetan-sentence--filepath sent-num folder
                                                 source-file))))
+    (if (and file (fboundp 'bcat-sentence-file-p) (bcat-sentence-file-p file))
+        ;; §5.74: a template-built file is filled by its own C-c u G
+        ;; (step 3), never by the old sentence request.
+        (progn (message "%s: neues Layout — wird von C-c u G (Vorlage) gefüllt"
+                        (file-name-nondirectory file))
+               'new-layout)
     (when (and file (file-exists-p file) seg-nums
                (fboundp 'tibetan-sentence-claude--claim)
                (fboundp 'tibetan-sentence-claude--request))
@@ -1901,7 +1931,7 @@ nested slot.  Returns `fired' / `dedup-hit' / nil (does not apply)."
             (when (fboundp 'tibetan-sentence-claude--schedule-dm)
               (tibetan-sentence-claude--schedule-dm
                sentence (list file) nil force))
-            'fired))))))
+            'fired)))))))
 
 ;; ============================================================================
 ;; C4.1 — create-all (the cascade branch of C-c u B / C-c s N)
@@ -3429,8 +3459,14 @@ die §5.54-Poison-Locks halten die Bodies aus Stitcher und
                       (and source sent
                            (tibetan-cascade--sentence-ref-bodies
                             source sent)))))
-        (if (not bodies)
-            (cl-incf missing)
+        (cond
+         ;; §5.74: a template-built file carries its references under
+         ;; Translations compared — no * Provided Translations slots.
+         ((and (fboundp 'bcat-sentence-file-p) (bcat-sentence-file-p file))
+          (cl-incf skipped))
+         ((not bodies)
+            (cl-incf missing))
+         (t
           (let ((buf (tibetan-fresh-file-buffer file))
                 (any nil))
             (with-current-buffer buf
@@ -3454,7 +3490,7 @@ die §5.54-Poison-Locks halten die Bodies aus Stitcher und
                       (setq any t)))))
               (if any
                   (progn (save-buffer) (cl-incf written))
-                (cl-incf skipped)))))))
+                (cl-incf skipped))))))))
     (when (called-interactively-p 'any)
       (message "Provided Translations: %d Datei(en) befüllt, %d übersprungen, %d ohne Referenzen"
                written skipped missing))

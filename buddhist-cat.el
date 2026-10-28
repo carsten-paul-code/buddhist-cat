@@ -532,6 +532,7 @@ in the appropriate instance."
 
 ;; §5.74: analysis files from templates (Templates/analysis/, cascade).
 (require 'bcat-template)
+(require 'bcat-sentence)
 
 (provide 'buddhist-cat)
 ;; The old feature name, announced too: code that waits on it

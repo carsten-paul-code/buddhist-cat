@@ -18,6 +18,12 @@
 device).  Tests that need it bind it to t and stub the upload.")
 (defvar tibetan-discussion-paper-upload nil
   "§5.64: never upload from the suite.")
+(defvar bcat-sentence-templates nil)
+;; §5.74: the tests of the OLD sentence pipeline create files through
+;; C-c u A's path and expect the old layout — switched off here (setq:
+;; wins over the defcustom whatever the load order); the template tests
+;; bind it to t.  Goes when step 5 retires the old pipeline.
+(setq bcat-sentence-templates nil)
 (defvar tibetan-skip-external-glossaries t
   "When non-nil, skip loading external glossaries during tests.")
 

@@ -59,6 +59,11 @@
   (setq tibetan-auto-fire-dm-on-create nil))
 (when (boundp 'tibetan-auto-fire-claude-on-create)
   (setq tibetan-auto-fire-claude-on-create nil))
+;; §5.74: the specs describe the OLD sentence pipeline (create via
+;; C-c u A's path, then the old fire) — keep the old layout here, as
+;; the ERT runner does; goes with the old pipeline (step 5).
+(defvar bcat-sentence-templates nil)
+(setq bcat-sentence-templates nil)
 (with-eval-after-load 'tibetan-dharmamitra-api
   (defun tibetan-dharmamitra-api--http-post (&rest _)
     "Test stub — no network during the spec run."
