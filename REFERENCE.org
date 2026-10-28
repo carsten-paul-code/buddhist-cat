@@ -1,6 +1,6 @@
 #+TITLE: Function Reference — buddhist-cat
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-10-28T18:26:07
+#+DATE: 2026-10-28T18:31:22
 #+OPTIONS: toc:2 num:nil
 
 Source tree: ~/Users/cp/buddhist-cat~  ·  90 modules  ·  1943 forms
@@ -12707,7 +12707,7 @@ Claude skipped keeps its rump fields.
 ** ~bcat-export--latex-escape~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 55
+:LINE: 56
 :SIGNATURE: (bcat-export--latex-escape s)
 :END:
 
@@ -12716,7 +12716,7 @@ S with the LaTeX special characters escaped.
 ** ~bcat-export-head-lines~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 66
+:LINE: 67
 :SIGNATURE: (bcat-export-head-lines folder work sent-num verse)
 :END:
 
@@ -12726,7 +12726,7 @@ The #+LATEX_HEADER lines of the running head: FOLDER · WORK
 ** ~bcat-export-info~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 79
+:LINE: 80
 :SIGNATURE: (bcat-export-info file)
 :END:
 
@@ -12737,7 +12737,7 @@ What the PDF of the sentence FILE is labelled with: (:source :folder
 ** ~bcat-export-pdf~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 109
+:LINE: 110
 :SIGNATURE: (bcat-export-pdf file &optional head)
 :END:
 
@@ -12750,7 +12750,7 @@ left at natural width — bound here, Carsten's own export settings
 ** ~bcat-export-file~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 137
+:LINE: 138
 :SIGNATURE: (bcat-export-file file)
 :END:
 
@@ -12760,18 +12760,20 @@ reMarkable (`bcat-export-upload').  Returns the PDF path.
 ** ~bcat-export-after-fetch~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 151
+:LINE: 152
 :SIGNATURE: (bcat-export-after-fetch file)
 :END:
 
 Hook for `bcat-sentence-after-fetch-functions': C-c u G ends with
-C-c u H (when `bcat-export-auto').  Never signals — a LaTeX or rmapi
-failure must not spoil the landed analysis.
+C-c u H (when `bcat-export-auto').  Never for a FILE under
+`temporary-file-directory' — a test fixture; an ERT run in a live Emacs
+put such papers on the device (§5.69).  Never signals — a LaTeX or
+rmapi failure must not spoil the landed analysis.
 
 ** ~bcat-export~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 164
+:LINE: 169
 :SIGNATURE: (bcat-export)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -12787,7 +12789,7 @@ old handout.
 ** ~bcat-export-auto~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 39
+:LINE: 40
 :TYPE: 'boolean
 :GROUP: buddhist-cat
 :DEFAULT: t
@@ -12799,7 +12801,7 @@ sentence file goes to PDF and onto the reMarkable.
 ** ~bcat-export-upload~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 45
+:LINE: 46
 :TYPE: 'boolean
 :GROUP: buddhist-cat
 :DEFAULT: t
@@ -12811,7 +12813,7 @@ document „Satz N“); nil only writes the PDF next to the file.
 ** ~org-latex-compiler~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 32
+:LINE: 33
 :END:
 
 /(no docstring)/
@@ -12819,7 +12821,7 @@ document „Satz N“); nil only writes the PDF next to the file.
 ** ~org-latex-pdf-process~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 33
+:LINE: 34
 :END:
 
 /(no docstring)/
@@ -12827,7 +12829,7 @@ document „Satz N“); nil only writes the PDF next to the file.
 ** ~org-latex-tables-centered~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 34
+:LINE: 35
 :END:
 
 /(no docstring)/
@@ -12835,7 +12837,7 @@ document „Satz N“); nil only writes the PDF next to the file.
 ** ~org-export-filter-table-functions~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 35
+:LINE: 36
 :END:
 
 /(no docstring)/
@@ -12843,7 +12845,7 @@ document „Satz N“); nil only writes the PDF next to the file.
 ** ~org-export-before-processing-functions~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 36
+:LINE: 37
 :END:
 
 /(no docstring)/
@@ -12851,7 +12853,7 @@ document „Satz N“); nil only writes the PDF next to the file.
 ** ~tibetan-cascade-subtree-confirm-threshold~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 37
+:LINE: 38
 :END:
 
 /(no docstring)/

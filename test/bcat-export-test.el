@@ -53,7 +53,10 @@ Switched off (`bcat-export-auto' nil): nothing."
       (cl-letf (((symbol-function 'bcat-export-pdf)
                  (lambda (file &rest _) (push file exported) "/tmp/x.pdf"))
                 ((symbol-function 'tibetan-discussion-paper--upload)
-                 (lambda (pdf title label) (push (list pdf title label) uploaded) t)))
+                 (lambda (pdf title label) (push (list pdf title label) uploaded) t))
+                ;; The fixture lives under the temp directory, which the
+                ;; hook skips (next test) — here it stands for a real source.
+                ((symbol-function 'tibetan-discussion-paper--temp-source-p) #'ignore))
         (let ((bcat-export-auto t) (bcat-export-upload t))
           (bcat-sentence-test--with-stubs bcat-sentence-test--answer
             (add-hook 'bcat-sentence-after-fetch-functions #'bcat-export-after-fetch)
@@ -65,6 +68,24 @@ Switched off (`bcat-export-auto' nil): nothing."
           (bcat-export-after-fetch (tibetan-sentence--filepath 9 folder src)))
         (should-not exported)
         (should-not uploaded)))))
+
+(ert-deftest bcat-export-after-fetch-skips-fixtures ()
+  "A sentence file under `temporary-file-directory' is a test fixture:
+C-c u G's export hook never builds or uploads it, even with
+`bcat-export-auto' on — an ERT run in a live Emacs (where the batch
+runner's switch does not apply) must not put fixtures on the device
+(the §5.69 incident, 26.10.: `Reading/D/Satz 4')."
+  (bcat-sentence-test--with-source
+    (bcat-sentence-test--create src)
+    (let ((exported 0) (uploaded 0))
+      (cl-letf (((symbol-function 'bcat-export-pdf)
+                 (lambda (&rest _) (cl-incf exported) "/tmp/x.pdf"))
+                ((symbol-function 'tibetan-discussion-paper--upload)
+                 (lambda (&rest _) (cl-incf uploaded) t)))
+        (let ((bcat-export-auto t) (bcat-export-upload t))
+          (bcat-export-after-fetch (tibetan-sentence--filepath 9 folder src))))
+      (should (= 0 exported))
+      (should (= 0 uploaded)))))
 
 (ert-deftest bcat-export-command ()
   "C-c u H: in a template sentence file it exports that file; on a

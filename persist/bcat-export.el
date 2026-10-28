@@ -27,6 +27,7 @@
 (declare-function tibetan-cascade--collect-sentences "tibetan-cascade" ())
 (declare-function tibetan-cascade--scope-at-point "tibetan-cascade" ())
 (declare-function tibetan-discussion-paper--upload "tibetan-discussion-paper" (pdf title label))
+(declare-function tibetan-discussion-paper--temp-source-p "tibetan-discussion-paper" (file))
 (declare-function tibetan-handout "tibetan-handout" (&optional org-only))
 (declare-function org-latex-export-to-pdf "ox-latex")
 (defvar org-latex-compiler)
@@ -150,9 +151,13 @@ reMarkable (`bcat-export-upload').  Returns the PDF path."
 
 (defun bcat-export-after-fetch (file)
   "Hook for `bcat-sentence-after-fetch-functions': C-c u G ends with
-C-c u H (when `bcat-export-auto').  Never signals — a LaTeX or rmapi
-failure must not spoil the landed analysis."
-  (when bcat-export-auto
+C-c u H (when `bcat-export-auto').  Never for a FILE under
+`temporary-file-directory' — a test fixture; an ERT run in a live Emacs
+put such papers on the device (§5.69).  Never signals — a LaTeX or
+rmapi failure must not spoil the landed analysis."
+  (require 'tibetan-discussion-paper)
+  (when (and bcat-export-auto
+             (not (tibetan-discussion-paper--temp-source-p file)))
     (condition-case err
         (bcat-export-file file)
       (error (message "C-c u H nach C-c u G fehlgeschlagen (%s): %s"
