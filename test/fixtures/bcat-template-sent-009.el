@@ -1,6 +1,6 @@
 ;;; bcat-template-sent-009.el --- Daten von bDen Satz 9 für den Vorlagentest -*- lexical-binding: t -*-
-;; Einmalig aus Templates/analysis/samples/Tibetan.org gezogen (28.10.2026).
-;; Gerüst tibetan.org + diese Daten muss die Musterdatei ergeben.
+;; Aus Templates/analysis/samples/Tibetan.org gezogen (28.10.2026, nach der
+;; „→“-Vereinheitlichung).  Gerüst tibetan.org + diese Daten = Musterdatei.
 (defconst bcat-template-test--sent-009
   `((sent-num . "9")
     (source-link . "[[file:../bden-gnyis-cat.org::*Sentence 9][bden-gnyis-cat.org / Sentence 9]]")
@@ -39,7 +39,7 @@
       (translations . "⟦40⟧ if a yogin (rnal 'byor pa: yogin) realizes that, \\\\
 *Lindtner 1981:* *When* a yogi understands it \\\\
 *DharmaMitra:* *When* a yogi realizes this, \\\\
-→ both: temporal \"when\" for the conditional \"if\"")
+→ Lindtner 1981, DharmaMitra: temporal \"when\" for the conditional \"if\"")
       (structure . "rnal 'byor pa =yis= [agent, ERG] · de [object, ABS — picks up 38–39] · rtogs [V] ~na~ [conditional] → protasis of 41.")
       (note . "/na/ = \"if\" (realization as condition); \"when\" is grammatically possible as well (both §2.8).")
       (concepts . ""))
@@ -50,8 +50,8 @@
 | N          | N + GEN         | N · object  | V pf. ('pong ba) · main verb |")
       (translations . "⟦41⟧ the obstructions of affliction (nyon mongs: kleśa) and of the knowable (śes bya'i sgrib pa: jñeyāvaraṇa) are abandoned. \\\\
 *Lindtner 1981:* *he abandons* the obstructions of defilement and cognizable *(kleśajñeyāvaraṇa)*. \\\\
-→ active, with the yogin as agent; and one compound, not two obstructions \\\\
-*DharmaMitra:* The obscurations of afflictions and the knowable are abandoned.")
+*DharmaMitra:* The obscurations of afflictions and the knowable are abandoned. \\\\
+→ Lindtner 1981: active, with the yogin as agent; and one compound, not two obstructions")
       (structure . "[nyon mongs · shes bya'i sgrib pa] [ABS] · spangs [main verb]; agent (the yogin) implicit from 40, copula elided (verse).")
       (note . "/nyon mongs shes bya'i sgrib pa/ — the two obstructions (kleśāvaraṇa + jñeyāvaraṇa) or a single compound? Doctrinally the pair; the Tibetan is one nominal string.  /spangs/ active (\"he abandons\") or resultative passive — ambiguous.")
       (concepts . "*nyon mongs kyi sgrib pa / shes bya'i sgrib pa* (Skt. kleśāvaraṇa / jñeyāvaraṇa) — the two obstructions: the afflictive one obstructs liberation (mokṣa), the cognitive one omniscience (sarvajñatā). Only a buddha has removed both; śrāvakas and pratyekabuddhas only the first. That realizing the nature of 38–39 removes both is a characteristically Mahāyāna claim.")))

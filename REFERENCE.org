@@ -1,9 +1,9 @@
 #+TITLE: Function Reference — buddhist-cat
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-10-28T18:06:54
+#+DATE: 2026-10-28T18:12:03
 #+OPTIONS: toc:2 num:nil
 
-Source tree: ~/Users/cp/buddhist-cat~  ·  88 modules  ·  1881 forms
+Source tree: ~/Users/cp/buddhist-cat~  ·  89 modules  ·  1894 forms
 
 Regenerated automatically by:
 
@@ -62,6 +62,7 @@ python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/buddhist-c
   - [[#doc-prep/tibetan-segment-migrate.el][doc-prep/tibetan-segment-migrate.el]]  (12)
   - [[#doc-prep/tibetan-sentence-structure.el][doc-prep/tibetan-sentence-structure.el]]  (25)
   - [[#doc-prep/tibetan-wylie-ingest.el][doc-prep/tibetan-wylie-ingest.el]]  (26)
+  - [[#persist/bcat-analysis.el][persist/bcat-analysis.el]]  (12)
   - [[#persist/bcat-sentence.el][persist/bcat-sentence.el]]  (12)
   - [[#persist/bcat-template.el][persist/bcat-template.el]]  (17)
   - [[#persist/tibetan-analysis-claude.el][persist/tibetan-analysis-claude.el]]  (77)
@@ -93,7 +94,7 @@ python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/buddhist-c
   - [[#setup/tibetan-cat-ui.el][setup/tibetan-cat-ui.el]]  (23)
   - [[#spec/generate-docs.el][spec/generate-docs.el]]  (1)
   - [[#spec/generate-living-doc.el][spec/generate-living-doc.el]]  (10)
-  - [[#spec/run-specs.el][spec/run-specs.el]]  (1)
+  - [[#spec/run-specs.el][spec/run-specs.el]]  (2)
   - [[#spec/suites/particle-analysis-spec.el][spec/suites/particle-analysis-spec.el]]  (1)
   - [[#spec/suites/sanskrit-cascade-spec.el][spec/suites/sanskrit-cascade-spec.el]]  (5)
   - [[#spec/suites/sentence-first-spec.el][spec/suites/sentence-first-spec.el]]  (5)
@@ -12546,6 +12547,135 @@ intact.
 Wylie → Tibetan Unicode ingest settings.
 
 
+* persist/bcat-analysis.el
+:PROPERTIES:
+:CUSTOM_ID: persist/bcat-analysis.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/persist/bcat-analysis.el
+:END:
+
+** ~bcat-analysis--language~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 34
+:SIGNATURE: (bcat-analysis--language target)
+:END:
+
+The language name for the target code TARGET ("de" → German).
+
+** ~bcat-analysis-system-prompt~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 38
+:SIGNATURE: (bcat-analysis-system-prompt target)
+:END:
+
+The system prompt of the sentence analysis for the target language
+code TARGET — constant per document, so the prompt cache stays warm.
+
+** ~bcat-analysis-user-prompt~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 62
+:SIGNATURE: (bcat-analysis-user-prompt sent-num verse segs refs &optional context)
+:END:
+
+The user prompt for sentence SENT-NUM (VERSE its :VERSE: or nil):
+SEGS ((NUM TIBETAN WYLIE) …), REFS ((NAME . TEXT) …) the reference
+translations (DharmaMitra among them), CONTEXT the document's
+#+TIBETAN_CLAUDE_CONTEXT lines.
+
+** ~bcat-analysis-parse~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 86
+:SIGNATURE: (bcat-analysis-parse response)
+:END:
+
+The JSON object in Claude's RESPONSE as an alist (keys as symbols,
+arrays as lists), or nil when there is none.  Tolerates a code fence or
+prose around the object.
+
+** ~bcat-analysis--particle-p~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 113
+:SIGNATURE: (bcat-analysis--particle-p function)
+:END:
+
+Non-nil when FUNCTION (a word's function string) is a particle label.
+
+** ~bcat-analysis--field~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 119
+:SIGNATURE: (bcat-analysis--field alist key)
+:END:
+
+String value of KEY in ALIST, trimmed; "" when absent.
+
+** ~bcat-analysis-gloss-table~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 124
+:SIGNATURE: (bcat-analysis-gloss-table words)
+:END:
+
+The three-row table of WORDS (Claude's word list): row 1 Wylie (with
+a Steinert link unless a particle), row 2 gloss, row 3 function.  ""
+for no words.
+
+** ~bcat-analysis--reference-lines~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 145
+:SIGNATURE: (bcat-analysis--reference-lines refs)
+:END:
+
+"*NAME:* TEXT" for each of REFS (alists with name and text).
+
+** ~bcat-analysis-translations-block~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 152
+:SIGNATURE: (bcat-analysis-translations-block num seg)
+:END:
+
+The left-aligned translation block of segment NUM from SEG (Claude's
+segment object): ⟦NUM⟧ own translation, the reference parts, the shift
+line — one line each, org line breaks between.
+
+** ~bcat-analysis-comparison~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 164
+:SIGNATURE: (bcat-analysis-comparison parsed)
+:END:
+
+Translations compared of the sentence from PARSED: own translation,
+the marked references, the comparison paragraph.
+
+** ~bcat-analysis-context~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 177
+:SIGNATURE: (bcat-analysis-context base parsed)
+:END:
+
+Template fields of a fetched sentence: BASE (the rump fields —
+header, segments with num and wylie, user sections) completed from
+PARSED (Claude's answer).  Segments are matched by number; a segment
+Claude skipped keeps its rump fields.
+
+** ~bcat-analysis--particle-labels~  /constant/
+:PROPERTIES:
+:KIND: defconst
+:LINE: 108
+:DEFAULT: '
+:END:
+
+/(no docstring)/
+
+
 * persist/bcat-sentence.el
 :PROPERTIES:
 :CUSTOM_ID: persist/bcat-sentence.el
@@ -24795,6 +24925,15 @@ Runs all specs and produces a browsable HTML report.
 :END:
 
 Directory containing Tibetan CAT data files.
+
+** ~bcat-sentence-templates~  /variable/
+:PROPERTIES:
+:KIND: defvar
+:LINE: 65
+:DEFAULT: nil
+:END:
+
+/(no docstring)/
 
 
 * spec/suites/particle-analysis-spec.el

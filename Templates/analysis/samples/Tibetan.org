@@ -54,7 +54,7 @@ nyon mongs shes bya'i sgrib pa spangs/ /
 ⟦40⟧ if a yogin (rnal 'byor pa: yogin) realizes that, \\
 *Lindtner 1981:* *When* a yogi understands it \\
 *DharmaMitra:* *When* a yogi realizes this, \\
-→ both: temporal "when" for the conditional "if"
+→ Lindtner 1981, DharmaMitra: temporal "when" for the conditional "if"
 
 *Structure:* rnal 'byor pa =yis= [agent, ERG] · de [object, ABS — picks up 38–39] · rtogs [V] ~na~ [conditional] → protasis of 41.
 
@@ -67,8 +67,8 @@ nyon mongs shes bya'i sgrib pa spangs/ /
 
 ⟦41⟧ the obstructions of affliction (nyon mongs: kleśa) and of the knowable (śes bya'i sgrib pa: jñeyāvaraṇa) are abandoned. \\
 *Lindtner 1981:* *he abandons* the obstructions of defilement and cognizable *(kleśajñeyāvaraṇa)*. \\
-→ active, with the yogin as agent; and one compound, not two obstructions \\
-*DharmaMitra:* The obscurations of afflictions and the knowable are abandoned.
+*DharmaMitra:* The obscurations of afflictions and the knowable are abandoned. \\
+→ Lindtner 1981: active, with the yogin as agent; and one compound, not two obstructions
 
 *Structure:* [nyon mongs · shes bya'i sgrib pa] [ABS] · spangs [main verb]; agent (the yogin) implicit from 40, copula elided (verse).
 
