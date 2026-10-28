@@ -2,34 +2,12 @@
 #+STARTUP: showall
 #+OPTIONS: toc:nil num:nil title:nil author:nil date:nil
 #+TIBETAN_LAYOUT: cascade
+#+CAT_TEMPLATE: tibetan
 #+SOURCE: [[file:../bden-gnyis-cat.org::*Sentence 9][bden-gnyis-cat.org / Sentence 9]]
 #+SEGMENTS: 38, 39, 40, 41
 #+TIBETAN_HASH: 0fb9a1413fd15e6cec234b8abb1e02b9
 #+CREATED: 2026-10-14
 #+LAST_ANALYZED: 2026-10-28
-
-# VORLAGE Tibetisch (Entwurf 2, 28.10.2026) — Zielform einer Satzdatei nach
-# C-c u G.  Inhalt = die echte Analyse von bDen Satz 9 (sent-009-bden.org),
-# nur zusammengeführt und umgestellt; nichts erfunden.
-#
-# Prinzip: erst die Segmente, dann der ganze Satz/Vers.
-# Oben das ganze Wylie zum Lesen; die eigene Übersetzung steht beim
-# Vergleich am Ende.  Entfallen gegenüber heute: Partikelkarte, Claude
-# Particles, Claude Vocabulary (steckt jetzt in den Tabellen), Sentence
-# Structure je Segment (→ „Structure" unter dem Segment), Claude Grammar je
-# Segment (→ „Note" nur bei Besonderheit/Unklarheit), eigene Concept Notes
-# (→ „Concepts" am Segment), Provided Translations + Discussion (→ Vergleich
-# je Segment und am Satz; Issue/Assessment/Question entfallen).
-#
-# Tabellenzeilen: 1 Wylie (Steinert-Link) · 2 Glosse im Kontext · 3 Wortart
-# und Funktion.  Keine „?" mehr — die Spalten folgen Claudes Wörtern.
-# Übersetzungen am Segment: ein linksbündiger Block (⟦N⟧ = diese Analyse).
-# *fett* = sinnverschiebende Abweichung, „→ …" sagt, was sich verschiebt.
-# PDF (C-c u H): ohne Titelblock, Tabellen linksbündig in natürlicher
-# Breite, Kopfzeile „Ordner · Werk · Satz N · Vers“ links, Seitenzahl rechts
-# (Ordner der Quelle, Werktitel aus deren #+TITLE vor „ — “, Vers aus
-# :VERSE:).  Das alles setzt der Export; die Datei bleibt frei davon.
-# Diese Kommentarzeilen erscheinen nicht im PDF.
 
 * Text
 #+begin_verse
@@ -113,9 +91,6 @@ Both read the realization temporally ("when"). Lindtner makes the yogin the agen
 
 * Working Translation
 
-
 * My Notes
 
-
 * Footnotes
-

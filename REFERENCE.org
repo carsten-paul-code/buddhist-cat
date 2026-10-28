@@ -1,9 +1,9 @@
 #+TITLE: Function Reference — buddhist-cat
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-10-28T17:22:10
+#+DATE: 2026-10-28T18:02:15
 #+OPTIONS: toc:2 num:nil
 
-Source tree: ~/Users/cp/buddhist-cat~  ·  86 modules  ·  1850 forms
+Source tree: ~/Users/cp/buddhist-cat~  ·  87 modules  ·  1867 forms
 
 Regenerated automatically by:
 
@@ -62,6 +62,7 @@ python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/buddhist-c
   - [[#doc-prep/tibetan-segment-migrate.el][doc-prep/tibetan-segment-migrate.el]]  (12)
   - [[#doc-prep/tibetan-sentence-structure.el][doc-prep/tibetan-sentence-structure.el]]  (25)
   - [[#doc-prep/tibetan-wylie-ingest.el][doc-prep/tibetan-wylie-ingest.el]]  (26)
+  - [[#persist/bcat-template.el][persist/bcat-template.el]]  (17)
   - [[#persist/tibetan-analysis-claude.el][persist/tibetan-analysis-claude.el]]  (77)
   - [[#persist/tibetan-analysis-combine.el][persist/tibetan-analysis-combine.el]]  (14)
   - [[#persist/tibetan-analysis-combined.el][persist/tibetan-analysis-combined.el]]  (15)
@@ -12542,6 +12543,180 @@ intact.
 :END:
 
 Wylie → Tibetan Unicode ingest settings.
+
+
+* persist/bcat-template.el
+:PROPERTIES:
+:CUSTOM_ID: persist/bcat-template.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/persist/bcat-template.el
+:END:
+
+** ~bcat-template-candidates~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 58
+:SIGNATURE: (bcat-template-candidates name &optional source-file)
+:END:
+
+The files the template NAME is looked for in, first match wins:
+the source's folder, its Resources, the tool default.
+
+** ~bcat-template-find~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 69
+:SIGNATURE: (bcat-template-find name &optional source-file)
+:END:
+
+The file of template NAME for SOURCE-FILE (see the cascade), or nil.
+
+** ~bcat-template--strip-comments~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 73
+:SIGNATURE: (bcat-template--strip-comments text)
+:END:
+
+TEXT without its #+begin_comment … #+end_comment blocks.
+
+** ~bcat-template-read~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 82
+:SIGNATURE: (bcat-template-read name &optional source-file depth)
+:END:
+
+The text of template NAME for SOURCE-FILE: comment blocks removed,
+{{> part}} inclusions expanded through the same cascade.  Signals a
+`user-error' when a template is missing or inclusions nest deeper than
+`bcat-template--max-depth' (DEPTH counts the levels).
+
+** ~bcat-template--parse~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 119
+:SIGNATURE: (bcat-template--parse lines closing)
+:END:
+
+Parse LINES into nodes up to the {{/CLOSING}} line (nil = top level).
+A node is a template line (string) or (section POS-P NAME CHILDREN).
+Returns (NODES . REMAINING-LINES).
+
+** ~bcat-template--value~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 145
+:SIGNATURE: (bcat-template--value name stack)
+:END:
+
+Field NAME from the context STACK (innermost alist first).
+
+** ~bcat-template--scalar~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 151
+:SIGNATURE: (bcat-template--scalar value)
+:END:
+
+VALUE as the text a placeholder shows.
+
+** ~bcat-template--contexts~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 159
+:SIGNATURE: (bcat-template--contexts value)
+:END:
+
+The contexts a {{#…}} section renders with for VALUE: one per item
+of a list of alists, one (empty) context for any other non-empty value,
+none for an empty one.
+
+** ~bcat-template--walk~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 170
+:SIGNATURE: (bcat-template--walk nodes stack emit)
+:END:
+
+Render NODES with the context STACK, calling EMIT with each output
+line, or with the symbol `drop' for a line dropped as empty.
+
+** ~bcat-template-render~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 196
+:SIGNATURE: (bcat-template-render template context)
+:END:
+
+TEMPLATE (text, comments and inclusions already resolved — see
+`bcat-template-read') filled from the alist CONTEXT.  Pure.
+
+** ~bcat-template-render-named~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 226
+:SIGNATURE: (bcat-template-render-named name context &optional source-file)
+:END:
+
+Render the template NAME (cascade for SOURCE-FILE) with CONTEXT.
+
+** ~bcat-template-directory~  /customize variable/
+:PROPERTIES:
+:KIND: defcustom
+:LINE: 45
+:TYPE: 'directory
+:GROUP: buddhist-cat
+:DEFAULT: (expand-file-name "Templates/analysis" bcat-template--package-dir)
+:END:
+
+The tool's default analysis templates — last stage of the cascade.
+
+** ~bcat-template--package-dir~  /constant/
+:PROPERTIES:
+:KIND: defconst
+:LINE: 39
+:DEFAULT: (file-name-directory
+   (directory-file-name
+    (file-name-directory (or load-file-name buffer-file-name default-direct
+:END:
+
+Root of the Buddhist CAT package (parent of persist/).
+
+** ~bcat-template--max-depth~  /constant/
+:PROPERTIES:
+:KIND: defconst
+:LINE: 51
+:DEFAULT: 10
+:END:
+
+How deep {{> name}} inclusions may nest (guards against cycles).
+
+** ~bcat-template--placeholder-re~  /constant/
+:PROPERTIES:
+:KIND: defconst
+:LINE: 110
+:DEFAULT: "{{\\([-A-Za-z0-9_]+\\)}}"
+:END:
+
+A field placeholder.
+
+** ~bcat-template--open-re~  /constant/
+:PROPERTIES:
+:KIND: defconst
+:LINE: 113
+:DEFAULT: "\\`[ \t]*{{\\([#^]\\)\\([-A-Za-z0-9_]+\\)}}[ \t]*\\'"
+:END:
+
+A standalone section opening line.
+
+** ~bcat-template--close-re~  /constant/
+:PROPERTIES:
+:KIND: defconst
+:LINE: 116
+:DEFAULT: "\\`[ \t]*{{/\\([-A-Za-z0-9_]+\\)}}[ \t]*\\'"
+:END:
+
+A standalone section closing line.
 
 
 * persist/tibetan-analysis-claude.el

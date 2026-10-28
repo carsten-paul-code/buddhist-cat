@@ -530,6 +530,9 @@ in the appropriate instance."
 ;; bindings under `C-c u z').
 (global-set-key (kbd "C-c u Z") #'tibetan-cat-open-zettel-for-word-at-point)
 
+;; §5.74: analysis files from templates (Templates/analysis/, cascade).
+(require 'bcat-template)
+
 (provide 'buddhist-cat)
 ;; The old feature name, announced too: code that waits on it
 ;; (`with-eval-after-load' / `featurep' on `tibetan-cat') keeps working

@@ -1,0 +1,71 @@
+#+begin_comment
+VORLAGE Tibetisch — Gerüst einer Satzdatei (Buddhist CAT, §5.74).
+Gliederung: ganzes Original (* Text) / Segmente / ganzer Satz.
+
+Platzhalter:  {{name}} setzt einen Wert ein (auch mehrzeilig).  Eine
+Zeile, deren Platzhalter ALLE leer sind, fällt weg — samt Beschriftung
+(„*Note:* {{note}}“ erscheint nur, wo es eine Note gibt); eine dadurch
+doppelte Leerzeile wird zu einer.
+Abschnitte:   {{#segments}} … {{/segments}} wiederholt den Block je
+Segment; {{#x}} … {{/x}} erscheint nur, wenn x einen Wert hat, {{^x}} …
+{{/x}} nur, wenn nicht.  Abschnittsmarken stehen allein auf ihrer Zeile.
+Einbinden:    {{> name}} (allein auf der Zeile) fügt die Vorlage name.org
+ein — gesucht wie diese.
+Suche (Kaskade): <Ordner der Quelle>/Templates/analysis/,
+<Ordner der Quelle>/Resources/Templates/analysis/, dann die Vorgabe im
+Werkzeug (~/buddhist-cat/Templates/analysis/).  Eine eigene Variante für
+eine Klasse = diese Datei dorthin kopieren und ändern.
+Erwartete Ausgabe: samples/Tibetan.org.  Kommentarblöcke wie dieser
+erscheinen nicht in der Satzdatei.
+
+Felder: sent-num source-link segment-list hash created last-analyzed;
+segments: num wylie gloss-table translations structure note concepts;
+grammar comparison working-translation my-notes footnotes.
+#+end_comment
+#+TITLE: Sentence {{sent-num}} Analysis
+#+STARTUP: showall
+#+OPTIONS: toc:nil num:nil title:nil author:nil date:nil
+#+TIBETAN_LAYOUT: cascade
+#+CAT_TEMPLATE: tibetan
+#+SOURCE: {{source-link}}
+#+SEGMENTS: {{segment-list}}
+#+TIBETAN_HASH: {{hash}}
+#+CREATED: {{created}}
+#+LAST_ANALYZED: {{last-analyzed}}
+
+* Text
+#+begin_verse
+{{#segments}}
+{{wylie}}
+{{/segments}}
+#+end_verse
+
+* Segments
+{{#segments}}
+** Segment {{num}}
+{{gloss-table}}
+
+{{translations}}
+
+*Structure:* {{structure}}
+
+*Note:* {{note}}
+
+*Concepts:* {{concepts}}
+
+{{/segments}}
+* Sentence
+** Grammar
+{{grammar}}
+
+** Translations compared
+{{comparison}}
+
+* Working Translation
+{{working-translation}}
+
+* My Notes
+{{my-notes}}
+
+* Footnotes
+{{footnotes}}
