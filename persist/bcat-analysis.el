@@ -79,6 +79,37 @@ translations (DharmaMitra among them), CONTEXT the document's
      "none")
    "\n\nReturn the JSON object now."))
 
+(defun bcat-analysis-align-system-prompt (target)
+  "System prompt of the small request that places reference
+translations added by hand (§5.74 step 3c) — target language TARGET."
+  (let ((lang (bcat-analysis--language target)))
+    (format "You align additional reference translations with the segments of a Classical Tibetan sentence that has already been analysed for a university reading class. Answer with ONE JSON object and nothing else:
+
+{\"segments\": [{\"num\": <segment number>, \"references\": [{\"name\": \"…\", \"text\": \"…\"}], \"shift\": \"…\"}], \"references\": [{\"name\": \"…\", \"text\": \"…\"}], \"comparison\": \"…\"}
+
+Rules:
+- segments: one entry per given segment; references: for every given reference translation the part that corresponds to this segment, quoted verbatim. Mark with org bold *…* ONLY passages that shift the meaning against the Tibetan or against the given translation of the segment; stylistic variation is not marked.
+- shift: one line on what the marked passages shift, beginning with the translator name; \"\" when nothing is marked.
+- references (top level): every given reference translation in full, verbatim, with the same marks.
+- comparison: one or two sentences on the meaning-shifting differences of the new translation(s); \"\" when there are none.
+- Write in %s. Never mention yourself."
+            lang)))
+
+(defun bcat-analysis-align-user-prompt (sent-num verse segs refs &optional context)
+  "User prompt of the alignment request: SEGS ((NUM TIBETAN WYLIE
+TRANSLATION) …) with the translation already in the file, REFS the new
+reference translations ((NAME . TEXT) …)."
+  (concat
+   (if context (concat (mapconcat #'identity context "\n") "\n\n") "")
+   (format "Sentence %d%s — segments:\n" sent-num (if verse (format " (%s)" verse) ""))
+   (mapconcat (lambda (s)
+                (format "[%d] Tibetan: %s\n     Wylie: %s\n     Translation: %s"
+                        (nth 0 s) (string-trim (nth 1 s)) (nth 2 s) (or (nth 3 s) "")))
+              segs "\n")
+   "\n\nReference translations to align:\n"
+   (mapconcat (lambda (r) (format "=== %s ===\n%s" (car r) (string-trim (cdr r)))) refs "\n")
+   "\n\nReturn the JSON object now."))
+
 ;; ----------------------------------------------------------------------------
 ;; Parsing the answer
 ;; ----------------------------------------------------------------------------

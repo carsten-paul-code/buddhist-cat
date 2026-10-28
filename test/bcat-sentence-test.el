@@ -358,5 +358,83 @@ reference was added under Translations compared that no segment shows."
         (write-region (point-min) (point-max) file nil 0))
       (should (eq 'align (bcat-sentence-fetch-state file '(38 39)))))))
 
+;; ----------------------------------------------------------------------------
+;; Step 3c — a reference added by hand gets its segment parts
+;; ----------------------------------------------------------------------------
+
+(defconst bcat-sentence-test--align-answer
+  (concat "{\"segments\": ["
+          "{\"num\": 38, \"references\": [{\"name\": \"Ruegg 1981\", \"text\": \"*Unsayable* and unseen,\"}],"
+          " \"shift\": \"Ruegg 1981: modal „unsayable“ for „indescribable“\"},"
+          "{\"num\": 39, \"references\": [{\"name\": \"Ruegg 1981\", \"text\": \"unchanging, unconditioned.\"}], \"shift\": \"\"}],"
+          " \"references\": [{\"name\": \"Ruegg 1981\", \"text\": \"*Unsayable* and unseen, unchanging, unconditioned.\"}],"
+          " \"comparison\": \"Ruegg reads a modal nuance.\"}")
+  "Alignment answer for the reference Ruegg 1981 added by hand.")
+
+(defun bcat-sentence-test--add-reference (file name text)
+  "Add the paragraph *NAME:* TEXT under Translations compared of FILE."
+  (with-temp-buffer
+    (insert-file-contents file)
+    (goto-char (point-min))
+    (re-search-forward "^\\* Working Translation")
+    (beginning-of-line)
+    (insert (format "*%s:* %s\n\n" name text))
+    (write-region (point-min) (point-max) file nil 0)))
+
+(ert-deftest bcat-sentence-align-merge ()
+  "The pure merge: the new reference's part goes into each segment's
+translation block after the existing references, its „→“ line after
+the existing ones, every line but the last with the org line break; the
+plain paragraph under Translations compared becomes the marked one; the
+comparison sentence is added; nothing else changes."
+  (let* ((text (concat "* Segments\n** Segment 38\n| t |\n\n"
+                       "⟦38⟧ Own. \\\\\n*Lindtner 1981:* L. \\\\\n→ Lindtner 1981: x\n\n"
+                       "*Structure:* s\n\n"
+                       "** Segment 39\n| t |\n\n⟦39⟧ Own two.\n\n"
+                       "* Sentence\n** Grammar\nG\n\n** Translations compared\n"
+                       "*Translation:* Own. Own two.\n\n*Lindtner 1981:* L.\n\n"
+                       "*Ruegg 1981:* Unsayable and unseen, unchanging, unconditioned.\n\n"
+                       "* Working Translation\n"))
+         (out (bcat-sentence--align-merge text (bcat-analysis-parse bcat-sentence-test--align-answer))))
+    (should (string-match-p
+             (regexp-quote (concat "⟦38⟧ Own. \\\\\n*Lindtner 1981:* L. \\\\\n*Ruegg 1981:* *Unsayable* and unseen, \\\\\n"
+                                   "→ Lindtner 1981: x \\\\\n→ Ruegg 1981: modal „unsayable“ for „indescribable“\n\n*Structure:* s"))
+             out))
+    (should (string-match-p (regexp-quote "⟦39⟧ Own two. \\\\\n*Ruegg 1981:* unchanging, unconditioned.\n\n* Sentence") out))
+    (should (string-match-p (regexp-quote "*Ruegg 1981:* *Unsayable* and unseen, unchanging, unconditioned.\n\nRuegg reads a modal nuance.\n\n* Working Translation") out))
+    (should (string-match-p (regexp-quote "*Lindtner 1981:* L.\n\n*Ruegg") out))
+    (should (string-match-p "^\\*Structure:\\* s$" out))))
+
+(ert-deftest bcat-sentence-fetch-aligns-added-reference ()
+  "Carsten: „Wenn ich weitere Vergleichsübersetzungen einfüge
+funktioniert das dann automatisch bei C-c u G?“ — yes: a filled file
+with a reference added under Translations compared gets ONE small
+request (the new reference, the segments with their translations — no
+DharmaMitra, no full analysis); the parts land in the segments, the
+file is complete afterwards, the hook (C-c u H) runs."
+  (bcat-sentence-test--with-source
+    (bcat-sentence-test--create src)
+    (let ((file (tibetan-sentence--filepath 9 folder src)))
+      (bcat-sentence-test--with-stubs bcat-sentence-test--answer
+        (bcat-sentence-test--fetch src))
+      (bcat-sentence-test--add-reference file "Ruegg 1981"
+                                         "Unsayable and unseen, unchanging, unconditioned.")
+      (let ((dm-calls 0))
+        (bcat-sentence-test--with-stubs bcat-sentence-test--align-answer
+          (cl-letf (((symbol-function 'tibetan-dharmamitra-api-chat-translate)
+                     (lambda (&rest _) (cl-incf dm-calls) "DM")))
+            (bcat-sentence-test--fetch src))
+          (should (= 1 submits))
+          (should (= 0 dm-calls))
+          (let ((user (cdr (car prompts))))
+            (should (string-match-p "=== Ruegg 1981 ===\nUnsayable" user))
+            (should-not (string-match-p "=== Lindtner 1981 ===" user))
+            (should (string-match-p "Translation: Indescribable and invisible," user)))
+          (let ((text (bcat-sentence-test--file-text src)))
+            (should (string-match-p (regexp-quote "*Ruegg 1981:* *Unsayable* and unseen, \\\\") text))
+            (should (string-match-p "^→ Ruegg 1981: modal" text)))
+          (should-not (bcat-sentence-fetch-state file '(38 39)))
+          (should (equal (list file) done)))))))
+
 (provide 'bcat-sentence-test)
 ;;; bcat-sentence-test.el ends here

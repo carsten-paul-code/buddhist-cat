@@ -1,9 +1,9 @@
 #+TITLE: Function Reference — buddhist-cat
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-10-28T18:16:19
+#+DATE: 2026-10-28T18:18:10
 #+OPTIONS: toc:2 num:nil
 
-Source tree: ~/Users/cp/buddhist-cat~  ·  89 modules  ·  1917 forms
+Source tree: ~/Users/cp/buddhist-cat~  ·  89 modules  ·  1925 forms
 
 Regenerated automatically by:
 
@@ -62,8 +62,8 @@ python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/buddhist-c
   - [[#doc-prep/tibetan-segment-migrate.el][doc-prep/tibetan-segment-migrate.el]]  (12)
   - [[#doc-prep/tibetan-sentence-structure.el][doc-prep/tibetan-sentence-structure.el]]  (25)
   - [[#doc-prep/tibetan-wylie-ingest.el][doc-prep/tibetan-wylie-ingest.el]]  (26)
-  - [[#persist/bcat-analysis.el][persist/bcat-analysis.el]]  (12)
-  - [[#persist/bcat-sentence.el][persist/bcat-sentence.el]]  (34)
+  - [[#persist/bcat-analysis.el][persist/bcat-analysis.el]]  (14)
+  - [[#persist/bcat-sentence.el][persist/bcat-sentence.el]]  (40)
   - [[#persist/bcat-template.el][persist/bcat-template.el]]  (17)
   - [[#persist/tibetan-analysis-claude.el][persist/tibetan-analysis-claude.el]]  (77)
   - [[#persist/tibetan-analysis-combine.el][persist/tibetan-analysis-combine.el]]  (14)
@@ -12584,10 +12584,31 @@ SEGS ((NUM TIBETAN WYLIE) …), REFS ((NAME . TEXT) …) the reference
 translations (DharmaMitra among them), CONTEXT the document's
 #+TIBETAN_CLAUDE_CONTEXT lines.
 
+** ~bcat-analysis-align-system-prompt~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 82
+:SIGNATURE: (bcat-analysis-align-system-prompt target)
+:END:
+
+System prompt of the small request that places reference
+translations added by hand (§5.74 step 3c) — target language TARGET.
+
+** ~bcat-analysis-align-user-prompt~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 98
+:SIGNATURE: (bcat-analysis-align-user-prompt sent-num verse segs refs &optional context)
+:END:
+
+User prompt of the alignment request: SEGS ((NUM TIBETAN WYLIE
+TRANSLATION) …) with the translation already in the file, REFS the new
+reference translations ((NAME . TEXT) …).
+
 ** ~bcat-analysis-parse~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 86
+:LINE: 117
 :SIGNATURE: (bcat-analysis-parse response)
 :END:
 
@@ -12598,7 +12619,7 @@ prose around the object.
 ** ~bcat-analysis--particle-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 113
+:LINE: 144
 :SIGNATURE: (bcat-analysis--particle-p function)
 :END:
 
@@ -12607,7 +12628,7 @@ Non-nil when FUNCTION (a word's function string) is a particle label.
 ** ~bcat-analysis--field~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 119
+:LINE: 150
 :SIGNATURE: (bcat-analysis--field alist key)
 :END:
 
@@ -12616,7 +12637,7 @@ String value of KEY in ALIST, trimmed; "" when absent.
 ** ~bcat-analysis-gloss-table~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 124
+:LINE: 155
 :SIGNATURE: (bcat-analysis-gloss-table words)
 :END:
 
@@ -12627,7 +12648,7 @@ for no words.
 ** ~bcat-analysis--reference-lines~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 145
+:LINE: 176
 :SIGNATURE: (bcat-analysis--reference-lines refs)
 :END:
 
@@ -12636,7 +12657,7 @@ for no words.
 ** ~bcat-analysis-translations-block~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 152
+:LINE: 183
 :SIGNATURE: (bcat-analysis-translations-block num seg)
 :END:
 
@@ -12647,7 +12668,7 @@ line — one line each, org line breaks between.
 ** ~bcat-analysis-comparison~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 164
+:LINE: 195
 :SIGNATURE: (bcat-analysis-comparison parsed)
 :END:
 
@@ -12657,7 +12678,7 @@ the marked references, the comparison paragraph.
 ** ~bcat-analysis-context~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 177
+:LINE: 208
 :SIGNATURE: (bcat-analysis-context base parsed)
 :END:
 
@@ -12669,7 +12690,7 @@ Claude skipped keeps its rump fields.
 ** ~bcat-analysis--particle-labels~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 108
+:LINE: 139
 :DEFAULT: '
 :END:
 
@@ -12870,10 +12891,21 @@ were read by the caller).
 Save FILE's visiting buffer when it has unsaved edits, so the user's
 typing is read (and kept) by a rebuild.
 
-** ~bcat-sentence-fetch-state~  /function/
+** ~bcat-sentence--unaligned~  /function/
 :PROPERTIES:
 :KIND: defun
 :LINE: 288
+:SIGNATURE: (bcat-sentence--unaligned file)
+:END:
+
+References under Translations compared of FILE that no segment shows
+yet (added by hand after the analysis): ((NAME . TEXT) …), marks
+stripped.
+
+** ~bcat-sentence-fetch-state~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 300
 :SIGNATURE: (bcat-sentence-fetch-state file seg-nums)
 :END:
 
@@ -12882,10 +12914,61 @@ What C-c u G still has to do for the template FILE with SEG-NUMS:
 under Translations compared appears in no segment (added by hand);
 nil when the file is complete.
 
+** ~bcat-sentence--own-translations~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 315
+:SIGNATURE: (bcat-sentence--own-translations text)
+:END:
+
+The ⟦N⟧ translations in TEXT: ((N . TRANSLATION) …).
+
+** ~bcat-sentence--block-lines~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 323
+:SIGNATURE: (bcat-sentence--block-lines block)
+:END:
+
+The lines of a translation BLOCK without their org line breaks.
+
+** ~bcat-sentence--align-merge~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 328
+:SIGNATURE: (bcat-sentence--align-merge text parsed)
+:END:
+
+TEXT of a template file with the alignment answer PARSED put in:
+per segment the new reference parts after the existing references and
+the new „→“ line after the existing ones; under Translations compared
+the plain paragraphs replaced by the marked ones and the comparison
+sentence added.  Everything else stays as it is.
+
+** ~bcat-sentence--align-land~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 379
+:SIGNATURE: (bcat-sentence--align-land file response)
+:END:
+
+Put the alignment RESPONSE into FILE; nil and an untouched file when
+the answer is unreadable.
+
+** ~bcat-sentence--align-one~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 392
+:SIGNATURE: (bcat-sentence--align-one file sentence source-file)
+:END:
+
+ONE small request placing the references added by hand in FILE —
+no DharmaMitra, no new analysis.
+
 ** ~bcat-sentence--references-for~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 304
+:LINE: 413
 :SIGNATURE: (bcat-sentence--references-for file sent-num source-file)
 :END:
 
@@ -12896,7 +12979,7 @@ compared of FILE.
 ** ~bcat-sentence--prepare~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 313
+:LINE: 422
 :SIGNATURE: (bcat-sentence--prepare file sentence source-file)
 :END:
 
@@ -12907,7 +12990,7 @@ user slots, #+CREATED and references pasted by hand carried over.
 ** ~bcat-sentence--dharmamitra~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 330
+:LINE: 439
 :SIGNATURE: (bcat-sentence--dharmamitra file sentence)
 :END:
 
@@ -12917,7 +13000,7 @@ must not stop the analysis).
 ** ~bcat-sentence--prompts~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 346
+:LINE: 455
 :SIGNATURE: (bcat-sentence--prompts sentence source-file refs)
 :END:
 
@@ -12926,7 +13009,7 @@ must not stop the analysis).
 ** ~bcat-sentence--land~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 357
+:LINE: 466
 :SIGNATURE: (bcat-sentence--land file sentence source-file refs response)
 :END:
 
@@ -12938,7 +13021,7 @@ survives); references Claude left out of the comparison are kept.
 ** ~bcat-sentence--fetch-one~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 392
+:LINE: 501
 :SIGNATURE: (bcat-sentence--fetch-one file sentence source-file)
 :END:
 
@@ -12949,7 +13032,7 @@ request through the queue.
 ** ~bcat-sentence-fetch~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 417
+:LINE: 526
 :SIGNATURE: (bcat-sentence-fetch scope)
 :END:
 

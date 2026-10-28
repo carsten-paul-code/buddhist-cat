@@ -285,6 +285,18 @@ typing is read (and kept) by a rebuild."
   "Abnormal hook run with the sentence FILE after C-c u G has written
 it (§5.74) — C-c u H (PDF + reMarkable) hangs here.")
 
+(defun bcat-sentence--unaligned (file)
+  "References under Translations compared of FILE that no segment shows
+yet (added by hand after the analysis): ((NAME . TEXT) …), marks
+stripped."
+  (let ((segments (car (split-string (bcat-sentence--text file) "^\\* Sentence$"))))
+    (delq nil (mapcar (lambda (r)
+                        (unless (or (equal (car r) "Translation")
+                                    (string-match-p (format "^\\*%s:\\* " (regexp-quote (car r)))
+                                                    segments))
+                          (cons (car r) (bcat-sentence--strip-marks (cdr r)))))
+                      (bcat-sentence--compared file)))))
+
 (defun bcat-sentence-fetch-state (file seg-nums)
   "What C-c u G still has to do for the template FILE with SEG-NUMS:
 `full' while a segment has no ⟦N⟧ translation; `align' when a reference
@@ -294,12 +306,109 @@ nil when the file is complete."
     (cond
      ((cl-some (lambda (n) (not (string-match-p (format "^⟦%d⟧ " n) text))) seg-nums)
       'full)
-     ((cl-some (lambda (r)
-                 (and (not (member (car r) '("Translation")))
-                      (not (string-match-p (format "^\\*%s:\\* " (regexp-quote (car r)))
-                                           (car (split-string text "^\\* Sentence$"))))))
-               (bcat-sentence--compared file))
-      'align))))
+     ((bcat-sentence--unaligned file) 'align))))
+
+;; ----------------------------------------------------------------------------
+;; Step 3c — placing references added by hand
+;; ----------------------------------------------------------------------------
+
+(defun bcat-sentence--own-translations (text)
+  "The ⟦N⟧ translations in TEXT: ((N . TRANSLATION) …)."
+  (let ((pos 0) (out '()))
+    (while (string-match "^⟦\\([0-9]+\\)⟧ \\(.*?\\)\\(?: \\\\\\\\\\)?$" text pos)
+      (push (cons (string-to-number (match-string 1 text)) (match-string 2 text)) out)
+      (setq pos (match-end 0)))
+    (nreverse out)))
+
+(defun bcat-sentence--block-lines (block)
+  "The lines of a translation BLOCK without their org line breaks."
+  (mapcar (lambda (l) (replace-regexp-in-string " \\\\\\\\\\'" "" l))
+          (split-string block "\n")))
+
+(defun bcat-sentence--align-merge (text parsed)
+  "TEXT of a template file with the alignment answer PARSED put in:
+per segment the new reference parts after the existing references and
+the new „→“ line after the existing ones; under Translations compared
+the plain paragraphs replaced by the marked ones and the comparison
+sentence added.  Everything else stays as it is."
+  (with-temp-buffer
+    (insert text)
+    (dolist (seg (alist-get 'segments parsed))
+      (let ((num (alist-get 'num seg)))
+        (goto-char (point-min))
+        (when (re-search-forward (format "^⟦%s⟧ " num) nil t)
+          (let* ((start (line-beginning-position))
+                 (end (if (re-search-forward "\n[ \t]*\n" nil t) (match-beginning 0) (point-max)))
+                 (lines (bcat-sentence--block-lines (buffer-substring start end)))
+                 (arrows (cl-remove-if-not (lambda (l) (string-prefix-p "→ " l)) lines))
+                 (others (cl-remove-if (lambda (l) (string-prefix-p "→ " l)) lines))
+                 (new-refs (bcat-analysis--reference-lines (alist-get 'references seg)))
+                 (shift (bcat-analysis--field seg 'shift))
+                 (all (append others new-refs arrows
+                              (unless (string-empty-p shift) (list (concat "→ " shift))))))
+            (delete-region start end)
+            (goto-char start)
+            (insert (mapconcat #'identity all " \\\\\n"))))))
+    (goto-char (point-min))
+    (when (re-search-forward "^\\*\\* Translations compared\n" nil t)
+      (let ((region-start (point)))
+        (dolist (r (alist-get 'references parsed))
+          (let ((name (bcat-analysis--field r 'name))
+                (marked (bcat-analysis--field r 'text)))
+            (goto-char region-start)
+            (when (and (not (string-empty-p marked))
+                       (re-search-forward (format "^\\*%s:\\* " (regexp-quote name)) nil t))
+              (let ((pstart (line-beginning-position))
+                    (pend (if (re-search-forward "\n[ \t]*\n\\|\n\\*" nil t)
+                              (match-beginning 0)
+                            (point-max))))
+                (delete-region pstart pend)
+                (goto-char pstart)
+                (insert (format "*%s:* %s" name marked))))))
+        (let ((comparison (bcat-analysis--field parsed 'comparison)))
+          (unless (string-empty-p comparison)
+            (goto-char region-start)
+            (let ((region-end (if (re-search-forward "^\\*\\{1,2\\} " nil t)
+                                  (line-beginning-position)
+                                (point-max))))
+              (goto-char region-end)
+              (skip-chars-backward " \t\n")
+              (insert "\n\n" comparison))))))
+    (buffer-string)))
+
+(defun bcat-sentence--align-land (file response)
+  "Put the alignment RESPONSE into FILE; nil and an untouched file when
+the answer is unreadable."
+  (let ((parsed (bcat-analysis-parse response)))
+    (if (not parsed)
+        (progn (message "C-c u G: Zuordnung für %s nicht lesbar — Datei unverändert"
+                        (file-name-nondirectory file))
+               nil)
+      (bcat-sentence--save-visit file)
+      (bcat-sentence--write file (bcat-sentence--align-merge (bcat-sentence--text file) parsed))
+      (run-hook-with-args 'bcat-sentence-after-fetch-functions file)
+      file)))
+
+(defun bcat-sentence--align-one (file sentence source-file)
+  "ONE small request placing the references added by hand in FILE —
+no DharmaMitra, no new analysis."
+  (let* ((refs (bcat-sentence--unaligned file))
+         (own (bcat-sentence--own-translations (bcat-sentence--text file)))
+         (meta (ignore-errors (tibetan-analysis--read-source-metadata source-file))))
+    (require 'tibetan-translation-discussion)
+    (tibetan-discussion--submit
+     "bcat-align" file
+     (lambda ()
+       (cons (bcat-analysis-align-system-prompt (or (plist-get meta :target-lang) "en"))
+             (bcat-analysis-align-user-prompt
+              (plist-get sentence :sent-num) (plist-get sentence :verse)
+              (mapcar (lambda (s) (list (car s) (cdr s) (bcat-sentence--wylie (cdr s))
+                                        (cdr (assq (car s) own))))
+                      (plist-get sentence :segs))
+              refs
+              (plist-get meta :claude-context))))
+     (lambda (f response) (bcat-sentence--align-land f response)))
+    'fired))
 
 (defun bcat-sentence--references-for (file sent-num source-file)
   "The reference translations C-c u G sends for sentence SENT-NUM: the
@@ -441,23 +550,24 @@ Returns (:sentences N :fired N :complete N :align N)."
                                (cons s (bcat-sentence-fetch-state
                                         (funcall file-of s) (mapcar #'car (plist-get s :segs)))))
                              sentences))
-             (todo (cl-remove-if-not (lambda (c) (eq (cdr c) 'full)) states))
+             (todo (cl-remove-if-not #'cdr states))
              (align (cl-count-if (lambda (c) (eq (cdr c) 'align)) states))
              (go (and todo
                       (or (<= (length todo) tibetan-cascade-subtree-confirm-threshold)
-                          (y-or-n-p (format "%s: %d Sätze an DharmaMitra + Claude senden? "
-                                            label (length todo))))))
+                          (y-or-n-p (format "%s: %d Sätze an Claude senden (%d neue Analyse(n), %d Zuordnung(en))? "
+                                            label (length todo) (- (length todo) align) align)))))
              (fired 0))
         (when go
           (dolist (c todo)
-            (when (eq 'fired (bcat-sentence--fetch-one (funcall file-of (car c)) (car c) src))
+            (when (eq 'fired
+                      (if (eq (cdr c) 'align)
+                          (bcat-sentence--align-one (funcall file-of (car c)) (car c) src)
+                        (bcat-sentence--fetch-one (funcall file-of (car c)) (car c) src)))
               (cl-incf fired))))
-        (message "%s: %d Satz/Sätze — %d abgerufen, %d vollständig%s"
-                 label (length sentences) fired
+        (message "%s: %d Satz/Sätze — %d abgerufen (davon %d Zuordnung neuer Vergleichsübersetzungen), %d vollständig%s"
+                 label (length sentences) fired (if go align 0)
                  (cl-count-if-not #'cdr states)
-                 (if (> align 0)
-                     (format ", %d mit neuer Vergleichsübersetzung (Zuordnung folgt)" align)
-                   ""))
+                 (if (and todo (not go)) " (Abruf abgelehnt)" ""))
         (list :sentences (length sentences) :fired fired
               :complete (cl-count-if-not #'cdr states) :align align)))))
 
