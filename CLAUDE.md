@@ -3,7 +3,9 @@
 This file briefs Claude Code (or any other Claude surface) picking up
 work on **tibetan-cat.el**, Carsten Paul's Emacs-Lisp Computer-Assisted
 Translation (CAT) system for Classical Tibetan. Read it in full before
-editing. Last updated 2026-10-26 (§5.70: HÄNGER NACH C-c u G BEHOBEN —
+editing. Last updated 2026-10-28 (§5.71: BEDEUTUNGSZEILE GEKAPPT — die
+§5.67-Zeile sprengte bei langen Komposita die Tabellenbreite; ERT 2591.
+Previous: §5.70: HÄNGER NACH C-c u G BEHOBEN —
 Emacs stand bei 100 % CPU in `org-indent-initialize-agent', nicht
 abbrechbar: die Landung schrieb die Satzdateien mit
 `inhibit-modification-hooks' t, der org-element-Cache sah nichts, org
@@ -4032,6 +4034,24 @@ migrieren beim nächsten Regenerate (editierte `** Gloss Tables`
 bleiben per §5.54-Schutz stehen).  Suite 2339 → **2345 ERT**
 (0 unexpected, 1 skip); BDD 250; compile clean; REFERENCE.org je
 def-Commit.
+
+### 5.71 Bedeutungszeile der Wortbildung gekappt (done, 2026-10-28)
+
+Carsten (28.10.): „bei asam-1-cat.org ist die Tabelle bei der Analyse von
+Sentence 4, Segment 35 im Analyse File irgendwie gebrochen". Ursache: die
+§5.67-Zeile (Bedeutungen von Präfix/Wurzel/Suffix) war als einzige
+Zeile ungekappt; das Kompositum ṣaḍ-ākāra-atīta-vartamāna-upabhoga-
+dhāraṇatām brachte 270 Zeichen in eine Zelle → Spaltenbreite 282 →
+ein Wort je Band, jede Zeile im Fenster umgebrochen.
+- `tibetan-gloss-table--formation-meaning-cell': kappt auf
+  max(`tibetan-gloss-table-cell-formation-width' (60), Breite der
+  Wortbildungszelle) mit „…" (Hilfsfunktion
+  `tibetan-gloss-table--truncate-to', aus `--truncate-cell'
+  herausgezogen). Volle Liste bleibt in `** Word Formation'.
+- Test `tibetan-gloss-table-sa-formation-meaning-capped'; ERT 2591.
+- Korpus: sent-004-asam neu gerendert (Zeilen ≤ 166). Einziger
+  weiterer Fall: Tantraloka/analysis/sent-1000-tantralo.org (nicht
+  angefasst).
 
 ### 5.70 Hänger nach C-c u G: Landung ohne Änderungs-Hooks (done, 2026-10-26)
 
