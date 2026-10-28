@@ -12,7 +12,7 @@ NACH VORLAGE — Reading-Klassen, Tibetisch: `#+CAT_TEMPLATE: tibetan' im
 Quellkopf, Gliederung * Text / * Segments / * Sentence, C-c u A = Rumpf
 ohne KI, C-c u G = ein JSON-Abruf je Satz (+ DharmaMitra, + kleiner
 Zuordnungs-Abruf für ergänzte Vergleichsübersetzungen), endet mit C-c u H
-= die Satzdatei als PDF aufs reMarkable; ERT 2628.
+= die Satzdatei als PDF aufs reMarkable; ERT 2629.
 Previous: §5.73: UMBENENNUNG IN
 BUDDHIST CAT — erster Schritt: die Hülle (Hauptdatei/Feature
 buddhist-cat, alter Name lädt weiter, Customize-Gruppe, Menü, Repo,
@@ -4180,8 +4180,11 @@ LuaLaTeX-Rauchtest per `skip-unless'), Fixtures
 `bcat-export-auto' und `bcat-export-upload' auf nil.  Commits
 `b584942' (Zielform), `4dd83ab' (Schritt 1 Vorlagen), `8ac9974'
 (2 Rumpf), `3f0e9b5' / `bb9924a' / `7f50a3b' (3a–c Abruf), `9ab36bb' (4
-Export), `7393d1f' (Opt-in), `8b3e36b' / `1e7d5ad' (5 Leser).  ERT 2628
-(0 unexpected, 1 Skip), BDD grün, compile ohne Warnung.
+Export), `7393d1f' (Opt-in), `8b3e36b' / `1e7d5ad' (5 Leser), `99d6919'
+(Bugfix: der Export-Haken überspringt Fixtures unter
+`temporary-file-directory' wie der alte Auto-Papier-Pfad seit §5.69 —
+sonst lädt ein ERT-Lauf im laufenden Emacs Test-Dateien aufs Gerät).
+ERT 2629 (0 unexpected, 1 Skip), BDD 251, compile ohne Warnung.
 
 LEHRE: `make compile' VOR dem Commit separat prüfen — in 3c erschienen
 Warnungen erst nach der Commit-Kette (es war ein veraltetes .elc).
