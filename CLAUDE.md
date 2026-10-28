@@ -12,7 +12,7 @@ NACH VORLAGE — Reading-Klassen, Tibetisch: `#+CAT_TEMPLATE: tibetan' im
 Quellkopf, Gliederung * Text / * Segments / * Sentence, C-c u A = Rumpf
 ohne KI, C-c u G = ein JSON-Abruf je Satz (+ DharmaMitra, + kleiner
 Zuordnungs-Abruf für ergänzte Vergleichsübersetzungen), endet mit C-c u H
-= die Satzdatei als PDF aufs reMarkable; ERT 2629.
+= die Satzdatei als PDF aufs reMarkable; ERT 2631.
 Previous: §5.73: UMBENENNUNG IN
 BUDDHIST CAT — erster Schritt: die Hülle (Hauptdatei/Feature
 buddhist-cat, alter Name lädt weiter, Customize-Gruppe, Menü, Repo,
@@ -4185,6 +4185,21 @@ Export), `7393d1f' (Opt-in), `8b3e36b' / `1e7d5ad' (5 Leser), `99d6919'
 `temporary-file-directory' wie der alte Auto-Papier-Pfad seit §5.69 —
 sonst lädt ein ERT-Lauf im laufenden Emacs Test-Dateien aufs Gerät).
 ERT 2629 (0 unexpected, 1 Skip), BDD 251, compile ohne Warnung.
+
+**Erster Live-Lauf (28.10., bDen Satz 9):** Queue „ok“, dann „Antwort
+… nicht lesbar“ — die Datei war schon zum Rumpf umgebaut, die Antwort
+verloren.  `957ea88': `bcat-analysis-read' liefert (OBJEKT . PROBLEM),
+eine unlesbare Antwort (Analyse wie Zuordnung) wird unter
+`bcat-analysis-response-directory' (<temp>/bcat-responses/) als
+`<satzdatei>-<zeit>.txt' aufgehoben, die Meldung nennt Grund
+(„JSON-Fehler bei Zeichen N“, 1-basiert wie `goto-char') und Pfad.
+`6206254': scheitert das strenge Lesen, repariert
+`bcat-analysis--repair-json' rohe Steuerzeichen und innere
+Anführungszeichen in Strings — genau die Defekte, die die verlangte
+wörtliche Kopie von Lindtners Anmerkung (Absatz, Eimer-Zitat mit
+"…"Befleckungen"…") erzeugt; Ursache für Satz 9 nicht belegt.
+ERT 2631.  Offen erwägen: Satz-Referenzen nicht wörtlich zurückfordern,
+sondern nur die zu markierenden Stellen (wir haben die Texte schon).
 
 LEHRE: `make compile' VOR dem Commit separat prüfen — in 3c erschienen
 Warnungen erst nach der Commit-Kette (es war ein veraltetes .elc).
