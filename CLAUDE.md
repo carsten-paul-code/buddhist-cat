@@ -7,7 +7,13 @@ work on **Buddhist CAT** (`~/buddhist-cat`, GitHub
 Computer-Assisted Translation (CAT) system for Classical Tibetan and
 Sanskrit. Read it in full before editing. Symbols keep their
 `tibetan-' prefix until their module is rebuilt; new and rebuilt
-modules use `bcat-' (§5.73). Last updated 2026-10-28 (§5.73: UMBENENNUNG IN
+modules use `bcat-' (§5.73). Last updated 2026-10-28 (§5.74: SATZDATEIEN
+NACH VORLAGE — Reading-Klassen, Tibetisch: `#+CAT_TEMPLATE: tibetan' im
+Quellkopf, Gliederung * Text / * Segments / * Sentence, C-c u A = Rumpf
+ohne KI, C-c u G = ein JSON-Abruf je Satz (+ DharmaMitra, + kleiner
+Zuordnungs-Abruf für ergänzte Vergleichsübersetzungen), endet mit C-c u H
+= die Satzdatei als PDF aufs reMarkable; ERT 2628.
+Previous: §5.73: UMBENENNUNG IN
 BUDDHIST CAT — erster Schritt: die Hülle (Hauptdatei/Feature
 buddhist-cat, alter Name lädt weiter, Customize-Gruppe, Menü, Repo,
 Verzeichnis, Carstens Configs); ERT 2597.
@@ -4047,6 +4053,147 @@ migrieren beim nächsten Regenerate (editierte `** Gloss Tables`
 bleiben per §5.54-Schutz stehen).  Suite 2339 → **2345 ERT**
 (0 unexpected, 1 skip); BDD 250; compile clean; REFERENCE.org je
 def-Commit.
+
+### 5.74 Satzdateien nach Vorlage: Text / Segmente / Satz (done für Tibetisch, 2026-10-28)
+
+Carsten (28.10.), Umbau der Satzdateien der Reading-Klassen:
+Partikelkarte, Claude Particles, Claude Vocabulary und die Sentence
+Structure je Segment fallen weg; die Glossentabellen tragen nach C-c u G
+keine „?" mehr; Grammatik nur noch als Überblick über den ganzen Satz,
+kurze Note + Struktur + Begriffe unter dem jeweiligen Segment;
+Vergleichsübersetzungen je Segment und je Satz, sinnverschiebende
+Unterschiede hervorgehoben (kein Issue/Assessment/Question); das Handout
+ist keine eigene Funktion mehr, sondern genau diese Datei als PDF aufs
+reMarkable, **ein PDF je Satz**.  „Template basierend arbeiten, gerne
+auch kaskadierend"; Gliederung „ganzes Original (bei Sanskrit + Metrik)
+/ Segments / Sentence".  Reihenfolge: **Tibetisch zuerst**, dann
+Sanskrit, dann zweisprachig.  Rückfragen entschieden: Änderungen nur bei
+C-c u G auf eine Datei (keine Rück-Aktualisierung); C-c u A nutzt die
+Vorlage schon, ohne KI; C-c u G baut eine Datei im alten Layout komplett
+neu; C-c u G endet mit C-c u H; Vergleichsübersetzungen im persönlichen
+PDF erlaubt; Kopfzeile „Ordner · Werk · Satz · Vers"; **nur
+Reading-Klassen** (die Masterarbeit behält das alte Layout).
+
+#### Zielform (Golden: `Templates/analysis/samples/Tibetan.org', bDen Satz 9)
+
+```
+* Text                   ganzes Wylie des Satzes (verse-Block)
+* Segments
+** Segment N             Glossentabelle (3 Zeilen, steinert:-Links,
+                         Partikel ohne Link), darunter
+                         ⟦N⟧ Claude \  *DharmaMitra:* … \  *Lopez:* …
+                         → Lopez: <Sinnverschiebung>
+                         *Structure:* … / *Note:* … / *Concepts:* …
+* Sentence
+** Grammar               Überblick über den ganzen Satz
+** Translations compared *Translation:* (Claude) + Referenzen + Fazit
+* Working Translation / * My Notes / * Footnotes   (Nutzer-Slots)
+```
+
+#### Bausteine (neue Module, Präfix `bcat-')
+
+- **`persist/bcat-template.el'** — Mustache-artige Vorlagen: `{{name}}',
+  `{{#liste}}…{{/liste}}', `{{^x}}', `{{> teil}}'; eine Zeile, deren
+  Platzhalter alle leer sind, fällt samt Beschriftung weg (doppelte
+  Leerzeile → eine); `#+begin_comment'-Blöcke werden entfernt;
+  Abschnittsmarken müssen allein stehen (sonst user-error).  **Kaskade:**
+  `<Quellordner>/Templates/analysis/' → `<Quellordner>/Resources/
+  Templates/analysis/' → `bcat-template-directory' (Werkzeug).
+- **`Templates/analysis/tibetan.org'** — das Gerüst; Kopf mit
+  `#+OPTIONS: … title:nil author:nil date:nil' und `#+CAT_TEMPLATE:
+  tibetan'.
+- **`persist/bcat-sentence.el'** — Rumpf (C-c u A, ohne KI:
+  Wylie, Wörterbuchtabelle, Referenzen aus § und Satz), Erkennen der
+  Vorlage, Ablauf von C-c u G.  **Opt-in pro Quelle:** `#+CAT_TEMPLATE:
+  tibetan' im Quellkopf (`bcat-sentence-template-name' liest nur
+  Kaskaden-Quellen; `bcat-sentence-file-p' prüft nur `sent-NNN'-Dateien
+  — sonst zählte die Quelle selbst als Satzdatei, `7393d1f').  Schalter
+  `bcat-sentence-templates' (t).
+- **`persist/bcat-analysis.el'** — EIN Claude-Abruf je Satz, Antwort
+  JSON: je Segment `words' (wylie/gloss/function), `translation',
+  `references', `shift', `structure', `note', `concepts'; für den Satz
+  `grammar', `translation', `references', `comparison'.  Partikel-Labels
+  (ERG GEN ABS TERM LOC ABL COM DAT ALL INST CONV) bekommen keinen
+  steinert:-Link.  Dazu der kleine Zuordnungs-Abruf (3c).
+- **`persist/bcat-export.el'** — C-c u H: org-latex mit
+  `org-latex-tables-centered' nil, ohne tabularx, LuaLaTeX ×2,
+  Kopfzeile per `org-export-before-processing-functions' (fancyhdr,
+  `Ordner · \textit{Werk} · Satz N · Vers'), Upload über
+  `tibetan-discussion-paper--upload' (Ordner = Werk, Dokument „Satz N",
+  vorhandener Name bekommt einen Zeitstempel — nie überschreiben).
+  Schalter `bcat-export-auto' / `bcat-export-upload' (t); in
+  `bcat-sentence-after-fetch-functions' eingehängt = C-c u G endet mit
+  C-c u H.
+
+#### Ablauf C-c u G auf Vorlagendateien (`bcat-sentence-fetch')
+
+1. defer-mt-Prüfung; `--prepare': fehlt die Datei → Rumpf; altes Layout
+   → komplett neu bauen, dabei Nutzer-Slots, `#+CREATED' und von Hand
+   eingetragene Referenzen erhalten.
+2. Zustand je Datei (`bcat-sentence-fetch-state'): `full' (noch keine
+   Analyse) / `align' (Analyse da, aber eine ergänzte
+   Vergleichsübersetzung ohne Zuordnung) / nil (fertig).  Über
+   `tibetan-cascade-subtree-confirm-threshold' → Rückfrage.
+3. `full': DharmaMitra zuerst (gestaffelt), dann Claude über
+   `tibetan-discussion--submit' („bcat-analysis"); `--land' rendert die
+   Vorlage neu, fehlende Referenzen kommen wieder dazu, `LAST_ANALYZED'
+   heute, dann die Hook-Funktionen (Export + Upload).
+4. `align' (3c): nur die neue Übersetzung wird per kleinem Abruf
+   („bcat-align") den Segmenten zugeordnet und chirurgisch
+   eingesetzt (`--align-merge', rein funktional) — keine
+   Vollanalyse.  **Ergänzte Vergleichsübersetzungen funktionieren also
+   automatisch mit C-c u G.**
+5. Geschrieben wird über den besuchenden Puffer (`--write'; bei
+   veraltetem Puffer `set-visited-file-modtime', sonst „Cannot resolve
+   conflict in batch mode").
+
+#### Weichen im alten Code
+
+`tibetan-cascade--create-file' / `--regenerate' / `tibetan-cascade-fetch'
+verzweigen auf bcat, wenn die Quelle eine Vorlage hat (die alten Pfade
+heißen `…-legacy'); `--fire-sentence-1' liefert für Vorlagendateien
+`new-layout'; der Materialisierer überspringt sie.  Zettel-Hervorhebung:
+`** Segment N' zählt als Glossentabellen-Abschnitt (`8b3e36b').  C-c u D
+leitet in Vorlagenquellen auf C-c u H um (`1e7d5ad').  Nebenbefund
+„Segment 38 beginnt mit barjod": Präfix བ vor ར/ལ, la-mgo-Stapel ལྐ ལྒ ལྔ ལྤ
+ལྦ (`ae21baa').
+
+#### Korpus
+
+`#+CAT_TEMPLATE: tibetan' nach `#+TIBETAN_LAYOUT: cascade' in
+`WS26-27/Tibetisch V/bden-gnyis-cat.org',
+`Mahayanasutralamkara/Tibetisch/mdo-sde-rgyan-1-cat.org',
+`…/Tibetisch-9/mdo-sde-rgyan-9-cat.org', `…/Sthiramati-9/savbh-9-cat.org',
+`Abhidharmasamuccaya/Tibetisch/kunbtus-1-cat.org' und in der
+Reading-Class-Vorlage `.claude/skills/reading-class/vorlagen/kopf-bo.org'
+(Korpus `254b1de5').  Vorhandene Satzdateien bleiben, bis C-c u G sie
+neu baut.
+
+#### Tests und Commits
+
+Neu: `test/bcat-template-test.el', `test/bcat-sentence-test.el',
+`test/bcat-analysis-test.el', `test/bcat-export-test.el' (inkl.
+LuaLaTeX-Rauchtest per `skip-unless'), Fixtures
+`test/fixtures/bcat-template-sent-009.el' und
+`bcat-analysis-sent-009.json'.  Die Test-Runner (`test/run-all-tests.el',
+`spec/run-specs.el') setzen `bcat-sentence-templates',
+`bcat-export-auto' und `bcat-export-upload' auf nil.  Commits
+`b584942' (Zielform), `4dd83ab' (Schritt 1 Vorlagen), `8ac9974'
+(2 Rumpf), `3f0e9b5' / `bb9924a' / `7f50a3b' (3a–c Abruf), `9ab36bb' (4
+Export), `7393d1f' (Opt-in), `8b3e36b' / `1e7d5ad' (5 Leser).  ERT 2628
+(0 unexpected, 1 Skip), BDD grün, compile ohne Warnung.
+
+LEHRE: `make compile' VOR dem Commit separat prüfen — in 3c erschienen
+Warnungen erst nach der Commit-Kette (es war ein veraltetes .elc).
+
+#### Offen
+
+- Sanskrit-Vorlage (mit Metrum im `* Text'), dann zweisprachig.
+- Erst danach fliegen altes Handout, Synopse, Diskussionspapier und
+  der alte Satzdatei-Pfad raus — Sanskrit-Quellen brauchen sie noch.
+  `tibetan-discussion--submit' und der rmapi-Upload ziehen dann in
+  bcat-Module.
+- §5.73-Restschritt: `#+CAT_*' neben `#+TIBETAN_*' lesen.
 
 ### 5.73 Umbenennung in Buddhist CAT — erster Schritt: die Hülle (done, 2026-10-28)
 
