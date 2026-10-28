@@ -3,7 +3,11 @@
 This file briefs Claude Code (or any other Claude surface) picking up
 work on **tibetan-cat.el**, Carsten Paul's Emacs-Lisp Computer-Assisted
 Translation (CAT) system for Classical Tibetan. Read it in full before
-editing. Last updated 2026-10-28 (§5.71: BEDEUTUNGSZEILE GEKAPPT — die
+editing. Last updated 2026-10-28 (§5.72: PDF-EXPORT DER SATZDATEIEN —
+steinert:-Links schützen `#'/`%' in \href (tabularx las sie als
+Kommentar, C-c C-e l p brach ab); ⟦N⟧ via STIX Two Math in Carstens
+Export-Init; ERT 2593.
+Previous: §5.71: BEDEUTUNGSZEILE GEKAPPT — die
 §5.67-Zeile sprengte bei langen Komposita die Tabellenbreite; ERT 2591.
 Previous: §5.70: HÄNGER NACH C-c u G BEHOBEN —
 Emacs stand bei 100 % CPU in `org-indent-initialize-agent', nicht
@@ -4034,6 +4038,38 @@ migrieren beim nächsten Regenerate (editierte `** Gloss Tables`
 bleiben per §5.54-Schutz stehen).  Suite 2339 → **2345 ERT**
 (0 unexpected, 1 skip); BDD 250; compile clean; REFERENCE.org je
 def-Commit.
+
+### 5.72 PDF-Export der Satzdateien: steinert:-Links in tabularx (done, 2026-10-28)
+
+Carsten (28.10.): `C-c C-e l p' auf Tibetisch V `sent-009-bden.org'
+„ging schief" — LuaLaTeX: „File ended while scanning use of
+\TX@get@body", kein PDF.
+
+- **Ursache:** Zeile 1 jeder Glossentabelle trägt `steinert:'-Links;
+  `tibetan-steinert-link-export' schrieb die Web-URL roh in `\href' —
+  mit `#' und vielen `%' (`#%7B%22activeTerm…').  Roh ist das nur gut,
+  solange `\href' nicht im Argument eines anderen Befehls steht.
+  Carstens Init (`~/.emacs.d/config/init-org-stable.el',
+  `org-latex-auto-tabularx') macht Tabellen ab drei Spalten zu
+  `tabularx', und tabularx liest seinen Inhalt vorab als Argument:
+  `%' wird Kommentar, frisst die schließende Klammer, LaTeX läuft bis
+  zum Dateiende.  Segment 38 (zwei Spalten → `tabular') ging durch,
+  Segment 39 nicht.
+- **Fix** (`3ddc042'): `%' und `#' als `\%'/`\#' — wie org es für die
+  eigenen `\href'-Pfade tut (`org-latex--protect-text'); hyperref
+  schreibt die echte URL ins PDF (geprüft: 11 URIs ohne Backslash).
+  Tests `tibetan-steinert-link-export-latex-escapes-url' und
+  `…-latex-compiles-in-tabularx' (echter lualatex-Lauf, skip ohne);
+  der alte Export-Test hatte die rohe Form festgeschrieben.
+- **⟦N⟧ fehlten im PDF:** Times New Roman und die bisherigen
+  Ersatzschriften haben U+27E6/27E7 nicht.  In Carstens Export-Init
+  steht jetzt `STIX Two Math' (macOS-System, zu Times gezeichnet) als
+  letzte Stufe der luaotfload-Ersatzkette (emacs-config `37e60f5';
+  ebenda die liegengebliebenen Änderungen vom 09./19.10. als eigene
+  Commits).  Export von sent-009 mit voller Init: 8 S., ohne Warnung.
+- REFERENCE.org bei einem fremd-verschmutzten Baum: aus `git archive
+  HEAD' + eigener Änderung erzeugen, Pfade zurücksetzen, nur das
+  übernehmen.
 
 ### 5.71 Bedeutungszeile der Wortbildung gekappt (done, 2026-10-28)
 
