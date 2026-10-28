@@ -1,6 +1,6 @@
 # Notice — Steinert dictionary integration
 
-`tibetan-cat.el` bundles an **optional** SQLite index built from the
+Buddhist CAT (`buddhist-cat`, formerly `tibetan-cat.el`) bundles an **optional** SQLite index built from the
 Tibetan–English–Sanskrit dictionary collection compiled and published by
 
 > **Christian Steinert** — https://dictionary.christian-steinert.de/
@@ -51,7 +51,7 @@ Sanskrit extraction is tuned per source:
 ## License
 
 The lookup code in this repository is licensed under the same terms as
-the rest of `tibetan-cat.el` (GPL). The dictionary *data* is not
+the rest of Buddhist CAT (GPL). The dictionary *data* is not
 relicensed by that code — it remains the intellectual property of the
 individual compilers acknowledged on
 https://dictionary.christian-steinert.de/ .

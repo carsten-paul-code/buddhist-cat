@@ -223,7 +223,7 @@ Returns the Tibetan-keyed version if it exists, otherwise Wylie version."
      ((file-exists-p tib-path) tib-path)
      ((file-exists-p wylie-path) wylie-path)
      ;; Try alternative location
-     (t (let ((alt-tib "/Users/cp/tibetan-cat.el/data/glossaries/rangjung-yeshe-tibetan.txt"))
+     (t (let ((alt-tib "~/buddhist-cat/data/glossaries/rangjung-yeshe-tibetan.txt"))
           (when (file-exists-p alt-tib) alt-tib))))))
 
 (defun tibetan-rangjung-yeshe-load ()
@@ -1324,7 +1324,7 @@ Called automatically when tibetan-vocabulary is loaded.
 Set `tibetan-skip-external-glossaries' to non-nil to skip loading.
 
 As of the glossary-loader unification (2026-04) there is one canonical
-bundled module — `tibetan-glossary-loader' — which `tibetan-cat.el'
+bundled module — `tibetan-glossary-loader' — which `buddhist-cat.el'
 already `require's at boot.  That module's `load-all-glossaries' is
 idempotent (guards on `tibetan-glossaries-loaded'), so calling it
 here is safe even though it has already been auto-called when the

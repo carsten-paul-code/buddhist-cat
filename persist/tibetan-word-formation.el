@@ -53,7 +53,7 @@ requested automatically after its Claude analysis has landed (one
 small extra Claude call per sentence).  C-c u G asks for missing ones
 in any case; `tibetan-word-formation-dwim' forces a new one."
   :type 'boolean
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defconst tibetan-word-formation--heading "Word Formation"
   "The `** ' heading in * Sanskrit Analysis.")

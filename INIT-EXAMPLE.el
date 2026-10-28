@@ -1,8 +1,8 @@
-;;; INIT-EXAMPLE.el --- Example init.el configuration for Tibetan CAT
+;;; INIT-EXAMPLE.el --- Example init.el configuration for Buddhist CAT
 
 ;;; Commentary:
-;; Add this to your ~/.emacs.d/init.el to load Tibetan CAT system
-;; Replace the old Tibetan CAT section with this minimal configuration
+;; Add this to your ~/.emacs.d/init.el to load the Buddhist CAT system
+;; Replace the old Tibetan CAT / Buddhist CAT section with this minimal configuration
 
 ;;; Code:
 
@@ -13,13 +13,13 @@
 (defun cp/setup-tibetan-cat ()
   "Setup Tibetan Computer-Assisted Translation system."
   (interactive)
-  (let ((cat-dir (expand-file-name "~/emacs-tibetan-cat/")))
+  (let ((cat-dir (expand-file-name "~/buddhist-cat/")))
     (when (file-directory-p cat-dir)
       (add-to-list 'load-path cat-dir)
       (condition-case err
           (progn
-            ;; Load Tibetan CAT system (all-in-one)
-            (require 'tibetan-cat)
+            ;; Load Buddhist CAT system (all-in-one)
+            (require 'buddhist-cat)
 
             ;; Load glossaries (required for vocabulary lookup)
             (let ((glossary-file (expand-file-name
@@ -33,9 +33,9 @@
                 (add-to-list 'load-path dharmamitra-dir)
                 (require 'dharmamitra nil t)))
 
-            (message "✓ Tibetan CAT system loaded successfully"))
+            (message "✓ Buddhist CAT system loaded successfully"))
         (error
-         (message "⚠ Tibetan CAT system loading failed: %s" err)
+         (message "⚠ Buddhist CAT system loading failed: %s" err)
          (message "CAT tools directory: %s" cat-dir))))))
 
 ;; Initialize CAT system after packages load

@@ -33,12 +33,12 @@
   "If non-nil, archive orphaned analysis files instead of deleting.
 Orphans are moved to analysis/.archive/ subdirectory."
   :type 'boolean
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defcustom tibetan-reorg-auto-create t
   "If non-nil, automatically create analysis for new segments during reorg."
   :type 'boolean
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 ;; ============================================================================
 ;; INVENTORY: DOCUMENT SEGMENTS

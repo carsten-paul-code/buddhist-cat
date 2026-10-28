@@ -64,7 +64,7 @@
 
 (defgroup tibetan-zettel nil
   "Integration of the zettelkasten into the CAT translation workflow."
-  :group 'tibetan-cat
+  :group 'buddhist-cat
   :prefix "tibetan-zettel-")
 
 (defcustom tibetan-zettel-directory

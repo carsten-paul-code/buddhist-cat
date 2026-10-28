@@ -8,7 +8,7 @@
 ;; Usage:
 ;;   emacs --batch -L . -L core -L analysis -L persist -L workspace \
 ;;     -L philology -L config -L data -L doc-prep -L setup -L spec -L test \
-;;     -l tibetan-cat.el -l test/generate-test-doc.el \
+;;     -l buddhist-cat.el -l test/generate-test-doc.el \
 ;;     -f tibetan-ert-generate-living-doc
 
 ;;; Code:

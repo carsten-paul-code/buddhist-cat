@@ -23,7 +23,7 @@
 ;; Usage:
 ;;   emacs --batch -L . -L core -L analysis -L persist -L workspace \
 ;;     -L philology -L config -L data -L doc-prep -L setup -L spec -L test \
-;;     -l tibetan-cat.el -l test/run-all-tests.el \
+;;     -l buddhist-cat.el -l test/run-all-tests.el \
 ;;     -l test/generate-func-overview.el \
 ;;     -f tibetan-func-overview-generate
 
@@ -90,8 +90,8 @@ file, module, private."
   "Collect all function definitions from source directories under PROJECT-ROOT.
 Returns list of function alists."
   (let ((all-funcs '()))
-    ;; Root tibetan-cat.el
-    (let ((root-file (expand-file-name "tibetan-cat.el" project-root)))
+    ;; Root buddhist-cat.el
+    (let ((root-file (expand-file-name "buddhist-cat.el" project-root)))
       (when (file-exists-p root-file)
         (setq all-funcs (append all-funcs
                                 (tibetan-func-overview--parse-source-file root-file)))))

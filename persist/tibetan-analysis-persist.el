@@ -31,7 +31,7 @@
 (declare-function tibetan-analysis--defer-mt-rewrite-placeholders
                   "tibetan-analysis-claude")
 
-;; Require modules for verb analysis (soft load - main loading via tibetan-cat.el)
+;; Require modules for verb analysis (soft load - main loading via buddhist-cat.el)
 (require 'tibetan-verb-classifier nil t)
 (require 'tibetan-enhanced-display nil t)
 (require 'tibetan-particles-bialek nil t)
@@ -312,7 +312,7 @@ Claude has responded).")
   "Scale factor for non-Tibetan (roman) text in analysis buffers.
 Values less than 1.0 make text smaller, e.g. 0.65 = 65% size."
   :type 'float
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defcustom tibetan-analysis-show-clause-structure t
   "When non-nil, the generated analysis file includes a `** Clause
@@ -327,7 +327,7 @@ from the verb's Hill-DB case frame (agent, patient, goal, …).
 Set to nil to suppress the section; existing analysis files are
 only affected the next time they are regenerated."
   :type 'boolean
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defface tibetan-analysis-tibetan-face
   '((((class color) (background light)) :foreground "#1a237e")   ; deep indigo
@@ -339,12 +339,12 @@ labels — faster to find while reading aloud in class.  Applied via
 font-lock with `append', so the more specific case-particle / converb
 / verb / gloss faces (which `prepend') still win on their own tokens.
 Customise the colour to taste."
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defface tibetan-analysis-roman-face
   '((t :inherit default))
   "Face for roman (non-Tibetan) text in analysis buffers."
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defface tibetan-analysis-verb-face
   '((((class color) (background light)) :foreground "DodgerBlue3" :weight bold)
@@ -353,7 +353,7 @@ Customise the colour to taste."
   "Face for the verb in Sentence Structure clause headers
 \(`Clause N [...]: verb LEMMA').  A distinct blue makes each clause's
 predicate jump out from its arguments.  Customise to taste."
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defface tibetan-analysis-structure-role-face
   '((((class color) (background light)) :foreground "DarkGreen" :weight bold)
@@ -362,7 +362,7 @@ predicate jump out from its arguments.  Customise to taste."
   "Face for the SUBJECT / OBJECT / oblique role labels in the Sentence
 Structure section, so the argument skeleton is scannable at a glance.
 Customise to taste."
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defface tibetan-analysis-case-particle-face
   '((((class color) (background light)) :foreground "magenta3" :weight bold)
@@ -375,7 +375,7 @@ dative / locative / topic / comitative particles stand out visually
 (magenta, bold) alongside the orange `~CONVERB~' wrappings.
 Customise to taste — the default magenta matches common Buddhist-
 studies classroom convention for case marking."
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defface tibetan-analysis-converb-particle-face
   '((((class color) (background light)) :foreground "dark orange" :weight bold)
@@ -386,7 +386,7 @@ Applied by remapping `org-code' in analysis buffers so that
 `~CONVERB~' wrappings (ablative, coordinative, simultaneous,
 causal, concessive converbs) are visually distinct from case
 markers.  Customise to taste."
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defface tibetan-analysis-interlinear-gloss-face
   '((((class color) (background light)) :foreground "DarkCyan")
@@ -402,7 +402,7 @@ to parse identical-looking bracket structures (link text vs.
 gloss) to find the translation.  A distinct cyan / turquoise
 foreground makes the gloss pop without shouting — complements
 the magenta / orange of the Particle Map faces above."
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defvar-local tibetan-analysis--faces-setup nil
   "Non-nil if faces have already been set up for this buffer.")
@@ -469,7 +469,7 @@ Reading view's `** Wylie' lines (R2, 2026-08-12).  Every verb wears
 `!x!' (`tibetan-analysis-verb-face', blue); the finite verb the
 converb chain resolves to gets this red so the sentence's anchor is
 spottable at a glance."
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defun tibetan-analysis--in-reading-interlinear-section-p ()
   "Return non-nil when point's line sits inside `** Interlinear'
@@ -760,7 +760,7 @@ The entries lead with a Wylie headword (`bla ma, noun, \"teacher\", …');
 Wylie is Latin script so the Tibetan-script colourizer never touched it
 and the terms were hard to spot among the POS / gloss / commentary.
 Bold teal makes the headword scannable in class."
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defun tibetan-analysis--in-claude-vocab-section-p ()
   "Return non-nil when point's line sits under a `** Claude Vocabulary'
@@ -823,7 +823,7 @@ Vocabulary entry (2026-06-03).")
   "Face for the CURRENT segment's span inside the whole-sentence
 translation (§5.42).  The ⟪…⟫ delimiters themselves are hidden via
 the namespaced invisibility spec — students see only the highlight."
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defconst tibetan-analysis--segment-span-font-lock-keywords
   ;; Same three-group pattern as the Particle Map =/~ markers:
@@ -941,14 +941,14 @@ parser which doesn't fire for compound-embedded markers like
 Matched as exact heading names at any org level.  Sentence Structure
 is deliberately NOT in the default — it is the §5.31 class feature."
   :type '(repeat string)
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defcustom tibetan-analysis-class-view-on-open t
   "When non-nil, analysis buffers open in the class view
 \(reference sections folded).  Toggle per buffer with
 `tibetan-analysis-toggle-class-view'."
   :type 'boolean
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defvar-local tibetan-analysis--class-view-active nil
   "Non-nil while the buffer is in the folded class view.")

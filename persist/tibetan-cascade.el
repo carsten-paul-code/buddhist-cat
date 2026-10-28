@@ -1993,7 +1993,7 @@ chunk responses carry only the marked translation, but an unbounded
 passage still risks marker drop-off.  Oversized sections split at
 sentence boundaries."
   :type 'integer
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defun tibetan-cascade--collect-section-chunks ()
   "Group the current buffer's sentences into section chunks.
@@ -2372,7 +2372,7 @@ sentence; on `* Tibetan Text' of a big source that is hundreds of
 API calls.  Up to this many it fetches without asking (a § or a
 Dyczkowski section typically has a handful of sentences)."
   :type 'integer
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defun tibetan-cascade--subtree-sentences ()
   "The org subtree at point in the current cascade SOURCE buffer.

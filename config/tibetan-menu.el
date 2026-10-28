@@ -1,8 +1,8 @@
-;;; tibetan-menu.el --- Menu bar entries for Tibetan CAT -*- lexical-binding: t -*-
+;;; tibetan-menu.el --- Menu bar entries for Buddhist CAT -*- lexical-binding: t -*-
 
 ;;; Commentary:
 ;; Provides menu bar integration for the Tibetan Computer-Assisted Translation system.
-;; All major functions are accessible via the "Tibetan" menu.
+;; All major functions are accessible via the "Buddhist CAT" menu.
 
 ;;; Code:
 
@@ -13,8 +13,8 @@
 ;; ============================================================================
 
 (easy-menu-define tibetan-cat-menu global-map
-  "Menu for Tibetan CAT (Computer-Assisted Translation) tools."
-  '("Tibetan"
+  "Menu for Buddhist CAT (Computer-Assisted Translation) tools."
+  '("Buddhist CAT"
     ("Document Preparation"
      ;; §5.27 Phase 6:  unified wizard — Wylie / Tibetan-script /
      ;; existing / OCR → headers → analysis kickoff in one flow.
@@ -302,12 +302,12 @@
 ;; ============================================================================
 
 (defvar tibetan-cat-context-menu-map
-  (let ((map (make-sparse-keymap "Tibetan")))
+  (let ((map (make-sparse-keymap "Buddhist CAT")))
     (define-key map [segment-info] '(menu-item "Segment Info" tibetan-segment-info))
     (define-key map [open-analysis] '(menu-item "Open Analysis" tibetan-open-segment-analysis))
     (define-key map [translate] '(menu-item "CAT Translate" tibetan-cat-insert-translation))
     map)
-  "Context menu for Tibetan CAT operations.")
+  "Context menu for Buddhist CAT operations.")
 
 (provide 'tibetan-menu)
 ;;; tibetan-menu.el ends here

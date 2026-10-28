@@ -23,7 +23,7 @@
 ;; tool continues to work without Steinert data). Run
 ;; `make build-steinert' (or the Python script directly) to build it.
 ;;
-;; License note: code is part of tibetan-cat.el (GPL). The dictionary data
+;; License note: code is part of Buddhist CAT (GPL). The dictionary data
 ;; is copyright of the respective compilers — see NOTICE-steinert.md.
 
 ;;; Code:

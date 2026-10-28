@@ -1,4 +1,4 @@
-;;; tibetan-keybindings.el --- All Tibetan CAT keybindings in one place -*- lexical-binding: t -*-
+;;; tibetan-keybindings.el --- All Buddhist CAT keybindings in one place -*- lexical-binding: t -*-
 
 ;;; Commentary:
 ;; Centralized keybindings for Tibetan Computer-Assisted Translation system

@@ -20,13 +20,13 @@ Values > 1.0 make Tibetan text larger for better readability.
 Recommended: 1.6-2.0 for comfortable reading of stacked letters.
 Use C-c u + / C-c u - to adjust interactively."
   :type 'number
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defface tibetan-script-face
   '((t (:height 1.8)))
   "Face for Tibetan script text for better visibility
 of superscript and subscript letters."
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defun tibetan-set-text-scale (factor)
   "Set the scale factor for Tibetan text to FACTOR.
@@ -51,21 +51,21 @@ Updates the face and re-fontifies current buffer."
         :weight light)))
   "Face for segment markers like 〔seg〕, 〔sent〕, 〔/seg〕.
 Smaller and muted to not distract from Tibetan text."
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defface tibetan-doc-marker-tag-face
   '((t (:height 0.6
         :foreground "gray40"
         :weight light)))
   "Face for marker tags (seg, sent, verse, prose)."
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defface tibetan-doc-marker-attr-face
   '((t (:height 0.6
         :foreground "steel blue"
         :weight light)))
   "Face for marker attributes like :num or :comment-on."
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 ;; ============================================================================
 ;; FONT-LOCK KEYWORDS
@@ -111,7 +111,7 @@ Smaller and muted to not distract from Tibetan text."
 Makes segment markers smaller and less obtrusive.
 Makes Tibetan script larger for better readability (superscript/subscript)."
   :lighter " TibDoc"
-  :group 'tibetan-cat
+  :group 'buddhist-cat
   (if tibetan-doc-display-mode
       (progn
         ;; Add marker font-lock keywords

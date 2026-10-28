@@ -503,7 +503,7 @@ batch firing 57 sentences must stagger.  Each scheduled fire adds
 this delay to a cumulative counter, reset by
 `tibetan-sentence-claude-clear-inflight'."
   :type 'number
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defvar tibetan-sentence-claude--dm-schedule-count 0
   "Cumulative counter for staggering sentence-level DM fires.")

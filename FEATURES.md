@@ -1,4 +1,4 @@
-# Tibetan CAT - Feature Documentation
+# Buddhist CAT - Feature Documentation
 
 *This documentation is auto-generated from executable specifications.*
 *Last updated: 2025-12-07 13:19*

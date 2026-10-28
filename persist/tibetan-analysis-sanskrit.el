@@ -44,7 +44,7 @@
 ;; today's `* DharmaMitra Translation (Tibetan)' / `(Sanskrit)'
 ;; top-level sections.
 ;;
-;; Module is soft-required from `tibetan-cat.el'; without it the
+;; Module is soft-required from `buddhist-cat.el'; without it the
 ;; Sanskrit pipeline simply doesn't exist (Tibetan side keeps
 ;; working).  Wiring lives in Phase 5 (`tibetan-analysis-
 ;; reanalyze-file' + `tibetan-auto-analyze-document').

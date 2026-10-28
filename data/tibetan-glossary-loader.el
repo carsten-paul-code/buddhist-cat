@@ -207,7 +207,7 @@ argument) to discard the existing hash and reload everything."
 ;; Respect the test-harness opt-out `tibetan-skip-external-glossaries'
 ;; so that test files which only need a few public helpers don't pay
 ;; the cost of parsing 17 000 TSV entries at require-time.  Production
-;; callers (tibetan-cat.el, sentence-structure, etc.) never bind this
+;; callers (buddhist-cat.el, sentence-structure, etc.) never bind this
 ;; flag, so their load path is unchanged.
 
 (unless (bound-and-true-p tibetan-skip-external-glossaries)

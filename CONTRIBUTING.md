@@ -1,6 +1,6 @@
-# Contributing to tibetan-cat.el
+# Contributing to Buddhist CAT
 
-Thank you for your interest in contributing to the Tibetan CAT system! This document provides guidelines for contributing to the project.
+Thank you for your interest in contributing to the Buddhist CAT system! This document provides guidelines for contributing to the project.
 
 ## Code of Conduct
 
@@ -18,8 +18,8 @@ Be respectful, inclusive, and constructive. We're building tools for Buddhist st
 
 ```bash
 # Clone the repository
-git clone https://github.com/carsten-paul-code/tibetan-cat.el.git
-cd tibetan-cat.el
+git clone https://github.com/carsten-paul-code/buddhist-cat.git
+cd buddhist-cat
 
 # Run tests to verify setup
 make test
@@ -31,8 +31,9 @@ emacs -batch -l test/run-all-tests.el
 ### Project Structure
 
 ```
-tibetan-cat.el/
-├── tibetan-cat.el       # Main entry point
+buddhist-cat/
+├── buddhist-cat.el      # Main entry point
+├── tibetan-cat.el       # Old name: loads buddhist-cat
 ├── core/                # Core utilities (utils, wylie, vocabulary)
 ├── analysis/            # Grammar analysis modules
 ├── workspace/           # Translation workspace
@@ -106,7 +107,7 @@ tibetan-cat.el/
   "Whether to enable this feature.
 When non-nil, does something useful."
   :type 'boolean
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 ;; Use defvar for internal state
 (defvar tibetan--internal-cache nil

@@ -1,9 +1,9 @@
 #+TITLE: Function Reference — tibetan-cat.el
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-10-28T16:26:09
+#+DATE: 2026-10-28T16:35:51
 #+OPTIONS: toc:2 num:nil
 
-Source tree: ~/Users/cp/tibetan-cat.el~  ·  86 modules  ·  1849 forms
+Source tree: ~/Users/cp/tibetan-cat.el~  ·  86 modules  ·  1850 forms
 
 Regenerated automatically by:
 
@@ -30,6 +30,7 @@ python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/tibetan-ca
   - [[#analysis/tibetan-translation-engine.el][analysis/tibetan-translation-engine.el]]  (10)
   - [[#analysis/tibetan-translation-suggest.el][analysis/tibetan-translation-suggest.el]]  (2)
   - [[#analysis/tibetan-verb-classifier.el][analysis/tibetan-verb-classifier.el]]  (5)
+  - [[#buddhist-cat.el][buddhist-cat.el]]  (9)
   - [[#config/tibetan-keybindings.el][config/tibetan-keybindings.el]]  (3)
   - [[#config/tibetan-menu.el][config/tibetan-menu.el]]  (1)
   - [[#core/tibetan-dharmamitra-api.el][core/tibetan-dharmamitra-api.el]]  (13)
@@ -96,7 +97,6 @@ python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/tibetan-ca
   - [[#spec/suites/sentence-first-spec.el][spec/suites/sentence-first-spec.el]]  (5)
   - [[#spec/suites/tigress-story-spec.el][spec/suites/tigress-story-spec.el]]  (5)
   - [[#spec/tibetan-bdd.el][spec/tibetan-bdd.el]]  (22)
-  - [[#tibetan-cat.el][tibetan-cat.el]]  (8)
   - [[#workspace/tibetan-analysis-nav.el][workspace/tibetan-analysis-nav.el]]  (5)
   - [[#workspace/tibetan-sentence-workspace.el][workspace/tibetan-sentence-workspace.el]]  (16)
 
@@ -1345,7 +1345,7 @@ feeds the Claude-POS tier.
 :KIND: defcustom
 :LINE: 217
 :TYPE: 'integer
-:GROUP: tibetan-cat
+:GROUP: buddhist-cat
 :DEFAULT: 25
 :END:
 
@@ -1362,7 +1362,7 @@ into 2-column bands, which is what fragmented the SS15 tables
 :KIND: defcustom
 :LINE: 248
 :TYPE: 'integer
-:GROUP: tibetan-cat
+:GROUP: buddhist-cat
 :DEFAULT: 60
 :END:
 
@@ -1374,7 +1374,7 @@ parts), in characters; a wider formation cell (row 2) raises it.
 :KIND: defcustom
 :LINE: 363
 :TYPE: 'integer
-:GROUP: tibetan-cat
+:GROUP: buddhist-cat
 :DEFAULT: 160
 :END:
 
@@ -3300,6 +3300,141 @@ stem of byed".
 Hash table of Tibetan verbs with grammatical information.
 
 
+* buddhist-cat.el
+:PROPERTIES:
+:CUSTOM_ID: buddhist-cat.el
+:SOURCE_PATH: /Users/cp/tibetan-cat.el/buddhist-cat.el
+:END:
+
+** ~tibetan-cat-setup~  /function/  ⚡  ↗
+:PROPERTIES:
+:KIND: defun
+:LINE: 315
+:SIGNATURE: (tibetan-cat-setup)
+:INTERACTIVE: t
+:AUTOLOAD: t
+:END:
+
+Setup Tibetan CAT system.
+Loads glossaries and prepares the system for use.
+
+** ~tibetan-cat-version~  /function/  ⚡  ↗
+:PROPERTIES:
+:KIND: defun
+:LINE: 401
+:SIGNATURE: (tibetan-cat-version)
+:INTERACTIVE: t
+:AUTOLOAD: t
+:END:
+
+Display Tibetan CAT version and feature summary.
+
+** ~tibetan-cat--server-socket-path~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 444
+:SIGNATURE: (tibetan-cat--server-socket-path server-name)
+:END:
+
+Return the socket path for SERVER-NAME if it exists, else nil.
+Uses the `server-socket-dir' variable to resolve the path, then
+checks for existence (the file is created by `server-start' and
+removed when the server is stopped).
+
+** ~tibetan-cat-open-zettel-for-word-at-point~  /function/  ⚡  ↗
+:PROPERTIES:
+:KIND: defun
+:LINE: 455
+:SIGNATURE: (tibetan-cat-open-zettel-for-word-at-point &optional arg)
+:INTERACTIVE: t
+:AUTOLOAD: t
+:END:
+
+Open the zettelkasten entry for the Wylie term under point.
+
+Tries (in order):
+  0. A word marked by `tibetan-zettel-highlight-mode' (text property
+     `tibetan-zettel-id'): opens that zettel directly, routed by
+     `tibetan-zettel-highlight-open' (Research via shared-route when
+     loaded) — Sanskrit and Tibetan alike (2026-10-18).
+  1. `tibetan-thesaurus--wylie-at-point' to read a `[wylie]'-bracket
+     token from the current line (Detailed Dictionary / Interlinear
+     Gloss layout).
+  2. Falls back to a `read-string' prompt when no bracketed token
+     is on the line.
+
+Resolves the term through `tibetan-zettel-lookup' which indexes the
+zettelkasten by normalised Wylie.
+
+Routing:
+  - With prefix arg \[universal-argument]: open locally via `find-file'.
+  - Otherwise: if the research Emacs server is running (socket file at
+    \='(server--socket-dir)/tibetan-cat-zettel-target-server\='),
+    route via `emacsclient --no-wait'.  This sends the zettel to the
+    research instance — typical use case is a second monitor.
+  - Otherwise (no server, no prefix): open locally via `find-file'.
+
+When the lookup returns nil (no zettel for that Wylie), prompts the
+user whether to create one and (if confirmed) delegates to `denote'
+in the appropriate instance.
+
+** ~tibetan-cat-zettel-target-server~  /customize variable/
+:PROPERTIES:
+:KIND: defcustom
+:LINE: 424
+:TYPE: 'string
+:GROUP: buddhist-cat
+:DEFAULT: "research-emacs"
+:END:
+
+Emacs server name of the Research instance for zettel lookups.
+
+When this server is running, `tibetan-cat-open-zettel-for-word-at-point'
+routes opens via emacsclient -s <server> so the zettel appears in the
+research instance instead of the CAT instance.  Configure the research
+instance to start the server with the matching name:
+
+  (require ='server)
+  (setq server-name "research-emacs")
+  (unless (server-running-p) (server-start))
+
+Empty string disables remote routing entirely.
+
+** ~tibetan-cat-version~  /variable/
+:PROPERTIES:
+:KIND: defvar
+:LINE: 312
+:END:
+
+/(no docstring)/
+
+** ~tibetan-cat-version~  /constant/
+:PROPERTIES:
+:KIND: defconst
+:LINE: 397
+:DEFAULT: "2.1.0"
+:END:
+
+Version of Tibetan CAT system.
+
+** ~server-socket-dir~  /variable/
+:PROPERTIES:
+:KIND: defvar
+:LINE: 442
+:END:
+
+/(no docstring)/
+
+** ~buddhist-cat~  /customize group/
+:PROPERTIES:
+:KIND: defgroup
+:LINE: 63
+:END:
+
+Buddhist CAT: computer-assisted translation of Tibetan and Sanskrit
+source texts (formerly Tibetan CAT).
+
+
 * config/tibetan-keybindings.el
 :PROPERTIES:
 :CUSTOM_ID: config/tibetan-keybindings.el
@@ -3348,11 +3483,11 @@ Keymap for thesaurus commands — prefix `C-c u z'.
 :PROPERTIES:
 :KIND: defvar
 :LINE: 304
-:DEFAULT: (let ((map (make-sparse-keymap "Tibetan")))
-    (define-key map [segment-info] '(menu-item "Segment Info" tibetan-segmen
+:DEFAULT: (let ((map (make-sparse-keymap "Buddhist CAT")))
+    (define-key map [segment-info] '(menu-item "Segment Info" tibetan-s
 :END:
 
-Context menu for Tibetan CAT operations.
+Context menu for Buddhist CAT operations.
 
 
 * core/tibetan-dharmamitra-api.el
@@ -4896,7 +5031,7 @@ segment without firing the full document pipeline.
 :KIND: defcustom
 :LINE: 123
 :TYPE: 'integer
-:GROUP: tibetan-cat
+:GROUP: buddhist-cat
 :DEFAULT: 30
 :END:
 
@@ -5383,7 +5518,7 @@ throwing.
 :KIND: defcustom
 :LINE: 420
 :TYPE: 'string
-:GROUP: tibetan-cat
+:GROUP: buddhist-cat
 :DEFAULT: "parallel-sanskrit"
 :END:
 
@@ -6918,7 +7053,7 @@ when the source entry carries it natively.
 :KIND: defcustom
 :LINE: 697
 :TYPE: 'integer
-:GROUP: tibetan-cat
+:GROUP: buddhist-cat
 :DEFAULT: 3
 :END:
 
@@ -7541,7 +7676,7 @@ Called automatically when tibetan-vocabulary is loaded.
 Set `tibetan-skip-external-glossaries' to non-nil to skip loading.
 
 As of the glossary-loader unification (2026-04) there is one canonical
-bundled module — `tibetan-glossary-loader' — which `tibetan-cat.el'
+bundled module — `tibetan-glossary-loader' — which `buddhist-cat.el'
 already `require's at boot.  That module's `load-all-glossaries' is
 idempotent (guards on `tibetan-glossaries-loaded'), so calling it
 here is safe even though it has already been auto-called when the
@@ -9527,7 +9662,7 @@ Show all segment markers (remove invisible property).
 :KIND: defcustom
 :LINE: 17
 :TYPE: 'number
-:GROUP: tibetan-cat
+:GROUP: buddhist-cat
 :DEFAULT: 1.8
 :END:
 
@@ -11906,7 +12041,7 @@ find zero segments and do nothing useful.
 :KIND: defcustom
 :LINE: 169
 :TYPE: 'integer
-:GROUP: tibetan-cat
+:GROUP: buddhist-cat
 :DEFAULT: 8
 :END:
 
@@ -13706,7 +13841,7 @@ Legacy wrapper around `tibetan-analysis--restore-claude-sections'.
 :KIND: defcustom
 :LINE: 3147
 :TYPE: 'boolean
-:GROUP: tibetan-cat
+:GROUP: buddhist-cat
 :DEFAULT: t
 :END:
 
@@ -16292,7 +16427,7 @@ Returns a plist summary:
 :KIND: defcustom
 :LINE: 311
 :TYPE: 'float
-:GROUP: tibetan-cat
+:GROUP: buddhist-cat
 :DEFAULT: 0.65
 :END:
 
@@ -16304,7 +16439,7 @@ Values less than 1.0 make text smaller, e.g. 0.65 = 65% size.
 :KIND: defcustom
 :LINE: 317
 :TYPE: 'boolean
-:GROUP: tibetan-cat
+:GROUP: buddhist-cat
 :DEFAULT: t
 :END:
 
@@ -16325,7 +16460,7 @@ only affected the next time they are regenerated.
 :KIND: defcustom
 :LINE: 936
 :TYPE: '(repeat string
-:GROUP: tibetan-cat
+:GROUP: buddhist-cat
 :DEFAULT: '
 :END:
 
@@ -16336,7 +16471,7 @@ only affected the next time they are regenerated.
 :KIND: defcustom
 :LINE: 946
 :TYPE: 'boolean
-:GROUP: tibetan-cat
+:GROUP: buddhist-cat
 :DEFAULT: t
 :END:
 
@@ -17343,7 +17478,7 @@ this after you've changed the system prompt or switched model.
 :KIND: defcustom
 :LINE: 34
 :TYPE: 'boolean
-:GROUP: tibetan-cat
+:GROUP: buddhist-cat
 :DEFAULT: t
 :END:
 
@@ -17355,7 +17490,7 @@ Set to nil to regenerate all files.
 :KIND: defcustom
 :LINE: 40
 :TYPE: 'boolean
-:GROUP: tibetan-cat
+:GROUP: buddhist-cat
 :DEFAULT: t
 :END:
 
@@ -17366,7 +17501,7 @@ If non-nil, also generate sentence-level clause analysis files.
 :KIND: defcustom
 :LINE: 45
 :TYPE: 'boolean
-:GROUP: tibetan-cat
+:GROUP: buddhist-cat
 :DEFAULT: t
 :END:
 
@@ -17378,7 +17513,7 @@ If non-nil, show progress messages during batch analysis.
 :LINE: 298
 :AUTOLOAD: t
 :TYPE: 'boolean
-:GROUP: tibetan-cat
+:GROUP: buddhist-cat
 :DEFAULT: nil
 :END:
 
@@ -17403,7 +17538,7 @@ and throttled by `tibetan-auto-claude-request-delay'.
 :KIND: defcustom
 :LINE: 317
 :TYPE: 'boolean
-:GROUP: tibetan-cat
+:GROUP: buddhist-cat
 :DEFAULT: nil
 :END:
 
@@ -17418,7 +17553,7 @@ Mirrors `tibetan-auto-fire-claude-on-create' for the DM translator
 :KIND: defcustom
 :LINE: 326
 :TYPE: 'number
-:GROUP: tibetan-cat
+:GROUP: buddhist-cat
 :DEFAULT: 0.5
 :END:
 
@@ -17433,7 +17568,7 @@ DM rate-limiting compared to back-to-back firing.
 :KIND: defcustom
 :LINE: 598
 :TYPE: 'number
-:GROUP: tibetan-cat
+:GROUP: buddhist-cat
 :DEFAULT: 1.5
 :END:
 
@@ -18860,7 +18995,7 @@ populated sections too.
 :KIND: defcustom
 :LINE: 1989
 :TYPE: 'integer
-:GROUP: tibetan-cat
+:GROUP: buddhist-cat
 :DEFAULT: 40
 :END:
 
@@ -18875,7 +19010,7 @@ sentence boundaries.
 :KIND: defcustom
 :LINE: 2368
 :TYPE: 'integer
-:GROUP: tibetan-cat
+:GROUP: buddhist-cat
 :DEFAULT: 10
 :END:
 
@@ -19231,7 +19366,7 @@ Invoke JOB's :on-fail callback (if any) with STATUS, swallowing errors.
 :KIND: defcustom
 :LINE: 77
 :TYPE: 'integer
-:GROUP: tibetan-cat
+:GROUP: buddhist-cat
 :DEFAULT: 16000
 :END:
 
@@ -20080,7 +20215,7 @@ saved, exported and uploaded as it is.  No API call.
 :KIND: defcustom
 :LINE: 42
 :TYPE: 'string
-:GROUP: tibetan-cat
+:GROUP: buddhist-cat
 :DEFAULT: "Reading"
 :END:
 
@@ -20092,7 +20227,7 @@ receives the exported discussion papers.
 :KIND: defcustom
 :LINE: 48
 :TYPE: 'boolean
-:GROUP: tibetan-cat
+:GROUP: buddhist-cat
 :DEFAULT: t
 :END:
 
@@ -20104,7 +20239,7 @@ with rmapi (`tibetan-discussion-paper-remarkable-folder').
 :KIND: defcustom
 :LINE: 575
 :TYPE: 'boolean
-:GROUP: tibetan-cat
+:GROUP: buddhist-cat
 :DEFAULT: t
 :END:
 
@@ -20834,7 +20969,7 @@ Body of `tibetan-handout' outside a generated handout buffer.
 :KIND: defcustom
 :LINE: 154
 :TYPE: '(repeat string
-:GROUP: tibetan-cat
+:GROUP: buddhist-cat
 :DEFAULT: '
 :END:
 
@@ -20845,7 +20980,7 @@ Body of `tibetan-handout' outside a generated handout buffer.
 :KIND: defcustom
 :LINE: 705
 :TYPE: 'string
-:GROUP: tibetan-cat
+:GROUP: buddhist-cat
 :DEFAULT: "Noto Serif Tibetan"
 :END:
 
@@ -20856,7 +20991,7 @@ Font for the Uchen line of the handout (fontspec name, HarfBuzz).
 :KIND: defcustom
 :LINE: 801
 :TYPE: '(choice (const nil
-:GROUP: tibetan-cat
+:GROUP: buddhist-cat
 :DEFAULT: "Hiragino Mincho ProN"
 :END:
 
@@ -21475,7 +21610,7 @@ Two-file (child seg + sent file) body of the sentence dispatcher.
 :KIND: defcustom
 :LINE: 499
 :TYPE: 'number
-:GROUP: tibetan-cat
+:GROUP: buddhist-cat
 :DEFAULT: 6.5
 :END:
 
@@ -22653,7 +22788,7 @@ Preview what reorganization would do without making changes.
 :KIND: defcustom
 :LINE: 32
 :TYPE: 'boolean
-:GROUP: tibetan-cat
+:GROUP: buddhist-cat
 :DEFAULT: t
 :END:
 
@@ -22665,7 +22800,7 @@ Orphans are moved to analysis/.archive/ subdirectory.
 :KIND: defcustom
 :LINE: 38
 :TYPE: 'boolean
-:GROUP: tibetan-cat
+:GROUP: buddhist-cat
 :DEFAULT: t
 :END:
 
@@ -22977,7 +23112,7 @@ comparison-refresh') as before.
 :KIND: defcustom
 :LINE: 44
 :TYPE: 'boolean
-:GROUP: tibetan-cat
+:GROUP: buddhist-cat
 :DEFAULT: t
 :END:
 
@@ -23399,7 +23534,7 @@ C-c u G fetches missing ones on its own — this forces new ones.
 :KIND: defcustom
 :LINE: 50
 :TYPE: 'boolean
-:GROUP: tibetan-cat
+:GROUP: buddhist-cat
 :DEFAULT: t
 :END:
 
@@ -23927,21 +24062,21 @@ Generate the line to add to init.el.
 :SIGNATURE: (tibetan-cat-setup--already-in-init-p)
 :END:
 
-Check if tibetan-cat is already configured in init.el.
+Check if Buddhist CAT (or its old name tibetan-cat) is configured in init.el.
 
 ** ~tibetan-cat-setup--add-to-init~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 154
+:LINE: 153
 :SIGNATURE: (tibetan-cat-setup--add-to-init)
 :END:
 
-Add tibetan-cat load line to init.el.
+Add the Buddhist CAT load line to init.el.
 
 ** ~tibetan-cat-setup--configure-fonts~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 184
+:LINE: 183
 :SIGNATURE: (tibetan-cat-setup--configure-fonts)
 :END:
 
@@ -23950,7 +24085,7 @@ Configure Tibetan font display.
 ** ~tibetan-cat-install~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 198
+:LINE: 197
 :SIGNATURE: (tibetan-cat-install &optional non-interactive)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -23962,7 +24097,7 @@ If NON-INTERACTIVE is non-nil, skip prompts and use defaults.
 ** ~tibetan-cat-status~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 283
+:LINE: 282
 :SIGNATURE: (tibetan-cat-status)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -23986,7 +24121,7 @@ Directory containing setup files.
 :DEFAULT: (file-name-directory (directory-file-name tibetan-cat-setup-dir))
 :END:
 
-Base directory of tibetan-cat.el installation.
+Base directory of the Buddhist CAT installation.
 
 ** ~package-archive-contents~  /variable/
 :PROPERTIES:
@@ -24749,132 +24884,6 @@ Results from last spec run.
 :END:
 
 Holds the result of the WHEN clause for use in THEN assertions.
-
-
-* tibetan-cat.el
-:PROPERTIES:
-:CUSTOM_ID: tibetan-cat.el
-:SOURCE_PATH: /Users/cp/tibetan-cat.el/tibetan-cat.el
-:END:
-
-** ~tibetan-cat-setup~  /function/  ⚡  ↗
-:PROPERTIES:
-:KIND: defun
-:LINE: 302
-:SIGNATURE: (tibetan-cat-setup)
-:INTERACTIVE: t
-:AUTOLOAD: t
-:END:
-
-Setup Tibetan CAT system.
-Loads glossaries and prepares the system for use.
-
-** ~tibetan-cat-version~  /function/  ⚡  ↗
-:PROPERTIES:
-:KIND: defun
-:LINE: 388
-:SIGNATURE: (tibetan-cat-version)
-:INTERACTIVE: t
-:AUTOLOAD: t
-:END:
-
-Display Tibetan CAT version and feature summary.
-
-** ~tibetan-cat--server-socket-path~  /function/
-:PROPERTIES:
-:KIND: defun
-:LINE: 431
-:SIGNATURE: (tibetan-cat--server-socket-path server-name)
-:END:
-
-Return the socket path for SERVER-NAME if it exists, else nil.
-Uses the `server-socket-dir' variable to resolve the path, then
-checks for existence (the file is created by `server-start' and
-removed when the server is stopped).
-
-** ~tibetan-cat-open-zettel-for-word-at-point~  /function/  ⚡  ↗
-:PROPERTIES:
-:KIND: defun
-:LINE: 442
-:SIGNATURE: (tibetan-cat-open-zettel-for-word-at-point &optional arg)
-:INTERACTIVE: t
-:AUTOLOAD: t
-:END:
-
-Open the zettelkasten entry for the Wylie term under point.
-
-Tries (in order):
-  0. A word marked by `tibetan-zettel-highlight-mode' (text property
-     `tibetan-zettel-id'): opens that zettel directly, routed by
-     `tibetan-zettel-highlight-open' (Research via shared-route when
-     loaded) — Sanskrit and Tibetan alike (2026-10-18).
-  1. `tibetan-thesaurus--wylie-at-point' to read a `[wylie]'-bracket
-     token from the current line (Detailed Dictionary / Interlinear
-     Gloss layout).
-  2. Falls back to a `read-string' prompt when no bracketed token
-     is on the line.
-
-Resolves the term through `tibetan-zettel-lookup' which indexes the
-zettelkasten by normalised Wylie.
-
-Routing:
-  - With prefix arg \[universal-argument]: open locally via `find-file'.
-  - Otherwise: if the research Emacs server is running (socket file at
-    \='(server--socket-dir)/tibetan-cat-zettel-target-server\='),
-    route via `emacsclient --no-wait'.  This sends the zettel to the
-    research instance — typical use case is a second monitor.
-  - Otherwise (no server, no prefix): open locally via `find-file'.
-
-When the lookup returns nil (no zettel for that Wylie), prompts the
-user whether to create one and (if confirmed) delegates to `denote'
-in the appropriate instance.
-
-** ~tibetan-cat-zettel-target-server~  /customize variable/
-:PROPERTIES:
-:KIND: defcustom
-:LINE: 411
-:TYPE: 'string
-:GROUP: tibetan-cat
-:DEFAULT: "research-emacs"
-:END:
-
-Emacs server name of the Research instance for zettel lookups.
-
-When this server is running, `tibetan-cat-open-zettel-for-word-at-point'
-routes opens via emacsclient -s <server> so the zettel appears in the
-research instance instead of the CAT instance.  Configure the research
-instance to start the server with the matching name:
-
-  (require ='server)
-  (setq server-name "research-emacs")
-  (unless (server-running-p) (server-start))
-
-Empty string disables remote routing entirely.
-
-** ~tibetan-cat-version~  /variable/
-:PROPERTIES:
-:KIND: defvar
-:LINE: 299
-:END:
-
-/(no docstring)/
-
-** ~tibetan-cat-version~  /constant/
-:PROPERTIES:
-:KIND: defconst
-:LINE: 384
-:DEFAULT: "2.1.0"
-:END:
-
-Version of Tibetan CAT system.
-
-** ~server-socket-dir~  /variable/
-:PROPERTIES:
-:KIND: defvar
-:LINE: 429
-:END:
-
-/(no docstring)/
 
 
 * workspace/tibetan-analysis-nav.el

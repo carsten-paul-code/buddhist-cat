@@ -172,7 +172,7 @@ The Khu-dbon gold grouping (Sentences 10/11/13 = exactly 8 lines
 each) shows the cap does most of the work on rnam-thar verse; the
 manual override (C-c s m) remains the instrument of record."
   :type 'integer
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defvar tibetan-verse-sentence-closing-particles
   '("སོ" "ཏོ" "ནོ" "དོ" "རོ" "འོ" "ངོ" "གོ" "བོ")

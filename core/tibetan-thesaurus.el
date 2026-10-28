@@ -52,7 +52,7 @@
 
 (defgroup tibetan-thesaurus nil
   "User-editable multilingual thesaurus for Tibetan translation work."
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defcustom tibetan-thesaurus-directory nil
   "Directory where the user's thesaurus zettels live.

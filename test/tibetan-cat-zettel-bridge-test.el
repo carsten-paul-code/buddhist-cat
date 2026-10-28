@@ -15,7 +15,7 @@
 ;;; Code:
 
 (require 'ert)
-(require 'tibetan-cat)
+(require 'buddhist-cat)
 (require 'tibetan-zettel)
 (require 'cl-lib)
 (require 'server)

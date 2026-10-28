@@ -29,7 +29,7 @@
 
 (defvar tibetan-cat-base-dir
   (file-name-directory (directory-file-name tibetan-cat-setup-dir))
-  "Base directory of tibetan-cat.el installation.")
+  "Base directory of the Buddhist CAT installation.")
 
 ;; ============================================================================
 ;; PREREQUISITE CHECKS
@@ -140,19 +140,18 @@
 
 (defun tibetan-cat-setup--init-line ()
   "Generate the line to add to init.el."
-  (format "(load \"%stibetan-cat.el\")" tibetan-cat-base-dir))
+  (format "(load \"%sbuddhist-cat.el\")" tibetan-cat-base-dir))
 
 (defun tibetan-cat-setup--already-in-init-p ()
-  "Check if tibetan-cat is already configured in init.el."
+  "Check if Buddhist CAT (or its old name tibetan-cat) is configured in init.el."
   (let ((init-file (expand-file-name "init.el" user-emacs-directory)))
     (when (file-exists-p init-file)
       (with-temp-buffer
         (insert-file-contents init-file)
-        (or (search-forward "tibetan-cat" nil t)
-            (search-forward "tibetan-cat.el" nil t))))))
+        (re-search-forward "buddhist-cat\\|tibetan-cat" nil t)))))
 
 (defun tibetan-cat-setup--add-to-init ()
-  "Add tibetan-cat load line to init.el."
+  "Add the Buddhist CAT load line to init.el."
   (let ((init-file (expand-file-name "init.el" user-emacs-directory)))
     (if (tibetan-cat-setup--already-in-init-p)
         (progn (message "  [OK] Already configured in init.el") t)
@@ -167,9 +166,9 @@
                             (point-max))))
           (goto-char insert-pos)
           (insert "\n;; ============================================================================\n")
-          (insert ";; TIBETAN CAT (Computer-Assisted Translation)\n")
+          (insert ";; BUDDHIST CAT (Computer-Assisted Translation, Tibetan + Sanskrit)\n")
           (insert ";; ============================================================================\n")
-          (insert (format "(load \"%stibetan-cat.el\")\n\n"
+          (insert (format "(load \"%sbuddhist-cat.el\")\n\n"
                           tibetan-cat-base-dir))
           (write-region (point-min) (point-max) init-file)))
       (message "  [OK] Added to %s" init-file)
@@ -250,11 +249,11 @@ If NON-INTERACTIVE is non-nil, skip prompts and use defaults."
         (insert "\n")
 
         ;; Step 5: Load the system
-        (insert "--- Loading Tibetan CAT ---\n")
+        (insert "--- Loading Buddhist CAT ---\n")
         (condition-case err
             (progn
-              (load (expand-file-name "tibetan-cat.el" tibetan-cat-base-dir))
-              (message "  [OK] Tibetan CAT loaded successfully")
+              (load (expand-file-name "buddhist-cat.el" tibetan-cat-base-dir))
+              (message "  [OK] Buddhist CAT loaded successfully")
               (insert "\n"))
           (error
            (message "  [WARN] Load error: %s" (error-message-string err))

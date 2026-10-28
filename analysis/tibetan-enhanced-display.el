@@ -11,7 +11,7 @@
 
 (require 'tibetan-enhanced-parser)
 (require 'tibetan-wylie)
-(require 'tibetan-verb-classifier nil t)  ; Soft load - main loading via tibetan-cat.el
+(require 'tibetan-verb-classifier nil t)  ; Soft load - main loading via buddhist-cat.el
 (require 'tibetan-clause-segmenter nil t) ; Soft load - shared case-detection helpers
 (require 'tibetan-mitra-translation nil t)  ; Optional: Gemma-2-Mitra-E integration
 

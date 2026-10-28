@@ -52,7 +52,7 @@
 
 (defgroup tibetan-dharmamitra-api nil
   "DharmaMitra HTTP client configuration."
-  :group 'tibetan-cat
+  :group 'buddhist-cat
   :prefix "tibetan-dharmamitra-api-")
 
 (defcustom tibetan-dharmamitra-api-base-url

@@ -1,7 +1,7 @@
 ;;; tibetan-claude-queue.el --- Throttled queue for Claude API requests -*- lexical-binding: t -*-
 
 ;; Author: Carsten Paul <post@carstenpaul.de>
-;; URL: https://github.com/carsten-paul-code/tibetan-cat.el
+;; URL: https://github.com/carsten-paul-code/buddhist-cat
 ;; Version: 1.0.0
 ;; Package-Requires: ((emacs "27.1"))
 ;; Keywords: languages, tibetan, translation, internal
@@ -71,7 +71,7 @@
 
 (defgroup tibetan-claude-queue nil
   "Throttling and retry policy for Claude API requests."
-  :group 'tibetan-cat
+  :group 'buddhist-cat
   :prefix "tibetan-claude-queue-")
 
 (defcustom tibetan-claude-max-tokens 16000
@@ -83,7 +83,7 @@ notes over several segments) runs past that and arrives cut off
 needs even more.  Billing follows the tokens actually produced, not
 this ceiling.  Bound as `gptel-max-tokens' at each request site."
   :type 'integer
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defcustom tibetan-claude-queue-concurrency 3
   "Maximum number of Claude API requests in flight at once.

@@ -3159,7 +3159,7 @@ Grammar section.
 Set to nil to keep the Pass 6b compact Grammar shape and do the
 enriched re-render only on explicit reanalyse."
   :type 'boolean
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defun tibetan-analysis--insert-claude-sections (response analysis-file)
   "Parse RESPONSE and write its sections into ANALYSIS-FILE.

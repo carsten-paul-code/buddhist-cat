@@ -51,16 +51,16 @@
 
 (defconst tibetan-ocr-correct-test--loader-path
   (expand-file-name
-   "../tibetan-cat.el"
+   "../buddhist-cat.el"
    (file-name-directory (or load-file-name buffer-file-name)))
   "Absolute path to the top-level loader, captured at file-load time.
 `load-file-name' is nil when ERT runs the test body in batch mode,
 so we resolve the path here and refer to it from the test below.")
 
 (ert-deftest tibetan-cat-loader-requires-ocr-modules ()
-  "The top-level loader (`tibetan-cat.el') must `(require)' the OCR
+  "The top-level loader (`buddhist-cat.el') must `(require)' the OCR
 trio -- validator, corrector, and runner -- so that a fresh Emacs
-session loading the package via `(require \\='tibetan-cat)' has
+session loading the package via `(require \\='buddhist-cat)' has
 the OCR commands callable without a manual `load-library'.
 
 Regression: before this test the loader added `doc-prep/' to load-path

@@ -43,13 +43,13 @@ for the handout; C-c u D inside a generated paper exports it as it is).")
   "Folder on the reMarkable (rmapi path without leading slash) that
 receives the exported discussion papers."
   :type 'string
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defcustom tibetan-discussion-paper-upload t
   "When non-nil, C-c u D uploads the exported PDF to the reMarkable
 with rmapi (`tibetan-discussion-paper-remarkable-folder')."
   :type 'boolean
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 ;; ============================================================================
 ;; Data
@@ -580,7 +580,7 @@ expected part (Claude, discussion, Sanskrit comparison) has landed.
 Built, exported and uploaded without opening the PDF; a paper whose
 content did not change is not uploaded again."
   :type 'boolean
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defvar tibetan-discussion-paper--pending (make-hash-table :test #'equal)
   "Cascade files (truenames) whose paper waits for a landing → their

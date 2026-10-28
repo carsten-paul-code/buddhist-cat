@@ -1,11 +1,13 @@
-# tibetan-cat.el
+# Buddhist CAT (buddhist-cat)
+
+*Formerly tibetan-cat.el — renamed 28.10.2026: the tool reads Sanskrit as well as Tibetan.*
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Emacs](https://img.shields.io/badge/Emacs-27.1+-purple.svg)](https://www.gnu.org/software/emacs/)
 
-A Computer-Assisted Translation (CAT) system for Classical Tibetan Buddhist texts in Emacs.
+A Computer-Assisted Translation (CAT) system for Buddhist source texts in Classical Tibetan and Sanskrit, in Emacs.
 
-Designed for classroom use and independent study of Tibetan Buddhist literature.
+Designed for reading classes and independent study of Tibetan and Sanskrit Buddhist literature.
 
 ## Features
 
@@ -50,9 +52,9 @@ Add to your `~/.emacs.d/init.el`:
 (straight-use-package 'use-package)
 (setq straight-use-package-by-default t)
 
-;; Install tibetan-cat
-(use-package tibetan-cat
-  :straight (:host github :repo "carsten-paul-code/tibetan-cat.el")
+;; Install Buddhist CAT
+(use-package buddhist-cat
+  :straight (:host github :repo "carsten-paul-code/buddhist-cat")
   :config
   (tibetan-cat-setup))
 ```
@@ -60,28 +62,28 @@ Add to your `~/.emacs.d/init.el`:
 ### Option 2: Git Clone
 
 ```bash
-git clone https://github.com/carsten-paul-code/tibetan-cat.el.git ~/.emacs.d/tibetan-cat
+git clone https://github.com/carsten-paul-code/buddhist-cat.git ~/.emacs.d/buddhist-cat
 ```
 
 Add to your `~/.emacs.d/init.el`:
 
 ```elisp
-(add-to-list 'load-path "~/.emacs.d/tibetan-cat")
-(add-to-list 'load-path "~/.emacs.d/tibetan-cat/core")
-(add-to-list 'load-path "~/.emacs.d/tibetan-cat/analysis")
-(add-to-list 'load-path "~/.emacs.d/tibetan-cat/workspace")
-(add-to-list 'load-path "~/.emacs.d/tibetan-cat/philology")
-(add-to-list 'load-path "~/.emacs.d/tibetan-cat/persist")
-(add-to-list 'load-path "~/.emacs.d/tibetan-cat/config")
-(add-to-list 'load-path "~/.emacs.d/tibetan-cat/data")
-(require 'tibetan-cat)
+(add-to-list 'load-path "~/.emacs.d/buddhist-cat")
+(add-to-list 'load-path "~/.emacs.d/buddhist-cat/core")
+(add-to-list 'load-path "~/.emacs.d/buddhist-cat/analysis")
+(add-to-list 'load-path "~/.emacs.d/buddhist-cat/workspace")
+(add-to-list 'load-path "~/.emacs.d/buddhist-cat/philology")
+(add-to-list 'load-path "~/.emacs.d/buddhist-cat/persist")
+(add-to-list 'load-path "~/.emacs.d/buddhist-cat/config")
+(add-to-list 'load-path "~/.emacs.d/buddhist-cat/data")
+(require 'buddhist-cat)
 (tibetan-cat-setup)
 ```
 
 ### Option 3: Manual Installation Script
 
 ```bash
-cd ~/path/to/tibetan-cat.el
+cd ~/path/to/buddhist-cat
 ./install.sh
 ```
 
@@ -262,8 +264,9 @@ Add headers to configure analysis behavior:
 ## Architecture
 
 ```
-tibetan-cat.el/
-├── tibetan-cat.el              # Main entry point & loader
+buddhist-cat/
+├── buddhist-cat.el             # Main entry point & loader
+├── tibetan-cat.el              # Old name: loads buddhist-cat
 ├── core/                       # Core utilities
 │   ├── tibetan-utils.el        # Helper functions
 │   ├── tibetan-wylie.el        # Wylie transliteration

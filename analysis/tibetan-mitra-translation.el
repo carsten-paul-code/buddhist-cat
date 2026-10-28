@@ -32,7 +32,7 @@
 
 (defgroup tibetan-mitra nil
   "Gemma-2-Mitra-E translation integration."
-  :group 'tibetan-cat
+  :group 'buddhist-cat
   :prefix "tibetan-mitra-")
 
 (defcustom tibetan-mitra-backend 'ollama

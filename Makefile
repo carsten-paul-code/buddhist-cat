@@ -1,20 +1,20 @@
-# Makefile for tibetan-cat.el
-# Tibetan Computer-Assisted Translation System for Emacs
+# Makefile for Buddhist CAT (buddhist-cat, formerly tibetan-cat.el)
+# Computer-assisted translation of Tibetan and Sanskrit for Emacs
 
 EMACS ?= emacs
-PACKAGE_NAME = tibetan-cat
+PACKAGE_NAME = buddhist-cat
 VERSION = 2.1.0
-INSTALL_DIR = ~/.emacs.d/tibetan-cat
+INSTALL_DIR = ~/.emacs.d/buddhist-cat
 
 .PHONY: all install uninstall test test-quick test-bdd clean compile help docs docs-bdd docs-ert docs-funcs build-steinert
 
 all: help
 
 help:
-	@echo "tibetan-cat.el - Tibetan CAT for Emacs"
+	@echo "buddhist-cat - Buddhist CAT for Emacs (Tibetan + Sanskrit)"
 	@echo ""
 	@echo "Usage:"
-	@echo "  make install    - Install to ~/.emacs.d/tibetan-cat/"
+	@echo "  make install    - Install to ~/.emacs.d/buddhist-cat/"
 	@echo "  make uninstall  - Remove installation"
 	@echo "  make test       - Run test suite"
 	@echo "  make compile    - Byte-compile all .el files"
@@ -26,20 +26,20 @@ help:
 	@echo "  make clean      - Remove compiled files"
 	@echo ""
 	@echo "After installation, add to your init.el:"
-	@echo '  (add-to-list '\''load-path "~/.emacs.d/tibetan-cat/")'
-	@echo '  (require '\''tibetan-cat)'
+	@echo '  (add-to-list '\''load-path "~/.emacs.d/buddhist-cat/")'
+	@echo '  (require '\''buddhist-cat)'
 
 install:
-	@echo "Installing tibetan-cat.el to $(INSTALL_DIR)..."
+	@echo "Installing buddhist-cat to $(INSTALL_DIR)..."
 	@mkdir -p $(INSTALL_DIR)
 	@cp -r core analysis workspace philology persist config data doc-prep setup $(INSTALL_DIR)/
-	@cp tibetan-cat.el $(INSTALL_DIR)/
+	@cp buddhist-cat.el tibetan-cat.el $(INSTALL_DIR)/
 	@echo ""
 	@echo "Installation complete!"
 	@echo ""
 	@echo "Add to your ~/.emacs.d/init.el:"
-	@echo '  (add-to-list '\''load-path "~/.emacs.d/tibetan-cat/")'
-	@echo '  (require '\''tibetan-cat)'
+	@echo '  (add-to-list '\''load-path "~/.emacs.d/buddhist-cat/")'
+	@echo '  (require '\''buddhist-cat)'
 	@echo ""
 	@echo "Then restart Emacs or run: M-x eval-buffer"
 
@@ -86,7 +86,7 @@ test-bdd:
 		-L spec \
 		-L spec/suites \
 		-L test \
-		-l tibetan-cat.el \
+		-l buddhist-cat.el \
 		-l spec/run-specs.el
 
 test-quick:
@@ -103,7 +103,7 @@ test-quick:
 		-L doc-prep \
 		-L setup \
 		-L test \
-		-l tibetan-cat.el \
+		-l buddhist-cat.el \
 		-l test/run-all-tests.el \
 		-f ert-run-tests-batch-and-exit
 
@@ -121,6 +121,7 @@ compile:
 		-L doc-prep \
 		-L setup \
 		-f batch-byte-compile \
+		buddhist-cat.el \
 		tibetan-cat.el \
 		core/*.el \
 		analysis/*.el \
@@ -151,7 +152,7 @@ docs-bdd:
 		-L setup \
 		-L spec \
 		-L test \
-		-l tibetan-cat.el \
+		-l buddhist-cat.el \
 		-l spec/generate-living-doc.el \
 		-f tibetan-bdd-generate-living-doc
 
@@ -171,7 +172,7 @@ docs-ert:
 		-L setup \
 		-L spec \
 		-L test \
-		-l tibetan-cat.el \
+		-l buddhist-cat.el \
 		-l test/run-all-tests.el \
 		-l test/generate-test-doc.el \
 		-f tibetan-ert-generate-living-doc
@@ -192,7 +193,7 @@ docs-funcs:
 		-L setup \
 		-L spec \
 		-L test \
-		-l tibetan-cat.el \
+		-l buddhist-cat.el \
 		-l test/run-all-tests.el \
 		-l test/generate-test-doc.el \
 		-l test/generate-func-overview.el \

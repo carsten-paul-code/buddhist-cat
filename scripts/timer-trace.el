@@ -6,7 +6,7 @@
 ;; Puffer, die der Agent noch bearbeitet, und die Position seines Markers.
 ;; Die letzte START-Zeile ohne END nennt den Täter.
 ;;
-;; Laden: (load "~/tibetan-cat.el/scripts/timer-trace.el") — in der Init
+;; Laden: (load "~/buddhist-cat/scripts/timer-trace.el") — in der Init
 ;; oder per `emacsclient -e'.  Aus: M-x my/timer-trace-off.
 
 (defvar my/timer-trace-file (expand-file-name "~/timer-trace.log"))

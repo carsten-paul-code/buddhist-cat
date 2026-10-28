@@ -55,7 +55,7 @@ jobs:
             -L doc-prep -L setup \
             --eval "(setq byte-compile-error-on-warn t)" \
             -f batch-byte-compile \
-            tibetan-cat.el \
+            buddhist-cat.el tibetan-cat.el \
             core/*.el analysis/*.el workspace/*.el \
             philology/*.el persist/*.el config/*.el data/*.el \
             doc-prep/*.el setup/*.el

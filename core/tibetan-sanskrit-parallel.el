@@ -426,7 +426,7 @@ extend this list and route through the same toggle command via
 a per-mode interactive variant — for now the constant default
 keeps the toggle one-keystroke."
   :type 'string
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defun tibetan-cat-set-source-mode (source-file mode)
   "Set `#+SOURCE_MODE:' to MODE on SOURCE-FILE.

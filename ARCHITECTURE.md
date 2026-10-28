@@ -1,12 +1,12 @@
 # Architecture
 
-This document describes the architecture of tibetan-cat.el, a Computer-Assisted Translation system for Classical Tibetan.
+This document describes the architecture of Buddhist CAT (buddhist-cat, formerly tibetan-cat.el), a Computer-Assisted Translation system for Classical Tibetan and Sanskrit.
 
 ## Overview
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        tibetan-cat.el                           │
+│                        buddhist-cat.el                          │
 │                      (Main Entry Point)                         │
 └─────────────────────────────────────────────────────────────────┘
                               │

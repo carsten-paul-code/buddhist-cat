@@ -35,17 +35,17 @@
   "If non-nil, skip analysis files that already exist.
 Set to nil to regenerate all files."
   :type 'boolean
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defcustom tibetan-auto-generate-sentences t
   "If non-nil, also generate sentence-level clause analysis files."
   :type 'boolean
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defcustom tibetan-auto-show-progress t
   "If non-nil, show progress messages during batch analysis."
   :type 'boolean
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 ;; ============================================================================
 ;; PROGRESS REPORTING
@@ -312,7 +312,7 @@ file whose Claude slots are still placeholders fires on open (two-
 file seg/sent/par openers, the cascade opener).  The fire is async
 and throttled by `tibetan-auto-claude-request-delay'."
   :type 'boolean
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defcustom tibetan-auto-fire-dm-on-create nil
   "Whether CREATING or OPENING analysis files fires DharmaMitra.
@@ -321,7 +321,7 @@ Mirrors `tibetan-auto-fire-claude-on-create' for the DM translator
 \(Phase A.3, 2026-04-30); default nil since §5.60 (AI on demand —
 `C-c u G' fetches Claude and DharmaMitra explicitly)."
   :type 'boolean
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defcustom tibetan-auto-dm-request-delay 0.5
   "Seconds between successive DharmaMitra translation requests
@@ -330,7 +330,7 @@ per call), so 97 new segments take roughly 97 × (1.5 + 0.5) =
 ~3 min of queue time.  The 0.5-sec gap reduces the chance of
 DM rate-limiting compared to back-to-back firing."
   :type 'number
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defun tibetan-auto-analyze-document (&optional force)
   "Automatically generate analysis files for all segments and sentences.
@@ -602,7 +602,7 @@ hundreds at once causes rate-limit or timeout errors.  The staggered
 fire loop in `tibetan-auto-request-claude-translations' spaces them
 out by this many seconds."
   :type 'number
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defun tibetan-auto--extract-tibetan-text-from-analysis (filepath)
   "Read the Tibetan segment text out of the `* Tibetan Text' heading

@@ -1,9 +1,21 @@
 # Changelog
 
-All notable changes to tibetan-cat.el will be documented in this file.
+All notable changes to Buddhist CAT (formerly tibetan-cat.el) will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased] - 2026-10-28
+
+### Changed
+- Renamed from Tibetan CAT (`tibetan-cat.el`) to **Buddhist CAT**
+  (`buddhist-cat`): the tool reads Sanskrit as well as Tibetan.  Main
+  file and feature `buddhist-cat`; customize group `buddhist-cat`
+  (the old `tibetan-cat` group was used but never defined); menu
+  "Buddhist CAT"; repository `carsten-paul-code/buddhist-cat`.
+- `(require 'tibetan-cat)` keeps working (`tibetan-cat.el` loads
+  `buddhist-cat`).  Symbols keep their `tibetan-` prefix until their
+  module is rebuilt; new and rebuilt modules use `bcat-`.
 
 ## [1.0.0] - 2024-11-01
 

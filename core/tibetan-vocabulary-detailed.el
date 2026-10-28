@@ -705,7 +705,7 @@ Default 3 strikes a balance: one curated source (if present) + up to
 three reference glosses covers the sense space for class reading
 without turning each entry into a wall of near-duplicates."
   :type 'integer
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defun tibetan-vocab-detailed-cap-entries (entries)
   "Return ENTRIES trimmed per `tibetan-vocab-detailed-max-sources'.

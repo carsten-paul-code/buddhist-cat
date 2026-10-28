@@ -36,8 +36,8 @@ step() { echo -e "\n${BOLD}$1${NC}"; }
 # CONFIGURATION
 # ============================================================================
 
-INSTALL_DIR="${HOME}/tibetan-cat.el"
-REPO_URL="https://github.com/carsten-paul-code/tibetan-cat.el.git"
+INSTALL_DIR="${HOME}/buddhist-cat"
+REPO_URL="https://github.com/carsten-paul-code/buddhist-cat.git"
 EMACS_DIR="${HOME}/.emacs.d"
 
 # Parse arguments
@@ -237,10 +237,10 @@ mkdir -p "$EMACS_DIR"
 if [[ "$CONFIGURE_INIT" == "true" ]]; then
     INIT_FILE="$EMACS_DIR/init.el"
 
-    if [[ -f "$INIT_FILE" ]] && grep -q "tibetan-cat" "$INIT_FILE" 2>/dev/null; then
+    if [[ -f "$INIT_FILE" ]] && grep -q "buddhist-cat\|tibetan-cat" "$INIT_FILE" 2>/dev/null; then
         ok "Already configured in init.el"
     else
-        info "Adding Tibetan CAT to init.el..."
+        info "Adding Buddhist CAT to init.el..."
 
         # Create init.el if it doesn't exist
         touch "$INIT_FILE"
@@ -248,9 +248,9 @@ if [[ "$CONFIGURE_INIT" == "true" ]]; then
         # Build the block to insert
         LOAD_BLOCK="
 ;; ============================================================================
-;; TIBETAN CAT (Computer-Assisted Translation)
+;; BUDDHIST CAT (Computer-Assisted Translation, Tibetan + Sanskrit)
 ;; ============================================================================
-(load \"${INSTALL_DIR}/tibetan-cat.el\")"
+(load \"${INSTALL_DIR}/buddhist-cat.el\")"
 
         if [[ "$INSTALL_UI" == "true" ]]; then
             LOAD_BLOCK="${LOAD_BLOCK}
@@ -267,7 +267,7 @@ else
     info "Skipping init.el configuration (--no-init)"
     info "Add this to your init.el manually:"
     echo ""
-    echo "  (load \"${INSTALL_DIR}/tibetan-cat.el\")"
+    echo "  (load \"${INSTALL_DIR}/buddhist-cat.el\")"
     echo ""
 fi
 

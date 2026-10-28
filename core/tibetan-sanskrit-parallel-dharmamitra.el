@@ -124,7 +124,7 @@ first."
   "Seconds to wait for Claude's pick response before falling back
 to the top candidate."
   :type 'integer
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defun tibetan-sanskrit-parallel-dm--build-claude-pick-prompt
     (tibetan-text candidates)

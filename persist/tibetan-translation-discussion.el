@@ -47,7 +47,7 @@ requested automatically as soon as Claude AND DharmaMitra have landed
 \(and reference translations exist).  One extra Claude call per
 sentence.  C-c u c always works on demand."
   :type 'boolean
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defconst tibetan-discussion--heading "Discussion"
   "The `** ' heading of the discussion under * Provided Translations.")

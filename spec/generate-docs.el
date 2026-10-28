@@ -13,7 +13,7 @@
   (let ((output-file (expand-file-name "FEATURES.md"
                        (file-name-directory (or load-file-name buffer-file-name "..")))))
     (with-temp-file output-file
-      (insert "# Tibetan CAT - Feature Documentation\n\n")
+      (insert "# Buddhist CAT - Feature Documentation\n\n")
       (insert "*This documentation is auto-generated from executable specifications.*\n")
       (insert "*Last updated: " (format-time-string "%Y-%m-%d %H:%M") "*\n\n")
       (insert "---\n\n")

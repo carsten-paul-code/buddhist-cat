@@ -56,7 +56,7 @@
 
 (defgroup tibetan-zettel-highlight nil
   "Highlight and link words that have a zettel."
-  :group 'tibetan-cat
+  :group 'buddhist-cat
   :prefix "tibetan-zettel-highlight-")
 
 (defcustom tibetan-zettel-highlight-index-file

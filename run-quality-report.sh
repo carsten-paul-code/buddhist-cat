@@ -1,7 +1,7 @@
 #!/bin/bash
 # Generate a quality report for the Tibetan CAT project
 # Runs all tests and specs, captures structured output to a file
-# Usage: cd ~/tibetan-cat.el && bash run-quality-report.sh
+# Usage: cd ~/buddhist-cat && bash run-quality-report.sh
 
 set -o pipefail
 

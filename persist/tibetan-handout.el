@@ -158,7 +158,7 @@ A segment whose grammar carries NONE of them keeps all its bullets —
 the filter never empties a segment (the Sanskrit schema has free
 labels)."
   :type '(repeat string)
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defun tibetan-handout--grammar-bullets (text)
   "Labelled grammar bullets of one segment's TEXT: ((LABEL . BODY) …).
@@ -705,7 +705,7 @@ the next C-c u H regenerates it from the analysis files.")
 (defcustom tibetan-handout-tibetan-font "Noto Serif Tibetan"
   "Font for the Uchen line of the handout (fontspec name, HarfBuzz)."
   :type 'string
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defconst tibetan-handout--latex-commands
   (concat
@@ -803,7 +803,7 @@ are defused with an empty export snippet in front."
 e.g. Japanese titles in the sigla (Nagao 2007) — §5.68; nil for
 none."
   :type '(choice (const nil) string)
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defun tibetan-handout--latex-fonts ()
   "The font lines of the handout/paper preamble: Libertinus as main

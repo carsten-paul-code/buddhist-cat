@@ -1,7 +1,7 @@
 ;;; tibetan-clause-segmenter.el --- Round-2 clause segmentation + NP chunking + argument structure -*- lexical-binding: t -*-
 
 ;;; Commentary:
-;; Round-2 of the tibetan-cat.el grammar pipeline.  Unlike the older,
+;; Round-2 of the buddhist-cat.el grammar pipeline.  Unlike the older,
 ;; text-based `tibetan-clause-analysis.el' (which re-splits syllables and
 ;; is kept for backward-compat), this module operates on the *position-
 ;; indexed* representation produced by `tibetan-parse-enhanced' /

@@ -1,13 +1,13 @@
 # Development Guide
 
-This guide covers setting up a development environment and common development tasks for tibetan-cat.el.
+This guide covers setting up a development environment and common development tasks for Buddhist CAT (buddhist-cat).
 
 ## Quick Start
 
 ```bash
 # Clone
-git clone https://github.com/carsten-paul-code/tibetan-cat.el.git
-cd tibetan-cat.el
+git clone https://github.com/carsten-paul-code/buddhist-cat.git
+cd buddhist-cat
 
 # Run tests
 make test
@@ -39,8 +39,9 @@ make run
 ### Directory Structure
 
 ```
-tibetan-cat.el/
-├── tibetan-cat.el       # Main entry point (load this)
+buddhist-cat/
+├── buddhist-cat.el      # Main entry point (load this)
+├── tibetan-cat.el       # Old name: loads buddhist-cat
 ├── core/                # Core modules
 ├── analysis/            # Analysis engines
 ├── workspace/           # Translation workspace
@@ -63,12 +64,12 @@ From Emacs:
 
 ```elisp
 ;; Load for development
-(add-to-list 'load-path "~/path/to/tibetan-cat.el")
-(add-to-list 'load-path "~/path/to/tibetan-cat.el/core")
-(add-to-list 'load-path "~/path/to/tibetan-cat.el/analysis")
+(add-to-list 'load-path "~/path/to/buddhist-cat")
+(add-to-list 'load-path "~/path/to/buddhist-cat/core")
+(add-to-list 'load-path "~/path/to/buddhist-cat/analysis")
 ;; ... other subdirectories
 
-(require 'tibetan-cat)
+(require 'buddhist-cat)
 ```
 
 Or use the Makefile:
@@ -279,7 +280,7 @@ Create a spec file in `spec/`:
 
 ### Version Bump
 
-1. Update version in `tibetan-cat.el`:
+1. Update version in `buddhist-cat.el`:
    ```elisp
    ;; Version: X.Y.Z
    (defconst tibetan-cat-version "X.Y.Z")
@@ -343,7 +344,7 @@ git push origin vX.Y.Z
 
 (defgroup tibetan-module nil
   "Module description."
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defcustom tibetan-module-option t
   "Option description."

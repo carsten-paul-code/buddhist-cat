@@ -223,7 +223,7 @@ Interlinear.  Wide uncapped cells force the shared-grid wrap
 into 2-column bands, which is what fragmented the SS15 tables
 \(review 2026-09-17)."
   :type 'integer
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defun tibetan-gloss-table--truncate-cell (gloss)
   "GLOSS capped at `tibetan-gloss-table-cell-gloss-width', or nil.
@@ -249,7 +249,7 @@ find the full gloss."
   "Minimum budget of a row-3 cell (meanings of the word-formation
 parts), in characters; a wider formation cell (row 2) raises it."
   :type 'integer
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defun tibetan-gloss-table--formation-meaning-cell (tok)
   "Row-3 cell of TOK: the meanings of its word-formation parts,
@@ -376,7 +376,7 @@ value makes interactive and batch output diverge — the §5.53
 drift class.  For the same reason the budget must never be
 derived from the live window width."
   :type 'integer
-  :group 'tibetan-cat)
+  :group 'buddhist-cat)
 
 (defun tibetan-gloss-table--visible-width (s)
   "Display width of cell S — org-Link-Syntax kollabiert auf die

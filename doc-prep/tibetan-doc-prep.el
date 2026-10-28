@@ -35,7 +35,7 @@
 ;; `autoload's (not `declare-function's) so `fboundp' returns t and
 ;; the menu's `:active' predicate accepts them BEFORE the user
 ;; touches any wizard command — `tibetan-doc-prep' is loaded by
-;; `tibetan-cat.el', so anything wired here is reachable.
+;; `buddhist-cat.el', so anything wired here is reachable.
 (autoload 'tibetan-document-prep-wizard
   "tibetan-document-prep-wizard"
   "Unified Tibetan document-preparation wizard (§5.27)." t)
@@ -56,7 +56,7 @@
 
 (defgroup tibetan-doc-prep nil
   "Tibetan document preparation pipeline."
-  :group 'tibetan-cat
+  :group 'buddhist-cat
   :prefix "tibetan-doc-prep-")
 
 (defcustom tibetan-doc-prep-default-line-break 'shad

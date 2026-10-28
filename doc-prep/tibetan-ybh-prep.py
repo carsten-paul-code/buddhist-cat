@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Prep a Wylie Yogācārabhūmi (or similar śāstra) source file into
-the Milarepa-style segment structure expected by tibetan-cat.el.
+the Milarepa-style segment structure expected by Buddhist CAT (buddhist-cat).
 
 Pipeline:
   1. Extract the `* Tibetan Text' body.
