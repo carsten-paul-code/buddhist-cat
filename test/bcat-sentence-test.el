@@ -332,12 +332,40 @@ compared)."
   "An answer without a readable JSON object changes nothing; the hook
 for C-c u H does not run."
   (bcat-sentence-test--with-source
-    (let ((before (bcat-sentence-test--create src)))
+    (let ((before (bcat-sentence-test--create src))
+          (bcat-analysis-response-directory (expand-file-name "responses" dir)))
       (bcat-sentence-test--with-stubs "Sorry, I cannot help with that."
         (bcat-sentence-test--fetch src)
         (should (= 1 submits))
         (should-not done)
         (should (equal before (bcat-sentence-test--file-text src)))))))
+
+(ert-deftest bcat-sentence-fetch-unreadable-answer-is-kept ()
+  "28.10., Satz 9: „Antwort … nicht lesbar“ and the answer was gone —
+nothing to diagnose.  An unreadable answer is saved under
+`bcat-analysis-response-directory' (sentence file name + time), and
+the message names the JSON error and that file."
+  (bcat-sentence-test--with-source
+    (bcat-sentence-test--create src)
+    (let* ((bcat-analysis-response-directory (expand-file-name "responses" dir))
+           (answer "{\"segments\": [], \"t\": \"die \"Befleckungen\" x\"}")
+           (messages '()))
+      (cl-letf (((symbol-function 'message)
+                 (lambda (fmt &rest args)
+                   (push (apply #'format-message fmt args) messages))))
+        (bcat-sentence-test--with-stubs answer
+          (bcat-sentence-test--fetch src)))
+      (let ((saved (directory-files bcat-analysis-response-directory t
+                                    "\\`sent-009-bden-.*\\.txt\\'")))
+        (should (= 1 (length saved)))
+        (should (equal answer (with-temp-buffer
+                                (insert-file-contents (car saved))
+                                (buffer-string))))
+        (should (cl-some (lambda (m)
+                           (and (string-match-p "nicht lesbar" m)
+                                (string-match-p "JSON-Fehler bei Zeichen 29" m)
+                                (string-match-p (regexp-quote (car saved)) m)))
+                         messages))))))
 
 (ert-deftest bcat-sentence-fetch-respects-defer-mt ()
   "#+TIBETAN_DEFER_MT: t (Portfolio) — no request at all."

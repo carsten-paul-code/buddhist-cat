@@ -1,9 +1,9 @@
 #+TITLE: Function Reference — buddhist-cat
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-10-28T18:31:22
+#+DATE: 2026-10-28T18:52:20
 #+OPTIONS: toc:2 num:nil
 
-Source tree: ~/Users/cp/buddhist-cat~  ·  90 modules  ·  1943 forms
+Source tree: ~/Users/cp/buddhist-cat~  ·  90 modules  ·  1948 forms
 
 Regenerated automatically by:
 
@@ -62,9 +62,9 @@ python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/buddhist-c
   - [[#doc-prep/tibetan-segment-migrate.el][doc-prep/tibetan-segment-migrate.el]]  (12)
   - [[#doc-prep/tibetan-sentence-structure.el][doc-prep/tibetan-sentence-structure.el]]  (25)
   - [[#doc-prep/tibetan-wylie-ingest.el][doc-prep/tibetan-wylie-ingest.el]]  (26)
-  - [[#persist/bcat-analysis.el][persist/bcat-analysis.el]]  (14)
+  - [[#persist/bcat-analysis.el][persist/bcat-analysis.el]]  (18)
   - [[#persist/bcat-export.el][persist/bcat-export.el]]  (15)
-  - [[#persist/bcat-sentence.el][persist/bcat-sentence.el]]  (41)
+  - [[#persist/bcat-sentence.el][persist/bcat-sentence.el]]  (42)
   - [[#persist/bcat-template.el][persist/bcat-template.el]]  (17)
   - [[#persist/tibetan-analysis-claude.el][persist/tibetan-analysis-claude.el]]  (77)
   - [[#persist/tibetan-analysis-combine.el][persist/tibetan-analysis-combine.el]]  (14)
@@ -12557,7 +12557,7 @@ Wylie → Tibetan Unicode ingest settings.
 ** ~bcat-analysis--language~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 34
+:LINE: 35
 :SIGNATURE: (bcat-analysis--language target)
 :END:
 
@@ -12566,7 +12566,7 @@ The language name for the target code TARGET ("de" → German).
 ** ~bcat-analysis-system-prompt~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 38
+:LINE: 39
 :SIGNATURE: (bcat-analysis-system-prompt target)
 :END:
 
@@ -12576,7 +12576,7 @@ code TARGET — constant per document, so the prompt cache stays warm.
 ** ~bcat-analysis-user-prompt~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 62
+:LINE: 63
 :SIGNATURE: (bcat-analysis-user-prompt sent-num verse segs refs &optional context)
 :END:
 
@@ -12588,7 +12588,7 @@ translations (DharmaMitra among them), CONTEXT the document's
 ** ~bcat-analysis-align-system-prompt~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 82
+:LINE: 83
 :SIGNATURE: (bcat-analysis-align-system-prompt target)
 :END:
 
@@ -12598,7 +12598,7 @@ translations added by hand (§5.74 step 3c) — target language TARGET.
 ** ~bcat-analysis-align-user-prompt~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 98
+:LINE: 99
 :SIGNATURE: (bcat-analysis-align-user-prompt sent-num verse segs refs &optional context)
 :END:
 
@@ -12606,21 +12606,52 @@ User prompt of the alignment request: SEGS ((NUM TIBETAN WYLIE
 TRANSLATION) …) with the translation already in the file, REFS the new
 reference translations ((NAME . TEXT) …).
 
+** ~bcat-analysis--json-problem~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 125
+:SIGNATURE: (bcat-analysis--json-problem err start)
+:END:
+
+A short description of the JSON error ERR; positions count from the
+start of the answer (the object began at START).
+
+** ~bcat-analysis-read~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 133
+:SIGNATURE: (bcat-analysis-read response)
+:END:
+
+(OBJECT . PROBLEM) for Claude's RESPONSE: the JSON object as an alist
+(keys as symbols, arrays as lists) and nil, or nil and a short
+description why there is none.  Tolerates a code fence or prose around
+the object.
+
 ** ~bcat-analysis-parse~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 117
+:LINE: 155
 :SIGNATURE: (bcat-analysis-parse response)
 :END:
 
-The JSON object in Claude's RESPONSE as an alist (keys as symbols,
-arrays as lists), or nil when there is none.  Tolerates a code fence or
-prose around the object.
+The JSON object in Claude's RESPONSE as an alist, or nil when there
+is none (see `bcat-analysis-read').
+
+** ~bcat-analysis-keep-response~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 160
+:SIGNATURE: (bcat-analysis-keep-response file response)
+:END:
+
+Save RESPONSE, an answer for the sentence FILE that could not be
+read, under `bcat-analysis-response-directory'; return its path.
 
 ** ~bcat-analysis--particle-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 144
+:LINE: 180
 :SIGNATURE: (bcat-analysis--particle-p function)
 :END:
 
@@ -12629,7 +12660,7 @@ Non-nil when FUNCTION (a word's function string) is a particle label.
 ** ~bcat-analysis--field~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 150
+:LINE: 186
 :SIGNATURE: (bcat-analysis--field alist key)
 :END:
 
@@ -12638,7 +12669,7 @@ String value of KEY in ALIST, trimmed; "" when absent.
 ** ~bcat-analysis-gloss-table~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 155
+:LINE: 191
 :SIGNATURE: (bcat-analysis-gloss-table words)
 :END:
 
@@ -12649,7 +12680,7 @@ for no words.
 ** ~bcat-analysis--reference-lines~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 176
+:LINE: 212
 :SIGNATURE: (bcat-analysis--reference-lines refs)
 :END:
 
@@ -12658,7 +12689,7 @@ for no words.
 ** ~bcat-analysis-translations-block~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 183
+:LINE: 219
 :SIGNATURE: (bcat-analysis-translations-block num seg)
 :END:
 
@@ -12669,7 +12700,7 @@ line — one line each, org line breaks between.
 ** ~bcat-analysis-comparison~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 195
+:LINE: 231
 :SIGNATURE: (bcat-analysis-comparison parsed)
 :END:
 
@@ -12679,7 +12710,7 @@ the marked references, the comparison paragraph.
 ** ~bcat-analysis-context~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 208
+:LINE: 244
 :SIGNATURE: (bcat-analysis-context base parsed)
 :END:
 
@@ -12688,10 +12719,22 @@ header, segments with num and wylie, user sections) completed from
 PARSED (Claude's answer).  Segments are matched by number; a segment
 Claude skipped keeps its rump fields.
 
+** ~bcat-analysis-response-directory~  /customize variable/
+:PROPERTIES:
+:KIND: defcustom
+:LINE: 118
+:TYPE: 'directory
+:GROUP: buddhist-cat
+:DEFAULT: (expand-file-name "bcat-responses" temporary-file-directory)
+:END:
+
+Where an answer C-c u G could not read is kept, one file per answer
+(sentence file name + time) — outside the corpus, for diagnosis.
+
 ** ~bcat-analysis--particle-labels~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 139
+:LINE: 175
 :DEFAULT: '
 :END:
 
@@ -13119,10 +13162,20 @@ the new „→“ line after the existing ones; under Translations compared
 the plain paragraphs replaced by the marked ones and the comparison
 sentence added.  Everything else stays as it is.
 
-** ~bcat-sentence--align-land~  /function/
+** ~bcat-sentence--unreadable~  /function/
 :PROPERTIES:
 :KIND: defun
 :LINE: 386
+:SIGNATURE: (bcat-sentence--unreadable what file response problem)
+:END:
+
+Report that the answer of kind WHAT for FILE could not be read
+(PROBLEM says why) and keep RESPONSE for diagnosis.  Returns nil.
+
+** ~bcat-sentence--align-land~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 394
 :SIGNATURE: (bcat-sentence--align-land file response)
 :END:
 
@@ -13132,7 +13185,7 @@ the answer is unreadable.
 ** ~bcat-sentence--align-one~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 399
+:LINE: 406
 :SIGNATURE: (bcat-sentence--align-one file sentence source-file)
 :END:
 
@@ -13142,7 +13195,7 @@ no DharmaMitra, no new analysis.
 ** ~bcat-sentence--references-for~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 420
+:LINE: 427
 :SIGNATURE: (bcat-sentence--references-for file sent-num source-file)
 :END:
 
@@ -13153,7 +13206,7 @@ compared of FILE.
 ** ~bcat-sentence--prepare~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 429
+:LINE: 436
 :SIGNATURE: (bcat-sentence--prepare file sentence source-file)
 :END:
 
@@ -13164,7 +13217,7 @@ user slots, #+CREATED and references pasted by hand carried over.
 ** ~bcat-sentence--dharmamitra~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 446
+:LINE: 453
 :SIGNATURE: (bcat-sentence--dharmamitra file sentence)
 :END:
 
@@ -13174,7 +13227,7 @@ must not stop the analysis).
 ** ~bcat-sentence--prompts~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 462
+:LINE: 469
 :SIGNATURE: (bcat-sentence--prompts sentence source-file refs)
 :END:
 
@@ -13183,7 +13236,7 @@ must not stop the analysis).
 ** ~bcat-sentence--land~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 473
+:LINE: 480
 :SIGNATURE: (bcat-sentence--land file sentence source-file refs response)
 :END:
 
@@ -13195,7 +13248,7 @@ survives); references Claude left out of the comparison are kept.
 ** ~bcat-sentence--fetch-one~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 508
+:LINE: 514
 :SIGNATURE: (bcat-sentence--fetch-one file sentence source-file)
 :END:
 
@@ -13206,7 +13259,7 @@ request through the queue.
 ** ~bcat-sentence-fetch~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 533
+:LINE: 539
 :SIGNATURE: (bcat-sentence-fetch scope)
 :END:
 

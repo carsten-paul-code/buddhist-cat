@@ -383,14 +383,21 @@ sentence added.  Everything else stays as it is."
               (insert "\n\n" comparison))))))
     (buffer-string)))
 
+(defun bcat-sentence--unreadable (what file response problem)
+  "Report that the answer of kind WHAT for FILE could not be read
+\(PROBLEM says why) and keep RESPONSE for diagnosis.  Returns nil."
+  (message "C-c u G: %s für %s nicht lesbar (%s) — Datei unverändert; Antwort: %s"
+           what (file-name-nondirectory file) problem
+           (bcat-analysis-keep-response file response))
+  nil)
+
 (defun bcat-sentence--align-land (file response)
   "Put the alignment RESPONSE into FILE; nil and an untouched file when
 the answer is unreadable."
-  (let ((parsed (bcat-analysis-parse response)))
+  (let* ((read (bcat-analysis-read response))
+         (parsed (car read)))
     (if (not parsed)
-        (progn (message "C-c u G: Zuordnung für %s nicht lesbar — Datei unverändert"
-                        (file-name-nondirectory file))
-               nil)
+        (bcat-sentence--unreadable "Zuordnung" file response (cdr read))
       (bcat-sentence--save-visit file)
       (bcat-sentence--write file (bcat-sentence--align-merge (bcat-sentence--text file) parsed))
       (run-hook-with-args 'bcat-sentence-after-fetch-functions file)
@@ -475,11 +482,10 @@ must not stop the analysis)."
 an untouched file when the answer is unreadable.  User slots and
 #+CREATED are read from the file NOW (typing during the request
 survives); references Claude left out of the comparison are kept."
-  (let ((parsed (bcat-analysis-parse response)))
+  (let* ((read (bcat-analysis-read response))
+         (parsed (car read)))
     (if (not parsed)
-        (progn (message "C-c u G: Antwort für %s nicht lesbar — Datei unverändert"
-                        (file-name-nondirectory file))
-               nil)
+        (bcat-sentence--unreadable "Antwort" file response (cdr read))
       (bcat-sentence--save-visit file)
       (let* ((sent-num (plist-get sentence :sent-num))
              (segs (plist-get sentence :segs))

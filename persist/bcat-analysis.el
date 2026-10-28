@@ -22,6 +22,7 @@
 (require 'cl-lib)
 (require 'subr-x)
 (require 'json)
+(require 'seq)
 
 (declare-function tibetan-gloss-table--cell "tibetan-gloss-table" (s))
 (declare-function tibetan-gloss-table--truncate-cell "tibetan-gloss-table" (gloss))
@@ -114,23 +115,58 @@ reference translations ((NAME . TEXT) …)."
 ;; Parsing the answer
 ;; ----------------------------------------------------------------------------
 
-(defun bcat-analysis-parse (response)
-  "The JSON object in Claude's RESPONSE as an alist (keys as symbols,
-arrays as lists), or nil when there is none.  Tolerates a code fence or
-prose around the object."
-  (when (and (stringp response)
-             (string-match "{" response))
+(defcustom bcat-analysis-response-directory
+  (expand-file-name "bcat-responses" temporary-file-directory)
+  "Where an answer C-c u G could not read is kept, one file per answer
+\(sentence file name + time) — outside the corpus, for diagnosis."
+  :type 'directory
+  :group 'buddhist-cat)
+
+(defun bcat-analysis--json-problem (err start)
+  "A short description of the JSON error ERR; positions count from the
+start of the answer (the object began at START)."
+  (let ((pos (car (last (seq-filter #'integerp (cdr err))))))
+    (if pos
+        (format "JSON-Fehler bei Zeichen %d" (+ start pos))
+      "JSON-Fehler")))
+
+(defun bcat-analysis-read (response)
+  "(OBJECT . PROBLEM) for Claude's RESPONSE: the JSON object as an alist
+\(keys as symbols, arrays as lists) and nil, or nil and a short
+description why there is none.  Tolerates a code fence or prose around
+the object."
+  (if (not (and (stringp response) (string-match "{" response)))
+      (cons nil "kein JSON-Objekt")
     (let* ((start (match-beginning 0))
            (end (string-match "}[^}]*\\'" response)))
-      (when (and end (> end start))
-        (condition-case nil
+      (if (not (and end (> end start)))
+          (cons nil "JSON-Objekt unvollständig")
+        (condition-case err
             (let ((obj (json-parse-string (substring response start (1+ end))
                                           :object-type 'alist
                                           :array-type 'list
                                           :null-object nil
                                           :false-object nil)))
-              (and (consp obj) (assq 'segments obj) obj))
-          (error nil))))))
+              (if (and (consp obj) (assq 'segments obj))
+                  (cons obj nil)
+                (cons nil "JSON ohne segments")))
+          (error (cons nil (bcat-analysis--json-problem err start))))))))
+
+(defun bcat-analysis-parse (response)
+  "The JSON object in Claude's RESPONSE as an alist, or nil when there
+is none (see `bcat-analysis-read')."
+  (car (bcat-analysis-read response)))
+
+(defun bcat-analysis-keep-response (file response)
+  "Save RESPONSE, an answer for the sentence FILE that could not be
+read, under `bcat-analysis-response-directory'; return its path."
+  (make-directory bcat-analysis-response-directory t)
+  (let ((path (expand-file-name
+               (format "%s-%s.txt" (file-name-base file)
+                       (format-time-string "%Y%m%d-%H%M%S"))
+               bcat-analysis-response-directory)))
+    (with-temp-file path (insert (or response "")))
+    path))
 
 ;; ----------------------------------------------------------------------------
 ;; Template fields
