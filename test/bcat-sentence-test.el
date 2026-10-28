@@ -151,5 +151,212 @@ Templates/analysis/ shapes the new file instead of the tool's."
     (should (equal "#+CAT_TEMPLATE: tibetan\n* Nur Wylie\nbrjod du med pa bltar med pa/ /\n'gyur ba med pa 'dus ma byas/ /\n"
                    (bcat-sentence-test--create src)))))
 
+;; ----------------------------------------------------------------------------
+;; Step 3b — C-c u G on template files
+;; ----------------------------------------------------------------------------
+
+(defconst bcat-sentence-test--answer
+  (concat
+   "{\"segments\": ["
+   "{\"num\": 38, \"words\": ["
+   "{\"wylie\": \"brjod du med pa\", \"gloss\": \"indescribable\", \"function\": \"ADJ · predicate\"},"
+   "{\"wylie\": \"bltar med pa\", \"gloss\": \"invisible\", \"function\": \"ADJ · predicate\"}],"
+   " \"translation\": \"Indescribable and invisible,\","
+   " \"references\": [{\"name\": \"Lindtner 1981\", \"text\": \"[It is also] inexpressible (avācya) and invisible (adraṣṭavya).\"},"
+   "                  {\"name\": \"DharmaMitra\", \"text\": \"Inexpressible and invisible,\"}],"
+   " \"shift\": \"\", \"structure\": \"no finite verb\", \"note\": \"\", \"concepts\": \"\"},"
+   "{\"num\": 39, \"words\": ["
+   "{\"wylie\": \"'gyur ba med pa\", \"gloss\": \"immutable\", \"function\": \"ADJ · predicate\"},"
+   "{\"wylie\": \"'dus ma byas\", \"gloss\": \"uncompounded\", \"function\": \"ADJ · predicate\"}],"
+   " \"translation\": \"immutable and uncompounded\","
+   " \"references\": [{\"name\": \"DharmaMitra\", \"text\": \"Unchanging and unconditioned—\"}],"
+   " \"shift\": \"\", \"structure\": \"continues the chain\", \"note\": \"\","
+   " \"concepts\": \"*'dus ma byas* (asaṃskṛta)\"}],"
+   " \"grammar\": \"Two predicate pādas.\","
+   " \"translation\": \"Indescribable and invisible, immutable and uncompounded\","
+   " \"references\": [{\"name\": \"Lindtner 1981\", \"text\": \"[It is also] inexpressible (avācya) and invisible (adraṣṭavya).\"},"
+   "                  {\"name\": \"DharmaMitra\", \"text\": \"Inexpressible and invisible, / Unchanging and unconditioned—\"}],"
+   " \"comparison\": \"\"}")
+  "A canned Claude answer for the two-pāda test verse.")
+
+(defmacro bcat-sentence-test--with-stubs (answer &rest body)
+  "Run BODY with DharmaMitra returning a fixed translation, every timer
+run at once, and the Claude submit landing ANSWER immediately.  Binds
+PROMPTS (the (SYSTEM . USER) pairs sent), SUBMITS, DONE (files the
+after-fetch hook saw) and COMPANIONS (old companion hook calls)."
+  (declare (indent 1))
+  `(let ((prompts '()) (submits 0) (done '()) (companions 0)
+         (bcat-sentence-after-fetch-functions nil)
+         (tibetan-cascade-after-fetch-functions nil)
+         (tibetan-cascade-fetch-done-functions nil))
+     (add-hook 'bcat-sentence-after-fetch-functions (lambda (f) (push f done)))
+     (add-hook 'tibetan-cascade-after-fetch-functions
+               (lambda (&rest _) (cl-incf companions) nil))
+     (add-hook 'tibetan-cascade-fetch-done-functions
+               (lambda (&rest _) (cl-incf companions)))
+     (cl-letf (((symbol-function 'tibetan-dharmamitra-api-chat-translate)
+                (lambda (&rest _) "Inexpressible and invisible, / Unchanging and unconditioned—"))
+               ((symbol-function 'run-at-time)
+                (lambda (_time _repeat fn &rest args) (apply fn args) nil))
+               ((symbol-function 'tibetan-discussion--submit)
+                (lambda (_kind file thunk land)
+                  (cl-incf submits)
+                  (push (funcall thunk) prompts)
+                  (funcall land file ,answer)
+                  t)))
+       ,@body)))
+
+(defun bcat-sentence-test--fetch (src)
+  "C-c u G on sentence 9 of SRC."
+  (tibetan-cascade-fetch (list :source src :sent-nums '(9) :label "Satz 9")))
+
+(defun bcat-sentence-test--file-text (src)
+  (with-temp-buffer
+    (insert-file-contents (tibetan-sentence--filepath
+                           9 (file-name-as-directory
+                              (expand-file-name "analysis" (file-name-directory src)))
+                           src))
+    (buffer-string)))
+
+(defun bcat-sentence-test--set-notes (file text)
+  "Write TEXT as the body of * My Notes in FILE."
+  (with-temp-buffer
+    (insert-file-contents file)
+    (goto-char (point-min))
+    (re-search-forward "^\\* My Notes\n")
+    (insert text "\n")
+    (write-region (point-min) (point-max) file nil 0)))
+
+(ert-deftest bcat-sentence-fetch-fills-template-file ()
+  "C-c u G on a template-built rump: DharmaMitra first, then ONE Claude
+request whose prompt carries the segments, Lindtner and DharmaMitra;
+the answer fills the file in the template form — tables from Claude's
+words (no \"?\"), translation blocks, structure, concepts, grammar,
+Translations compared — while My Notes and #+CREATED stay.  The old
+companion requests do not run; the after-fetch hook (C-c u H) sees the
+file once."
+  (bcat-sentence-test--with-source
+    (bcat-sentence-test--create src)
+    (let ((file (tibetan-sentence--filepath 9 folder src)))
+      (bcat-sentence-test--set-notes file "Meine Notiz zu Vers 9.")
+      (with-temp-buffer             ; pretend it was created earlier
+        (insert-file-contents file)
+        (goto-char (point-min))
+        (re-search-forward "^#\\+CREATED: .*$")
+        (replace-match "#+CREATED: 2026-10-14")
+        (write-region (point-min) (point-max) file nil 0))
+      (bcat-sentence-test--with-stubs bcat-sentence-test--answer
+        (bcat-sentence-test--fetch src)
+        (should (= 1 submits))
+        (let ((user (cdr (car prompts))))
+          (should (string-match-p "\\[38\\] Tibetan: བརྗོད" user))
+          (should (string-match-p "Wylie: brjod du med pa bltar med pa/ /" user))
+          (should (string-match-p "=== Lindtner 1981 ===" user))
+          (should (string-match-p "=== DharmaMitra ===\nInexpressible and invisible" user)))
+        (should (string-match-p "in English" (car (car prompts))))
+        (let ((text (bcat-sentence-test--file-text src)))
+          (should (string-match-p "^#\\+CAT_TEMPLATE: tibetan$" text))
+          (should (string-match-p "^#\\+CREATED: 2026-10-14$" text))
+          (should (string-match-p (format "^#\\+LAST_ANALYZED: %s$"
+                                          (format-time-string "%Y-%m-%d"))
+                                  text))
+          (should (string-match-p "| indescribable +| invisible" text))
+          (should-not (string-match-p "^| \\?" text))
+          (should (string-match-p (regexp-quote "⟦38⟧ Indescribable and invisible, \\\\\n*Lindtner 1981:*") text))
+          (should (string-match-p (regexp-quote "*DharmaMitra:* Unchanging and unconditioned—") text))
+          (should (string-match-p "^\\*Structure:\\* no finite verb$" text))
+          (should (string-match-p "^\\*Concepts:\\* \\*'dus ma byas\\* (asaṃskṛta)$" text))
+          (should (string-match-p "^\\*\\* Grammar\nTwo predicate pādas\\.$" text))
+          (should (string-match-p "^\\*Translation:\\* Indescribable and invisible, immutable" text))
+          (should (string-match-p "^\\* My Notes\nMeine Notiz zu Vers 9\\.$" text)))
+        (should (equal (list (tibetan-sentence--filepath 9 folder src)) done))
+        (should (= 0 companions))))))
+
+(ert-deftest bcat-sentence-fetch-complete-file-asks-nothing ()
+  "A second C-c u G on a filled file sends nothing (only what is
+missing is fetched) and leaves the file as it is."
+  (bcat-sentence-test--with-source
+    (bcat-sentence-test--create src)
+    (bcat-sentence-test--with-stubs bcat-sentence-test--answer
+      (bcat-sentence-test--fetch src)
+      (let ((before (bcat-sentence-test--file-text src)))
+        (setq submits 0 done nil)
+        (bcat-sentence-test--fetch src)
+        (should (= 0 submits))
+        (should-not done)
+        (should (equal before (bcat-sentence-test--file-text src)))))))
+
+(ert-deftest bcat-sentence-fetch-rebuilds-old-layout ()
+  "Carsten: „bei C-c u G komplett neu bauen, wenn noch im alten Layout“.
+An old-layout file is rebuilt in the template form and analysed; My
+Notes survives, and a translation pasted by hand into the old
+Provided Translations becomes a reference (prompt + Translations
+compared)."
+  (bcat-sentence-test--with-source
+    (let ((bcat-sentence-templates nil))
+      (bcat-sentence-test--create src))
+    (let ((file (tibetan-sentence--filepath 9 folder src)))
+      (should-not (bcat-sentence-file-p file))
+      (bcat-sentence-test--set-notes file "Alte Notiz.")
+      (with-temp-buffer
+        (insert-file-contents file)
+        (goto-char (point-min))
+        (re-search-forward "^\\* Working Translation")
+        (beginning-of-line)
+        (insert "** Eigene 2026\nMy own rendering of verse nine.\n\n")
+        (write-region (point-min) (point-max) file nil 0))
+      (bcat-sentence-test--with-stubs bcat-sentence-test--answer
+        (bcat-sentence-test--fetch src)
+        (should (= 1 submits))
+        (should (string-match-p "=== Eigene 2026 ===\nMy own rendering" (cdr (car prompts))))
+        (let ((text (bcat-sentence-test--file-text src)))
+          (should (equal "tibetan" (bcat-sentence-file-p file)))
+          (should-not (string-match-p "^\\* Provided Translations\\|^\\* Tibetan Analysis" text))
+          (should (string-match-p "^\\* My Notes\nAlte Notiz\\.$" text))
+          (should (string-match-p "^\\*Eigene 2026:\\* My own rendering of verse nine\\.$" text)))))))
+
+(ert-deftest bcat-sentence-fetch-unreadable-answer-keeps-file ()
+  "An answer without a readable JSON object changes nothing; the hook
+for C-c u H does not run."
+  (bcat-sentence-test--with-source
+    (let ((before (bcat-sentence-test--create src)))
+      (bcat-sentence-test--with-stubs "Sorry, I cannot help with that."
+        (bcat-sentence-test--fetch src)
+        (should (= 1 submits))
+        (should-not done)
+        (should (equal before (bcat-sentence-test--file-text src)))))))
+
+(ert-deftest bcat-sentence-fetch-respects-defer-mt ()
+  "#+TIBETAN_DEFER_MT: t (Portfolio) — no request at all."
+  (bcat-sentence-test--with-source
+    (with-temp-file src
+      (insert (replace-regexp-in-string
+               "#\\+TIBETAN_LAYOUT: cascade\n"
+               "#+TIBETAN_LAYOUT: cascade\n#+TIBETAN_DEFER_MT: t\n"
+               bcat-sentence-test--source)))
+    (bcat-sentence-test--with-stubs bcat-sentence-test--answer
+      (bcat-sentence-test--fetch src)
+      (should (= 0 submits)))))
+
+(ert-deftest bcat-sentence-fetch-state ()
+  "What C-c u G still has to do for a template file: `full' while a
+segment has no ⟦N⟧ translation, nil when complete, `align' when a
+reference was added under Translations compared that no segment shows."
+  (bcat-sentence-test--with-source
+    (bcat-sentence-test--create src)
+    (let ((file (tibetan-sentence--filepath 9 folder src)))
+      (should (eq 'full (bcat-sentence-fetch-state file '(38 39))))
+      (bcat-sentence-test--with-stubs bcat-sentence-test--answer
+        (bcat-sentence-test--fetch src))
+      (should-not (bcat-sentence-fetch-state file '(38 39)))
+      (with-temp-buffer
+        (insert-file-contents file)
+        (goto-char (point-min))
+        (re-search-forward "^\\* Working Translation")
+        (beginning-of-line)
+        (insert "*Ruegg 1981:* A newly added rendering.\n\n")
+        (write-region (point-min) (point-max) file nil 0))
+      (should (eq 'align (bcat-sentence-fetch-state file '(38 39)))))))
+
 (provide 'bcat-sentence-test)
 ;;; bcat-sentence-test.el ends here

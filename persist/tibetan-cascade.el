@@ -64,6 +64,7 @@
 (declare-function bcat-sentence-template-name "bcat-sentence" (source-file))
 (declare-function bcat-sentence-create-file "bcat-sentence" (sent-num segs source-file filepath))
 (declare-function bcat-sentence-file-p "bcat-sentence" (file))
+(declare-function bcat-sentence-fetch "bcat-sentence" (scope))
 
 ;; The §184-handout gloss tables (Masterarbeit three-view plan,
 ;; 2026-09-15).  Soft — the emitter is fboundp-guarded and
@@ -2551,7 +2552,17 @@ never overwritten; the queue throttles, claim/dedup prevents doubles,
 the leaf still defers under #+TIBETAN_DEFER_MT).  Independent of the
 auto-fire switches — this IS the explicit request.  More than
 `tibetan-cascade-subtree-confirm-threshold' → `y-or-n-p' with the
-count.  Returns (:sentences N :created N :fired N :complete N)."
+count.  Returns (:sentences N :created N :fired N :complete N).
+§5.74: a source with a template (Tibetan) takes its own path —
+`bcat-sentence-fetch' (template files, one analysis per sentence, no
+old companion requests)."
+  (if (and (fboundp 'bcat-sentence-template-name)
+           (bcat-sentence-template-name (plist-get scope :source)))
+      (bcat-sentence-fetch scope)
+    (tibetan-cascade--fetch-legacy scope)))
+
+(defun tibetan-cascade--fetch-legacy (scope)
+  "`tibetan-cascade-fetch' for sources without a template (old layout)."
   (let* ((src (plist-get scope :source))
          (label (plist-get scope :label))
          (nums (plist-get scope :sent-nums))
