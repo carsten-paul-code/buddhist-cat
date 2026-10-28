@@ -348,7 +348,7 @@ the message names the JSON error and that file."
   (bcat-sentence-test--with-source
     (bcat-sentence-test--create src)
     (let* ((bcat-analysis-response-directory (expand-file-name "responses" dir))
-           (answer "{\"segments\": [], \"t\": \"die \"Befleckungen\" x\"}")
+           (answer "{\"segments\": [], \"t\": 1 2}")
            (messages '()))
       (cl-letf (((symbol-function 'message)
                  (lambda (fmt &rest args)
@@ -363,7 +363,7 @@ the message names the JSON error and that file."
                                 (buffer-string))))
         (should (cl-some (lambda (m)
                            (and (string-match-p "nicht lesbar" m)
-                                (string-match-p "JSON-Fehler bei Zeichen 29" m)
+                                (string-match-p "JSON-Fehler bei Zeichen 25" m)
                                 (string-match-p (regexp-quote (car saved)) m)))
                          messages))))))
 

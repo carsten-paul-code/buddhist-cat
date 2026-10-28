@@ -130,27 +130,70 @@ start of the answer (the object began at START)."
         (format "JSON-Fehler bei Zeichen %d" (+ start pos))
       "JSON-Fehler")))
 
+(defun bcat-analysis--repair-json (text)
+  "TEXT with the two defects Claude's JSON shows when it copies reference
+texts verbatim mended: a raw control character inside a string is
+escaped, and so is a quote inside a string that cannot end it — one not
+followed by `:', `]', `}' or `,' plus the start of a value (Eimer's
+\"Um die Hemmnisse, nämlich die \"Befleckungen\", …\" in Lindtner's
+note).  Valid JSON comes back unchanged."
+  (with-temp-buffer
+    (insert text)
+    (goto-char (point-min))
+    (let ((in-string nil))
+      (while (not (eobp))
+        (let ((c (char-after)))
+          (cond
+           ((not in-string)
+            (when (eq c ?\") (setq in-string t))
+            (forward-char 1))
+           ((eq c ?\\)
+            (forward-char (min 2 (- (point-max) (point)))))
+           ((eq c ?\")
+            (if (save-excursion
+                  (forward-char 1)
+                  (looking-at "[ \t\n\r]*\\(?:[]:}]\\|\\'\\|,[ \t\n\r]*\\(?:[\"{[]\\|-?[0-9]\\|true\\_>\\|false\\_>\\|null\\_>\\)\\)"))
+                (setq in-string nil)
+              (insert "\\"))
+            (forward-char 1))
+           ((< c 32)
+            (delete-char 1)
+            (insert (pcase c
+                      (?\n "\\n")
+                      (?\t "\\t")
+                      (?\r "\\r")
+                      (_ (format "\\u%04x" c)))))
+           (t (forward-char 1))))))
+    (buffer-string)))
+
+(defun bcat-analysis--decode (json)
+  "JSON (a string) as an alist with symbol keys and lists for arrays."
+  (json-parse-string json :object-type 'alist :array-type 'list
+                     :null-object nil :false-object nil))
+
 (defun bcat-analysis-read (response)
   "(OBJECT . PROBLEM) for Claude's RESPONSE: the JSON object as an alist
 \(keys as symbols, arrays as lists) and nil, or nil and a short
 description why there is none.  Tolerates a code fence or prose around
-the object."
+the object, and mends what `bcat-analysis--repair-json' mends."
   (if (not (and (stringp response) (string-match "{" response)))
       (cons nil "kein JSON-Objekt")
     (let* ((start (match-beginning 0))
            (end (string-match "}[^}]*\\'" response)))
       (if (not (and end (> end start)))
           (cons nil "JSON-Objekt unvollständig")
-        (condition-case err
-            (let ((obj (json-parse-string (substring response start (1+ end))
-                                          :object-type 'alist
-                                          :array-type 'list
-                                          :null-object nil
-                                          :false-object nil)))
-              (if (and (consp obj) (assq 'segments obj))
-                  (cons obj nil)
-                (cons nil "JSON ohne segments")))
-          (error (cons nil (bcat-analysis--json-problem err start))))))))
+        (let* ((json (substring response start (1+ end)))
+               (strict (condition-case err
+                           (cons (bcat-analysis--decode json) nil)
+                         (error (cons nil err))))
+               (obj (or (car strict)
+                        (and (cdr strict)
+                             (ignore-errors
+                               (bcat-analysis--decode (bcat-analysis--repair-json json)))))))
+          (cond
+           ((and (consp obj) (assq 'segments obj)) (cons obj nil))
+           ((or obj (null (cdr strict))) (cons nil "JSON ohne segments"))
+           (t (cons nil (bcat-analysis--json-problem (cdr strict) start)))))))))
 
 (defun bcat-analysis-parse (response)
   "The JSON object in Claude's RESPONSE as an alist, or nil when there

@@ -73,6 +73,26 @@ without a parsable object with segments is nil."
     (should-not (bcat-analysis-parse "{\"segments\": [1, 2"))
     (should-not (bcat-analysis-parse nil))))
 
+(ert-deftest bcat-analysis-parse-repairs-copied-text ()
+  "The prompt asks for the reference translations verbatim inside JSON
+strings — Lindtner's verse 9 with its note (a paragraph break; Eimer
+quoted as \"Um die Hemmnisse, nämlich die \"Befleckungen\", …\").  A raw
+line break or tab, or an unescaped inner quote, must not cost the whole
+answer (28.10., Satz 9 „nicht lesbar“).  Valid JSON is left alone."
+  (let* ((lindtner (concat "When a yogi understands it he abandons the obstructions. [fn:9]\n\n"
+                           "[fn:9] Eimer's translation \"Um die Hemmnisse, nämlich die "
+                           "\"Befleckungen\", restlos aufzugeben, . . . \" is wrong."))
+         (answer (concat "{\"segments\": [{\"num\": 41, \"note\": \"a\tb\"}], "
+                         "\"references\": [{\"name\": \"Lindtner 1981\", \"text\": \""
+                         lindtner "\"}], \"grammar\": \"g\"}"))
+         (parsed (bcat-analysis-parse answer)))
+    (should parsed)
+    (should (equal lindtner (alist-get 'text (car (alist-get 'references parsed)))))
+    (should (equal "a\tb" (alist-get 'note (car (alist-get 'segments parsed)))))
+    (should (equal "g" (alist-get 'grammar parsed)))
+    (let ((golden (bcat-analysis-test--answer)))
+      (should (equal golden (bcat-analysis--repair-json golden))))))
+
 (ert-deftest bcat-analysis-prompts ()
   "System prompt: the JSON schema and the target language; user prompt:
 the document context, every segment with Tibetan and Wylie, each
