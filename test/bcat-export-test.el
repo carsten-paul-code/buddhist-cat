@@ -96,6 +96,23 @@ file is not exported (C-c u G first)."
           (bcat-export))
         (should-not exported)))))
 
+(ert-deftest bcat-export-replaces-discussion-paper ()
+  "C-c u D (the old discussion paper) in a source with a template: the
+paper is gone (its sections no longer exist) — C-c u H runs instead."
+  (bcat-sentence-test--with-source
+    (bcat-sentence-test--create src)
+    (let ((exported 0) (built 0))
+      (cl-letf (((symbol-function 'bcat-export) (lambda () (interactive) (cl-incf exported)))
+                ((symbol-function 'tibetan-discussion-paper-build)
+                 (lambda (&rest _) (cl-incf built) "/tmp/x.org")))
+        (require 'tibetan-discussion-paper)
+        (with-current-buffer (find-file-noselect src)
+          (goto-char (point-min))
+          (re-search-forward "^\\*\\*\\*\\* Segment 38")
+          (tibetan-discussion-paper)))
+      (should (= 1 exported))
+      (should (= 0 built)))))
+
 (ert-deftest bcat-export-pdf-smoke ()
   "Real LuaLaTeX run (only where lualatex is installed): the reviewed
 Tibetan sample becomes a PDF; its .tex has no title, no centred and no

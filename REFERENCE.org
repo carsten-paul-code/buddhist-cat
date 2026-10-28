@@ -1,6 +1,6 @@
 #+TITLE: Function Reference — buddhist-cat
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-10-28T18:23:44
+#+DATE: 2026-10-28T18:26:07
 #+OPTIONS: toc:2 num:nil
 
 Source tree: ~/Users/cp/buddhist-cat~  ·  90 modules  ·  1943 forms
@@ -7933,7 +7933,7 @@ Recognizes Tibetan syllable structure: [prefix] ROOT [subscript]
 ** ~tibetan-zettel-highlight-mode~  /minor mode/  ↗
 :PROPERTIES:
 :KIND: define-minor-mode
-:LINE: 714
+:LINE: 717
 :SIGNATURE: (tibetan-zettel-highlight-mode …)
 :AUTOLOAD: t
 :END:
@@ -8138,7 +8138,7 @@ Symbol of the enclosing level-1/2 section: `word-analysis',
 ** ~tibetan-zettel-highlight--table-row1-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 352
+:LINE: 355
 :SIGNATURE: (tibetan-zettel-highlight--table-row1-p)
 :END:
 
@@ -8147,7 +8147,7 @@ Non-nil when the current line is the first word row of a table band.
 ** ~tibetan-zettel-highlight--analysis-line-hits~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 362
+:LINE: 365
 :SIGNATURE: (tibetan-zettel-highlight--analysis-line-hits bol eol)
 :END:
 
@@ -8156,7 +8156,7 @@ Hits (BEG END IDS) on the analysis line BOL..EOL, sorted by BEG.
 ** ~tibetan-zettel-highlight--run-matcher~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 408
+:LINE: 411
 :SIGNATURE: (tibetan-zettel-highlight--run-matcher limit line-hits-fn)
 :END:
 
@@ -8166,7 +8166,7 @@ LINE-HITS-FN gets (BOL EOL) and returns sorted hits (BEG END IDS).
 ** ~tibetan-zettel-highlight--analysis-matcher~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 430
+:LINE: 433
 :SIGNATURE: (tibetan-zettel-highlight--analysis-matcher limit)
 :END:
 
@@ -8175,7 +8175,7 @@ Font-lock matcher for analysis buffers.
 ** ~tibetan-zettel-highlight--needle~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 441
+:LINE: 444
 :SIGNATURE: (tibetan-zettel-highlight--needle member)
 :END:
 
@@ -8184,7 +8184,7 @@ MEMBER without its first and last character (sandhi happens at the edges).
 ** ~tibetan-zettel-highlight--projection-from-body~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 447
+:LINE: 450
 :SIGNATURE: (tibetan-zettel-highlight--projection-from-body body)
 :END:
 
@@ -8195,7 +8195,7 @@ written form.
 ** ~tibetan-zettel-highlight--analysis-folder~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 468
+:LINE: 471
 :SIGNATURE: (tibetan-zettel-highlight--analysis-folder)
 :END:
 
@@ -8204,7 +8204,7 @@ written form.
 ** ~tibetan-zettel-highlight--sentence-word-analysis~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 472
+:LINE: 475
 :SIGNATURE: (tibetan-zettel-highlight--sentence-word-analysis sent-num)
 :END:
 
@@ -8213,7 +8213,7 @@ The `** Word Analysis' body of the analysis file of sentence SENT-NUM, or nil.
 ** ~tibetan-zettel-highlight--projection~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 484
+:LINE: 487
 :SIGNATURE: (tibetan-zettel-highlight--projection sent-num)
 :END:
 
@@ -8222,7 +8222,7 @@ Cached projection for SENT-NUM (nil when the sentence has no Word Analysis).
 ** ~tibetan-zettel-highlight--segment-line-sentence~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 498
+:LINE: 501
 :SIGNATURE: (tibetan-zettel-highlight--segment-line-sentence)
 :END:
 
@@ -8232,7 +8232,7 @@ heading, else nil.
 ** ~tibetan-zettel-highlight--source-line-hits~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 513
+:LINE: 516
 :SIGNATURE: (tibetan-zettel-highlight--source-line-hits bol eol)
 :END:
 
@@ -8241,7 +8241,7 @@ Hits (BEG END IDS) on the source line BOL..EOL from the sentence's projection.
 ** ~tibetan-zettel-highlight--source-matcher~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 535
+:LINE: 538
 :SIGNATURE: (tibetan-zettel-highlight--source-matcher limit)
 :END:
 
@@ -8250,7 +8250,7 @@ Font-lock matcher for CAT source buffers.
 ** ~tibetan-zettel-highlight--invalidate-projections~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 539
+:LINE: 542
 :SIGNATURE: (tibetan-zettel-highlight--invalidate-projections &rest _)
 :END:
 
@@ -8259,7 +8259,7 @@ Forget cached projections in every source buffer and refontify.
 ** ~tibetan-zettel-highlight-ids-at-point~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 552
+:LINE: 555
 :SIGNATURE: (tibetan-zettel-highlight-ids-at-point)
 :END:
 
@@ -8268,7 +8268,7 @@ Zettel ids of the marked word at point, or nil.
 ** ~tibetan-zettel-highlight--choose-id~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 556
+:LINE: 559
 :SIGNATURE: (tibetan-zettel-highlight--choose-id ids)
 :END:
 
@@ -8277,7 +8277,7 @@ One id from IDS — asked by title when there are several (homonyms).
 ** ~tibetan-zettel-highlight--research-reachable-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 564
+:LINE: 567
 :SIGNATURE: (tibetan-zettel-highlight--research-reachable-p)
 :END:
 
@@ -8286,7 +8286,7 @@ Non-nil when the Research instance's server socket exists.
 ** ~tibetan-zettel-highlight--open-id~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 572
+:LINE: 575
 :SIGNATURE: (tibetan-zettel-highlight--open-id id)
 :END:
 
@@ -8295,7 +8295,7 @@ Open zettel ID: shared-route (Research), else research socket, else here.
 ** ~tibetan-zettel-highlight-open~  /function/  ⚡
 :PROPERTIES:
 :KIND: defun
-:LINE: 585
+:LINE: 588
 :SIGNATURE: (tibetan-zettel-highlight-open &optional ids)
 :INTERACTIVE: t
 :END:
@@ -8305,7 +8305,7 @@ Open the zettel of the marked word at point (IDS when given).
 ** ~tibetan-zettel-highlight-return~  /function/  ⚡
 :PROPERTIES:
 :KIND: defun
-:LINE: 592
+:LINE: 595
 :SIGNATURE: (tibetan-zettel-highlight-return)
 :INTERACTIVE: t
 :END:
@@ -8315,7 +8315,7 @@ RET on a marked word opens its zettel; elsewhere behaves like `org-return'.
 ** ~tibetan-zettel-highlight-mouse-open~  /function/  ⚡
 :PROPERTIES:
 :KIND: defun
-:LINE: 600
+:LINE: 603
 :SIGNATURE: (tibetan-zettel-highlight-mouse-open event)
 :INTERACTIVE: t
 :END:
@@ -8325,7 +8325,7 @@ Open the zettel of the word clicked in EVENT.
 ** ~tibetan-zettel-highlight--open-at-point-function~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 606
+:LINE: 609
 :SIGNATURE: (tibetan-zettel-highlight--open-at-point-function)
 :END:
 
@@ -8334,7 +8334,7 @@ For `org-open-at-point-functions': open the marked word, non-nil when done.
 ** ~tibetan-zettel-highlight--entry-line~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 620
+:LINE: 623
 :SIGNATURE: (tibetan-zettel-highlight--entry-line id)
 :END:
 
@@ -8343,7 +8343,7 @@ For `org-open-at-point-functions': open the marked word, non-nil when done.
 ** ~tibetan-zettel-highlight--etymology~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 633
+:LINE: 636
 :SIGNATURE: (tibetan-zettel-highlight--etymology id)
 :END:
 
@@ -8352,7 +8352,7 @@ The Wortbildung of zettel ID (`:ETYMOLOGY:` in the drawer), or nil when empty.
 ** ~tibetan-zettel-highlight--help-echo~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 638
+:LINE: 641
 :SIGNATURE: (tibetan-zettel-highlight--help-echo ids)
 :END:
 
@@ -8361,7 +8361,7 @@ Tooltip for IDS: one `title — de / en' per zettel, its Wortbildung underneath.
 ** ~tibetan-zettel-highlight-etymology~  /function/  ⚡
 :PROPERTIES:
 :KIND: defun
-:LINE: 646
+:LINE: 649
 :SIGNATURE: (tibetan-zettel-highlight-etymology &optional kill)
 :INTERACTIVE: t
 :END:
@@ -8375,7 +8375,7 @@ to the kill ring.  Without a zettel at point: /term creates one.
 ** ~tibetan-zettel-highlight--facespec~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 668
+:LINE: 671
 :SIGNATURE: (tibetan-zettel-highlight--facespec)
 :END:
 
@@ -8384,7 +8384,7 @@ Facespec for the match just found: face plus the clickable properties.
 ** ~tibetan-zettel-highlight--enable~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 690
+:LINE: 693
 :SIGNATURE: (tibetan-zettel-highlight--enable kind)
 :END:
 
@@ -8393,7 +8393,7 @@ Install matcher and properties for buffer KIND (`analysis' or `source').
 ** ~tibetan-zettel-highlight--disable~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 703
+:LINE: 706
 :SIGNATURE: (tibetan-zettel-highlight--disable)
 :END:
 
@@ -8402,7 +8402,7 @@ Install matcher and properties for buffer KIND (`analysis' or `source').
 ** ~tibetan-zettel-highlight--maybe-enable~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 726
+:LINE: 729
 :SIGNATURE: (tibetan-zettel-highlight--maybe-enable)
 :END:
 
@@ -8411,7 +8411,7 @@ Turn the mode on in CAT source and analysis buffers (org-mode-hook).
 ** ~tibetan-zettel-highlight-reload~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 739
+:LINE: 742
 :SIGNATURE: (tibetan-zettel-highlight-reload)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -8564,7 +8564,7 @@ A CAT source document header (within the first 4 KB).
 ** ~tibetan-zettel-highlight--current-ids~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 405
+:LINE: 408
 :DEFAULT: nil
 :END:
 
@@ -8573,7 +8573,7 @@ Ids of the match the facespec is being evaluated for.
 ** ~tibetan-zettel-highlight--projections~  /variable (buffer-local)/
 :PROPERTIES:
 :KIND: defvar-local
-:LINE: 438
+:LINE: 441
 :DEFAULT: nil
 :END:
 
@@ -8582,7 +8582,7 @@ Hash sentence number → list of (NEEDLE . IDS), or `none'.
 ** ~tibetan-zettel-highlight--iast-char~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 510
+:LINE: 513
 :DEFAULT: "[[:alpha:]āīūṛṝḷḹṃḥśṣṭḍṇñṅ']"
 :END:
 
@@ -8591,7 +8591,7 @@ One IAST letter (incl. avagraha).
 ** ~tibetan-zettel-highlight-map~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 612
+:LINE: 615
 :DEFAULT: (let ((map (make-sparse-keymap)))
     (define-key map (kbd "RET") #'tibetan-zettel-highlight-return)
     (define-key map
@@ -8602,7 +8602,7 @@ Keymap active on a marked word.
 ** ~tibetan-zettel-highlight--props~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 664
+:LINE: 667
 :DEFAULT: '
 :END:
 
@@ -8611,7 +8611,7 @@ Keymap active on a marked word.
 ** ~tibetan-zettel-highlight--analysis-keywords~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 682
+:LINE: 685
 :DEFAULT: '
 :END:
 
@@ -8620,7 +8620,7 @@ Keymap active on a marked word.
 ** ~tibetan-zettel-highlight--source-keywords~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 684
+:LINE: 687
 :DEFAULT: '
 :END:
 
@@ -8629,7 +8629,7 @@ Keymap active on a marked word.
 ** ~tibetan-zettel-highlight--keywords~  /variable (buffer-local)/
 :PROPERTIES:
 :KIND: defvar-local
-:LINE: 687
+:LINE: 690
 :DEFAULT: nil
 :END:
 
@@ -20792,7 +20792,7 @@ Version of the compound analysis file format.
 ** ~tibetan-discussion-paper--sentence-data~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 58
+:LINE: 60
 :SIGNATURE: (tibetan-discussion-paper--sentence-data sent-num source-file)
 :END:
 
@@ -20808,7 +20808,7 @@ Notes as plain text, nil when still a placeholder), :discussion
 ** ~tibetan-discussion-paper--header~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 104
+:LINE: 106
 :SIGNATURE: (tibetan-discussion-paper--header spec)
 :END:
 
@@ -20818,7 +20818,7 @@ a one-line running head, the shared LaTeX macros.
 ** ~tibetan-discussion-paper--vocab-entry~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 149
+:LINE: 151
 :SIGNATURE: (tibetan-discussion-paper--vocab-entry e)
 :END:
 
@@ -20828,7 +20828,7 @@ One vocabulary ENTRY as compact org: *term* [★ ]gloss {{{ctx(…)}}}
 ** ~tibetan-discussion-paper--vocab-block~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 166
+:LINE: 168
 :SIGNATURE: (tibetan-discussion-paper--vocab-block d)
 :END:
 
@@ -20841,7 +20841,7 @@ differs, part of speech / Sanskrit dim.  A visible gap when empty.
 ** ~tibetan-discussion-paper--comparison-block~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 186
+:LINE: 188
 :SIGNATURE: (tibetan-discussion-paper--comparison-block comp)
 :END:
 
@@ -20852,7 +20852,7 @@ Tibetisch / Sanskrit / Abweichung / Bedeutung lines, the assessment.
 ** ~tibetan-discussion-paper--sentence-block~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 214
+:LINE: 216
 :SIGNATURE: (tibetan-discussion-paper--sentence-block d)
 :END:
 
@@ -20863,7 +20863,7 @@ one exists), `** Diskussion' — or the visible gap.
 ** ~tibetan-discussion-paper-render~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 266
+:LINE: 268
 :SIGNATURE: (tibetan-discussion-paper-render spec)
 :END:
 
@@ -20877,7 +20877,7 @@ Begriffe, Sanskrit-Vergleich, Diskussion.
 ** ~tibetan-discussion-paper--output-file~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 281
+:LINE: 283
 :SIGNATURE: (tibetan-discussion-paper--output-file scope)
 :END:
 
@@ -20887,7 +20887,7 @@ Begriffe, Sanskrit-Vergleich, Diskussion.
 ** ~tibetan-discussion-paper--render-scope~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 286
+:LINE: 288
 :SIGNATURE: (tibetan-discussion-paper--render-scope scope date)
 :END:
 
@@ -20897,7 +20897,7 @@ the source's Resources is bound for the whole render.
 ** ~tibetan-discussion-paper--guard-target~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 301
+:LINE: 303
 :SIGNATURE: (tibetan-discussion-paper--guard-target out)
 :END:
 
@@ -20906,7 +20906,7 @@ Signal a user-error when OUT exists without the GENERATED marker.
 ** ~tibetan-discussion-paper--content-key~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 311
+:LINE: 313
 :SIGNATURE: (tibetan-discussion-paper--content-key text)
 :END:
 
@@ -20915,7 +20915,7 @@ TEXT without the lines that change with every build (date/footer).
 ** ~tibetan-discussion-paper--unchanged-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 316
+:LINE: 318
 :SIGNATURE: (tibetan-discussion-paper--unchanged-p out text)
 :END:
 
@@ -20924,7 +20924,7 @@ Non-nil when the generated paper OUT already holds TEXT (dates aside).
 ** ~tibetan-discussion-paper-build~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 323
+:LINE: 325
 :SIGNATURE: (tibetan-discussion-paper-build scope &optional date)
 :END:
 
@@ -20936,7 +20936,7 @@ overwritten (user-error).
 ** ~tibetan-discussion-paper--rmapi-quote~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 342
+:LINE: 344
 :SIGNATURE: (tibetan-discussion-paper--rmapi-quote arg)
 :END:
 
@@ -20945,7 +20945,7 @@ ARG quoted for the rmapi shell (double quotes, inner quotes escaped).
 ** ~tibetan-discussion-paper--rmapi-script~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 348
+:LINE: 350
 :SIGNATURE: (tibetan-discussion-paper--rmapi-script commands)
 :END:
 
@@ -20955,7 +20955,7 @@ of args), ending with exit.
 ** ~tibetan-discussion-paper--rmapi-session-start~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 356
+:LINE: 358
 :SIGNATURE: (tibetan-discussion-paper--rmapi-session-start commands done)
 :END:
 
@@ -20968,7 +20968,7 @@ session.
 ** ~tibetan-discussion-paper--rmapi-next~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 377
+:LINE: 379
 :SIGNATURE: (tibetan-discussion-paper--rmapi-next)
 :END:
 
@@ -20977,7 +20977,7 @@ Start the next queued rmapi session unless one is running.
 ** ~tibetan-discussion-paper--rmapi-session~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 399
+:LINE: 401
 :SIGNATURE: (tibetan-discussion-paper--rmapi-session commands callback)
 :END:
 
@@ -20990,7 +20990,7 @@ rmapi invocations each fetch a token, and the token endpoint answers
 ** ~tibetan-discussion-paper--put-result~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 410
+:LINE: 412
 :SIGNATURE: (tibetan-discussion-paper--put-result output docname)
 :END:
 
@@ -21000,7 +21000,7 @@ it uploaded, `exists' when the name is taken, else `failed'.
 ** ~tibetan-discussion-paper--doc-name~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 423
+:LINE: 425
 :SIGNATURE: (tibetan-discussion-paper--doc-name name)
 :END:
 
@@ -21014,7 +21014,7 @@ rest vanish.  Carsten (20.10.): the folder "bDen pa gnyis la \='jug pa
 ** ~tibetan-discussion-paper--upload-commands~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 451
+:LINE: 453
 :SIGNATURE: (tibetan-discussion-paper--upload-commands folder-base folder tmp)
 :END:
 
@@ -21023,7 +21023,7 @@ The session commands that create FOLDER-BASE and FOLDER and put TMP.
 ** ~tibetan-discussion-paper--upload~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 457
+:LINE: 459
 :SIGNATURE: (tibetan-discussion-paper--upload pdf title label)
 :END:
 
@@ -21041,7 +21041,7 @@ nil (with a message) when rmapi is not installed.
 ** ~tibetan-discussion-paper-upload-many~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 504
+:LINE: 506
 :SIGNATURE: (tibetan-discussion-paper-upload-many items)
 :END:
 
@@ -21053,7 +21053,7 @@ session's command list, or nil without rmapi.
 ** ~tibetan-discussion-paper--generated-buffer-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 542
+:LINE: 544
 :SIGNATURE: (tibetan-discussion-paper--generated-buffer-p)
 :END:
 
@@ -21062,7 +21062,7 @@ Non-nil when the current buffer is a generated discussion paper.
 ** ~tibetan-discussion-paper--title-and-label~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 548
+:LINE: 550
 :SIGNATURE: (tibetan-discussion-paper--title-and-label org)
 :END:
 
@@ -21072,7 +21072,7 @@ Non-nil when the current buffer is a generated discussion paper.
 ** ~tibetan-discussion-paper--export-and-upload~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 558
+:LINE: 560
 :SIGNATURE: (tibetan-discussion-paper--export-and-upload org &optional no-open)
 :END:
 
@@ -21083,7 +21083,7 @@ return the PDF.
 ** ~tibetan-discussion-paper--sentence-scope~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 589
+:LINE: 591
 :SIGNATURE: (tibetan-discussion-paper--sentence-scope source-file sent-num)
 :END:
 
@@ -21092,7 +21092,7 @@ The one-sentence scope of SENT-NUM in SOURCE-FILE.
 ** ~tibetan-discussion-paper--complete-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 594
+:LINE: 596
 :SIGNATURE: (tibetan-discussion-paper--complete-p file)
 :END:
 
@@ -21104,7 +21104,7 @@ Section asks for one.
 ** ~tibetan-discussion-paper-auto-build~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 609
+:LINE: 611
 :SIGNATURE: (tibetan-discussion-paper-auto-build scope &optional date)
 :END:
 
@@ -21115,7 +21115,7 @@ nothing happens and nil is returned.  Returns the PDF otherwise.
 ** ~tibetan-discussion-paper--temp-source-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 625
+:LINE: 627
 :SIGNATURE: (tibetan-discussion-paper--temp-source-p file)
 :END:
 
@@ -21128,7 +21128,7 @@ to the device.
 ** ~tibetan-discussion-paper--after-fetch~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 635
+:LINE: 637
 :SIGNATURE: (tibetan-discussion-paper--after-fetch source-file sentences folder requested)
 :END:
 
@@ -21139,17 +21139,17 @@ remembered for `--maybe-build'.
 ** ~tibetan-discussion-paper--maybe-build~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 653
+:LINE: 655
 :SIGNATURE: (tibetan-discussion-paper--maybe-build file)
 :END:
 
 Landing hook: when FILE's paper is pending and FILE is complete,
 build it once and forget it.
 
-** ~tibetan-discussion-paper~  /function/  ⚡  ↗
+** ~tibetan-discussion-paper~  /function (cl)/  ⚡  ↗
 :PROPERTIES:
-:KIND: defun
-:LINE: 676
+:KIND: cl-defun
+:LINE: 678
 :SIGNATURE: (tibetan-discussion-paper &optional org-only)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -21167,7 +21167,7 @@ saved, exported and uploaded as it is.  No API call.
 ** ~tibetan-discussion-paper-remarkable-folder~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 42
+:LINE: 44
 :TYPE: 'string
 :GROUP: buddhist-cat
 :DEFAULT: "Reading"
@@ -21179,7 +21179,7 @@ receives the exported discussion papers.
 ** ~tibetan-discussion-paper-upload~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 48
+:LINE: 50
 :TYPE: 'boolean
 :GROUP: buddhist-cat
 :DEFAULT: t
@@ -21191,7 +21191,7 @@ with rmapi (`tibetan-discussion-paper-remarkable-folder').
 ** ~tibetan-discussion-paper-auto~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 575
+:LINE: 577
 :TYPE: 'boolean
 :GROUP: buddhist-cat
 :DEFAULT: t
@@ -21207,7 +21207,7 @@ content did not change is not uploaded again.
 ** ~tibetan-discussion-paper-generated-marker~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 37
+:LINE: 39
 :DEFAULT: "# GENERATED by tibetan-discussion-paper"
 :END:
 
@@ -21217,7 +21217,7 @@ for the handout; C-c u D inside a generated paper exports it as it is).
 ** ~tibetan-discussion-paper--rmapi-queue~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 336
+:LINE: 338
 :DEFAULT: nil
 :END:
 
@@ -21226,7 +21226,7 @@ Pending rmapi sessions, oldest first: ((COMMANDS . CALLBACK) …).
 ** ~tibetan-discussion-paper--rmapi-running~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 339
+:LINE: 341
 :DEFAULT: nil
 :END:
 
@@ -21235,7 +21235,7 @@ Non-nil while an rmapi session runs.
 ** ~tibetan-discussion-paper--pending~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 585
+:LINE: 587
 :DEFAULT: (make-hash-table :test #'equal)
 :END:
 

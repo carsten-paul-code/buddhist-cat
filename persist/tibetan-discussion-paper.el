@@ -24,6 +24,8 @@
 ;;; Code:
 
 (require 'cl-lib)
+(declare-function bcat-export "bcat-export" ())
+(declare-function bcat-sentence-template-name "bcat-sentence" (source-file))
 (require 'tibetan-handout)
 (require 'tibetan-translation-discussion)
 (require 'tibetan-sanskrit-comparison)
@@ -673,7 +675,7 @@ build it once and forget it."
           #'tibetan-discussion-paper--maybe-build)
 
 ;;;###autoload
-(defun tibetan-discussion-paper (&optional org-only)
+(cl-defun tibetan-discussion-paper (&optional org-only)
   "Discussion paper for the reMarkable for the scope at point (C-c u D).
 In a cascade source: the sentence at point, or every sentence under
 the heading at point; in a sent-NNN analysis buffer: that sentence.
@@ -688,6 +690,13 @@ saved, exported and uploaded as it is.  No API call."
         (save-buffer)
         (tibetan-discussion-paper--export-and-upload (buffer-file-name)))
     (let ((scope (tibetan-cascade--scope-at-point)))
+      ;; §5.74: a source with a template has no discussion sections any
+      ;; more — the sentence file itself is the paper (C-c u H).
+      (when (and (fboundp 'bcat-sentence-template-name)
+                 (bcat-sentence-template-name (plist-get scope :source)))
+        (message "Vorlagenquelle: C-c u D ist durch C-c u H ersetzt (die Satzdatei als PDF)")
+        (call-interactively #'bcat-export)
+        (cl-return-from tibetan-discussion-paper nil))
       (when (and (> (length (plist-get scope :sent-nums)) 50)
                  (not (y-or-n-p (format "Diskussionspapier über %d Sätze erzeugen? "
                                         (length (plist-get scope :sent-nums))))))
