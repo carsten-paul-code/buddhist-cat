@@ -129,12 +129,14 @@ start of the answer (the object began at START)."
       "JSON-Fehler")))
 
 (defun bcat-analysis--repair-json (text)
-  "TEXT with the two defects Claude's JSON shows when it copies reference
-texts verbatim mended: a raw control character inside a string is
-escaped, and so is a quote inside a string that cannot end it — one not
-followed by `:', `]', `}' or `,' plus the start of a value (Eimer's
-\"Um die Hemmnisse, nämlich die \"Befleckungen\", …\" in Lindtner's
-note).  Valid JSON comes back unchanged."
+  "TEXT with the defects seen in Claude's JSON mended: a raw control
+character inside a string is escaped; so is a quote inside a string
+that cannot end it — one not followed by `:', `]', `}' or `,' plus the
+start of a value (Eimer's \"Um die Hemmnisse, nämlich die
+\"Befleckungen\", …\" in Lindtner's note); a backslash before a
+character JSON does not escape is dropped (29.10.: a backslash before
+the apostrophe of the genitive particle in a structure line).  Valid JSON
+comes back unchanged."
   (with-temp-buffer
     (insert text)
     (goto-char (point-min))
@@ -146,7 +148,11 @@ note).  Valid JSON comes back unchanged."
             (when (eq c ?\") (setq in-string t))
             (forward-char 1))
            ((eq c ?\\)
-            (forward-char (min 2 (- (point-max) (point)))))
+            (if (memq (char-after (1+ (point))) '(?\" ?\\ ?/ ?b ?f ?n ?r ?t ?u))
+                (forward-char (min 2 (- (point-max) (point))))
+              ;; No JSON escape (Claude put one before the apostrophe
+              ;; of the genitive 'i): drop the backslash, keep the char.
+              (delete-char 1)))
            ((eq c ?\")
             (if (save-excursion
                   (forward-char 1)

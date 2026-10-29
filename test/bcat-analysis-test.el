@@ -101,6 +101,18 @@ answer (28.10., Satz 9 „nicht lesbar“).  Valid JSON is left alone."
     (let ((golden (bcat-analysis-test--answer)))
       (should (equal golden (bcat-analysis--repair-json golden))))))
 
+(ert-deftest bcat-analysis-parse-repairs-invalid-escape ()
+  "29.10., bDen 9 (kept answer): in the structure line Claude escaped the
+apostrophe of the genitive — /shes bya/ =\\='i= [GEN] — and that is
+no JSON escape, so the whole answer was lost.  A backslash before a
+character JSON does not escape is dropped; valid escapes stay."
+  (let ((parsed (bcat-analysis-parse
+                 (concat "```json\n{\"segments\": [{\"num\": 41, \"structure\": "
+                         "\"/shes bya/ =\\'i= [GEN] \\u00b7 \\\"x\\\" a\\nb\"}]}\n```"))))
+    (should parsed)
+    (should (equal "/shes bya/ ='i= [GEN] · \"x\" a\nb"
+                   (alist-get 'structure (car (alist-get 'segments parsed)))))))
+
 (ert-deftest bcat-analysis-mark-reference ()
   "The sentence-level paragraph of a reference is OUR text, note
 included; its bold marks come from Claude's segment parts, in order: a

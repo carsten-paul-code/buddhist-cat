@@ -1,6 +1,6 @@
 #+TITLE: Function Reference — buddhist-cat
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-10-29T09:50:29
+#+DATE: 2026-10-29T09:59:58
 #+OPTIONS: toc:2 num:nil
 
 Source tree: ~/Users/cp/buddhist-cat~  ·  90 modules  ·  1962 forms
@@ -12623,17 +12623,19 @@ start of the answer (the object began at START).
 :SIGNATURE: (bcat-analysis--repair-json text)
 :END:
 
-TEXT with the two defects Claude's JSON shows when it copies reference
-texts verbatim mended: a raw control character inside a string is
-escaped, and so is a quote inside a string that cannot end it — one not
-followed by `:', `]', `}' or `,' plus the start of a value (Eimer's
-"Um die Hemmnisse, nämlich die "Befleckungen", …" in Lindtner's
-note).  Valid JSON comes back unchanged.
+TEXT with the defects seen in Claude's JSON mended: a raw control
+character inside a string is escaped; so is a quote inside a string
+that cannot end it — one not followed by `:', `]', `}' or `,' plus the
+start of a value (Eimer's "Um die Hemmnisse, nämlich die
+"Befleckungen", …" in Lindtner's note); a backslash before a
+character JSON does not escape is dropped (29.10.: a backslash before
+the apostrophe of the genitive particle in a structure line).  Valid JSON
+comes back unchanged.
 
 ** ~bcat-analysis--decode~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 167
+:LINE: 173
 :SIGNATURE: (bcat-analysis--decode json)
 :END:
 
@@ -12642,7 +12644,7 @@ JSON (a string) as an alist with symbol keys and lists for arrays.
 ** ~bcat-analysis-read~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 172
+:LINE: 178
 :SIGNATURE: (bcat-analysis-read response)
 :END:
 
@@ -12654,7 +12656,7 @@ the object, and mends what `bcat-analysis--repair-json' mends.
 ** ~bcat-analysis-parse~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 196
+:LINE: 202
 :SIGNATURE: (bcat-analysis-parse response)
 :END:
 
@@ -12664,7 +12666,7 @@ is none (see `bcat-analysis-read').
 ** ~bcat-analysis-keep-response~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 201
+:LINE: 207
 :SIGNATURE: (bcat-analysis-keep-response file response)
 :END:
 
@@ -12674,7 +12676,7 @@ read, under `bcat-analysis-response-directory'; return its path.
 ** ~bcat-analysis--particle-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 221
+:LINE: 227
 :SIGNATURE: (bcat-analysis--particle-p word)
 :END:
 
@@ -12686,7 +12688,7 @@ member of compound“ — several syllables, so a word all the same.
 ** ~bcat-analysis--field~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 231
+:LINE: 237
 :SIGNATURE: (bcat-analysis--field alist key)
 :END:
 
@@ -12695,7 +12697,7 @@ String value of KEY in ALIST, trimmed; "" when absent.
 ** ~bcat-analysis-gloss-table~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 236
+:LINE: 242
 :SIGNATURE: (bcat-analysis-gloss-table words)
 :END:
 
@@ -12706,7 +12708,7 @@ for no words.
 ** ~bcat-analysis-glossed-line~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 257
+:LINE: 263
 :SIGNATURE: (bcat-analysis-glossed-line wylie words)
 :END:
 
@@ -12721,7 +12723,7 @@ WORDS do not cover its syllables exactly: the text is never altered.
 ** ~bcat-analysis-glosses-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 286
+:LINE: 292
 :SIGNATURE: (bcat-analysis-glosses-p segments)
 :END:
 
@@ -12731,7 +12733,7 @@ the template then shows the glossed verse below the plain one.
 ** ~bcat-analysis--reference-lines~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 295
+:LINE: 301
 :SIGNATURE: (bcat-analysis--reference-lines refs)
 :END:
 
@@ -12740,7 +12742,7 @@ the template then shows the glossed verse below the plain one.
 ** ~bcat-analysis-strip-marks~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 302
+:LINE: 308
 :SIGNATURE: (bcat-analysis-strip-marks text)
 :END:
 
@@ -12749,7 +12751,7 @@ TEXT without org bold marks (the meaning-shift marks of a fetch).
 ** ~bcat-analysis--loose-regexp~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 306
+:LINE: 312
 :SIGNATURE: (bcat-analysis--loose-regexp text)
 :END:
 
@@ -12758,7 +12760,7 @@ A regexp for TEXT that lets any run of whitespace stand for its spaces.
 ** ~bcat-analysis--reference-parts~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 310
+:LINE: 316
 :SIGNATURE: (bcat-analysis--reference-parts segments name)
 :END:
 
@@ -12768,7 +12770,7 @@ order — each with its passages in org bold.
 ** ~bcat-analysis-mark-reference~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 324
+:LINE: 330
 :SIGNATURE: (bcat-analysis-mark-reference text parts)
 :END:
 
@@ -12784,7 +12786,7 @@ of Lindtner's verse 9 dropped his note).
 ** ~bcat-analysis-translations-block~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 359
+:LINE: 365
 :SIGNATURE: (bcat-analysis-translations-block num seg)
 :END:
 
@@ -12797,7 +12799,7 @@ line breaks between.
 ** ~bcat-analysis-comparison~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 373
+:LINE: 379
 :SIGNATURE: (bcat-analysis-comparison parsed &optional refs)
 :END:
 
@@ -12808,7 +12810,7 @@ with the marks of its segment parts, the comparison paragraph.
 ** ~bcat-analysis-context~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 394
+:LINE: 400
 :SIGNATURE: (bcat-analysis-context base parsed &optional refs)
 :END:
 
@@ -12833,7 +12835,7 @@ Where an answer C-c u G could not read is kept, one file per answer
 ** ~bcat-analysis--particle-labels~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 216
+:LINE: 222
 :DEFAULT: '
 :END:
 
