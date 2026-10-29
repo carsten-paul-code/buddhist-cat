@@ -19,7 +19,9 @@ Erwartete Ausgabe: samples/Tibetan.org.  Kommentarblöcke wie dieser
 erscheinen nicht in der Satzdatei.
 
 Felder: sent-num source-link segment-list hash created last-analyzed;
-segments: num wylie gloss-table translations structure note concepts;
+segments: num wylie glossed gloss-table translations structure note
+concepts (glossed = die Verszeile mit den Glossen in Klammern; wer den
+blanken Vers will, setzt {{wylie}} ein);
 grammar comparison working-translation my-notes footnotes.
 #+end_comment
 #+TITLE: Sentence {{sent-num}} Analysis
@@ -36,7 +38,7 @@ grammar comparison working-translation my-notes footnotes.
 * Text
 #+begin_verse
 {{#segments}}
-{{wylie}}
+{{glossed}}
 {{/segments}}
 #+end_verse
 

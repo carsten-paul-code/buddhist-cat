@@ -73,6 +73,27 @@ analysis/.  Templates on, the tool templates from the repository."
                9 (tibetan-cascade--segs-for-sentence src 9) src)))
     (with-temp-buffer (insert-file-contents file) (buffer-string))))
 
+(ert-deftest bcat-sentence-create-glossed-text ()
+  "C-c u A (no AI): the verse under * Text already carries the
+dictionary glosses in brackets — the same units as the tables
+(particles their label, unknown words none)."
+  (bcat-sentence-test--with-source
+    (cl-letf (((symbol-function 'tibetan-gloss-table--unit-rows)
+               (lambda (text &rest _)
+                 (if (string-prefix-p "བརྗོད" text)
+                     '(("[[steinert:brjod du med pa][brjod du med pa]]" "[[steinert:bltar med pa][bltar med pa]]")
+                       ("inexpressible; ineffable" "invisible")
+                       ("?" "?"))
+                   '(("[[steinert:'gyur ba med pa]['gyur ba med pa]]" "[[steinert:'dus]['dus]]" "ma byas")
+                     ("immutable" "collect; assemble…" "")
+                     ("?" "?" "?"))))))
+      (should (string-match-p
+               (regexp-quote (concat "#+begin_verse\n"
+                                     "brjod du med pa [inexpressible; ineffable] bltar med pa [invisible] / /\n"
+                                     "'gyur ba med pa [immutable] 'dus [collect; assemble…] ma byas / /\n"
+                                     "#+end_verse"))
+               (bcat-sentence-test--create src))))))
+
 (ert-deftest bcat-sentence-create-from-template ()
   "C-c u A on a Tibetan cascade source writes the template form: marker
 #+CAT_TEMPLATE: tibetan, * Text with the Wylie per segment (verse
@@ -86,8 +107,10 @@ slots — and none of the old sections.  No AI request is made."
         (let ((text (bcat-sentence-test--create src)))
           (should (string-match-p "^#\\+CAT_TEMPLATE: tibetan$" text))
           (should (string-match-p "^#\\+SEGMENTS: 38, 39$" text))
+          ;; One verse line per pāda (with the dictionary glosses in
+          ;; brackets where known — exact form: create-glossed-text).
           (should (string-match-p
-                   (regexp-quote "#+begin_verse\nbrjod du med pa bltar med pa/ /\n'gyur ba med pa 'dus ma byas/ /\n#+end_verse")
+                   "#\\+begin_verse\nbrjod du med pa .*/ /\n'gyur ba med pa .*/ /\n#\\+end_verse"
                    text))
           (should (string-match-p "^\\* Segments\n\\*\\* Segment 38\n| " text))
           (should (string-match-p "^\\*\\* Segment 39\n| " text))

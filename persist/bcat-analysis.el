@@ -250,6 +250,35 @@ for no words."
       (string-trim-right
        (tibetan-gloss-table--format-rows (list (nreverse r1) (nreverse r2) (nreverse r3)))))))
 
+(defun bcat-analysis-glossed-line (wylie words)
+  "WYLIE (one verse line, its shad at the end) with each of WORDS
+\(alists with wylie, gloss, function) followed by its gloss in
+brackets — a particle by its function label, an unknown (\"?\") or
+empty gloss by nothing — and the shad after the last.  Carsten 29.10.:
+„die Vokabeln in Klammern beim Text“, so a segment can be translated
+from the verse without turning to its table.  WYLIE unchanged when
+WORDS do not cover its syllables exactly: the text is never altered."
+  (let* ((tail (if (string-match "\\(?:[ \t]*/\\)+[ \t]*\\'" wylie)
+                   (match-string 0 wylie)
+                 ""))
+         (body (substring wylie 0 (- (length wylie) (length tail)))))
+    (if (or (null words)
+            (not (equal (split-string body)
+                        (split-string (mapconcat (lambda (w) (bcat-analysis--field w 'wylie))
+                                                 words " ")))))
+        wylie
+      (concat
+       (mapconcat (lambda (w)
+                    (let* ((wy (bcat-analysis--field w 'wylie))
+                           (fn (bcat-analysis--field w 'function))
+                           (gl (bcat-analysis--field w 'gloss))
+                           (show (cond ((bcat-analysis--particle-p fn) fn)
+                                       ((member gl '("" "?")) "")
+                                       (t gl))))
+                      (if (string-empty-p show) wy (format "%s [%s]" wy show))))
+                  words " ")
+       (if (string-empty-p tail) "" (concat " " (string-trim tail)))))))
+
 (defun bcat-analysis--reference-lines (refs)
   "\"*NAME:* TEXT\" for each of REFS (alists with name and text)."
   (mapcar (lambda (r) (format "*%s:* %s" (bcat-analysis--field r 'name)
@@ -367,7 +396,15 @@ segment Claude skipped keeps its rump fields."
                 (if (null c)
                     seg
                   (append
-                   `((gloss-table . ,(bcat-analysis-gloss-table (alist-get 'words c)))
+                   `((glossed . ,(let* ((wy (alist-get 'wylie seg))
+                                        (g (and wy (bcat-analysis-glossed-line
+                                                    wy (alist-get 'words c)))))
+                                   ;; Words that do not cover the line:
+                                   ;; whatever the rump had.
+                                   (if (or (null g) (equal g wy))
+                                       (or (alist-get 'glossed seg) wy)
+                                     g)))
+                     (gloss-table . ,(bcat-analysis-gloss-table (alist-get 'words c)))
                      (translations . ,(bcat-analysis-translations-block
                                        (if (stringp num) (string-to-number num) num) c))
                      (structure . ,(bcat-analysis--field c 'structure))

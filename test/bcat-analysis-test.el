@@ -120,6 +120,29 @@ nothing."
     (should (equal text (bcat-analysis-mark-reference text nil)))
     (should (equal text (bcat-analysis-mark-reference text '("no *such* part"))))))
 
+(ert-deftest bcat-analysis-glossed-line ()
+  "Carsten 29.10.: translating segment by segment meant scrolling (on
+the reMarkable: turning pages) between the verse and the tables — „die
+Vokabeln in Klammern beim Text“.  Each verse line carries its words'
+glosses in brackets, a particle its function; a line the words do not
+cover exactly stays plain Wylie (the text is never altered)."
+  (let ((words '(((wylie . "rnal 'byor pa") (gloss . "yogin") (function . "N · agent"))
+                 ((wylie . "yis") (gloss . "") (function . "ERG"))
+                 ((wylie . "de") (gloss . "that (= paramārtha)") (function . "DEM · object"))
+                 ((wylie . "rtogs") (gloss . "realizes") (function . "V pf. (rtogs pa) · main verb"))
+                 ((wylie . "na") (gloss . "if") (function . "CONV · cond.")))))
+    (should (equal (concat "rnal 'byor pa [yogin] yis [ERG] de [that (= paramārtha)] "
+                           "rtogs [realizes] na [CONV · cond.] / /")
+                   (bcat-analysis-glossed-line "rnal 'byor pa yis de rtogs na/ /" words)))
+    (should (equal "rnal 'byor pa yis de rtogs na/ /"
+                   (bcat-analysis-glossed-line "rnal 'byor pa yis de rtogs na/ /" (butlast words))))
+    ;; „?“ = unknown (the rump before C-c u G): no bracket at all.
+    (should (equal "ka kha [k] /"
+                   (bcat-analysis-glossed-line
+                    "ka kha/" '(((wylie . "ka") (gloss . "?") (function . "?"))
+                                ((wylie . "kha") (gloss . "k") (function . "N"))))))
+    (should (equal "ka/ /" (bcat-analysis-glossed-line "ka/ /" nil)))))
+
 (ert-deftest bcat-analysis-prompts ()
   "System prompt: the JSON schema and the target language; user prompt:
 the document context, every segment with Tibetan and Wylie, each

@@ -95,14 +95,34 @@ anything that is no sentence file (a source carries the line too)."
   "TEXT (Tibetan Unicode) as one Wylie line."
   (string-trim (tibetan-to-wylie-fixed (string-trim text))))
 
-(defun bcat-sentence--dictionary-table (text)
-  "The three-row gloss table of the segment TEXT from the dictionaries
-\(row 1 Wylie with Steinert link, row 2 gloss, row 3 label; \"?\" where
-nothing is known — C-c u G replaces it).  \"\" when nothing renders."
-  (let ((rows (ignore-errors (tibetan-gloss-table--unit-rows text nil))))
-    (if rows
-        (string-trim-right (tibetan-gloss-table--format-rows rows))
-      "")))
+(defun bcat-sentence--dictionary-rows (text)
+  "The gloss-table rows of the segment TEXT from the dictionaries (row 1
+Wylie with Steinert link, row 2 gloss, row 3 label; \"?\" where nothing
+is known — C-c u G replaces it), or nil."
+  (ignore-errors (tibetan-gloss-table--unit-rows text nil)))
+
+(defun bcat-sentence--dictionary-table (rows)
+  "ROWS (`bcat-sentence--dictionary-rows') as an org table; \"\" for none."
+  (if rows (string-trim-right (tibetan-gloss-table--format-rows rows)) ""))
+
+(defun bcat-sentence--plain-cell (cell)
+  "CELL of a gloss table as plain text: links reduced to their text,
+`\\vert' back to a bar."
+  (replace-regexp-in-string
+   "\\\\vert\\(?:{}\\)?" "|"
+   (replace-regexp-in-string "\\[\\[[^]]*\\]\\[\\([^]]*\\)\\]\\]" "\\1" (or cell "") t)
+   t t))
+
+(defun bcat-sentence--dictionary-words (rows)
+  "ROWS as word alists (wylie, gloss, function) for
+`bcat-analysis-glossed-line': row 1, the gloss row (next to last) and
+the label row (last)."
+  (when (cdr rows)
+    (cl-mapcar (lambda (w g l)
+                 `((wylie . ,(bcat-sentence--plain-cell w))
+                   (gloss . ,(bcat-sentence--plain-cell g))
+                   (function . ,(bcat-sentence--plain-cell l))))
+               (car rows) (nth (- (length rows) 2) rows) (car (last rows)))))
 
 (defun bcat-sentence--references (sent-num source-file)
   "The reference translations of sentence SENT-NUM: ((NAME . BODY) …)
@@ -139,9 +159,13 @@ existing file (user slots, `created')."
          (created . ,date)
          (last-analyzed . ,date)
          (segments . ,(mapcar (lambda (s)
-                                `((num . ,(car s))
-                                  (wylie . ,(bcat-sentence--wylie (cdr s)))
-                                  (gloss-table . ,(bcat-sentence--dictionary-table (cdr s)))))
+                                (let ((wylie (bcat-sentence--wylie (cdr s)))
+                                      (rows (bcat-sentence--dictionary-rows (cdr s))))
+                                  `((num . ,(car s))
+                                    (wylie . ,wylie)
+                                    (glossed . ,(bcat-analysis-glossed-line
+                                                 wylie (bcat-sentence--dictionary-words rows)))
+                                    (gloss-table . ,(bcat-sentence--dictionary-table rows)))))
                               segs))
          (comparison . ,(bcat-sentence--comparison
                          (append (bcat-sentence--references sent-num source-file)

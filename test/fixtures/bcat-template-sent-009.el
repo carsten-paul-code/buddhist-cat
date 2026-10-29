@@ -11,6 +11,7 @@
     (segments
      ((num . "38")
       (wylie . "brjod du med pa bltar med pa/ /")
+      (glossed . "brjod du med pa [indescribable] bltar med pa [invisible] / /")
       (gloss-table . "| [[steinert:brjod du med pa][brjod du med pa]] | [[steinert:bltar med pa][bltar med pa]]    |
 | indescribable   | invisible       |
 | ADJ · predicate | ADJ · predicate |")
@@ -22,6 +23,7 @@
       (concepts . "*brjod du med pa / bltar med pa* (Skt. avācya / adraṣṭavya) — standard apophatic epithets of the ultimate truth (paramārtha-satya) in Madhyamaka: beyond conventional expression (brjod pa) and beyond ordinary perception (blta ba), since it transcends the subject–object duality of saṃvṛti cognition; recurrent e.g. in the Laṅkāvatārasūtra."))
      ((num . "39")
       (wylie . "'gyur ba med pa 'dus ma byas/ /")
+      (glossed . "'gyur ba med pa [immutable] 'dus [assembled, compounded] ma byas [not made] / /")
       (gloss-table . "| [[steinert:'gyur ba med pa]['gyur ba med pa]] | [[steinert:'dus]['dus]]                  | [[steinert:ma byas][ma byas]]               |
 | immutable       | assembled, compounded | not made              |
 | ADJ · predicate | V pf. ('du ba)        | NEG + V pf. (byed pa) |")
@@ -33,6 +35,7 @@
       (concepts . "*'dus ma byas* (Skt. asaṃskṛta) — \"uncompounded/unconditioned\": in Abhidharma the phenomena not produced by causes and conditions (saṃskāra); here, in Madhyamaka usage, the ultimate nature (dharmatā/śūnyatā) as free from causal construction, against the saṃskṛta dharmas."))
      ((num . "40")
       (wylie . "rnal 'byor pa yis de rtogs na/ /")
+      (glossed . "rnal 'byor pa [yogin] yis [ERG] de [that] rtogs [realizes] na [CONV · cond.] / /")
       (gloss-table . "| [[steinert:rnal 'byor pa][rnal 'byor pa]] | yis | [[steinert:de][de]]           | [[steinert:rtogs][rtogs]]    | na           |
 | yogin         | by  | that         | realizes | if           |
 | N · agent     | ERG | DEM · object | V tr.    | CONV · cond. |")
@@ -45,6 +48,7 @@
       (concepts . ""))
      ((num . "41")
       (wylie . "nyon mongs shes bya'i sgrib pa spangs/ /")
+      (glossed . "nyon mongs [affliction] shes bya'i [of the knowable] sgrib pa [obstruction] spangs [abandoned] / /")
       (gloss-table . "| [[steinert:nyon mongs][nyon mongs]] | [[steinert:shes bya'i][shes bya'i]]      | [[steinert:sgrib pa][sgrib pa]]    | [[steinert:spangs][spangs]]                       |
 | affliction | of the knowable | obstruction | abandoned                    |
 | N          | N + GEN         | N · object  | V pf. ('pong ba) · main verb |")
