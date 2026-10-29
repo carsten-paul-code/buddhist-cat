@@ -632,5 +632,78 @@ file is complete afterwards, the hook (C-c u H) runs."
           (should-not (bcat-sentence-fetch-state file '(38 39)))
           (should (equal (list file) done)))))))
 
+;; ----------------------------------------------------------------------------
+;; Sanskrit (§5.74, Carsten 29.10.)
+;; ----------------------------------------------------------------------------
+
+(defun bcat-sentence-test--sa-answer ()
+  "Claude's answer for TĀ sentence 1007 (Sanskrit contract)."
+  (with-temp-buffer
+    (insert-file-contents
+     (expand-file-name "fixtures/bcat-analysis-sent-1007.json"
+                       (file-name-directory (locate-library "bcat-sentence-test"))))
+    (buffer-string)))
+
+(defun bcat-sentence-test--fetch-n (src n)
+  "C-c u G on sentence N of SRC."
+  (tibetan-cascade-fetch (list :source src :sent-nums (list n) :label (format "Satz %d" n))))
+
+(defun bcat-sentence-test--file-text-n (src n)
+  (with-temp-buffer
+    (insert-file-contents (tibetan-sentence--filepath
+                           n (file-name-as-directory
+                              (expand-file-name "analysis" (file-name-directory src)))
+                           src))
+    (buffer-string)))
+
+(ert-deftest bcat-sentence-fetch-sanskrit ()
+  "C-c u G on a Sanskrit sentence: the Sanskrit prompt (padapāṭha,
+Devavāṇīpraveśikā terms) with the segments as transmitted, ONE request;
+the answer lands in the Sanskrit template — recitation kept, padapāṭha
+with vocabulary under * Text, tables, Forms per segment — and the hook
+\(C-c u H) runs."
+  (bcat-sentence-test--with-sa-source
+    (bcat-sentence-test--create-n src 1007)
+    (bcat-sentence-test--with-stubs (bcat-sentence-test--sa-answer)
+      (bcat-sentence-test--fetch-n src 1007)
+      (should (= 1 submits))
+      (let ((sys (car (car prompts))) (user (cdr (car prompts))))
+        (should (string-match-p "Devavāṇīpraveśikā" sys))
+        (should (string-match-p (regexp-quote "[685] atra madvāgaśaktāpi yanniyantraṇamullaset /") user))
+        (should-not (string-match-p "Wylie" user)))
+      (let ((text (bcat-sentence-test--file-text-n src 1007)))
+        (should (string-match-p "^\\* Recitation\nŚloka (Anuṣṭubh)" text))
+        (should (string-match-p (regexp-quote "atra [here] mad-vāk [my speech] aśaktā [incapable]") text))
+        (should (string-match-p (regexp-quote "| atra | mad-vāk ") text))
+        (should (string-match-p "^\\*Forms:\\*\n- /mad-vāk/ — vāc- f\\." text))
+        (should (string-match-p "^⟦685⟧ \\*Translation:\\* Although my speech" text))
+        (should (string-match-p "^\\*Dyczkowski 2023:\\* Although my speech is powerless here" text))
+        (should-not (string-match-p "Wylie\\|steinert:" text)))
+      (should (= 1 (length done))))))
+
+(ert-deftest bcat-sentence-fetch-aligns-sanskrit-reference ()
+  "A reference added by hand to a filled Sanskrit file: the small
+alignment request speaks of a Sanskrit sentence and shows the segments
+as transmitted with their translation — no Tibetan, no Wylie."
+  (bcat-sentence-test--with-sa-source
+    (bcat-sentence-test--create-n src 1007)
+    (let ((file (tibetan-sentence--filepath 1007 folder src)))
+      (bcat-sentence-test--with-stubs (bcat-sentence-test--sa-answer)
+        (bcat-sentence-test--fetch-n src 1007))
+      (bcat-sentence-test--add-reference file "Silburn 1998" "Although my speech is incapable here.")
+      (bcat-sentence-test--with-stubs
+          (concat "{\"segments\": [{\"num\": 685, \"references\": [{\"name\": \"Silburn 1998\","
+                  " \"text\": \"Although my speech is incapable here.\"}], \"shift\": \"\"},"
+                  " {\"num\": 686, \"references\": [], \"shift\": \"\"}], \"comparison\": \"\"}")
+        (bcat-sentence-test--fetch-n src 1007)
+        (should (= 1 submits))
+        (let ((sys (car (car prompts))) (user (cdr (car prompts))))
+          (should (string-match-p "a Sanskrit sentence" sys))
+          (should-not (string-match-p "Tibetan" sys))
+          (should (string-match-p (regexp-quote "[685] atra madvāgaśaktāpi yanniyantraṇamullaset /\n     Translation: Although my speech (vāc)") user))
+          (should-not (string-match-p "Wylie\\|Tibetan" user)))
+        (should (string-match-p "^\\*Silburn 1998:\\* Although my speech is incapable here\\.$"
+                                (bcat-sentence-test--file-text-n src 1007)))))))
+
 (provide 'bcat-sentence-test)
 ;;; bcat-sentence-test.el ends here

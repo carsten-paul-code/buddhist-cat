@@ -64,6 +64,11 @@ cascade sources and while `bcat-sentence-templates' is on."
              (tibetan-analysis--cascade-p source-file))
     (bcat-sentence--template-line source-file)))
 
+(defun bcat-sentence--sanskrit-p (source-file)
+  "Non-nil when SOURCE-FILE builds its sentence files from the Sanskrit
+template (§5.74, 29.10.)."
+  (equal "sanskrit" (bcat-sentence-template-name source-file)))
+
 (defun bcat-sentence-file-p (file)
   "The template the sentence FILE (sent-NNN…) was built from (its
 #+CAT_TEMPLATE:), or nil for a file in the old layout — and for
@@ -160,7 +165,7 @@ existing file (user slots, `created')."
   (bcat-sentence--with-source source-file
     (let* ((name (file-name-nondirectory source-file))
            (date (format-time-string "%Y-%m-%d"))
-           (sanskrit (equal "sanskrit" (bcat-sentence-template-name source-file)))
+           (sanskrit (bcat-sentence--sanskrit-p source-file))
            (segments
             (mapcar (lambda (s)
                       (if sanskrit
@@ -463,14 +468,17 @@ no DharmaMitra, no new analysis."
     (tibetan-discussion--submit
      "bcat-align" file
      (lambda ()
-       (cons (bcat-analysis-align-system-prompt (or (plist-get meta :target-lang) "en"))
-             (bcat-analysis-align-user-prompt
-              (plist-get sentence :sent-num) (plist-get sentence :verse)
-              (mapcar (lambda (s) (list (car s) (cdr s) (bcat-sentence--wylie (cdr s))
-                                        (cdr (assq (car s) own))))
-                      (plist-get sentence :segs))
-              refs
-              (plist-get meta :claude-context))))
+       (let ((sanskrit (bcat-sentence--sanskrit-p source-file)))
+         (cons (bcat-analysis-align-system-prompt (or (plist-get meta :target-lang) "en")
+                                                  (if sanskrit "Sanskrit" "Classical Tibetan"))
+               (bcat-analysis-align-user-prompt
+                (plist-get sentence :sent-num) (plist-get sentence :verse)
+                (mapcar (lambda (s) (list (car s) (cdr s)
+                                          (unless sanskrit (bcat-sentence--wylie (cdr s)))
+                                          (cdr (assq (car s) own))))
+                        (plist-get sentence :segs))
+                refs
+                (plist-get meta :claude-context)))))
      (lambda (f response) (bcat-sentence--align-land f response)))
     'fired))
 
@@ -517,15 +525,24 @@ must not stop the analysis)."
            nil)))
 
 (defun bcat-sentence--prompts (sentence source-file refs)
-  "(SYSTEM . USER) for SENTENCE of SOURCE-FILE with the references REFS."
-  (let ((meta (ignore-errors (tibetan-analysis--read-source-metadata source-file))))
-    (cons (bcat-analysis-system-prompt (or (plist-get meta :target-lang) "en"))
-          (bcat-analysis-user-prompt
-           (plist-get sentence :sent-num) (plist-get sentence :verse)
-           (mapcar (lambda (s) (list (car s) (cdr s) (bcat-sentence--wylie (cdr s))))
-                   (plist-get sentence :segs))
-           refs
-           (plist-get meta :claude-context)))))
+  "(SYSTEM . USER) for SENTENCE of SOURCE-FILE with the references REFS —
+the Sanskrit prompts for a Sanskrit source, the Tibetan ones else."
+  (let* ((meta (ignore-errors (tibetan-analysis--read-source-metadata source-file)))
+         (target (or (plist-get meta :target-lang) "en"))
+         (segs (plist-get sentence :segs)))
+    (if (bcat-sentence--sanskrit-p source-file)
+        (cons (bcat-analysis-sanskrit-system-prompt target)
+              (bcat-analysis-sanskrit-user-prompt
+               (plist-get sentence :sent-num) (plist-get sentence :verse)
+               (mapcar (lambda (s) (list (car s) (cdr s))) segs)
+               refs
+               (plist-get meta :claude-context)))
+      (cons (bcat-analysis-system-prompt target)
+            (bcat-analysis-user-prompt
+             (plist-get sentence :sent-num) (plist-get sentence :verse)
+             (mapcar (lambda (s) (list (car s) (cdr s) (bcat-sentence--wylie (cdr s)))) segs)
+             refs
+             (plist-get meta :claude-context))))))
 
 (defun bcat-sentence--land (file sentence source-file refs response)
   "Write Claude's RESPONSE for SENTENCE into the template FILE; nil and
@@ -547,7 +564,10 @@ marked from the answer's segment parts."
         (bcat-sentence--write
          file
          (bcat-template-render-named (bcat-sentence-file-p file)
-                                     (bcat-analysis-context base parsed refs)
+                                     (funcall (if (bcat-sentence--sanskrit-p source-file)
+                                                  #'bcat-analysis-sanskrit-context
+                                                #'bcat-analysis-context)
+                                              base parsed refs)
                                      source-file))
         (run-hook-with-args 'bcat-sentence-after-fetch-functions file)
         file))))
