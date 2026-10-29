@@ -167,15 +167,15 @@ no padapāṭha), the reference under Translations compared.  No AI."
                             "Silbe 5–7 ⏑ – ⏑; keine feste Binnenpause — Pause am Pāda-Ende. \\\\\n"
                             "Zeichen: ¦ Pause (yati) · | Pāda-Ende in der Zeile · – schwer (guru) "
                             "· ⏑ leicht (laghu)\n\n"
-                            "#+begin_verse\natra madvāgaśaktāpi | yanniyantraṇamullaset /\n"
-                            "tatpārameśvaraṃ śrīman|mahānandavijṛmbhitam // 7\n#+end_verse\n\n"
+                            "#+begin_verse\nअत्र मद्वागशक्तापि | यन्नियन्त्रणमुल्लसेत् ।\n"
+                            "तत्पारमेश्वरं श्रीमन्|महानन्दविजृम्भितम् ॥ ७\n#+end_verse\n\n"
                             "| at  | ra | mad |"))
                    text))
           (should (string-match-p
                    (regexp-quote
                     (concat "\n\n* Text\n#+begin_verse\n"
-                            "अत्र मद्वागशक्तापि यन्नियन्त्रणमुल्लसेत् ।\natra madvāgaśaktāpi yanniyantraṇamullaset /\n"
-                            "तत्पारमेश्वरं श्रीमन्महानन्दविजृम्भितम् ॥ ७\ntatpārameśvaraṃ śrīmanmahānandavijṛmbhitam // 7\n#+end_verse\n\n"
+                            "atra madvāgaśaktāpi yanniyantraṇamullaset /\n"
+                            "tatpārameśvaraṃ śrīmanmahānandavijṛmbhitam // 7\n#+end_verse\n\n"
                             "* Segments\n** Segment 685\n\n** Segment 686\n\n* Sentence\n"))
                    text))
           (should (string-match-p
@@ -185,12 +185,15 @@ no padapāṭha), the reference under Translations compared.  No AI."
           (should-not fired))))))
 
 (ert-deftest bcat-sentence-create-sanskrit-prose ()
-  "Viveka prose: no Recitation, the sentence under * Text."
+  "Viveka prose: the Recitation holds only the Devanāgarī original (no
+metre, no scansion); the Text the IAST as transmitted (before C-c u G
+there is no padapāṭha)."
   (bcat-sentence-test--with-sa-source
     (let ((text (bcat-sentence-test--create-n src 1008)))
-      (should-not (string-match-p "^\\* Recitation" text))
       (should (string-match-p
-               (regexp-quote (concat "* Text\n#+begin_verse\nइह खलु शास्त्रादाव् अलौकिकाशीर्वादमुखेन परामृशति\n"
+               (regexp-quote (concat "* Recitation\n#+begin_verse\n"
+                                     "इह खलु शास्त्रादाव् अलौकिकाशीर्वादमुखेन परामृशति\n#+end_verse\n\n"
+                                     "* Text\n#+begin_verse\n"
                                      "iha khalu śāstrādāv alaukikāśīrvādamukhena parāmṛśati\n#+end_verse"))
                text)))))
 
@@ -675,6 +678,7 @@ with vocabulary under * Text, tables, Forms per segment — and the hook
       (let ((text (bcat-sentence-test--file-text-n src 1007)))
         (should (string-match-p "^\\* Recitation\nŚloka (Anuṣṭubh)" text))
         (should (string-match-p (regexp-quote "atra [here] mad-vāk [my speech] aśaktā [incapable]") text))
+        (should (string-match-p (regexp-quote "* Text\n#+begin_verse\natra mad-vāk aśaktā api yat niyantraṇam ullaset /\n") text))
         (should (string-match-p (regexp-quote "| atra | mad-vāk ") text))
         (should (string-match-p "^\\*Forms:\\*\n- /mad-vāk/ — vāc- f\\." text))
         (should (string-match-p "^⟦685⟧ \\*Translation:\\* Although my speech" text))

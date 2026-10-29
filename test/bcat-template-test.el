@@ -196,17 +196,20 @@ Compounds — the Note of segment 686 dropped."
                    (bcat-template-render-named "sanskrit" bcat-template-test--sent-1007)))))
 
 (ert-deftest bcat-template-sanskrit-prose ()
-  "Viveka prose (no metre): no Recitation section; without a padapāṭha
-(the rump) no glossed verse and no translation line."
+  "Viveka prose (no metre): the Recitation holds only the Devanāgarī
+original (no metre line, no scansion); without a padapāṭha (the rump)
+the Text shows the line as transmitted, no glossed verse, no
+translation line."
   (let* ((bcat-template-directory
           (expand-file-name "Templates/analysis" bcat-template-test--root))
          (out (bcat-template-render-named
                "sanskrit"
                '((sent-num . "1008") (segment-list . "687")
-                 (segments ((num . "687") (samhita . "iha khalu śāstrādau …")))))))
-    (should-not (string-match-p "^\\* Recitation" out))
+                 (recitation . "इह खलु शास्त्रादौ …")
+                 (segments ((num . "687") (padapatha . "iha khalu śāstrādau …")))))))
     (should (string-match-p
-             (regexp-quote (concat "#+SEGMENTS: 687\n\n* Text\n#+begin_verse\niha khalu śāstrādau …\n"
+             (regexp-quote (concat "#+SEGMENTS: 687\n\n* Recitation\n#+begin_verse\nइह खलु शास्त्रादौ …\n"
+                                   "#+end_verse\n\n* Text\n#+begin_verse\niha khalu śāstrādau …\n"
                                    "#+end_verse\n\n* Segments\n** Segment 687\n\n* Sentence\n"))
              out))
     (should-not (string-match-p "Translation:" out))))

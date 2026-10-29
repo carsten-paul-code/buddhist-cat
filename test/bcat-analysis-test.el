@@ -80,7 +80,7 @@ from the reviewed sample, test/fixtures/bcat-analysis-sent-1007.json)."
   "The rump fields of sentence 1007: header, recitation, segments with
 num and samhita, user slots — what C-c u A knows without AI."
   (let ((fix bcat-template-test--sent-1007))
-    (cons (cons 'segments (mapcar (lambda (s) (list (assq 'num s) (assq 'devanagari s) (assq 'samhita s)))
+    (cons (cons 'segments (mapcar (lambda (s) (list (assq 'num s) (assq 'samhita s)))
                                   (alist-get 'segments fix)))
           (cl-remove-if (lambda (c) (memq (car c) '(segments grammar comparison glosses translation)))
                         fix))))
@@ -172,6 +172,12 @@ number stays with the transmitted line)."
                  (bcat-analysis-padapatha-line "tat // 7" '(((word . "tat") (gloss . "that"))))))
   (should (equal "iha [here]"
                  (bcat-analysis-padapatha-line "iha" '(((word . "iha") (gloss . "here"))))))
+  ;; PLAIN (the Text in pure IAST, 29.10.): no glosses, daṇḍas AND verse number
+  (should (equal "tat pārameśvaram // 7"
+                 (bcat-analysis-padapatha-line
+                  "tatpārameśvaraṃ // 7"
+                  '(((word . "tat") (gloss . "that")) ((word . "pārameśvaram") (gloss . "the Lord's")))
+                  t)))
   (should-not (bcat-analysis-padapatha-line "tat // 7" nil)))
 
 (ert-deftest bcat-analysis-parse-tolerant ()

@@ -131,15 +131,20 @@ the label row (last)."
                (car rows) (nth (- (length rows) 2) rows) (car (last rows)))))
 
 (defun bcat-sentence--recitation (texts)
-  "Recitation fields of a Sanskrit sentence with the segment lines TEXTS
-\(Carsten 29.10.: „Es geht ja mit der Rezitation los“): metre (its
-header lines with org line breaks), recitation (the verse with its
-pauses), scansion (without the pāda letters) — nil for prose."
+  "Recitation fields of a Sanskrit sentence with the segment lines TEXTS:
+recitation — the original in Devanāgarī, with the pauses for a verse
+\(Carsten 29.10.: „Es geht ja mit der Rezitation los“; „das Devanagari
+im Recitationsverse (also de facto im Original)“) —, and for a verse
+metre (its header lines with org line breaks) and scansion (IAST,
+without the pāda letters)."
   (require 'tibetan-sanskrit-metre)
-  (when-let ((r (tibetan-metre-recitation texts t)))
-    `((metre . ,(mapconcat #'identity (plist-get r :header) " \\\\\n"))
-      (recitation . ,(plist-get r :verse))
-      (scansion . ,(plist-get r :table)))))
+  (let ((r (tibetan-metre-recitation texts t)))
+    (append
+     `((recitation . ,(tibetan-sanskrit-script-iast-to-devanagari
+                       (or (plist-get r :verse) (mapconcat #'identity texts "\n")))))
+     (when r
+       `((metre . ,(mapconcat #'identity (plist-get r :header) " \\\\\n"))
+         (scansion . ,(plist-get r :table)))))))
 
 (defun bcat-sentence--references (sent-num source-file)
   "The reference translations of sentence SENT-NUM: ((NAME . BODY) …)
@@ -173,10 +178,12 @@ existing file (user slots, `created')."
                           ;; Without AI there is no padapāṭha: the line
                           ;; as transmitted.
                           (let ((samhita (string-trim (cdr s))))
+                            ;; The Devanāgarī goes to the Recitation; the
+                            ;; Text shows the padapāṭha — before C-c u G
+                            ;; the line as transmitted.
                             `((num . ,(car s))
-                              ;; Carsten 29.10.: Devanāgarī above the IAST
-                              (devanagari . ,(tibetan-sanskrit-script-iast-to-devanagari samhita))
-                              (samhita . ,samhita)))
+                              (samhita . ,samhita)
+                              (padapatha . ,samhita)))
                         (let ((wylie (bcat-sentence--wylie (cdr s)))
                               (rows (bcat-sentence--dictionary-rows (cdr s))))
                           `((num . ,(car s))

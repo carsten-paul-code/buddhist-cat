@@ -15,8 +15,8 @@
 Zeichen: ¦ Pause (yati) · | Pāda-Ende in der Zeile · – schwer (guru) · ⏑ leicht (laghu)
 
 #+begin_verse
-atra madvāgaśaktāpi | yanniyantraṇamullaset /
-tatpārameśvaraṃ śrīman|mahānandavijṛmbhitam // 7
+अत्र मद्वागशक्तापि | यन्नियन्त्रणमुल्लसेत् ।
+तत्पारमेश्वरं श्रीमन्|महानन्दविजृम्भितम् ॥ ७
 #+end_verse
 
 | at  | ra | mad | vā  | ga | śak | tā  | pi  |
@@ -30,10 +30,8 @@ tatpārameśvaraṃ śrīman|mahānandavijṛmbhitam // 7
 
 * Text
 #+begin_verse
-अत्र मद्वागशक्तापि यन्नियन्त्रणमुल्लसेत् ।
-atra madvāgaśaktāpi yanniyantraṇamullaset /
-तत्पारमेश्वरं श्रीमन्महानन्दविजृम्भितम् ॥ ७
-tatpārameśvaraṃ śrīmanmahānandavijṛmbhitam // 7
+atra mad-vāk aśaktā api yat niyantraṇam ullaset /
+tat pārameśvaram śrīmat-mahā-ānanda-vijṛmbhitam // 7
 #+end_verse
 
 #+begin_verse

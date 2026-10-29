@@ -12,11 +12,15 @@ Suche (Kaskade): <Ordner der Quelle>/Templates/analysis/,
 Werkzeug.  Erwartete Ausgabe: samples/Sanskrit.org.
 
 Felder: sent-num source-link segment-list hash created last-analyzed;
+recitation (das Original in Devanāgarī, bei Versen mit den Pausen —
+Carsten 29.10.: „das Devanagari im Recitationsverse (also de facto im
+Original) und den Text dann im reinen IAST mit sandhi Auflösung“)
 metre (Metrum, Pausenregel, Zeichenerklärung — nur bei Versen; ein
-nicht erkannter Vers hat hier den Hinweis) recitation (der Vers mit
-Pausen) scansion (Silbentabelle bzw. Silbenfolge je Zeile);
-segments: num devanagari (die Zeile in Devanāgarī, über der IAST)
-samhita (die Zeile wie überliefert) glossed (Padapāṭha,
+nicht erkannter Vers hat hier den Hinweis) scansion (Silbentabelle bzw.
+Silbenfolge je Zeile, IAST);
+segments: num samhita (die Zeile wie überliefert) padapatha (die Zeile
+in IAST mit aufgelösten Sandhis; im Rumpf noch die überlieferte)
+glossed (Padapāṭha,
 Sandhis aufgelöst, Vokabeln in Klammern) gloss-table translations
 sandhi forms compounds structure note concepts;
 glosses (gesetzt, wenn es einen Padapāṭha gibt) translation grammar
@@ -39,24 +43,25 @@ Goldman 1999).
 #+CREATED: {{created}}
 #+LAST_ANALYZED: {{last-analyzed}}
 
-{{#metre}}
-* Recitation
-{{metre}}
 {{#recitation}}
+* Recitation
+{{#metre}}
+{{metre}}
 
+{{/metre}}
 #+begin_verse
 {{recitation}}
 #+end_verse
-{{/recitation}}
+{{#scansion}}
 
 {{scansion}}
+{{/scansion}}
 
-{{/metre}}
+{{/recitation}}
 * Text
 #+begin_verse
 {{#segments}}
-{{devanagari}}
-{{samhita}}
+{{padapatha}}
 {{/segments}}
 #+end_verse
 {{#glosses}}

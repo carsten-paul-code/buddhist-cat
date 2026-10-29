@@ -537,19 +537,21 @@ for no words."
                   (cl-loop for r below 5 collect (mapcar (lambda (col) (nth r col)) ch))))
                (nreverse chunks) "\n\n")))
 
-(defun bcat-analysis-padapatha-line (samhita words)
-  "The padapāṭha line of a segment for * Text: each of WORDS with its
-gloss in brackets, then the daṇḍas closing the transmitted line SAMHITA
-\(its verse number stays there).  nil without words."
+(defun bcat-analysis-padapatha-line (samhita words &optional plain)
+  "The padapāṭha line of a segment for * Text: WORDS (Claude's
+padapāṭha) each with its gloss in brackets, then the daṇḍas closing the
+transmitted line SAMHITA.  PLAIN: the words alone and the whole close
+of SAMHITA, daṇḍas and verse number (Carsten 29.10.: the Text in pure
+IAST with the sandhis resolved).  nil without words."
   (when words
-    (let ((dandas (and (string-match "\\(/+\\(?:[ \t]*/+\\)*\\)[ \t]*[0-9]*[a-z]*[ \t]*\\'" samhita)
-                       (match-string 1 samhita))))
+    (let ((close (and (string-match "\\(\\(/+\\(?:[ \t]*/+\\)*\\)[ \t]*[0-9]*[a-z]*\\)[ \t]*\\'" samhita)
+                      (match-string (if plain 1 2) samhita))))
       (concat (mapconcat (lambda (w)
                            (let ((wd (bcat-analysis--field w 'word))
                                  (gl (bcat-analysis--field w 'gloss)))
-                             (if (string-empty-p gl) wd (format "%s [%s]" wd gl))))
+                             (if (or plain (string-empty-p gl)) wd (format "%s [%s]" wd gl))))
                          words " ")
-              (if dandas (concat " " dandas) "")))))
+              (if close (concat " " (string-trim close)) "")))))
 
 (defun bcat-analysis--word-entries (entries)
   "ENTRIES (alists with word and analysis) as \"/word/ — analysis\"."
@@ -595,7 +597,10 @@ skipped keeps its rump fields."
                (if (null c)
                    seg
                  (append
-                  `((glossed . ,(bcat-analysis-padapatha-line
+                  `((padapatha . ,(or (bcat-analysis-padapatha-line
+                                       (or (alist-get 'samhita seg) "") words t)
+                                      (alist-get 'padapatha seg)))
+                    (glossed . ,(bcat-analysis-padapatha-line
                                  (or (alist-get 'samhita seg) "") words))
                     (gloss-table . ,(bcat-analysis-sanskrit-tables words))
                     (translations . ,(bcat-analysis-translations-block n c))
