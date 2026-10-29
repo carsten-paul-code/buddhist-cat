@@ -12,7 +12,7 @@ NACH VORLAGE — Reading-Klassen, Tibetisch: `#+CAT_TEMPLATE: tibetan' im
 Quellkopf, Gliederung * Text / * Segments / * Sentence, C-c u A = Rumpf
 ohne KI, C-c u G = ein JSON-Abruf je Satz (+ DharmaMitra, + kleiner
 Zuordnungs-Abruf für ergänzte Vergleichsübersetzungen), endet mit C-c u H
-= die Satzdatei als PDF aufs reMarkable; ERT 2640.
+= die Satzdatei als PDF aufs reMarkable; Sanskrit seit 29.10. (Rezitation zuerst); ERT 2654.
 Previous: §5.73: UMBENENNUNG IN
 BUDDHIST CAT — erster Schritt: die Hülle (Hauptdatei/Feature
 buddhist-cat, alter Name lädt weiter, Customize-Gruppe, Menü, Repo,
@@ -4238,6 +4238,48 @@ ERT 2637 (2. Skip = pyewts fehlt dem python3 der Shell).
   einer unlesbaren Antwort geht auch der DharmaMitra-Text des Laufs
   verloren — spricht für das Aufheben von Antwort + Referenzen.
   ERT 2640.
+#### Sanskrit (29.10.)
+
+Carsten: Sanskrit nach demselben Muster; sein Sanskrit ist rudimentär,
+in den Readings sitzen Profis (Sadananda Das, Jowita Kramer,
+Doktoranden), es geht tief in die Grammatik — gaṇa, Stamm usw. dazu,
+Referenz die Devavāṇīpraveśikā (Goldman & Sutherland Goldman 1999, als
+Text unter ~/Documents/privat/Devavanipravesika.txt).  Antworten: unter
+Text saṃhitā + Padapāṭha mit Vokabeln „reicht so“, Grammatiktiefe
+„erstmal so“, keine Devanāgarī, Rezitation ZUERST, Pāda-Kennungen a–d
+weg.
+
+- `909c1ac' Zielform `samples/Sanskrit.org' (TĀ 1007, Inhalt von Hand,
+  nicht über C-c u G; korrigiert madvāgaśaktāpi = mad-vāk aśaktā api).
+- `c82202c' Vorlagen-Bugfix: übersprungener Abschnitt fasst Leerzeilen
+  zusammen.
+- `1600a59' Gerüst `sanskrit.org': {{#metre}} * Recitation (metre,
+  {{#recitation}} Vers, scansion) · * Text (samhita, {{#glosses}}
+  glossed, *Translation:*) · je Segment Tabellen, Übersetzungsblock,
+  *Sandhi:*, {{#forms}} *Forms:*, *Compounds:*, Structure/Note/Concepts
+  · {{#word-analysis}} ** Word Analysis am Ende von * Segments · * Sentence.
+- `b96bb8a' Rumpf ohne KI: `tibetan-metre-recitation' (Teile; alter
+  `** Metre' byte-gleich daraus), saṃhitā, leere Segmente.
+- `33812c2' Prompt/Antwort (words: word lemma formation parts gloss form;
+  sandhi, forms, compounds in Devavāṇīpraveśikā-Begriffen, shift als
+  Liste), `bcat-analysis-sanskrit-tables' (eigene Tabellen ≤
+  `bcat-analysis-sanskrit-table-width' 95, nichts gekappt),
+  `-padapatha-line', `-sanskrit-context'.
+- `35a27ca' Abruf/Landung/Zuordnung verzweigen über
+  `bcat-sentence--sanskrit-p'.
+- `5f03fe1' `** Word Analysis' (- Wort — Lemma; Form) in den neuen
+  Dateien für die sechs Leser (Hervorhebung inkl. Projektion in die
+  Quelle, Diskussion, Papier, Handout, Wortbildung, padapatha-pdf.py);
+  am Ende von * Segments (unter * Sentence wäre ein eingefügter
+  Vergleichsabsatz darunter gerutscht); C-c u H lässt ihn im PDF weg.
+- Korpus `61bdf659': #+CAT_TEMPLATE: sanskrit in tantraloka-1.org,
+  msa-1-cat.org, msa-9-cat.org, asam-1-cat.org, kopf-sa.org; an einer
+  Kopie von tantraloka-1.org geprüft (Satz 1 Nardaṭaka, 1007, 1008
+  Prosa).  Sessions Tantrāloka/Reading-Class/AS benachrichtigt.
+ERT 2654.  Offen: maschinelle Sandhi-Gegenprobe des Padapāṭha (wie
+padapatha-pdf.py) fehlt noch; MSA-Synopse (§5.68) hängt am alten
+Handout — in Vorlagenquellen ist C-c u H jetzt der Satz-Export.
+
 **Offen:** C-c u G lässt eine vollständige Datei liegen — eine
 geänderte Vorlage erreicht fertige Sätze nur per neuem Abruf.
 Vorschlag an Carsten: Claudes geparste Antwort neben der Datei
