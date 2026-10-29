@@ -12,7 +12,7 @@ NACH VORLAGE — Reading-Klassen, Tibetisch: `#+CAT_TEMPLATE: tibetan' im
 Quellkopf, Gliederung * Text / * Segments / * Sentence, C-c u A = Rumpf
 ohne KI, C-c u G = ein JSON-Abruf je Satz (+ DharmaMitra, + kleiner
 Zuordnungs-Abruf für ergänzte Vergleichsübersetzungen), endet mit C-c u H
-= die Satzdatei als PDF aufs reMarkable; ERT 2637.
+= die Satzdatei als PDF aufs reMarkable; ERT 2639.
 Previous: §5.73: UMBENENNUNG IN
 BUDDHIST CAT — erster Schritt: die Hülle (Hauptdatei/Feature
 buddhist-cat, alter Name lädt weiter, Customize-Gruppe, Menü, Repo,
@@ -4222,6 +4222,13 @@ ERT 2631.
   mit `~' gebunden, Vers flatterrechts — Umbruch nur zwischen
   Wort+Glosse (vorher „[ob-struction]“, „/“ allein, Überlauf).
 ERT 2637 (2. Skip = pyewts fehlt dem python3 der Shell).
+- `93f1e4a' Bugfix: mehrsilbiges Wort mit Kasus-Funktion („shes bya'i“,
+  „GEN · second member of compound“) ist keine Partikel — Partikel nur
+  bei EINER Silbe (Link in der Tabelle, Glosse im Vers).
+- `2964907' * Text nach Carstens Leseprobe („trial and error“): blanker
+  Vers, darunter (nur wenn eine Zeile Glossen hat, Feld `glosses') der
+  Vers mit Vokabeln, dann `*Translation:*' des ganzen Satzes (Feld
+  `translation', bleibt auch unter Translations compared).  ERT 2639.
 **Offen:** C-c u G lässt eine vollständige Datei liegen — eine
 geänderte Vorlage erreicht fertige Sätze nur per neuem Abruf.
 Vorschlag an Carsten: Claudes geparste Antwort neben der Datei
