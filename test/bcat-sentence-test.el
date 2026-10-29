@@ -187,8 +187,6 @@ Templates/analysis/ shapes the new file instead of the tool's."
    " \"concepts\": \"*'dus ma byas* (asaṃskṛta)\"}],"
    " \"grammar\": \"Two predicate pādas.\","
    " \"translation\": \"Indescribable and invisible, immutable and uncompounded\","
-   " \"references\": [{\"name\": \"Lindtner 1981\", \"text\": \"[It is also] inexpressible (avācya) and invisible (adraṣṭavya).\"},"
-   "                  {\"name\": \"DharmaMitra\", \"text\": \"Inexpressible and invisible, / Unchanging and unconditioned—\"}],"
    " \"comparison\": \"\"}")
   "A canned Claude answer for the two-pāda test verse.")
 
@@ -328,6 +326,33 @@ compared)."
           (should (string-match-p "^\\* My Notes\nAlte Notiz\\.$" text))
           (should (string-match-p "^\\*Eigene 2026:\\* My own rendering of verse nine\\.$" text)))))))
 
+(ert-deftest bcat-sentence-fetch-keeps-reference-text ()
+  "28.10., bDen 9: Claude copied Lindtner's verse without his note, and
+the note was gone from the file.  The paragraphs under Translations
+compared are the reference texts as given (note included); only the
+bold marks come from the answer."
+  (bcat-sentence-test--with-source
+    (with-temp-file (expand-file-name "refs.org" dir)
+      (insert "#+TITLE: Lindtner 1981, versweise\n\n** Sentence 9\n*** Lindtner 1981\n"
+              "[It is also] inexpressible (avācya) and invisible (adraṣṭavya). [fn:l9]\n\n"
+              "[fn:l9] Lindtner 1981, S. 197: Eimer's \"Befleckungen\" is wrong.\n"))
+    (bcat-sentence-test--create src)
+    ;; As on 28.10.: the answer still carries its own copy of the
+    ;; reference — without the note.
+    (bcat-sentence-test--with-stubs
+        (replace-regexp-in-string
+         (regexp-quote " \"comparison\": \"\"}")
+         (concat " \"references\": [{\"name\": \"Lindtner 1981\", \"text\":"
+                 " \"[It is also] inexpressible (avācya) and invisible (adraṣṭavya).\"}],"
+                 " \"comparison\": \"\"}")
+         bcat-sentence-test--answer t t)
+      (bcat-sentence-test--fetch src))
+    (should (string-match-p
+             (regexp-quote (concat "*Lindtner 1981:* [It is also] inexpressible (avācya) and "
+                                   "invisible (adraṣṭavya). [fn:l9]\n\n"
+                                   "[fn:l9] Lindtner 1981, S. 197: Eimer's \"Befleckungen\" is wrong."))
+             (bcat-sentence-test--file-text src)))))
+
 (ert-deftest bcat-sentence-fetch-unreadable-answer-keeps-file ()
   "An answer without a readable JSON object changes nothing; the hook
 for C-c u H does not run."
@@ -408,7 +433,6 @@ reference was added under Translations compared that no segment shows."
           "{\"num\": 38, \"references\": [{\"name\": \"Ruegg 1981\", \"text\": \"*Unsayable* and unseen,\"}],"
           " \"shift\": \"Ruegg 1981: modal „unsayable“ for „indescribable“\"},"
           "{\"num\": 39, \"references\": [{\"name\": \"Ruegg 1981\", \"text\": \"unchanging, unconditioned.\"}], \"shift\": \"\"}],"
-          " \"references\": [{\"name\": \"Ruegg 1981\", \"text\": \"*Unsayable* and unseen, unchanging, unconditioned.\"}],"
           " \"comparison\": \"Ruegg reads a modal nuance.\"}")
   "Alignment answer for the reference Ruegg 1981 added by hand.")
 

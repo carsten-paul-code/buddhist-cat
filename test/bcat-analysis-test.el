@@ -40,6 +40,12 @@ slots — what C-c u A knows without AI."
                                   (alist-get 'segments fix)))
           (cl-remove-if (lambda (c) (memq (car c) '(segments grammar comparison))) fix))))
 
+(defconst bcat-analysis-test--refs
+  '(("Lindtner 1981" . "[It is also] inexpressible (avācya) and invisible (adraṣṭavya), unchangeable (avikāra) and uncompounded (asaṃskṛta). When a yogi understands it he abandons the obstructions of defilement and cognizable (kleśajñeyāvaraṇa).")
+    ("DharmaMitra" . "Inexpressible and invisible, / Unchanging and unconditioned— / When a yogi realizes this, / The obscurations of afflictions and the knowable are abandoned."))
+  "The reference translations of sentence 9 as given to the request —
+the sentence-level paragraphs are these texts, marked from the parts.")
+
 (ert-deftest bcat-analysis-golden-sentence-009 ()
   "Claude's answer for bDen 9 → template fields → the Tibetan template
 = the reviewed sample, character for character: tables without \"?\"
@@ -57,7 +63,8 @@ sentence comparison."
                    (bcat-template-render-named
                     "tibetan"
                     (bcat-analysis-context (bcat-analysis-test--base)
-                                           (bcat-analysis-parse (bcat-analysis-test--answer))))))))
+                                           (bcat-analysis-parse (bcat-analysis-test--answer))
+                                           bcat-analysis-test--refs))))))
 
 (ert-deftest bcat-analysis-parse-tolerant ()
   "The JSON object is found inside a code fence or prose; anything
@@ -93,6 +100,26 @@ answer (28.10., Satz 9 „nicht lesbar“).  Valid JSON is left alone."
     (let ((golden (bcat-analysis-test--answer)))
       (should (equal golden (bcat-analysis--repair-json golden))))))
 
+(ert-deftest bcat-analysis-mark-reference ()
+  "The sentence-level paragraph of a reference is OUR text, note
+included; its bold marks come from Claude's segment parts, in order: a
+word marked in a later part is bolded where that part stands, not at an
+earlier occurrence; whitespace may differ; a passage not found changes
+nothing."
+  (let ((text (concat "When it is so. When a yogi understands\nit he abandons the "
+                      "obstructions (kleśajñeyāvaraṇa). [fn:9]\n\n"
+                      "[fn:9] Eimer's \"Befleckungen\" is wrong.")))
+    (should (equal (concat "When it is so. *When* a yogi understands\nit *he abandons* the "
+                           "obstructions *(kleśajñeyāvaraṇa)*. [fn:9]\n\n"
+                           "[fn:9] Eimer's \"Befleckungen\" is wrong.")
+                   (bcat-analysis-mark-reference
+                    text '("When it is so."
+                           "*When* a yogi understands it"
+                           "*he abandons* the obstructions *(kleśajñeyāvaraṇa)*."
+                           "*nowhere*"))))
+    (should (equal text (bcat-analysis-mark-reference text nil)))
+    (should (equal text (bcat-analysis-mark-reference text '("no *such* part"))))))
+
 (ert-deftest bcat-analysis-prompts ()
   "System prompt: the JSON schema and the target language; user prompt:
 the document context, every segment with Tibetan and Wylie, each
@@ -108,6 +135,13 @@ reference translation by name (or \"none\")."
     (dolist (key '("\"segments\"" "\"words\"" "\"gloss\"" "\"function\"" "\"shift\""
                    "\"structure\"" "\"note\"" "\"concepts\"" "\"grammar\"" "\"comparison\""))
       (should (string-match-p (regexp-quote key) sys-en)))
+    ;; 29.10.: Claude no longer copies whole reference translations
+    ;; (verbatim copies broke the JSON and dropped Lindtner's note) —
+    ;; the sentence-level marks come from the segment parts.
+    (should-not (string-match-p "in full" sys-en))
+    (should-not (string-match-p "in full" (bcat-analysis-align-system-prompt "en")))
+    (should (string-match-p "not its notes" sys-en))
+    (should (string-match-p "not its notes" (bcat-analysis-align-system-prompt "en")))
     (should (string-match-p "in English" sys-en))
     (should (string-match-p "in German" sys-de))
     (should (string-match-p "\\`Atiśa, Satyadvayāvatāra" user))

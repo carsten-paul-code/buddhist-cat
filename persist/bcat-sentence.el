@@ -197,10 +197,6 @@ nil when absent or empty."
      (and (string-match "^#\\+CREATED:[ \t]*\\(.+\\)$" text)
           (list (cons 'created (string-trim (match-string 1 text))))))))
 
-(defun bcat-sentence--strip-marks (text)
-  "TEXT without org bold marks (the meaning-shift marks of a fetch)."
-  (replace-regexp-in-string "\\*\\([^*\n]+\\)\\*" "\\1" text t))
-
 (defun bcat-sentence--compared (file)
   "The paragraphs under `** Translations compared' of the template FILE
 as ((NAME . TEXT) …) — every `*NAME:* TEXT' paragraph, in order."
@@ -241,7 +237,7 @@ a machine name (Translation, DharmaMitra) — marks stripped."
   (delq nil (mapcar (lambda (r)
                       (unless (or (member (car r) names)
                                   (member (car r) '("Translation" "DharmaMitra")))
-                        (cons (car r) (bcat-sentence--strip-marks (cdr r)))))
+                        (cons (car r) (bcat-analysis-strip-marks (cdr r)))))
                     refs)))
 
 (defun bcat-sentence--write (file text)
@@ -301,7 +297,7 @@ stripped."
                         (unless (or (equal (car r) "Translation")
                                     (string-match-p (format "^\\*%s:\\* " (regexp-quote (car r)))
                                                     segments))
-                          (cons (car r) (bcat-sentence--strip-marks (cdr r)))))
+                          (cons (car r) (bcat-analysis-strip-marks (cdr r)))))
                       (bcat-sentence--compared file)))))
 
 (defun bcat-sentence-fetch-state (file seg-nums)
@@ -336,8 +332,9 @@ nil when the file is complete."
   "TEXT of a template file with the alignment answer PARSED put in:
 per segment the new reference parts after the existing references and
 the new „→“ line after the existing ones; under Translations compared
-the plain paragraphs replaced by the marked ones and the comparison
-sentence added.  Everything else stays as it is."
+each new reference's own paragraph marked from its segment parts (the
+text stays the one pasted) and the comparison sentence added.
+Everything else stays as it is."
   (with-temp-buffer
     (insert text)
     (dolist (seg (alist-get 'segments parsed))
@@ -359,19 +356,26 @@ sentence added.  Everything else stays as it is."
     (goto-char (point-min))
     (when (re-search-forward "^\\*\\* Translations compared\n" nil t)
       (let ((region-start (point)))
-        (dolist (r (alist-get 'references parsed))
-          (let ((name (bcat-analysis--field r 'name))
-                (marked (bcat-analysis--field r 'text)))
-            (goto-char region-start)
-            (when (and (not (string-empty-p marked))
-                       (re-search-forward (format "^\\*%s:\\* " (regexp-quote name)) nil t))
-              (let ((pstart (line-beginning-position))
-                    (pend (if (re-search-forward "\n[ \t]*\n\\|\n\\*" nil t)
-                              (match-beginning 0)
-                            (point-max))))
-                (delete-region pstart pend)
-                (goto-char pstart)
-                (insert (format "*%s:* %s" name marked))))))
+        (dolist (name (delete-dups
+                       (mapcan (lambda (seg)
+                                 (mapcar (lambda (r) (bcat-analysis--field r 'name))
+                                         (alist-get 'references seg)))
+                               (copy-sequence (alist-get 'segments parsed)))))
+          (goto-char region-start)
+          (when (and (not (string-empty-p name))
+                     (re-search-forward (format "^\\*%s:\\* " (regexp-quote name)) nil t))
+            (let* ((pstart (line-beginning-position))
+                   (tstart (point))
+                   (pend (if (re-search-forward "\n[ \t]*\n\\|\n\\*" nil t)
+                             (match-beginning 0)
+                           (point-max)))
+                   (own (bcat-analysis-strip-marks (buffer-substring tstart pend))))
+              (delete-region pstart pend)
+              (goto-char pstart)
+              (insert (format "*%s:* %s" name
+                              (bcat-analysis-mark-reference
+                               own (bcat-analysis--reference-parts
+                                    (alist-get 'segments parsed) name)))))))
         (let ((comparison (bcat-analysis--field parsed 'comparison)))
           (unless (string-empty-p comparison)
             (goto-char region-start)
@@ -481,7 +485,8 @@ must not stop the analysis)."
   "Write Claude's RESPONSE for SENTENCE into the template FILE; nil and
 an untouched file when the answer is unreadable.  User slots and
 #+CREATED are read from the file NOW (typing during the request
-survives); references Claude left out of the comparison are kept."
+survives); the references under Translations compared are REFS as sent,
+marked from the answer's segment parts."
   (let* ((read (bcat-analysis-read response))
          (parsed (car read)))
     (if (not parsed)
@@ -489,16 +494,6 @@ survives); references Claude left out of the comparison are kept."
       (bcat-sentence--save-visit file)
       (let* ((sent-num (plist-get sentence :sent-num))
              (segs (plist-get sentence :segs))
-             (returned (mapcar (lambda (r) (alist-get 'name r))
-                               (alist-get 'references parsed)))
-             (missing (cl-remove-if (lambda (r) (member (car r) returned)) refs))
-             (parsed (if missing
-                         (cons (cons 'references
-                                     (append (alist-get 'references parsed)
-                                             (mapcar (lambda (r) `((name . ,(car r)) (text . ,(cdr r))))
-                                                     missing)))
-                               parsed)
-                       parsed))
              (base (bcat-sentence-rump-context sent-num segs source-file nil
                                                (bcat-sentence--keep file)))
              ;; LAST_ANALYZED is today, whatever was kept.
@@ -506,7 +501,7 @@ survives); references Claude left out of the comparison are kept."
         (bcat-sentence--write
          file
          (bcat-template-render-named (bcat-sentence-file-p file)
-                                     (bcat-analysis-context base parsed)
+                                     (bcat-analysis-context base parsed refs)
                                      source-file))
         (run-hook-with-args 'bcat-sentence-after-fetch-functions file)
         file))))

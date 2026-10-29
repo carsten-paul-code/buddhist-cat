@@ -42,20 +42,19 @@ code TARGET — constant per document, so the prompt cache stays warm."
   (let ((lang (bcat-analysis--language target)))
     (format "You are a philologist preparing one sentence or verse of a Classical Tibetan Buddhist text for a university reading class. Work segment by segment, then on the whole sentence. Answer with ONE JSON object and nothing else (no prose, no code fence):
 
-{\"segments\": [{\"num\": <segment number>, \"words\": [{\"wylie\": \"…\", \"gloss\": \"…\", \"function\": \"…\"}], \"translation\": \"…\", \"references\": [{\"name\": \"…\", \"text\": \"…\"}], \"shift\": \"…\", \"structure\": \"…\", \"note\": \"…\", \"concepts\": \"…\"}], \"grammar\": \"…\", \"translation\": \"…\", \"references\": [{\"name\": \"…\", \"text\": \"…\"}], \"comparison\": \"…\"}
+{\"segments\": [{\"num\": <segment number>, \"words\": [{\"wylie\": \"…\", \"gloss\": \"…\", \"function\": \"…\"}], \"translation\": \"…\", \"references\": [{\"name\": \"…\", \"text\": \"…\"}], \"shift\": \"…\", \"structure\": \"…\", \"note\": \"…\", \"concepts\": \"…\"}], \"grammar\": \"…\", \"translation\": \"…\", \"comparison\": \"…\"}
 
 Rules:
 - segments: one entry per given segment, same numbers, same order.
 - words: the segment's words in order, together covering every syllable of its Wylie exactly once. A lexical compound or fixed verb phrase is one word (\"brjod du med pa\"); case and converb particles are words of their own. wylie: exactly as in the given Wylie. gloss: the meaning in THIS context, at most 25 characters, in %s. function: part of speech and syntactic function, compact — \"N · agent\", \"ADJ · predicate\", \"V pf. ('pong ba) · main verb\", \"DEM · object\", \"NEG + V pf. (byed pa)\"; a case or converb particle gets only its label: ERG, GEN, ABS, TERM, LOC, ABL, COM, DAT, or \"CONV · cond.\" etc.
 - translation (segment): this segment's part of your translation; the parts read in order form the sentence translation. Give key terms with the Tibetan and the established Sanskrit in parentheses, e.g. \"uncompounded ('dus ma byas: asaṃskṛta)\".
-- references (segment): for every reference translation given, the part that corresponds to this segment, quoted verbatim (keep its brackets and Sanskrit). Mark with org bold *…* ONLY passages that shift the meaning against the Tibetan or against your reading; stylistic variation is not marked.
+- references (segment): for every reference translation given, the part that corresponds to this segment, quoted verbatim (keep its brackets and Sanskrit; not its notes). Mark with org bold *…* ONLY passages that shift the meaning against the Tibetan or against your reading; stylistic variation is not marked.
 - shift: one line on what the marked passages shift, beginning with the translator name(s): \"Lindtner 1981: active, with the yogin as agent\"; \"\" when nothing is marked.
 - structure: the segment's syntax in one line, org markup — case particles =yis=, converbs ~na~, Tibetan words /italic/: \"rnal 'byor pa =yis= [agent, ERG] · de [object, ABS] · rtogs [V] ~na~ [conditional] → protasis of 41.\"
 - note: only for a grammatical peculiarity or a real ambiguity, one or two sentences; otherwise \"\".
 - concepts: Buddhist technical concepts occurring in THIS segment — the term in *bold*, its Sanskrit, a short encyclopedic note of two or three sentences; \"\" when there is none.
 - grammar: an overview of the whole sentence — verb backbone, clause linkage, agents, elisions.
 - translation (sentence): your translation of the whole sentence (the segment parts joined).
-- references (sentence): every reference translation in full, verbatim, with the same bold marks.
 - comparison: one to three sentences on the meaning-shifting differences between the translations including yours; \"\" when there are none.
 - Write glosses, notes and explanations in %s. Never mention yourself."
             lang lang)))
@@ -86,12 +85,11 @@ translations added by hand (§5.74 step 3c) — target language TARGET."
   (let ((lang (bcat-analysis--language target)))
     (format "You align additional reference translations with the segments of a Classical Tibetan sentence that has already been analysed for a university reading class. Answer with ONE JSON object and nothing else:
 
-{\"segments\": [{\"num\": <segment number>, \"references\": [{\"name\": \"…\", \"text\": \"…\"}], \"shift\": \"…\"}], \"references\": [{\"name\": \"…\", \"text\": \"…\"}], \"comparison\": \"…\"}
+{\"segments\": [{\"num\": <segment number>, \"references\": [{\"name\": \"…\", \"text\": \"…\"}], \"shift\": \"…\"}], \"comparison\": \"…\"}
 
 Rules:
-- segments: one entry per given segment; references: for every given reference translation the part that corresponds to this segment, quoted verbatim. Mark with org bold *…* ONLY passages that shift the meaning against the Tibetan or against the given translation of the segment; stylistic variation is not marked.
+- segments: one entry per given segment; references: for every given reference translation the part that corresponds to this segment, quoted verbatim (not its notes). Mark with org bold *…* ONLY passages that shift the meaning against the Tibetan or against the given translation of the segment; stylistic variation is not marked.
 - shift: one line on what the marked passages shift, beginning with the translator name; \"\" when nothing is marked.
-- references (top level): every given reference translation in full, verbatim, with the same marks.
 - comparison: one or two sentences on the meaning-shifting differences of the new translation(s); \"\" when there are none.
 - Write in %s. Never mention yourself."
             lang)))
@@ -259,6 +257,63 @@ for no words."
           (cl-remove-if (lambda (r) (string-empty-p (bcat-analysis--field r 'text)))
                         refs)))
 
+(defun bcat-analysis-strip-marks (text)
+  "TEXT without org bold marks (the meaning-shift marks of a fetch)."
+  (replace-regexp-in-string "\\*\\([^*\n]+\\)\\*" "\\1" text t))
+
+(defun bcat-analysis--loose-regexp (text)
+  "A regexp for TEXT that lets any run of whitespace stand for its spaces."
+  (mapconcat #'regexp-quote (split-string text) "[ \t\n]+"))
+
+(defun bcat-analysis--reference-parts (segments name)
+  "The parts of the reference NAME in Claude's SEGMENTS, in segment
+order — each with its passages in org bold."
+  (delq nil
+        (mapcar (lambda (seg)
+                  (let ((r (cl-find name (alist-get 'references seg)
+                                    :key (lambda (r) (bcat-analysis--field r 'name))
+                                    :test #'equal)))
+                    (and r (bcat-analysis--field r 'text))))
+                (sort (copy-sequence segments)
+                      (lambda (a b)
+                        (< (string-to-number (format "%s" (alist-get 'num a)))
+                           (string-to-number (format "%s" (alist-get 'num b)))))))))
+
+(defun bcat-analysis-mark-reference (text parts)
+  "TEXT, a reference translation as given (notes included), with the
+meaning-shift marks of PARTS in org bold.  PARTS are Claude's parts of
+that reference, segment by segment, their passages in org bold: each
+part is looked for after the previous one and its passages are marked
+where it stands — never at an earlier occurrence of the same words.
+Whitespace may differ; a part or passage not found changes nothing.
+The text itself is never taken from the answer (29.10.: Claude's copy
+of Lindtner's verse 9 dropped his note)."
+  (let ((case-fold-search nil) (cursor 0) (spans '()))
+    (dolist (part parts)
+      (let* ((plain (string-trim (bcat-analysis-strip-marks part)))
+             (passages (let ((ps '()) (start 0))
+                         (while (string-match "\\*\\([^*\n]+\\)\\*" part start)
+                           (push (string-trim (match-string 1 part)) ps)
+                           (setq start (match-end 0)))
+                         (nreverse ps)))
+             (region (and (not (string-empty-p plain))
+                          (string-match (bcat-analysis--loose-regexp plain) text cursor)
+                          (cons (match-beginning 0) (match-end 0))))
+             (pos (if region (car region) cursor)))
+        (dolist (p passages)
+          (when (and (not (string-empty-p p))
+                     (string-match (bcat-analysis--loose-regexp p) text pos)
+                     (or (null region) (<= (match-end 0) (cdr region))))
+            (push (cons (match-beginning 0) (match-end 0)) spans)
+            (setq pos (match-end 0))))
+        (setq cursor (if region (cdr region) pos))))
+    ;; SPANS run from the last to the first: inserting from the end
+    ;; keeps the earlier positions valid.
+    (dolist (sp spans text)
+      (setq text (concat (substring text 0 (car sp)) "*"
+                         (substring text (car sp) (cdr sp)) "*"
+                         (substring text (cdr sp)))))))
+
 (defun bcat-analysis-translations-block (num seg)
   "The left-aligned translation block of segment NUM from SEG (Claude's
 segment object): ⟦NUM⟧ own translation, the reference parts, the shift
@@ -271,24 +326,33 @@ line — one line each, org line breaks between."
                   (unless (string-empty-p sh) (list (concat "→ " sh)))))))
     (mapconcat #'identity lines " \\\\\n")))
 
-(defun bcat-analysis-comparison (parsed)
-  "Translations compared of the sentence from PARSED: own translation,
-the marked references, the comparison paragraph."
-  (string-join
-   (delq nil
-         (append
-          (let ((tr (bcat-analysis--field parsed 'translation)))
-            (unless (string-empty-p tr) (list (concat "*Translation:* " tr))))
-          (bcat-analysis--reference-lines (alist-get 'references parsed))
-          (let ((c (bcat-analysis--field parsed 'comparison)))
-            (unless (string-empty-p c) (list c)))))
-   "\n\n"))
+(defun bcat-analysis-comparison (parsed &optional refs)
+  "Translations compared of the sentence: the own translation from
+PARSED, each of REFS ((NAME . TEXT) …, the texts sent with the request)
+with the marks of its segment parts, the comparison paragraph."
+  (let ((segments (alist-get 'segments parsed)))
+    (string-join
+     (delq nil
+           (append
+            (let ((tr (bcat-analysis--field parsed 'translation)))
+              (unless (string-empty-p tr) (list (concat "*Translation:* " tr))))
+            (mapcar (lambda (r)
+                      (let ((text (string-trim (or (cdr r) ""))))
+                        (unless (string-empty-p text)
+                          (format "*%s:* %s" (car r)
+                                  (bcat-analysis-mark-reference
+                                   text (bcat-analysis--reference-parts segments (car r)))))))
+                    refs)
+            (let ((c (bcat-analysis--field parsed 'comparison)))
+              (unless (string-empty-p c) (list c)))))
+     "\n\n")))
 
-(defun bcat-analysis-context (base parsed)
+(defun bcat-analysis-context (base parsed &optional refs)
   "Template fields of a fetched sentence: BASE (the rump fields —
 header, segments with num and wylie, user sections) completed from
-PARSED (Claude's answer).  Segments are matched by number; a segment
-Claude skipped keeps its rump fields."
+PARSED (Claude's answer) and REFS, the reference translations sent
+with the request ((NAME . TEXT) …).  Segments are matched by number; a
+segment Claude skipped keeps its rump fields."
   (let ((by-num (mapcar (lambda (s) (cons (alist-get 'num s) s))
                         (alist-get 'segments parsed))))
     (append
@@ -310,7 +374,7 @@ Claude skipped keeps its rump fields."
                    seg))))
             (alist-get 'segments base)))
        (grammar . ,(bcat-analysis--field parsed 'grammar))
-       (comparison . ,(bcat-analysis-comparison parsed)))
+       (comparison . ,(bcat-analysis-comparison parsed refs)))
      base)))
 
 (provide 'bcat-analysis)
