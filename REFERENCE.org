@@ -1,9 +1,9 @@
 #+TITLE: Function Reference — buddhist-cat
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-10-29T09:00:17
+#+DATE: 2026-10-29T09:06:18
 #+OPTIONS: toc:2 num:nil
 
-Source tree: ~/Users/cp/buddhist-cat~  ·  90 modules  ·  1957 forms
+Source tree: ~/Users/cp/buddhist-cat~  ·  90 modules  ·  1961 forms
 
 Regenerated automatically by:
 
@@ -63,7 +63,7 @@ python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/buddhist-c
   - [[#doc-prep/tibetan-sentence-structure.el][doc-prep/tibetan-sentence-structure.el]]  (25)
   - [[#doc-prep/tibetan-wylie-ingest.el][doc-prep/tibetan-wylie-ingest.el]]  (26)
   - [[#persist/bcat-analysis.el][persist/bcat-analysis.el]]  (25)
-  - [[#persist/bcat-export.el][persist/bcat-export.el]]  (15)
+  - [[#persist/bcat-export.el][persist/bcat-export.el]]  (19)
   - [[#persist/bcat-sentence.el][persist/bcat-sentence.el]]  (44)
   - [[#persist/bcat-template.el][persist/bcat-template.el]]  (17)
   - [[#persist/tibetan-analysis-claude.el][persist/tibetan-analysis-claude.el]]  (77)
@@ -12836,7 +12836,7 @@ Where an answer C-c u G could not read is kept, one file per answer
 ** ~bcat-export--latex-escape~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 56
+:LINE: 58
 :SIGNATURE: (bcat-export--latex-escape s)
 :END:
 
@@ -12845,7 +12845,7 @@ S with the LaTeX special characters escaped.
 ** ~bcat-export-head-lines~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 67
+:LINE: 69
 :SIGNATURE: (bcat-export-head-lines folder work sent-num verse)
 :END:
 
@@ -12855,7 +12855,7 @@ The #+LATEX_HEADER lines of the running head: FOLDER · WORK
 ** ~bcat-export-info~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 80
+:LINE: 82
 :SIGNATURE: (bcat-export-info file)
 :END:
 
@@ -12863,23 +12863,59 @@ What the PDF of the sentence FILE is labelled with: (:source :folder
 :work :sent-num :verse :label) — folder and work title from the source
 (its #+TITLE before „ — “), the verse from its :VERSE:.
 
+** ~bcat-export--verse-units~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 112
+:SIGNATURE: (bcat-export--verse-units latex)
+:END:
+
+LATEX of a verse block with each glossed line made of unbreakable
+units — every word with its [gloss] in an \mbox, the shad tied to the
+last by `~' — so a long line breaks only between units: 29.10., the
+glossed bDen 9 broke inside „[ob-struction]“ and left „/“ alone on a
+line.  Such a verse is set ragged right; justified, TeX let the
+longest line run into the margin rather than stretch its few spaces.
+Lines without a gloss (or starting with a command) stay as they are.
+
+** ~bcat-export--verse-lines~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 127
+:SIGNATURE: (bcat-export--verse-lines latex)
+:END:
+
+LATEX with each glossed verse line made of \mbox units (see
+`bcat-export--verse-units').
+
+** ~bcat-export--verse-filter~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 153
+:SIGNATURE: (bcat-export--verse-filter text backend _info)
+:END:
+
+`org-export-filter-verse-block-functions' entry: TEXT through
+`bcat-export--verse-units' when exporting to LaTeX (BACKEND).
+
 ** ~bcat-export-pdf~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 110
+:LINE: 160
 :SIGNATURE: (bcat-export-pdf file &optional head)
 :END:
 
 Export the sentence FILE to PDF beside it and return the PDF path.
 HEAD (lines from `bcat-export-head-lines') goes into the export copy,
 never into the file.  LuaLaTeX, two runs (longtable), tables flush
-left at natural width — bound here, Carsten's own export settings
-(centring, tabularx) stay untouched outside.
+left at natural width, glossed verse lines broken only between word
+units — bound here, Carsten's own export settings (centring, tabularx)
+stay untouched outside.
 
 ** ~bcat-export-file~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 138
+:LINE: 191
 :SIGNATURE: (bcat-export-file file)
 :END:
 
@@ -12889,7 +12925,7 @@ reMarkable (`bcat-export-upload').  Returns the PDF path.
 ** ~bcat-export-after-fetch~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 152
+:LINE: 205
 :SIGNATURE: (bcat-export-after-fetch file)
 :END:
 
@@ -12902,7 +12938,7 @@ rmapi failure must not spoil the landed analysis.
 ** ~bcat-export~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 169
+:LINE: 222
 :SIGNATURE: (bcat-export)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -12918,7 +12954,7 @@ old handout.
 ** ~bcat-export-auto~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 40
+:LINE: 42
 :TYPE: 'boolean
 :GROUP: buddhist-cat
 :DEFAULT: t
@@ -12930,7 +12966,7 @@ sentence file goes to PDF and onto the reMarkable.
 ** ~bcat-export-upload~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 46
+:LINE: 48
 :TYPE: 'boolean
 :GROUP: buddhist-cat
 :DEFAULT: t
@@ -12942,7 +12978,7 @@ document „Satz N“); nil only writes the PDF next to the file.
 ** ~org-latex-compiler~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 33
+:LINE: 34
 :END:
 
 /(no docstring)/
@@ -12950,7 +12986,7 @@ document „Satz N“); nil only writes the PDF next to the file.
 ** ~org-latex-pdf-process~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 34
+:LINE: 35
 :END:
 
 /(no docstring)/
@@ -12958,7 +12994,7 @@ document „Satz N“); nil only writes the PDF next to the file.
 ** ~org-latex-tables-centered~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 35
+:LINE: 36
 :END:
 
 /(no docstring)/
@@ -12966,7 +13002,15 @@ document „Satz N“); nil only writes the PDF next to the file.
 ** ~org-export-filter-table-functions~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 36
+:LINE: 37
+:END:
+
+/(no docstring)/
+
+** ~org-export-filter-verse-block-functions~  /variable/
+:PROPERTIES:
+:KIND: defvar
+:LINE: 38
 :END:
 
 /(no docstring)/
@@ -12974,7 +13018,7 @@ document „Satz N“); nil only writes the PDF next to the file.
 ** ~org-export-before-processing-functions~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 37
+:LINE: 39
 :END:
 
 /(no docstring)/
@@ -12982,7 +13026,7 @@ document „Satz N“); nil only writes the PDF next to the file.
 ** ~tibetan-cascade-subtree-confirm-threshold~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 38
+:LINE: 40
 :END:
 
 /(no docstring)/

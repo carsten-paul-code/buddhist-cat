@@ -30,10 +30,12 @@
 (declare-function tibetan-discussion-paper--temp-source-p "tibetan-discussion-paper" (file))
 (declare-function tibetan-handout "tibetan-handout" (&optional org-only))
 (declare-function org-latex-export-to-pdf "ox-latex")
+(declare-function org-export-derived-backend-p "ox" (backend &rest backends))
 (defvar org-latex-compiler)
 (defvar org-latex-pdf-process)
 (defvar org-latex-tables-centered)
 (defvar org-export-filter-table-functions)
+(defvar org-export-filter-verse-block-functions)
 (defvar org-export-before-processing-functions)
 (defvar tibetan-cascade-subtree-confirm-threshold)
 
@@ -107,12 +109,61 @@ document „Satz N“); nil only writes the PDF next to the file."
 ;; Export and upload
 ;; ----------------------------------------------------------------------------
 
+(defun bcat-export--verse-units (latex)
+  "LATEX of a verse block with each glossed line made of unbreakable
+units — every word with its [gloss] in an \\mbox, the shad tied to the
+last by `~' — so a long line breaks only between units: 29.10., the
+glossed bDen 9 broke inside „[ob-struction]“ and left „/“ alone on a
+line.  Such a verse is set ragged right; justified, TeX let the
+longest line run into the margin rather than stretch its few spaces.
+Lines without a gloss (or starting with a command) stay as they are."
+  (let ((out (bcat-export--verse-lines latex)))
+    (if (equal out latex)
+        latex
+      (replace-regexp-in-string "\\\\begin{verse}\n"
+                                "\\&\\\\rightskip=0pt plus 1fil\\\\relax%\n"
+                                out t))))
+
+(defun bcat-export--verse-lines (latex)
+  "LATEX with each glossed verse line made of \\mbox units (see
+`bcat-export--verse-units')."
+  (mapconcat
+   (lambda (line)
+     (if (or (not (string-match-p "]" line))
+             (string-prefix-p "\\" line))
+         line
+       (let* ((end (if (string-match "\\\\\\\\[ \t]*\\'" line)
+                       (match-beginning 0)
+                     (length line)))
+              (body (substring line 0 end))
+              (units '())
+              (pos 0))
+         (while (string-match "[^]]*?]" body pos)
+           ;; Read the match before `string-trim', which matches too.
+           (let ((unit (match-string 0 body)))
+             (setq pos (match-end 0))
+             (push (format "\\mbox{%s}" (string-trim unit)) units)))
+         (concat (mapconcat #'identity (nreverse units) " ")
+                 (replace-regexp-in-string "[ \t]+" "~"
+                                           (string-trim-right (substring body pos)))
+                 (substring line end)))))
+   (split-string latex "\n")
+   "\n"))
+
+(defun bcat-export--verse-filter (text backend _info)
+  "`org-export-filter-verse-block-functions' entry: TEXT through
+`bcat-export--verse-units' when exporting to LaTeX (BACKEND)."
+  (if (org-export-derived-backend-p backend 'latex)
+      (bcat-export--verse-units text)
+    text))
+
 (defun bcat-export-pdf (file &optional head)
   "Export the sentence FILE to PDF beside it and return the PDF path.
 HEAD (lines from `bcat-export-head-lines') goes into the export copy,
 never into the file.  LuaLaTeX, two runs (longtable), tables flush
-left at natural width — bound here, Carsten's own export settings
-\(centring, tabularx) stay untouched outside."
+left at natural width, glossed verse lines broken only between word
+units — bound here, Carsten's own export settings (centring, tabularx)
+stay untouched outside."
   (require 'ox-latex)
   (let* ((visited (get-file-buffer file))
          (buf (or visited (find-file-noselect file)))
@@ -130,6 +181,8 @@ left at natural width — bound here, Carsten's own export settings
                 (org-latex-tables-centered nil)
                 (org-export-filter-table-functions
                  (remq 'org-latex-auto-tabularx org-export-filter-table-functions))
+                (org-export-filter-verse-block-functions
+                 (cons #'bcat-export--verse-filter org-export-filter-verse-block-functions))
                 (org-export-before-processing-functions
                  (cons insert-head org-export-before-processing-functions)))
             (expand-file-name (org-latex-export-to-pdf) (file-name-directory file))))

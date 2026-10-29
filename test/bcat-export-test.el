@@ -134,6 +134,29 @@ paper is gone (its sections no longer exist) — C-c u H runs instead."
       (should (= 1 exported))
       (should (= 0 built)))))
 
+(ert-deftest bcat-export-verse-units ()
+  "29.10.: the glossed verse lines are longer than the text width; LaTeX
+broke them inside a gloss (hyphenated „[ob-struction]“, „[CONV“ / „·
+cond.]“) and left the shad „/“ alone on a line.  A glossed line is
+made of unbreakable word+gloss units — a break falls only between
+them — and the shad is tied to the last; such a verse is set ragged
+right (justified, TeX let the longest line run into the margin rather
+than stretch three spaces).  Plain lines and plain verses stay as they
+are."
+  (should (equal (concat "\\begin{verse}\n"
+                         "\\rightskip=0pt plus 1fil\\relax%\n"
+                         "\\mbox{rnal 'byor pa [yogin]} \\mbox{yis [ERG]} "
+                         "\\mbox{na [CONV · cond.]}~/~/\\\\\n"
+                         "brjod du med pa/ /\\\\\n"
+                         "\\end{verse}\n")
+                 (bcat-export--verse-units
+                  (concat "\\begin{verse}\n"
+                          "rnal 'byor pa [yogin] yis [ERG] na [CONV · cond.] / /\\\\\n"
+                          "brjod du med pa/ /\\\\\n"
+                          "\\end{verse}\n"))))
+  (let ((plain "\\begin{verse}\nbrjod du med pa/ /\\\\\n\\end{verse}\n"))
+    (should (equal plain (bcat-export--verse-units plain)))))
+
 (ert-deftest bcat-export-pdf-smoke ()
   "Real LuaLaTeX run (only where lualatex is installed): the reviewed
 Tibetan sample becomes a PDF; its .tex has no title, no centred and no
@@ -154,7 +177,8 @@ tabularx tables, and carries the running head."
             (should-not (string-match-p "\\\\maketitle" tex))
             (should-not (string-match-p "\\\\begin{center}" tex))
             (should-not (string-match-p "\\\\begin{tabularx}" tex))
-            (should (string-match-p "Satz 9 · SDA 9" tex))))
+            (should (string-match-p "Satz 9 · SDA 9" tex))
+            (should (string-match-p (regexp-quote "\\mbox{brjod du med pa [indescribable]}") tex))))
       (let ((buf (get-file-buffer file))) (when buf (kill-buffer buf)))
       (delete-directory dir t))))
 
