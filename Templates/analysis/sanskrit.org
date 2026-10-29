@@ -12,7 +12,8 @@ Suche (Kaskade): <Ordner der Quelle>/Templates/analysis/,
 Werkzeug.  Erwartete Ausgabe: samples/Sanskrit.org.
 
 Felder: sent-num source-link segment-list hash created last-analyzed;
-recitation (das Original in Devanāgarī, bei Versen mit den Pausen —
+recitation (das Original zeilenweise in Devanāgarī, darunter IAST,
+bei Versen mit den Pausen —
 Carsten 29.10.: „das Devanagari im Recitationsverse (also de facto im
 Original) und den Text dann im reinen IAST mit sandhi Auflösung“)
 metre (Metrum, Pausenregel, Zeichenerklärung — nur bei Versen; ein

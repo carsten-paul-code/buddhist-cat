@@ -133,16 +133,24 @@ the label row (last)."
 
 (defun bcat-sentence--recitation (texts)
   "Recitation fields of a Sanskrit sentence with the segment lines TEXTS:
-recitation — the original in Devanāgarī, with the pauses for a verse
-\(Carsten 29.10.: „Es geht ja mit der Rezitation los“; „das Devanagari
-im Recitationsverse (also de facto im Original)“) —, and for a verse
+recitation — the original line by line in Devanāgarī with the IAST
+under it, with the pauses for a verse (Carsten 29.10.: „Es geht ja mit
+der Rezitation los“; „das Devanagari im Recitationsverse (also de facto
+im Original)“; „das IAST unter dem Devanagari“) —, and for a verse
 metre (its header lines with org line breaks) and scansion (IAST,
 without the pāda letters)."
   (require 'tibetan-sanskrit-metre)
   (let ((r (tibetan-metre-recitation texts t)))
     (append
-     `((recitation . ,(tibetan-sanskrit-script-iast-to-devanagari
-                       (or (plist-get r :verse) (mapconcat #'identity texts "\n")))))
+     ;; Each line in Devanāgarī with the IAST under it (Carsten 29.10.:
+     ;; „das IAST unter dem Devanagari, wie es vorher im Tibetischen war“).
+     `((recitation . ,(mapconcat (lambda (line)
+                                   (concat (tibetan-sanskrit-script-iast-to-devanagari line)
+                                           "\n" line))
+                                 (if (plist-get r :verse)
+                                     (split-string (plist-get r :verse) "\n")
+                                   texts)
+                                 "\n")))
      (when r
        `((metre . ,(mapconcat #'identity (plist-get r :header) " \\\\\n"))
          (scansion . ,(plist-get r :table)))))))

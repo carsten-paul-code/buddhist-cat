@@ -1,6 +1,6 @@
 #+TITLE: Function Reference — buddhist-cat
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-10-29T18:02:39
+#+DATE: 2026-10-29T18:14:39
 #+OPTIONS: toc:2 num:nil
 
 Source tree: ~/Users/cp/buddhist-cat~  ·  91 modules  ·  1993 forms
@@ -13401,16 +13401,17 @@ the label row (last).
 :END:
 
 Recitation fields of a Sanskrit sentence with the segment lines TEXTS:
-recitation — the original in Devanāgarī, with the pauses for a verse
-(Carsten 29.10.: „Es geht ja mit der Rezitation los“; „das Devanagari
-im Recitationsverse (also de facto im Original)“) —, and for a verse
+recitation — the original line by line in Devanāgarī with the IAST
+under it, with the pauses for a verse (Carsten 29.10.: „Es geht ja mit
+der Rezitation los“; „das Devanagari im Recitationsverse (also de facto
+im Original)“; „das IAST unter dem Devanagari“) —, and for a verse
 metre (its header lines with org line breaks) and scansion (IAST,
 without the pāda letters).
 
 ** ~bcat-sentence--references~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 150
+:LINE: 158
 :SIGNATURE: (bcat-sentence--references sent-num source-file)
 :END:
 
@@ -13421,7 +13422,7 @@ never Carsten's own „Übersetzung …“ rubric (as in the materializer).
 ** ~bcat-sentence--comparison~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 160
+:LINE: 168
 :SIGNATURE: (bcat-sentence--comparison refs)
 :END:
 
@@ -13430,7 +13431,7 @@ REFS ((NAME . BODY) …) as the paragraphs of Translations compared.
 ** ~bcat-sentence-rump-context~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 165
+:LINE: 173
 :SIGNATURE: (bcat-sentence-rump-context sent-num segs source-file
                                             &optional extra-refs keep)
 :END:
@@ -13444,7 +13445,7 @@ existing file (user slots, `created').
 ** ~bcat-sentence-create-file~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 215
+:LINE: 223
 :SIGNATURE: (bcat-sentence-create-file sent-num segs source-file filepath
                                            &optional extra-refs keep)
 :END:
@@ -13456,7 +13457,7 @@ no AI) and return FILEPATH.  EXTRA-REFS and KEEP as in
 ** ~bcat-sentence--text~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 232
+:LINE: 240
 :SIGNATURE: (bcat-sentence--text file)
 :END:
 
@@ -13465,7 +13466,7 @@ The contents of FILE ("" when missing).
 ** ~bcat-sentence--l1-body~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 238
+:LINE: 246
 :SIGNATURE: (bcat-sentence--l1-body text heading)
 :END:
 
@@ -13475,7 +13476,7 @@ nil when absent or empty.
 ** ~bcat-sentence--keep~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 253
+:LINE: 261
 :SIGNATURE: (bcat-sentence--keep file)
 :END:
 
@@ -13485,7 +13486,7 @@ Fields of FILE that a rebuild carries over: the user slots and the
 ** ~bcat-sentence--compared~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 265
+:LINE: 273
 :SIGNATURE: (bcat-sentence--compared file)
 :END:
 
@@ -13495,7 +13496,7 @@ as ((NAME . TEXT) …) — every `*NAME:* TEXT' paragraph, in order.
 ** ~bcat-sentence--old-references~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 280
+:LINE: 288
 :SIGNATURE: (bcat-sentence--old-references file)
 :END:
 
@@ -13506,7 +13507,7 @@ slots (DharmaMitra, Discussion).
 ** ~bcat-sentence--extra-references~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 299
+:LINE: 307
 :SIGNATURE: (bcat-sentence--extra-references names refs)
 :END:
 
@@ -13516,7 +13517,7 @@ a machine name (Translation, DharmaMitra) — marks stripped.
 ** ~bcat-sentence--write~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 308
+:LINE: 316
 :SIGNATURE: (bcat-sentence--write file text)
 :END:
 
@@ -13527,7 +13528,7 @@ were read by the caller).
 ** ~bcat-sentence--save-visit~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 329
+:LINE: 337
 :SIGNATURE: (bcat-sentence--save-visit file)
 :END:
 
@@ -13537,7 +13538,7 @@ typing is read (and kept) by a rebuild.
 ** ~bcat-sentence--unaligned~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 356
+:LINE: 364
 :SIGNATURE: (bcat-sentence--unaligned file)
 :END:
 
@@ -13548,7 +13549,7 @@ stripped.
 ** ~bcat-sentence-fetch-state~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 368
+:LINE: 376
 :SIGNATURE: (bcat-sentence-fetch-state file seg-nums)
 :END:
 
@@ -13560,7 +13561,7 @@ nil when the file is complete.
 ** ~bcat-sentence--own-translations~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 383
+:LINE: 391
 :SIGNATURE: (bcat-sentence--own-translations text)
 :END:
 
@@ -13570,7 +13571,7 @@ The ⟦N⟧ translations in TEXT: ((N . TRANSLATION) …), without the
 ** ~bcat-sentence--block-lines~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 392
+:LINE: 400
 :SIGNATURE: (bcat-sentence--block-lines block)
 :END:
 
@@ -13579,7 +13580,7 @@ The lines of a translation BLOCK without their org line breaks.
 ** ~bcat-sentence--align-merge~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 397
+:LINE: 405
 :SIGNATURE: (bcat-sentence--align-merge text parsed)
 :END:
 
@@ -13593,7 +13594,7 @@ Everything else stays as it is.
 ** ~bcat-sentence--unreadable~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 456
+:LINE: 464
 :SIGNATURE: (bcat-sentence--unreadable what file response problem)
 :END:
 
@@ -13604,7 +13605,7 @@ on FILE's status line.  Returns nil.
 ** ~bcat-sentence--align-land~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 469
+:LINE: 477
 :SIGNATURE: (bcat-sentence--align-land file response)
 :END:
 
@@ -13614,7 +13615,7 @@ the answer is unreadable.
 ** ~bcat-sentence--align-one~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 482
+:LINE: 490
 :SIGNATURE: (bcat-sentence--align-one file sentence source-file)
 :END:
 
@@ -13624,7 +13625,7 @@ no DharmaMitra, no new analysis.
 ** ~bcat-sentence--references-for~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 507
+:LINE: 515
 :SIGNATURE: (bcat-sentence--references-for file sent-num source-file)
 :END:
 
@@ -13635,7 +13636,7 @@ compared of FILE.
 ** ~bcat-sentence--prepare~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 516
+:LINE: 524
 :SIGNATURE: (bcat-sentence--prepare file sentence source-file)
 :END:
 
@@ -13647,7 +13648,7 @@ Returns `created', `rebuilt' or nil (the file was a template file).
 ** ~bcat-sentence--dharmamitra~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 536
+:LINE: 544
 :SIGNATURE: (bcat-sentence--dharmamitra file sentence)
 :END:
 
@@ -13657,7 +13658,7 @@ must not stop the analysis).
 ** ~bcat-sentence--prompts~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 552
+:LINE: 560
 :SIGNATURE: (bcat-sentence--prompts sentence source-file refs)
 :END:
 
@@ -13667,7 +13668,7 @@ the Sanskrit prompts for a Sanskrit source, the Tibetan ones else.
 ** ~bcat-sentence--land~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 572
+:LINE: 580
 :SIGNATURE: (bcat-sentence--land file sentence source-file refs response)
 :END:
 
@@ -13680,7 +13681,7 @@ marked from the answer's segment parts.
 ** ~bcat-sentence--fetch-one~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 601
+:LINE: 609
 :SIGNATURE: (bcat-sentence--fetch-one file sentence source-file)
 :END:
 
@@ -13691,7 +13692,7 @@ request through the queue.
 ** ~bcat-sentence-fetch~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 630
+:LINE: 638
 :SIGNATURE: (bcat-sentence-fetch scope &optional force)
 :END:
 
@@ -13737,7 +13738,7 @@ the old pipeline.
 ** ~bcat-sentence--user-slots~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 247
+:LINE: 255
 :DEFAULT: '
 :END:
 
@@ -13746,7 +13747,7 @@ the old pipeline.
 ** ~tibetan-cascade-subtree-confirm-threshold~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 348
+:LINE: 356
 :END:
 
 /(no docstring)/
@@ -13754,7 +13755,7 @@ the old pipeline.
 ** ~tibetan-dharmamitra-sentence-request-delay~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 349
+:LINE: 357
 :END:
 
 /(no docstring)/
@@ -13762,7 +13763,7 @@ the old pipeline.
 ** ~tibetan-sentence-claude--dm-schedule-count~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 350
+:LINE: 358
 :END:
 
 /(no docstring)/
@@ -13770,7 +13771,7 @@ the old pipeline.
 ** ~bcat-sentence-after-fetch-functions~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 352
+:LINE: 360
 :DEFAULT: nil
 :END:
 

@@ -168,7 +168,9 @@ no padapāṭha), the reference under Translations compared.  No AI."
                             "Zeichen: ¦ Pause (yati) · | Pāda-Ende in der Zeile · – schwer (guru) "
                             "· ⏑ leicht (laghu)\n\n"
                             "#+begin_verse\nअत्र मद्वागशक्तापि | यन्नियन्त्रणमुल्लसेत् ।\n"
-                            "तत्पारमेश्वरं श्रीमन्|महानन्दविजृम्भितम् ॥ ७\n#+end_verse\n\n"
+                            "atra madvāgaśaktāpi | yanniyantraṇamullaset /\n"
+                            "तत्पारमेश्वरं श्रीमन्|महानन्दविजृम्भितम् ॥ ७\n"
+                            "tatpārameśvaraṃ śrīman|mahānandavijṛmbhitam // 7\n#+end_verse\n\n"
                             "| at  | ra | mad |"))
                    text))
           (should (string-match-p
@@ -192,7 +194,8 @@ there is no padapāṭha)."
     (let ((text (bcat-sentence-test--create-n src 1008)))
       (should (string-match-p
                (regexp-quote (concat "* Recitation\n#+begin_verse\n"
-                                     "इह खलु शास्त्रादाव् अलौकिकाशीर्वादमुखेन परामृशति\n#+end_verse\n\n"
+                                     "इह खलु शास्त्रादाव् अलौकिकाशीर्वादमुखेन परामृशति\n"
+                                     "iha khalu śāstrādāv alaukikāśīrvādamukhena parāmṛśati\n#+end_verse\n\n"
                                      "* Text\n#+begin_verse\n"
                                      "iha khalu śāstrādāv alaukikāśīrvādamukhena parāmṛśati\n#+end_verse"))
                text)))))

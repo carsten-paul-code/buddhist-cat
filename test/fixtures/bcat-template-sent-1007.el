@@ -11,7 +11,9 @@
     (metre . "Śloka (Anuṣṭubh) — vier Pādas zu 8 Silben; in den geraden Pādas Silbe 5–7 ⏑ – ⏑; keine feste Binnenpause — Pause am Pāda-Ende. \\\\
 Zeichen: ¦ Pause (yati) · | Pāda-Ende in der Zeile · – schwer (guru) · ⏑ leicht (laghu)")
     (recitation . "अत्र मद्वागशक्तापि | यन्नियन्त्रणमुल्लसेत् ।
-तत्पारमेश्वरं श्रीमन्|महानन्दविजृम्भितम् ॥ ७")
+atra madvāgaśaktāpi | yanniyantraṇamullaset /
+तत्पारमेश्वरं श्रीमन्|महानन्दविजृम्भितम् ॥ ७
+tatpārameśvaraṃ śrīman|mahānandavijṛmbhitam // 7")
     (scansion . "| at  | ra | mad | vā  | ga | śak | tā  | pi  |
 | –   | ⏑  | –   | –   | ⏑  | –   | –   | ⏑   |
 | yan | ni | yan | tra | ṇa | mul | la  | set |
