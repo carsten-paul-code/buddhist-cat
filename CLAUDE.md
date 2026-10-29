@@ -12,7 +12,7 @@ NACH VORLAGE — Reading-Klassen, Tibetisch: `#+CAT_TEMPLATE: tibetan' im
 Quellkopf, Gliederung * Text / * Segments / * Sentence, C-c u A = Rumpf
 ohne KI, C-c u G = ein JSON-Abruf je Satz (+ DharmaMitra, + kleiner
 Zuordnungs-Abruf für ergänzte Vergleichsübersetzungen), endet mit C-c u H
-= die Satzdatei als PDF aufs reMarkable; Sanskrit seit 29.10. (Rezitation zuerst); ERT 2654.
+= die Satzdatei als PDF aufs reMarkable; Sanskrit seit 29.10. (Rezitation zuerst); * Text mit Uchen/Devanāgarī über der Umschrift; ERT 2658.
 Previous: §5.73: UMBENENNUNG IN
 BUDDHIST CAT — erster Schritt: die Hülle (Hauptdatei/Feature
 buddhist-cat, alter Name lädt weiter, Customize-Gruppe, Menü, Repo,
@@ -4276,7 +4276,16 @@ weg.
   msa-1-cat.org, msa-9-cat.org, asam-1-cat.org, kopf-sa.org; an einer
   Kopie von tantraloka-1.org geprüft (Satz 1 Nardaṭaka, 1007, 1008
   Prosa).  Sessions Tantrāloka/Reading-Class/AS benachrichtigt.
-ERT 2654.  Offen: maschinelle Sandhi-Gegenprobe des Padapāṭha (wie
+Originalschrift (29.10. nachm., Carsten: „immer mehr von Roman Script zu
+Uchen und Devanagari“): `e3c62ad' Umschrift IAST → Devanāgarī
+(`tibetan-sanskrit-script-iast-to-devanagari', aus den Tabellen der
+Gegenrichtung); `832ed74' * Text je Segment {{uchen}} über {{wylie}}
+bzw. {{devanagari}} über {{samhita}}; `daf5b7c' PDF: eigene
+Schriftfamilien \bcattib/\bcatdeva (`bcat-export-tibetan-font' Noto
+Serif Tibetan, `bcat-export-devanagari-font' Noto Sans Devanagari —
+Arial Unicode MS als Ersatzschrift formt keine Ligaturen), \large,
+\\[1ex] nach jedem Paar.  Tabellen bleiben in Umschrift.
+ERT 2658.  Offen: maschinelle Sandhi-Gegenprobe des Padapāṭha (wie
 padapatha-pdf.py) fehlt noch; MSA-Synopse (§5.68) hängt am alten
 Handout — in Vorlagenquellen ist C-c u H jetzt der Satz-Export.
 
