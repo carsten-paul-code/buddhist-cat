@@ -30,6 +30,7 @@
 (declare-function tibetan-discussion-paper--temp-source-p "tibetan-discussion-paper" (file))
 (declare-function tibetan-handout "tibetan-handout" (&optional org-only))
 (declare-function org-latex-export-to-pdf "ox-latex")
+(declare-function org-end-of-subtree "org" (&optional invisible-ok to-heading element))
 (declare-function org-export-derived-backend-p "ox" (backend &rest backends))
 (defvar org-latex-compiler)
 (defvar org-latex-pdf-process)
@@ -157,6 +158,19 @@ Lines without a gloss (or starting with a command) stay as they are."
       (bcat-export--verse-units text)
     text))
 
+(defun bcat-export--drop-machine-sections (&rest _)
+  "Delete the `** Word Analysis' subtree from the current (export)
+buffer: machine data for the zettel highlighting and the padapāṭha
+PDF, which the table and the Forms say for the reader (§5.74, 29.10.).
+For `org-export-before-processing-functions' — the file stays as it is."
+  (save-excursion
+    (goto-char (point-min))
+    (while (re-search-forward "^\\*\\* Word Analysis[ \t]*$" nil t)
+      (let ((beg (line-beginning-position)))
+        (org-end-of-subtree t t)
+        (delete-region beg (point))
+        (goto-char beg)))))
+
 (defun bcat-export-pdf (file &optional head)
   "Export the sentence FILE to PDF beside it and return the PDF path.
 HEAD (lines from `bcat-export-head-lines') goes into the export copy,
@@ -184,7 +198,8 @@ stay untouched outside."
                 (org-export-filter-verse-block-functions
                  (cons #'bcat-export--verse-filter org-export-filter-verse-block-functions))
                 (org-export-before-processing-functions
-                 (cons insert-head org-export-before-processing-functions)))
+                 (append (list insert-head #'bcat-export--drop-machine-sections)
+                         org-export-before-processing-functions)))
             (expand-file-name (org-latex-export-to-pdf) (file-name-directory file))))
       (unless visited (kill-buffer buf)))))
 

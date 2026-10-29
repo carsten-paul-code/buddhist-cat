@@ -78,6 +78,23 @@ tatpārameśvaraṃ śrīman|mahānandavijṛmbhitam // 7")
       (note . "")
       (concepts . "*vijṛmbhita* (vijṛmbhaṇa) — „yawning open, unfolding“: in the Trika the spontaneous self-expansion of consciousness (śakti); with mahānanda, the bliss of the Supreme Lord unfolding itself.")))
     (grammar . "Two clauses. The first (685) joins a concessive clause — atra mad-vāk aśaktā api, „though my speech is incapable here“ — to a relative clause, yat niyantraṇam ullaset, whose optative generalises („whatever control may shine forth“). The second (686) is the main clause: the correlative tat takes up yat … niyantraṇam and receives two nominal predicates, pārameśvaram and the compound śrīmat-mahā-ānanda-vijṛmbhitam; the copula is understood. The verse is the commentator's humility formula: any mastery in what follows is the Lord's, not his.")
+    (word-analysis . "*** Segment 685
+atra mad-vāk aśaktā api yat niyantraṇam ullaset
+
+- atra — atra; ind.
+- mad-vāk — mad-vāc; f. nom. sg.
+- aśaktā — aśakta; ppp. f. nom. sg.
+- api — api; ind.
+- yat — yad; pron. n. nom. sg.
+- niyantraṇam — niyantraṇa; n. nom. sg.
+- ullaset — ud-√las; opt. 3 sg. P
+
+*** Segment 686
+tat pārameśvaram śrīmat-mahā-ānanda-vijṛmbhitam
+
+- tat — tad; pron. n. nom. sg.
+- pārameśvaram — pārameśvara; adj. n. nom. sg.
+- śrīmat-mahā-ānanda-vijṛmbhitam — śrīmat-mahā-ānanda-vijṛmbhita; n. nom. sg.")
     (comparison . "*Translation:* Although my speech (vāc) is incapable (aśakta) here, whatever control (niyantraṇa) may shine forth (ullaset) — that belongs to the Supreme Lord (pārameśvara): it is the unfolding (vijṛmbhita) of glorious great bliss (mahānanda).
 
 *Dyczkowski 2023:* Although my speech is powerless here (in this task), whatever *restriction* may arise (on one's understanding of the teachings is not my fault, rather) that is (all) the venerable expansion of the Supreme Lord's great bliss (which both hides and reveals the truth). (7)

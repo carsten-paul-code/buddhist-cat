@@ -19,7 +19,10 @@ segments: num samhita (die Zeile wie überliefert) glossed (Padapāṭha,
 Sandhis aufgelöst, Vokabeln in Klammern) gloss-table translations
 sandhi forms compounds structure note concepts;
 glosses (gesetzt, wenn es einen Padapāṭha gibt) translation grammar
-comparison working-translation my-notes footnotes.
+comparison word-analysis (je Segment Padapāṭha und „- Wort — Lemma;
+Form“: daraus lesen Zettel-Hervorhebung, Diskussion und
+padapatha-pdf.py die Lemmata; im PDF nicht gedruckt)
+working-translation my-notes footnotes.
 Grammatische Begriffe nach der Devavāṇīpraveśikā (Goldman & Sutherland
 Goldman 1999).
 #+end_comment
@@ -88,6 +91,11 @@ Goldman 1999).
 *Concepts:* {{concepts}}
 
 {{/segments}}
+{{#word-analysis}}
+** Word Analysis
+{{word-analysis}}
+
+{{/word-analysis}}
 * Sentence
 ** Grammar
 {{grammar}}

@@ -243,6 +243,28 @@ hṛdaya kula anuttara — these words here must NOT match
         (should-not (cl-find "heart" hits :key #'car))
         (should-not (cl-find "mama" hits :key #'car))))))
 
+(ert-deftest tzh-analysis-matcher-sanskrit-template ()
+  "§5.74, 29.10.: a Sanskrit template file carries its `** Word Analysis'
+under * Sentence — so row 1 of its tables (inflected padapāṭha forms)
+lights up through the file's own surface → lemma map: hṛdayam → hṛdaya,
+the compound member by member."
+  (tzh-test--with-index
+    (with-temp-buffer
+      (insert "#+CAT_TEMPLATE: sanskrit\n* Segments\n** Segment 2\n"
+              "| hṛdayam | anuttara-amṛta-kulam |\n| — | an-uttara · amṛta · kula |\n"
+              "| | not · nectar · whole |\n| heart | the unsurpassed whole |\n"
+              "| n. nom. sg. | n. nom. sg. |\n\n"
+              "* Sentence\n** Word Analysis\n*** Segment 2\nhṛdayam anuttara-amṛta-kulam\n\n"
+              "- hṛdayam — hṛdaya; n. nom. sg.\n"
+              "- anuttara-amṛta-kulam — anuttara-amṛta-kula; n. nom. sg.\n")
+      (org-mode)
+      (setq buffer-file-name nil)
+      (let* ((hits (tzh-test--collect-matches #'tibetan-zettel-highlight--analysis-matcher))
+             (texts (mapcar #'car hits)))
+        (should (member "hṛdayam" texts))
+        (should (member "anuttara" texts))
+        (should (member "kulam" texts))))))
+
 (ert-deftest tzh-analysis-matcher-template-layout ()
   "§5.74: in a template-built sentence file the tables stand under
 `** Segment N' in `* Segments' (no `** Gloss Tables') — their row 1 is

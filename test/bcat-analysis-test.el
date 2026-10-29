@@ -122,7 +122,7 @@ segment as transmitted, the references."
                  (686 "tatpārameśvaraṃ śrīmanmahānandavijṛmbhitam // 7"))
                '(("Dyczkowski 2023" . "Although my speech"))
                '("Abhinavagupta, Tantrāloka"))))
-    (dolist (key '("\"words\"" "\"formation\"" "\"parts\"" "\"gloss\"" "\"form\""
+    (dolist (key '("\"words\"" "\"lemma\"" "\"formation\"" "\"parts\"" "\"gloss\"" "\"form\""
                    "\"sandhi\"" "\"forms\"" "\"compounds\"" "\"shift\"" "\"structure\""
                    "\"grammar\"" "\"comparison\""))
       (should (string-match-p (regexp-quote key) sys)))

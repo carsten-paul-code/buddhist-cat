@@ -124,11 +124,12 @@ TARGET — constant per document, so the prompt cache stays warm."
   (let ((lang (bcat-analysis--language target)))
     (format "You are a Sanskritist preparing one sentence or verse of a Sanskrit text for a university reading class of experienced Sanskritists; one participant reads Sanskrit only haltingly, so every form is spelled out. Work segment by segment, then on the whole sentence. Use the grammatical terminology of Goldman & Sutherland Goldman, Devavāṇīpraveśikā: Sanskrit terms, with the English equivalent where it helps. Answer with ONE JSON object and nothing else (no prose, no code fence):
 
-{\"segments\": [{\"num\": <segment number>, \"words\": [{\"word\": \"…\", \"formation\": \"…\", \"parts\": \"…\", \"gloss\": \"…\", \"form\": \"…\"}], \"translation\": \"…\", \"references\": [{\"name\": \"…\", \"text\": \"…\"}], \"shift\": [\"…\"], \"sandhi\": \"…\", \"forms\": [{\"word\": \"…\", \"analysis\": \"…\"}], \"compounds\": [{\"word\": \"…\", \"analysis\": \"…\"}], \"structure\": \"…\", \"note\": \"…\", \"concepts\": \"…\"}], \"grammar\": \"…\", \"translation\": \"…\", \"comparison\": \"…\"}
+{\"segments\": [{\"num\": <segment number>, \"words\": [{\"word\": \"…\", \"lemma\": \"…\", \"formation\": \"…\", \"parts\": \"…\", \"gloss\": \"…\", \"form\": \"…\"}], \"translation\": \"…\", \"references\": [{\"name\": \"…\", \"text\": \"…\"}], \"shift\": [\"…\"], \"sandhi\": \"…\", \"forms\": [{\"word\": \"…\", \"analysis\": \"…\"}], \"compounds\": [{\"word\": \"…\", \"analysis\": \"…\"}], \"structure\": \"…\", \"note\": \"…\", \"concepts\": \"…\"}], \"grammar\": \"…\", \"translation\": \"…\", \"comparison\": \"…\"}
 
 Rules:
 - segments: one entry per given segment, same numbers, same order.
 - words: the segment's padapāṭha — every word with all sandhi undone, in pausa form, in order, together giving the whole segment; the members of a compound joined by hyphens (\"mad-vāk\", \"śrīmat-mahā-ānanda-vijṛmbhitam\"). Check the resolution: a privative a- or an initial vowel can vanish in sandhi (madvāgaśaktāpi = mad-vāk aśaktā api).
+- lemma: the dictionary form — a nominal's stem (\"aśakta\", \"niyantraṇa\", \"vāc\"), a verb's prefixes and √root (\"ud-√las\"), a compound's members as stems joined by hyphens (\"mad-vāc\", \"śrīmat-mahā-ānanda-vijṛmbhita\"); an indeclinable as it stands.
 - formation: how the word is built — prefixes, √root, suffix: \"a-√śak-ta\", \"ni-√yantr-ana\", \"ud-√las\"; for a compound its members separated by \" · \", each with its formation (\"śrī-mat · mahā · ā-√nand-a · vi-√jṛmbh-ita\"); \"—\" for indeclinables and pronouns.
 - parts: the meaning of each part of the formation, in the same order, separated by \" · \", a root with its gaṇa number: \"a- not · √śak (5) be able · -ta ppp\"; \"\" when formation is \"—\".
 - gloss: the meaning in THIS context, short.
@@ -557,6 +558,25 @@ gloss in brackets, then the daṇḍas closing the transmitted line SAMHITA
           (cl-remove-if (lambda (e) (string-empty-p (bcat-analysis--field e 'analysis)))
                         entries)))
 
+(defun bcat-analysis-word-analysis (segments)
+  "The `** Word Analysis' body for Claude's Sanskrit SEGMENTS, in the
+format its readers parse (zettel highlighting, discussion, padapāṭha
+PDF): per segment `*** Segment N', the padapāṭha, then `- WORD —
+LEMMA; FORM' — \"\" when no segment has words."
+  (mapconcat
+   (lambda (seg)
+     (let ((words (alist-get 'words seg)))
+       (concat (format "*** Segment %s\n" (alist-get 'num seg))
+               (mapconcat (lambda (w) (bcat-analysis--field w 'word)) words " ")
+               "\n\n"
+               (mapconcat (lambda (w)
+                            (format "- %s — %s; %s" (bcat-analysis--field w 'word)
+                                    (bcat-analysis--field w 'lemma)
+                                    (bcat-analysis--field w 'form)))
+                          words "\n"))))
+   (cl-remove-if-not (lambda (seg) (alist-get 'words seg)) segments)
+   "\n\n"))
+
 (defun bcat-analysis-sanskrit-context (base parsed &optional refs)
   "Template fields of a fetched Sanskrit sentence: BASE (the rump —
 header, recitation, segments with num and samhita, user slots)
@@ -596,7 +616,8 @@ skipped keeps its rump fields."
        (glosses . ,(and (cl-some (lambda (s) (alist-get 'glossed s)) segments) t))
        (translation . ,(bcat-analysis--field parsed 'translation))
        (grammar . ,(bcat-analysis--field parsed 'grammar))
-       (comparison . ,(bcat-analysis-comparison parsed refs)))
+       (comparison . ,(bcat-analysis-comparison parsed refs))
+       (word-analysis . ,(bcat-analysis-word-analysis (alist-get 'segments parsed))))
      base)))
 
 (provide 'bcat-analysis)

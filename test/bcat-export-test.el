@@ -157,6 +157,21 @@ are."
   (let ((plain "\\begin{verse}\nbrjod du med pa/ /\\\\\n\\end{verse}\n"))
     (should (equal plain (bcat-export--verse-units plain)))))
 
+(ert-deftest bcat-export-drops-word-analysis ()
+  "A Sanskrit sentence file keeps its `** Word Analysis' (surface →
+lemma, read by the zettel highlighting, the discussion and the
+padapāṭha PDF) — the PDF leaves it out: machine data, the table and
+the Forms say it for the reader.  The rest stays."
+  (with-temp-buffer
+    (insert "* Sentence\n** Grammar\nG\n\n** Translations compared\nT\n\n"
+            "** Word Analysis\n*** Segment 1\nka\n\n- ka — ka; ind.\n\n"
+            "* Working Translation\nW\n")
+    (org-mode)
+    (bcat-export--drop-machine-sections)
+    (should (equal (concat "* Sentence\n** Grammar\nG\n\n** Translations compared\nT\n\n"
+                           "* Working Translation\nW\n")
+                   (buffer-string)))))
+
 (ert-deftest bcat-export-pdf-smoke ()
   "Real LuaLaTeX run (only where lualatex is installed): the reviewed
 Tibetan sample becomes a PDF; its .tex has no title, no centred and no

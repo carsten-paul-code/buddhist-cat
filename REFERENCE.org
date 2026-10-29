@@ -1,9 +1,9 @@
 #+TITLE: Function Reference — buddhist-cat
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-10-29T10:55:20
+#+DATE: 2026-10-29T10:58:32
 #+OPTIONS: toc:2 num:nil
 
-Source tree: ~/Users/cp/buddhist-cat~  ·  90 modules  ·  1974 forms
+Source tree: ~/Users/cp/buddhist-cat~  ·  90 modules  ·  1976 forms
 
 Regenerated automatically by:
 
@@ -62,8 +62,8 @@ python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/buddhist-c
   - [[#doc-prep/tibetan-segment-migrate.el][doc-prep/tibetan-segment-migrate.el]]  (12)
   - [[#doc-prep/tibetan-sentence-structure.el][doc-prep/tibetan-sentence-structure.el]]  (25)
   - [[#doc-prep/tibetan-wylie-ingest.el][doc-prep/tibetan-wylie-ingest.el]]  (26)
-  - [[#persist/bcat-analysis.el][persist/bcat-analysis.el]]  (34)
-  - [[#persist/bcat-export.el][persist/bcat-export.el]]  (19)
+  - [[#persist/bcat-analysis.el][persist/bcat-analysis.el]]  (35)
+  - [[#persist/bcat-export.el][persist/bcat-export.el]]  (20)
   - [[#persist/bcat-sentence.el][persist/bcat-sentence.el]]  (46)
   - [[#persist/bcat-template.el][persist/bcat-template.el]]  (17)
   - [[#persist/tibetan-analysis-claude.el][persist/tibetan-analysis-claude.el]]  (77)
@@ -12650,7 +12650,7 @@ TARGET — constant per document, so the prompt cache stays warm.
 ** ~bcat-analysis-sanskrit-user-prompt~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 152
+:LINE: 153
 :SIGNATURE: (bcat-analysis-sanskrit-user-prompt sent-num verse segs refs &optional context)
 :END:
 
@@ -12662,7 +12662,7 @@ TEXT) …) the reference translations, CONTEXT the document's
 ** ~bcat-analysis--json-problem~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 179
+:LINE: 180
 :SIGNATURE: (bcat-analysis--json-problem err start)
 :END:
 
@@ -12672,7 +12672,7 @@ start of the answer (the object began at START).
 ** ~bcat-analysis--repair-json~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 187
+:LINE: 188
 :SIGNATURE: (bcat-analysis--repair-json text)
 :END:
 
@@ -12688,7 +12688,7 @@ comes back unchanged.
 ** ~bcat-analysis--decode~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 229
+:LINE: 230
 :SIGNATURE: (bcat-analysis--decode json)
 :END:
 
@@ -12697,7 +12697,7 @@ JSON (a string) as an alist with symbol keys and lists for arrays.
 ** ~bcat-analysis-read~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 234
+:LINE: 235
 :SIGNATURE: (bcat-analysis-read response)
 :END:
 
@@ -12709,7 +12709,7 @@ the object, and mends what `bcat-analysis--repair-json' mends.
 ** ~bcat-analysis-parse~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 258
+:LINE: 259
 :SIGNATURE: (bcat-analysis-parse response)
 :END:
 
@@ -12719,7 +12719,7 @@ is none (see `bcat-analysis-read').
 ** ~bcat-analysis-keep-response~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 263
+:LINE: 264
 :SIGNATURE: (bcat-analysis-keep-response file response)
 :END:
 
@@ -12729,7 +12729,7 @@ read, under `bcat-analysis-response-directory'; return its path.
 ** ~bcat-analysis--particle-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 283
+:LINE: 284
 :SIGNATURE: (bcat-analysis--particle-p word)
 :END:
 
@@ -12741,7 +12741,7 @@ member of compound“ — several syllables, so a word all the same.
 ** ~bcat-analysis--field~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 293
+:LINE: 294
 :SIGNATURE: (bcat-analysis--field alist key)
 :END:
 
@@ -12750,7 +12750,7 @@ String value of KEY in ALIST, trimmed; "" when absent.
 ** ~bcat-analysis-gloss-table~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 298
+:LINE: 299
 :SIGNATURE: (bcat-analysis-gloss-table words)
 :END:
 
@@ -12761,7 +12761,7 @@ for no words.
 ** ~bcat-analysis-glossed-line~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 319
+:LINE: 320
 :SIGNATURE: (bcat-analysis-glossed-line wylie words)
 :END:
 
@@ -12776,7 +12776,7 @@ WORDS do not cover its syllables exactly: the text is never altered.
 ** ~bcat-analysis-glosses-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 348
+:LINE: 349
 :SIGNATURE: (bcat-analysis-glosses-p segments)
 :END:
 
@@ -12786,7 +12786,7 @@ the template then shows the glossed verse below the plain one.
 ** ~bcat-analysis--reference-lines~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 357
+:LINE: 358
 :SIGNATURE: (bcat-analysis--reference-lines refs)
 :END:
 
@@ -12795,7 +12795,7 @@ the template then shows the glossed verse below the plain one.
 ** ~bcat-analysis-strip-marks~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 364
+:LINE: 365
 :SIGNATURE: (bcat-analysis-strip-marks text)
 :END:
 
@@ -12804,7 +12804,7 @@ TEXT without org bold marks (the meaning-shift marks of a fetch).
 ** ~bcat-analysis--loose-regexp~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 368
+:LINE: 369
 :SIGNATURE: (bcat-analysis--loose-regexp text)
 :END:
 
@@ -12813,7 +12813,7 @@ A regexp for TEXT that lets any run of whitespace stand for its spaces.
 ** ~bcat-analysis--reference-parts~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 372
+:LINE: 373
 :SIGNATURE: (bcat-analysis--reference-parts segments name)
 :END:
 
@@ -12823,7 +12823,7 @@ order — each with its passages in org bold.
 ** ~bcat-analysis-mark-reference~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 386
+:LINE: 387
 :SIGNATURE: (bcat-analysis-mark-reference text parts)
 :END:
 
@@ -12839,7 +12839,7 @@ of Lindtner's verse 9 dropped his note).
 ** ~bcat-analysis-shift-lines~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 421
+:LINE: 422
 :SIGNATURE: (bcat-analysis-shift-lines seg)
 :END:
 
@@ -12849,7 +12849,7 @@ or — the Sanskrit contract — a list with one line per translator.
 ** ~bcat-analysis-translations-block~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 429
+:LINE: 430
 :SIGNATURE: (bcat-analysis-translations-block num seg)
 :END:
 
@@ -12862,7 +12862,7 @@ line breaks between.
 ** ~bcat-analysis-comparison~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 442
+:LINE: 443
 :SIGNATURE: (bcat-analysis-comparison parsed &optional refs)
 :END:
 
@@ -12873,7 +12873,7 @@ with the marks of its segment parts, the comparison paragraph.
 ** ~bcat-analysis-context~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 463
+:LINE: 464
 :SIGNATURE: (bcat-analysis-context base parsed &optional refs)
 :END:
 
@@ -12886,7 +12886,7 @@ segment Claude skipped keeps its rump fields.
 ** ~bcat-analysis-sanskrit-tables~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 515
+:LINE: 516
 :SIGNATURE: (bcat-analysis-sanskrit-tables words)
 :END:
 
@@ -12898,7 +12898,7 @@ for no words.
 ** ~bcat-analysis-padapatha-line~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 539
+:LINE: 540
 :SIGNATURE: (bcat-analysis-padapatha-line samhita words)
 :END:
 
@@ -12909,16 +12909,28 @@ gloss in brackets, then the daṇḍas closing the transmitted line SAMHITA
 ** ~bcat-analysis--word-entries~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 553
+:LINE: 554
 :SIGNATURE: (bcat-analysis--word-entries entries)
 :END:
 
 ENTRIES (alists with word and analysis) as "/word/ — analysis".
 
+** ~bcat-analysis-word-analysis~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 561
+:SIGNATURE: (bcat-analysis-word-analysis segments)
+:END:
+
+The `** Word Analysis' body for Claude's Sanskrit SEGMENTS, in the
+format its readers parse (zettel highlighting, discussion, padapāṭha
+PDF): per segment `*** Segment N', the padapāṭha, then `- WORD —
+LEMMA; FORM' — "" when no segment has words.
+
 ** ~bcat-analysis-sanskrit-context~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 560
+:LINE: 580
 :SIGNATURE: (bcat-analysis-sanskrit-context base parsed &optional refs)
 :END:
 
@@ -12931,7 +12943,7 @@ skipped keeps its rump fields.
 ** ~bcat-analysis-response-directory~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 172
+:LINE: 173
 :TYPE: 'directory
 :GROUP: buddhist-cat
 :DEFAULT: (expand-file-name "bcat-responses" temporary-file-directory)
@@ -12943,7 +12955,7 @@ Where an answer C-c u G could not read is kept, one file per answer
 ** ~bcat-analysis-sanskrit-table-width~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 508
+:LINE: 509
 :TYPE: 'integer
 :GROUP: buddhist-cat
 :DEFAULT: 95
@@ -12956,7 +12968,7 @@ table: a shared column grid let a long compound widen every column).
 ** ~bcat-analysis--particle-labels~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 278
+:LINE: 279
 :DEFAULT: '
 :END:
 
@@ -12972,7 +12984,7 @@ table: a shared column grid let a long compound widen every column).
 ** ~bcat-export--latex-escape~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 58
+:LINE: 59
 :SIGNATURE: (bcat-export--latex-escape s)
 :END:
 
@@ -12981,7 +12993,7 @@ S with the LaTeX special characters escaped.
 ** ~bcat-export-head-lines~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 69
+:LINE: 70
 :SIGNATURE: (bcat-export-head-lines folder work sent-num verse)
 :END:
 
@@ -12991,7 +13003,7 @@ The #+LATEX_HEADER lines of the running head: FOLDER · WORK
 ** ~bcat-export-info~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 82
+:LINE: 83
 :SIGNATURE: (bcat-export-info file)
 :END:
 
@@ -13002,7 +13014,7 @@ What the PDF of the sentence FILE is labelled with: (:source :folder
 ** ~bcat-export--verse-units~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 112
+:LINE: 113
 :SIGNATURE: (bcat-export--verse-units latex)
 :END:
 
@@ -13017,7 +13029,7 @@ Lines without a gloss (or starting with a command) stay as they are.
 ** ~bcat-export--verse-lines~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 127
+:LINE: 128
 :SIGNATURE: (bcat-export--verse-lines latex)
 :END:
 
@@ -13027,17 +13039,29 @@ LATEX with each glossed verse line made of \mbox units (see
 ** ~bcat-export--verse-filter~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 153
+:LINE: 154
 :SIGNATURE: (bcat-export--verse-filter text backend _info)
 :END:
 
 `org-export-filter-verse-block-functions' entry: TEXT through
 `bcat-export--verse-units' when exporting to LaTeX (BACKEND).
 
+** ~bcat-export--drop-machine-sections~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 161
+:SIGNATURE: (bcat-export--drop-machine-sections &rest _)
+:END:
+
+Delete the `** Word Analysis' subtree from the current (export)
+buffer: machine data for the zettel highlighting and the padapāṭha
+PDF, which the table and the Forms say for the reader (§5.74, 29.10.).
+For `org-export-before-processing-functions' — the file stays as it is.
+
 ** ~bcat-export-pdf~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 160
+:LINE: 174
 :SIGNATURE: (bcat-export-pdf file &optional head)
 :END:
 
@@ -13051,7 +13075,7 @@ stay untouched outside.
 ** ~bcat-export-file~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 191
+:LINE: 206
 :SIGNATURE: (bcat-export-file file)
 :END:
 
@@ -13061,7 +13085,7 @@ reMarkable (`bcat-export-upload').  Returns the PDF path.
 ** ~bcat-export-after-fetch~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 205
+:LINE: 220
 :SIGNATURE: (bcat-export-after-fetch file)
 :END:
 
@@ -13074,7 +13098,7 @@ rmapi failure must not spoil the landed analysis.
 ** ~bcat-export~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 222
+:LINE: 237
 :SIGNATURE: (bcat-export)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -13090,7 +13114,7 @@ old handout.
 ** ~bcat-export-auto~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 42
+:LINE: 43
 :TYPE: 'boolean
 :GROUP: buddhist-cat
 :DEFAULT: t
@@ -13102,7 +13126,7 @@ sentence file goes to PDF and onto the reMarkable.
 ** ~bcat-export-upload~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 48
+:LINE: 49
 :TYPE: 'boolean
 :GROUP: buddhist-cat
 :DEFAULT: t
@@ -13114,7 +13138,7 @@ document „Satz N“); nil only writes the PDF next to the file.
 ** ~org-latex-compiler~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 34
+:LINE: 35
 :END:
 
 /(no docstring)/
@@ -13122,7 +13146,7 @@ document „Satz N“); nil only writes the PDF next to the file.
 ** ~org-latex-pdf-process~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 35
+:LINE: 36
 :END:
 
 /(no docstring)/
@@ -13130,7 +13154,7 @@ document „Satz N“); nil only writes the PDF next to the file.
 ** ~org-latex-tables-centered~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 36
+:LINE: 37
 :END:
 
 /(no docstring)/
@@ -13138,7 +13162,7 @@ document „Satz N“); nil only writes the PDF next to the file.
 ** ~org-export-filter-table-functions~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 37
+:LINE: 38
 :END:
 
 /(no docstring)/
@@ -13146,7 +13170,7 @@ document „Satz N“); nil only writes the PDF next to the file.
 ** ~org-export-filter-verse-block-functions~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 38
+:LINE: 39
 :END:
 
 /(no docstring)/
@@ -13154,7 +13178,7 @@ document „Satz N“); nil only writes the PDF next to the file.
 ** ~org-export-before-processing-functions~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 39
+:LINE: 40
 :END:
 
 /(no docstring)/
@@ -13162,7 +13186,7 @@ document „Satz N“); nil only writes the PDF next to the file.
 ** ~tibetan-cascade-subtree-confirm-threshold~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 40
+:LINE: 41
 :END:
 
 /(no docstring)/

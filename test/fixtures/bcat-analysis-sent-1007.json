@@ -5,6 +5,7 @@
    "words": [
     {
      "word": "atra",
+     "lemma": "atra",
      "formation": "—",
      "parts": "",
      "gloss": "here",
@@ -12,6 +13,7 @@
     },
     {
      "word": "mad-vāk",
+     "lemma": "mad-vāc",
      "formation": "mad · vāc",
      "parts": "my · speech",
      "gloss": "my speech",
@@ -19,6 +21,7 @@
     },
     {
      "word": "aśaktā",
+     "lemma": "aśakta",
      "formation": "a-√śak-ta",
      "parts": "a- not · √śak (5) be able · -ta ppp",
      "gloss": "incapable",
@@ -26,6 +29,7 @@
     },
     {
      "word": "api",
+     "lemma": "api",
      "formation": "—",
      "parts": "",
      "gloss": "although",
@@ -33,6 +37,7 @@
     },
     {
      "word": "yat",
+     "lemma": "yad",
      "formation": "—",
      "parts": "",
      "gloss": "whatever",
@@ -40,6 +45,7 @@
     },
     {
      "word": "niyantraṇam",
+     "lemma": "niyantraṇa",
      "formation": "ni-√yantr-ana",
      "parts": "ni- in · √yantr (10) restrain · -ana action",
      "gloss": "control",
@@ -47,6 +53,7 @@
     },
     {
      "word": "ullaset",
+     "lemma": "ud-√las",
      "formation": "ud-√las",
      "parts": "ud- up · √las (1) shine",
      "gloss": "may shine forth",
@@ -106,6 +113,7 @@
    "words": [
     {
      "word": "tat",
+     "lemma": "tad",
      "formation": "—",
      "parts": "",
      "gloss": "that",
@@ -113,6 +121,7 @@
     },
     {
      "word": "pārameśvaram",
+     "lemma": "pārameśvara",
      "formation": "parama · īśvara · -a",
      "parts": "supreme · lord · vṛddhi + -a belonging to",
      "gloss": "the Supreme Lord's",
@@ -120,6 +129,7 @@
     },
     {
      "word": "śrīmat-mahā-ānanda-vijṛmbhitam",
+     "lemma": "śrīmat-mahā-ānanda-vijṛmbhita",
      "formation": "śrī-mat · mahā · ā-√nand-a · vi-√jṛmbh-ita",
      "parts": "śrī glory · -mat having · mahā great · ā-√nand (1) rejoice · vi- apart · √jṛmbh (1) open · -ita ppp",
      "gloss": "unfolding of glorious great bliss",
