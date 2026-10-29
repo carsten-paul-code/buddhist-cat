@@ -21,6 +21,7 @@
 
 (require 'bcat-template)
 (require 'bcat-template-sent-009)
+(require 'bcat-template-sent-1007)
 
 (defconst bcat-template-test--root
   (expand-file-name ".." (file-name-directory (or load-file-name buffer-file-name)))
@@ -176,6 +177,39 @@ including the dropped Note of segment 39 and Concepts of segment 40."
                     (buffer-string))))
     (should (equal expected
                    (bcat-template-render-named "tibetan" bcat-template-test--sent-009)))))
+
+(ert-deftest bcat-template-sanskrit-golden ()
+  "The tool's Sanskrit skeleton (Templates/analysis/sanskrit.org) filled
+with TĀ sentence 1007 reproduces the sample Carsten reviewed
+\(Templates/analysis/samples/Sanskrit.org, 29.10.2026) character for
+character: Recitation first, Text with the saṃhitā and the glossed
+padapāṭha, per segment the tables, translations, Sandhi, Forms,
+Compounds — the Note of segment 686 dropped."
+  (let ((bcat-template-directory
+         (expand-file-name "Templates/analysis" bcat-template-test--root))
+        (expected (with-temp-buffer
+                    (insert-file-contents
+                     (expand-file-name "Templates/analysis/samples/Sanskrit.org"
+                                       bcat-template-test--root))
+                    (buffer-string))))
+    (should (equal expected
+                   (bcat-template-render-named "sanskrit" bcat-template-test--sent-1007)))))
+
+(ert-deftest bcat-template-sanskrit-prose ()
+  "Viveka prose (no metre): no Recitation section; without a padapāṭha
+(the rump) no glossed verse and no translation line."
+  (let* ((bcat-template-directory
+          (expand-file-name "Templates/analysis" bcat-template-test--root))
+         (out (bcat-template-render-named
+               "sanskrit"
+               '((sent-num . "1008") (segment-list . "687")
+                 (segments ((num . "687") (samhita . "iha khalu śāstrādau …")))))))
+    (should-not (string-match-p "^\\* Recitation" out))
+    (should (string-match-p
+             (regexp-quote (concat "#+SEGMENTS: 687\n\n* Text\n#+begin_verse\niha khalu śāstrādau …\n"
+                                   "#+end_verse\n\n* Segments\n** Segment 687\n\n* Sentence\n"))
+             out))
+    (should-not (string-match-p "Translation:" out))))
 
 (provide 'bcat-template-test)
 ;;; bcat-template-test.el ends here

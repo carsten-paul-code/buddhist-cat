@@ -1,0 +1,102 @@
+#+begin_comment
+VORLAGE Sanskrit — Gerüst einer Satzdatei (Buddhist CAT, §5.74).
+Gliederung wie Tibetisch, davor die Rezitation (Carsten 29.10.: „Es geht
+ja mit der Rezitation los“): Rezitation / ganzes Original (* Text) /
+Segmente / ganzer Satz.
+
+Platzhalter und Abschnitte wie in tibetan.org: {{name}} setzt einen Wert
+ein; eine Zeile, deren Platzhalter ALLE leer sind, fällt samt
+Beschriftung weg; {{#x}} … {{/x}} erscheint nur, wenn x einen Wert hat.
+Suche (Kaskade): <Ordner der Quelle>/Templates/analysis/,
+<Ordner der Quelle>/Resources/Templates/analysis/, dann die Vorgabe im
+Werkzeug.  Erwartete Ausgabe: samples/Sanskrit.org.
+
+Felder: sent-num source-link segment-list hash created last-analyzed;
+recitation (der Vers mit Pausen; nur bei Versen) metre (Metrum,
+Pausenregel, Zeichenerklärung) scansion (Silbentabelle);
+segments: num samhita (die Zeile wie überliefert) glossed (Padapāṭha,
+Sandhis aufgelöst, Vokabeln in Klammern) gloss-table translations
+sandhi forms compounds structure note concepts;
+glosses (gesetzt, wenn es einen Padapāṭha gibt) translation grammar
+comparison working-translation my-notes footnotes.
+Grammatische Begriffe nach der Devavāṇīpraveśikā (Goldman & Sutherland
+Goldman 1999).
+#+end_comment
+#+TITLE: Sentence {{sent-num}} Analysis
+#+STARTUP: showall
+#+OPTIONS: toc:nil num:nil title:nil author:nil date:nil
+#+TIBETAN_LAYOUT: cascade
+#+SOURCE_LANG: sa
+#+CAT_TEMPLATE: sanskrit
+#+SOURCE: {{source-link}}
+#+SEGMENTS: {{segment-list}}
+#+TIBETAN_HASH: {{hash}}
+#+CREATED: {{created}}
+#+LAST_ANALYZED: {{last-analyzed}}
+
+{{#recitation}}
+* Recitation
+{{metre}}
+
+#+begin_verse
+{{recitation}}
+#+end_verse
+
+{{scansion}}
+
+{{/recitation}}
+* Text
+#+begin_verse
+{{#segments}}
+{{samhita}}
+{{/segments}}
+#+end_verse
+{{#glosses}}
+
+#+begin_verse
+{{#segments}}
+{{glossed}}
+{{/segments}}
+#+end_verse
+{{/glosses}}
+
+*Translation:* {{translation}}
+
+* Segments
+{{#segments}}
+** Segment {{num}}
+{{gloss-table}}
+
+{{translations}}
+
+*Sandhi:* {{sandhi}}
+
+{{#forms}}
+*Forms:*
+{{forms}}
+{{/forms}}
+
+*Compounds:* {{compounds}}
+
+*Structure:* {{structure}}
+
+*Note:* {{note}}
+
+*Concepts:* {{concepts}}
+
+{{/segments}}
+* Sentence
+** Grammar
+{{grammar}}
+
+** Translations compared
+{{comparison}}
+
+* Working Translation
+{{working-translation}}
+
+* My Notes
+{{my-notes}}
+
+* Footnotes
+{{footnotes}}
