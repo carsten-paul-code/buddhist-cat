@@ -157,6 +157,28 @@ are."
   (let ((plain "\\begin{verse}\nbrjod du med pa/ /\\\\\n\\end{verse}\n"))
     (should (equal plain (bcat-export--verse-units plain)))))
 
+(ert-deftest bcat-export-verse-scripts ()
+  "29.10.: Uchen above Wylie, Devanāgarī above IAST.  Through the
+fallback font the Devanāgarī lost its conjuncts (visible virāmas) and
+the Uchen came out small.  A line in the original script gets its own
+font, larger (as the old handout's Uchen line); after the transcription
+line of each pair a little space.  Roman-only verses stay as they are."
+  (should (equal (concat "\\begin{verse}\n"
+                         "{\\bcattib\\large བརྗོད་དུ། །}\\\\\n"
+                         "brjod du/ /\\\\[1ex]\n"
+                         "{\\bcatdeva\\large अत्र ।}\\\\\n"
+                         "atra /\\\\[1ex]\n"
+                         "\\end{verse}\n")
+                 (bcat-export--verse-scripts
+                  (concat "\\begin{verse}\n"
+                          "བརྗོད་དུ། །\\\\\n"
+                          "brjod du/ /\\\\\n"
+                          "अत्र ।\\\\\n"
+                          "atra /\\\\\n"
+                          "\\end{verse}\n"))))
+  (let ((roman "\\begin{verse}\nbrjod du/ /\\\\\n\\end{verse}\n"))
+    (should (equal roman (bcat-export--verse-scripts roman)))))
+
 (ert-deftest bcat-export-drops-word-analysis ()
   "A Sanskrit sentence file keeps its `** Word Analysis' (surface →
 lemma, read by the zettel highlighting, the discussion and the
@@ -193,7 +215,9 @@ tabularx tables, and carries the running head."
             (should-not (string-match-p "\\\\begin{center}" tex))
             (should-not (string-match-p "\\\\begin{tabularx}" tex))
             (should (string-match-p "Satz 9 · SDA 9" tex))
-            (should (string-match-p (regexp-quote "\\mbox{brjod du med pa [indescribable]}") tex))))
+            (should (string-match-p (regexp-quote "\\mbox{brjod du med pa [indescribable]}") tex))
+            (should (string-match-p (regexp-quote "\\newfontfamily\\bcattib{Noto Serif Tibetan}") tex))
+            (should (string-match-p (regexp-quote "{\\bcattib\\large བརྗོད་དུ་མེད་པ་བལྟར་མེད་པ། །}") tex))))
       (let ((buf (get-file-buffer file))) (when buf (kill-buffer buf)))
       (delete-directory dir t))))
 

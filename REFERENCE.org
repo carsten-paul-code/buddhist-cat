@@ -1,9 +1,9 @@
 #+TITLE: Function Reference — buddhist-cat
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-10-29T16:28:26
+#+DATE: 2026-10-29T16:30:22
 #+OPTIONS: toc:2 num:nil
 
-Source tree: ~/Users/cp/buddhist-cat~  ·  90 modules  ·  1978 forms
+Source tree: ~/Users/cp/buddhist-cat~  ·  90 modules  ·  1983 forms
 
 Regenerated automatically by:
 
@@ -63,7 +63,7 @@ python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/buddhist-c
   - [[#doc-prep/tibetan-sentence-structure.el][doc-prep/tibetan-sentence-structure.el]]  (25)
   - [[#doc-prep/tibetan-wylie-ingest.el][doc-prep/tibetan-wylie-ingest.el]]  (26)
   - [[#persist/bcat-analysis.el][persist/bcat-analysis.el]]  (35)
-  - [[#persist/bcat-export.el][persist/bcat-export.el]]  (20)
+  - [[#persist/bcat-export.el][persist/bcat-export.el]]  (25)
   - [[#persist/bcat-sentence.el][persist/bcat-sentence.el]]  (46)
   - [[#persist/bcat-template.el][persist/bcat-template.el]]  (17)
   - [[#persist/tibetan-analysis-claude.el][persist/tibetan-analysis-claude.el]]  (77)
@@ -13039,10 +13039,42 @@ What the PDF of the sentence FILE is labelled with: (:source :folder
 :work :sent-num :verse :label) — folder and work title from the source
 (its #+TITLE before „ — “), the verse from its :VERSE:.
 
+** ~bcat-export--font-lines~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 126
+:SIGNATURE: (bcat-export--font-lines)
+:END:
+
+#+LATEX_HEADER lines defining \bcattib and \bcatdeva.
+
+** ~bcat-export--script-of~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 135
+:SIGNATURE: (bcat-export--script-of line)
+:END:
+
+`tibetan' or `devanagari' when LINE is written in that script (no
+Latin letters), else nil.
+
+** ~bcat-export--verse-scripts~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 142
+:SIGNATURE: (bcat-export--verse-scripts latex)
+:END:
+
+LATEX of a verse block with each line in the original script set in
+its own font, larger (\bcattib / \bcatdeva, \large — the old
+handout's Uchen line), and a little space after the transcription line
+that follows it (Carsten 29.10.: Uchen above Wylie, Devanāgarī above
+IAST).  Roman-only lines stay as they are.
+
 ** ~bcat-export--verse-units~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 113
+:LINE: 170
 :SIGNATURE: (bcat-export--verse-units latex)
 :END:
 
@@ -13057,7 +13089,7 @@ Lines without a gloss (or starting with a command) stay as they are.
 ** ~bcat-export--verse-lines~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 128
+:LINE: 185
 :SIGNATURE: (bcat-export--verse-lines latex)
 :END:
 
@@ -13067,17 +13099,18 @@ LATEX with each glossed verse line made of \mbox units (see
 ** ~bcat-export--verse-filter~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 154
+:LINE: 211
 :SIGNATURE: (bcat-export--verse-filter text backend _info)
 :END:
 
 `org-export-filter-verse-block-functions' entry: TEXT through
-`bcat-export--verse-units' when exporting to LaTeX (BACKEND).
+`bcat-export--verse-units' and `bcat-export--verse-scripts' when
+exporting to LaTeX (BACKEND).
 
 ** ~bcat-export--drop-machine-sections~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 161
+:LINE: 219
 :SIGNATURE: (bcat-export--drop-machine-sections &rest _)
 :END:
 
@@ -13089,7 +13122,7 @@ For `org-export-before-processing-functions' — the file stays as it is.
 ** ~bcat-export-pdf~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 174
+:LINE: 232
 :SIGNATURE: (bcat-export-pdf file &optional head)
 :END:
 
@@ -13103,7 +13136,7 @@ stay untouched outside.
 ** ~bcat-export-file~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 206
+:LINE: 263
 :SIGNATURE: (bcat-export-file file)
 :END:
 
@@ -13113,7 +13146,7 @@ reMarkable (`bcat-export-upload').  Returns the PDF path.
 ** ~bcat-export-after-fetch~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 220
+:LINE: 277
 :SIGNATURE: (bcat-export-after-fetch file)
 :END:
 
@@ -13126,7 +13159,7 @@ rmapi failure must not spoil the landed analysis.
 ** ~bcat-export~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 237
+:LINE: 294
 :SIGNATURE: (bcat-export)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -13162,6 +13195,31 @@ sentence file goes to PDF and onto the reMarkable.
 
 When non-nil, C-c u H uploads the PDF with rmapi (folder = the work,
 document „Satz N“); nil only writes the PDF next to the file.
+
+** ~bcat-export-tibetan-font~  /customize variable/
+:PROPERTIES:
+:KIND: defcustom
+:LINE: 113
+:TYPE: 'string
+:GROUP: buddhist-cat
+:DEFAULT: "Noto Serif Tibetan"
+:END:
+
+Font of the Uchen lines in the PDF (fontspec name, HarfBuzz) — the
+font of the old handout's Uchen line.
+
+** ~bcat-export-devanagari-font~  /customize variable/
+:PROPERTIES:
+:KIND: defcustom
+:LINE: 119
+:TYPE: 'string
+:GROUP: buddhist-cat
+:DEFAULT: "Noto Sans Devanagari"
+:END:
+
+Font of the Devanāgarī lines in the PDF (fontspec name, HarfBuzz).
+A fallback font without Indic shaping shows the virāma instead of the
+conjunct (29.10.: Arial Unicode MS).
 
 ** ~org-latex-compiler~  /variable/
 :PROPERTIES:

@@ -110,6 +110,63 @@ document „Satz N“); nil only writes the PDF next to the file."
 ;; Export and upload
 ;; ----------------------------------------------------------------------------
 
+(defcustom bcat-export-tibetan-font "Noto Serif Tibetan"
+  "Font of the Uchen lines in the PDF (fontspec name, HarfBuzz) — the
+font of the old handout's Uchen line."
+  :type 'string
+  :group 'buddhist-cat)
+
+(defcustom bcat-export-devanagari-font "Noto Sans Devanagari"
+  "Font of the Devanāgarī lines in the PDF (fontspec name, HarfBuzz).
+A fallback font without Indic shaping shows the virāma instead of the
+conjunct (29.10.: Arial Unicode MS)."
+  :type 'string
+  :group 'buddhist-cat)
+
+(defun bcat-export--font-lines ()
+  "#+LATEX_HEADER lines defining \\bcattib and \\bcatdeva."
+  (concat
+   "#+LATEX_HEADER: \\usepackage{fontspec}\n"
+   (format "#+LATEX_HEADER: \\newfontfamily\\bcattib{%s}[Script=Tibetan,Renderer=HarfBuzz]\n"
+           bcat-export-tibetan-font)
+   (format "#+LATEX_HEADER: \\newfontfamily\\bcatdeva{%s}[Script=Devanagari,Renderer=HarfBuzz]\n"
+           bcat-export-devanagari-font)))
+
+(defun bcat-export--script-of (line)
+  "`tibetan' or `devanagari' when LINE is written in that script (no
+Latin letters), else nil."
+  (unless (string-match-p "[A-Za-z]" (replace-regexp-in-string "\\\\[a-z]+" "" line))
+    (cond ((string-match-p "[\u0F00-\u0FFF]" line) 'tibetan)
+          ((string-match-p "[\u0900-\u097F]" line) 'devanagari))))
+
+(defun bcat-export--verse-scripts (latex)
+  "LATEX of a verse block with each line in the original script set in
+its own font, larger (\\bcattib / \\bcatdeva, \\large — the old
+handout's Uchen line), and a little space after the transcription line
+that follows it (Carsten 29.10.: Uchen above Wylie, Devanāgarī above
+IAST).  Roman-only lines stay as they are."
+  (let ((after-script nil))
+    (mapconcat
+     (lambda (line)
+       (let* ((end (if (string-match "\\\\\\\\[ \t]*\\'" line)
+                       (match-beginning 0)
+                     (length line)))
+              (body (substring line 0 end))
+              (brk (substring line end))
+              (script (and (not (string-prefix-p "\\" line))
+                           (bcat-export--script-of body))))
+         (cond
+          (script
+           (setq after-script t)
+           (format "{%s\\large %s}%s"
+                   (if (eq script 'tibetan) "\\bcattib" "\\bcatdeva") body brk))
+          ((and after-script (string-prefix-p "\\\\" brk))
+           (setq after-script nil)
+           (concat body "\\\\[1ex]"))
+          (t (setq after-script nil) line))))
+     (split-string latex "\n")
+     "\n")))
+
 (defun bcat-export--verse-units (latex)
   "LATEX of a verse block with each glossed line made of unbreakable
 units — every word with its [gloss] in an \\mbox, the shad tied to the
@@ -153,9 +210,10 @@ Lines without a gloss (or starting with a command) stay as they are."
 
 (defun bcat-export--verse-filter (text backend _info)
   "`org-export-filter-verse-block-functions' entry: TEXT through
-`bcat-export--verse-units' when exporting to LaTeX (BACKEND)."
+`bcat-export--verse-units' and `bcat-export--verse-scripts' when
+exporting to LaTeX (BACKEND)."
   (if (org-export-derived-backend-p backend 'latex)
-      (bcat-export--verse-units text)
+      (bcat-export--verse-scripts (bcat-export--verse-units text))
     text))
 
 (defun bcat-export--drop-machine-sections (&rest _)
@@ -182,9 +240,8 @@ stay untouched outside."
   (let* ((visited (get-file-buffer file))
          (buf (or visited (find-file-noselect file)))
          (insert-head (lambda (&rest _)
-                        (when head
-                          (goto-char (point-min))
-                          (insert head)))))
+                        (goto-char (point-min))
+                        (insert (bcat-export--font-lines) (or head "")))))
     (unwind-protect
         (with-current-buffer buf
           (when (buffer-modified-p) (save-buffer))
