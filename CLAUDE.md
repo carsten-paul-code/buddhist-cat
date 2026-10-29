@@ -12,7 +12,7 @@ NACH VORLAGE — Reading-Klassen, Tibetisch: `#+CAT_TEMPLATE: tibetan' im
 Quellkopf, Gliederung * Text / * Segments / * Sentence, C-c u A = Rumpf
 ohne KI, C-c u G = ein JSON-Abruf je Satz (+ DharmaMitra, + kleiner
 Zuordnungs-Abruf für ergänzte Vergleichsübersetzungen), endet mit C-c u H
-= die Satzdatei als PDF aufs reMarkable; Sanskrit seit 29.10. (Rezitation zuerst); * Text mit Uchen/Devanāgarī über der Umschrift; ERT 2658.
+= die Satzdatei als PDF aufs reMarkable; Sanskrit seit 29.10. (Rezitation zuerst); * Text Tibetisch Uchen über Wylie, Sanskrit Rezitation in Devanāgarī + Text als IAST-Padapāṭha; ERT 2659.
 Previous: §5.73: UMBENENNUNG IN
 BUDDHIST CAT — erster Schritt: die Hülle (Hauptdatei/Feature
 buddhist-cat, alter Name lädt weiter, Customize-Gruppe, Menü, Repo,
@@ -4285,7 +4285,17 @@ Schriftfamilien \bcattib/\bcatdeva (`bcat-export-tibetan-font' Noto
 Serif Tibetan, `bcat-export-devanagari-font' Noto Sans Devanagari —
 Arial Unicode MS als Ersatzschrift formt keine Ligaturen), \large,
 \\[1ex] nach jedem Paar.  Tabellen bleiben in Umschrift.
-ERT 2658.  Offen: maschinelle Sandhi-Gegenprobe des Padapāṭha (wie
+Sanskrit danach umgestellt (`e38ab13', Carsten: „das Devanagari im
+Recitationsverse (also de facto im Original) und den Text dann im
+reinen IAST mit sandhi Auflösung“): * Recitation = Original in
+Devanāgarī (Vers mit Pausen; Prosa ohne Metrum/Skansion, aber mit
+Rezitation), * Text = Padapāṭha in IAST ({{padapatha}}, Rumpf: die
+überlieferte Zeile), darunter mit Vokabeln.  Erster echter Abruf (TĀ
+1007, 16:44): Padapāṭha richtig; `6cce69e' →-Zeile „Name: []“ fällt
+weg; `93d1c7d' Prompt: Glosse ≤ 30 Zeichen ohne Kommentar, →-Zeilen
+nur mit Markierung, Sandhi „as it stands in the transmitted text“.
+Modell in Carstens gptel: claude-opus-4-8 (Sandhi-Zeile fehlerhaft).
+ERT 2659.  Offen: maschinelle Sandhi-Gegenprobe des Padapāṭha (wie
 padapatha-pdf.py) fehlt noch; MSA-Synopse (§5.68) hängt am alten
 Handout — in Vorlagenquellen ist C-c u H jetzt der Satz-Export.
 
