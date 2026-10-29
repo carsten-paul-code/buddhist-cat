@@ -138,6 +138,20 @@ segment as transmitted, the references."
     (should (string-match-p (regexp-quote "[685] atra madvāgaśaktāpi yanniyantraṇamullaset /\n[686] tatpārameśvaraṃ") user))
     (should (string-match-p "=== Dyczkowski 2023 ===\nAlthough my speech" user))))
 
+(ert-deftest bcat-analysis-shift-lines-skip-empty ()
+  "29.10., TĀ 1007 (first real Sanskrit answer): Claude listed the
+translator without marks as \"Dyczkowski 2023: []\" and the file showed
+„→ Dyczkowski 2023: []“.  A shift line with nothing after the name
+\(empty, [] or \"\") is dropped; real lines stay."
+  (should (equal '("→ DharmaMitra: niyantraṇa reversed")
+                 (bcat-analysis-shift-lines
+                  '((shift "Dyczkowski 2023: []" "DharmaMitra: niyantraṇa reversed"
+                           "Apple 2019:" "Lindtner 1981: \"\"" "")))))
+  (should (equal '("→ Lindtner 1981: active, with the yogin as agent")
+                 (bcat-analysis-shift-lines
+                  '((shift . "Lindtner 1981: active, with the yogin as agent")))))
+  (should-not (bcat-analysis-shift-lines '((shift . "")))))
+
 (ert-deftest bcat-analysis-sanskrit-tables ()
   "The word table of a Sanskrit segment (word / formation / parts /
 gloss / form) is split into separate tables, none wider than

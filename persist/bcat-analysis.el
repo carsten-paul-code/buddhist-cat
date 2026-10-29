@@ -421,10 +421,15 @@ of Lindtner's verse 9 dropped his note)."
 
 (defun bcat-analysis-shift-lines (seg)
   "The „→“ lines of SEG (Claude's segment object): its shift, one line,
-or — the Sanskrit contract — a list with one line per translator."
+or — the Sanskrit contract — a list with one line per translator.  A
+line with nothing after the translator's name is dropped (29.10., TĀ
+1007: „Dyczkowski 2023: []“)."
   (let ((sh (alist-get 'shift seg)))
     (mapcar (lambda (l) (concat "→ " (string-trim l)))
-            (cl-remove-if (lambda (l) (or (not (stringp l)) (string-blank-p l)))
+            (cl-remove-if (lambda (l)
+                            (or (not (stringp l))
+                                (string-blank-p l)
+                                (string-match-p "\\`[^:\n]*:[ \t]*\\(?:\\[\\]\\|\"\"\\)?[ \t]*\\'" l)))
                           (if (listp sh) sh (list sh))))))
 
 (defun bcat-analysis-translations-block (num seg)

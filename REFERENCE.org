@@ -1,6 +1,6 @@
 #+TITLE: Function Reference — buddhist-cat
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-10-29T17:15:06
+#+DATE: 2026-10-29T17:16:18
 #+OPTIONS: toc:2 num:nil
 
 Source tree: ~/Users/cp/buddhist-cat~  ·  90 modules  ·  1983 forms
@@ -12872,12 +12872,14 @@ of Lindtner's verse 9 dropped his note).
 :END:
 
 The „→“ lines of SEG (Claude's segment object): its shift, one line,
-or — the Sanskrit contract — a list with one line per translator.
+or — the Sanskrit contract — a list with one line per translator.  A
+line with nothing after the translator's name is dropped (29.10., TĀ
+1007: „Dyczkowski 2023: []“).
 
 ** ~bcat-analysis-translations-block~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 430
+:LINE: 435
 :SIGNATURE: (bcat-analysis-translations-block num seg)
 :END:
 
@@ -12890,7 +12892,7 @@ line breaks between.
 ** ~bcat-analysis-comparison~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 443
+:LINE: 448
 :SIGNATURE: (bcat-analysis-comparison parsed &optional refs)
 :END:
 
@@ -12901,7 +12903,7 @@ with the marks of its segment parts, the comparison paragraph.
 ** ~bcat-analysis-context~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 464
+:LINE: 469
 :SIGNATURE: (bcat-analysis-context base parsed &optional refs)
 :END:
 
@@ -12914,7 +12916,7 @@ segment Claude skipped keeps its rump fields.
 ** ~bcat-analysis-sanskrit-tables~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 516
+:LINE: 521
 :SIGNATURE: (bcat-analysis-sanskrit-tables words)
 :END:
 
@@ -12926,7 +12928,7 @@ for no words.
 ** ~bcat-analysis-padapatha-line~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 540
+:LINE: 545
 :SIGNATURE: (bcat-analysis-padapatha-line samhita words &optional plain)
 :END:
 
@@ -12939,7 +12941,7 @@ IAST with the sandhis resolved).  nil without words.
 ** ~bcat-analysis--word-entries~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 556
+:LINE: 561
 :SIGNATURE: (bcat-analysis--word-entries entries)
 :END:
 
@@ -12948,7 +12950,7 @@ ENTRIES (alists with word and analysis) as "/word/ — analysis".
 ** ~bcat-analysis-word-analysis~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 563
+:LINE: 568
 :SIGNATURE: (bcat-analysis-word-analysis segments)
 :END:
 
@@ -12960,7 +12962,7 @@ LEMMA; FORM' — "" when no segment has words.
 ** ~bcat-analysis-sanskrit-context~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 582
+:LINE: 587
 :SIGNATURE: (bcat-analysis-sanskrit-context base parsed &optional refs)
 :END:
 
@@ -12985,7 +12987,7 @@ Where an answer C-c u G could not read is kept, one file per answer
 ** ~bcat-analysis-sanskrit-table-width~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 509
+:LINE: 514
 :TYPE: 'integer
 :GROUP: buddhist-cat
 :DEFAULT: 95
