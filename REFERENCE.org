@@ -1,6 +1,6 @@
 #+TITLE: Function Reference — buddhist-cat
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-10-29T08:54:30
+#+DATE: 2026-10-29T08:55:36
 #+OPTIONS: toc:2 num:nil
 
 Source tree: ~/Users/cp/buddhist-cat~  ·  90 modules  ·  1953 forms
@@ -12761,13 +12761,15 @@ of Lindtner's verse 9 dropped his note).
 :END:
 
 The left-aligned translation block of segment NUM from SEG (Claude's
-segment object): ⟦NUM⟧ own translation, the reference parts, the shift
-line — one line each, org line breaks between.
+segment object): ⟦NUM⟧ own translation (labelled like the sentence's —
+29.10.: unlabelled it did not read as a translation next to the named
+references), the reference parts, the shift line — one line each, org
+line breaks between.
 
 ** ~bcat-analysis-comparison~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 329
+:LINE: 331
 :SIGNATURE: (bcat-analysis-comparison parsed &optional refs)
 :END:
 
@@ -12778,7 +12780,7 @@ with the marks of its segment parts, the comparison paragraph.
 ** ~bcat-analysis-context~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 350
+:LINE: 352
 :SIGNATURE: (bcat-analysis-context base parsed &optional refs)
 :END:
 
@@ -13198,12 +13200,13 @@ nil when the file is complete.
 :SIGNATURE: (bcat-sentence--own-translations text)
 :END:
 
-The ⟦N⟧ translations in TEXT: ((N . TRANSLATION) …).
+The ⟦N⟧ translations in TEXT: ((N . TRANSLATION) …), without the
+„*Translation:*“ label (files of 28.10. have none).
 
 ** ~bcat-sentence--block-lines~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 326
+:LINE: 327
 :SIGNATURE: (bcat-sentence--block-lines block)
 :END:
 
@@ -13212,7 +13215,7 @@ The lines of a translation BLOCK without their org line breaks.
 ** ~bcat-sentence--align-merge~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 331
+:LINE: 332
 :SIGNATURE: (bcat-sentence--align-merge text parsed)
 :END:
 
@@ -13226,7 +13229,7 @@ Everything else stays as it is.
 ** ~bcat-sentence--unreadable~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 390
+:LINE: 391
 :SIGNATURE: (bcat-sentence--unreadable what file response problem)
 :END:
 
@@ -13236,7 +13239,7 @@ Report that the answer of kind WHAT for FILE could not be read
 ** ~bcat-sentence--align-land~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 398
+:LINE: 399
 :SIGNATURE: (bcat-sentence--align-land file response)
 :END:
 
@@ -13246,7 +13249,7 @@ the answer is unreadable.
 ** ~bcat-sentence--align-one~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 410
+:LINE: 411
 :SIGNATURE: (bcat-sentence--align-one file sentence source-file)
 :END:
 
@@ -13256,7 +13259,7 @@ no DharmaMitra, no new analysis.
 ** ~bcat-sentence--references-for~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 431
+:LINE: 432
 :SIGNATURE: (bcat-sentence--references-for file sent-num source-file)
 :END:
 
@@ -13267,7 +13270,7 @@ compared of FILE.
 ** ~bcat-sentence--prepare~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 440
+:LINE: 441
 :SIGNATURE: (bcat-sentence--prepare file sentence source-file)
 :END:
 
@@ -13278,7 +13281,7 @@ user slots, #+CREATED and references pasted by hand carried over.
 ** ~bcat-sentence--dharmamitra~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 457
+:LINE: 458
 :SIGNATURE: (bcat-sentence--dharmamitra file sentence)
 :END:
 
@@ -13288,7 +13291,7 @@ must not stop the analysis).
 ** ~bcat-sentence--prompts~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 473
+:LINE: 474
 :SIGNATURE: (bcat-sentence--prompts sentence source-file refs)
 :END:
 
@@ -13297,7 +13300,7 @@ must not stop the analysis).
 ** ~bcat-sentence--land~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 484
+:LINE: 485
 :SIGNATURE: (bcat-sentence--land file sentence source-file refs response)
 :END:
 
@@ -13310,7 +13313,7 @@ marked from the answer's segment parts.
 ** ~bcat-sentence--fetch-one~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 509
+:LINE: 510
 :SIGNATURE: (bcat-sentence--fetch-one file sentence source-file)
 :END:
 
@@ -13321,7 +13324,7 @@ request through the queue.
 ** ~bcat-sentence-fetch~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 534
+:LINE: 535
 :SIGNATURE: (bcat-sentence-fetch scope)
 :END:
 

@@ -273,7 +273,7 @@ file once."
                                   text))
           (should (string-match-p "| indescribable +| invisible" text))
           (should-not (string-match-p "^| \\?" text))
-          (should (string-match-p (regexp-quote "⟦38⟧ Indescribable and invisible, \\\\\n*Lindtner 1981:*") text))
+          (should (string-match-p (regexp-quote "⟦38⟧ *Translation:* Indescribable and invisible, \\\\\n*Lindtner 1981:*") text))
           (should (string-match-p (regexp-quote "*DharmaMitra:* Unchanging and unconditioned—") text))
           (should (string-match-p "^\\*Structure:\\* no finite verb$" text))
           (should (string-match-p "^\\*Concepts:\\* \\*'dus ma byas\\* (asaṃskṛta)$" text))
@@ -445,6 +445,15 @@ reference was added under Translations compared that no segment shows."
     (beginning-of-line)
     (insert (format "*%s:* %s\n\n" name text))
     (write-region (point-min) (point-max) file nil 0)))
+
+(ert-deftest bcat-sentence-own-translations-labelled ()
+  "The own translation of a segment is read with or without its
+„*Translation:*“ label (29.10.; the files of 28.10. have none) — the
+alignment request gets the bare sentence."
+  (should (equal '((38 . "Inexpressible,") (39 . "unchanging."))
+                 (bcat-sentence--own-translations
+                  (concat "⟦38⟧ *Translation:* Inexpressible, \\\\\n"
+                          "*Lindtner 1981:* x\n\n⟦39⟧ unchanging.\n")))))
 
 (ert-deftest bcat-sentence-align-merge ()
   "The pure merge: the new reference's part goes into each segment's

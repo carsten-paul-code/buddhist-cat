@@ -14,7 +14,7 @@
       (gloss-table . "| [[steinert:brjod du med pa][brjod du med pa]] | [[steinert:bltar med pa][bltar med pa]]    |
 | indescribable   | invisible       |
 | ADJ · predicate | ADJ · predicate |")
-      (translations . "⟦38⟧ Indescribable (brjod du med pa: avācya) and invisible (bltar med pa: adraṣṭavya), \\\\
+      (translations . "⟦38⟧ *Translation:* Indescribable (brjod du med pa: avācya) and invisible (bltar med pa: adraṣṭavya), \\\\
 *Lindtner 1981:* [It is also] inexpressible (avācya) and invisible (adraṣṭavya), \\\\
 *DharmaMitra:* Inexpressible and invisible,")
       (structure . "no finite verb — 38–39 are a nominal predicate chain, the object of /rtogs/ in 40.")
@@ -25,7 +25,7 @@
       (gloss-table . "| [[steinert:'gyur ba med pa]['gyur ba med pa]] | [[steinert:'dus]['dus]]                  | [[steinert:ma byas][ma byas]]               |
 | immutable       | assembled, compounded | not made              |
 | ADJ · predicate | V pf. ('du ba)        | NEG + V pf. (byed pa) |")
-      (translations . "⟦39⟧ immutable ('gyur ba med pa: avikāra) and uncompounded ('dus ma byas: asaṃskṛta) \\\\
+      (translations . "⟦39⟧ *Translation:* immutable ('gyur ba med pa: avikāra) and uncompounded ('dus ma byas: asaṃskṛta) \\\\
 *Lindtner 1981:* unchangeable (avikāra) and uncompounded (asaṃskṛta). \\\\
 *DharmaMitra:* Unchanging and unconditioned—")
       (structure . "continues the predicate chain; /'dus ma byas/ = /ma/ + past stem /byas/ with /'dus/ as complement (negated past participle).")
@@ -36,7 +36,7 @@
       (gloss-table . "| [[steinert:rnal 'byor pa][rnal 'byor pa]] | yis | [[steinert:de][de]]           | [[steinert:rtogs][rtogs]]    | na           |
 | yogin         | by  | that         | realizes | if           |
 | N · agent     | ERG | DEM · object | V tr.    | CONV · cond. |")
-      (translations . "⟦40⟧ if a yogin (rnal 'byor pa: yogin) realizes that, \\\\
+      (translations . "⟦40⟧ *Translation:* if a yogin (rnal 'byor pa: yogin) realizes that, \\\\
 *Lindtner 1981:* *When* a yogi understands it \\\\
 *DharmaMitra:* *When* a yogi realizes this, \\\\
 → Lindtner 1981, DharmaMitra: temporal \"when\" for the conditional \"if\"")
@@ -48,7 +48,7 @@
       (gloss-table . "| [[steinert:nyon mongs][nyon mongs]] | [[steinert:shes bya'i][shes bya'i]]      | [[steinert:sgrib pa][sgrib pa]]    | [[steinert:spangs][spangs]]                       |
 | affliction | of the knowable | obstruction | abandoned                    |
 | N          | N + GEN         | N · object  | V pf. ('pong ba) · main verb |")
-      (translations . "⟦41⟧ the obstructions of affliction (nyon mongs: kleśa) and of the knowable (śes bya'i sgrib pa: jñeyāvaraṇa) are abandoned. \\\\
+      (translations . "⟦41⟧ *Translation:* the obstructions of affliction (nyon mongs: kleśa) and of the knowable (śes bya'i sgrib pa: jñeyāvaraṇa) are abandoned. \\\\
 *Lindtner 1981:* *he abandons* the obstructions of defilement and cognizable *(kleśajñeyāvaraṇa)*. \\\\
 *DharmaMitra:* The obscurations of afflictions and the knowable are abandoned. \\\\
 → Lindtner 1981: active, with the yogin as agent; and one compound, not two obstructions")

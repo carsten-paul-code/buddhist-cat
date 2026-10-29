@@ -316,9 +316,10 @@ nil when the file is complete."
 ;; ----------------------------------------------------------------------------
 
 (defun bcat-sentence--own-translations (text)
-  "The ⟦N⟧ translations in TEXT: ((N . TRANSLATION) …)."
+  "The ⟦N⟧ translations in TEXT: ((N . TRANSLATION) …), without the
+„*Translation:*“ label (files of 28.10. have none)."
   (let ((pos 0) (out '()))
-    (while (string-match "^⟦\\([0-9]+\\)⟧ \\(.*?\\)\\(?: \\\\\\\\\\)?$" text pos)
+    (while (string-match "^⟦\\([0-9]+\\)⟧ \\(?:\\*Translation:\\* \\)?\\(.*?\\)\\(?: \\\\\\\\\\)?$" text pos)
       (push (cons (string-to-number (match-string 1 text)) (match-string 2 text)) out)
       (setq pos (match-end 0)))
     (nreverse out)))

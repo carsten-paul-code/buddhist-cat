@@ -186,7 +186,7 @@ lines and no „→“."
          (ctx (bcat-analysis-context base parsed))
          (segs (alist-get 'segments ctx)))
     (should (string-match-p "steinert:ka" (alist-get 'gloss-table (nth 0 segs))))
-    (should (equal "⟦1⟧ one" (alist-get 'translations (nth 0 segs))))
+    (should (equal "⟦1⟧ *Translation:* one" (alist-get 'translations (nth 0 segs))))
     (should (equal "| RUMPF2 |" (alist-get 'gloss-table (nth 1 segs))))
     (should-not (alist-get 'translations (nth 1 segs)))
     (should (equal "*Translation:* one two" (alist-get 'comparison ctx)))

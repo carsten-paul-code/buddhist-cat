@@ -316,11 +316,13 @@ of Lindtner's verse 9 dropped his note)."
 
 (defun bcat-analysis-translations-block (num seg)
   "The left-aligned translation block of segment NUM from SEG (Claude's
-segment object): ⟦NUM⟧ own translation, the reference parts, the shift
-line — one line each, org line breaks between."
+segment object): ⟦NUM⟧ own translation (labelled like the sentence's —
+29.10.: unlabelled it did not read as a translation next to the named
+references), the reference parts, the shift line — one line each, org
+line breaks between."
   (let ((lines (append
                 (let ((tr (bcat-analysis--field seg 'translation)))
-                  (unless (string-empty-p tr) (list (format "⟦%d⟧ %s" num tr))))
+                  (unless (string-empty-p tr) (list (format "⟦%d⟧ *Translation:* %s" num tr))))
                 (bcat-analysis--reference-lines (alist-get 'references seg))
                 (let ((sh (bcat-analysis--field seg 'shift)))
                   (unless (string-empty-p sh) (list (concat "→ " sh)))))))

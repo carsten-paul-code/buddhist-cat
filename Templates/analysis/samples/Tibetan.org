@@ -23,7 +23,7 @@ nyon mongs shes bya'i sgrib pa spangs/ /
 | indescribable   | invisible       |
 | ADJ · predicate | ADJ · predicate |
 
-⟦38⟧ Indescribable (brjod du med pa: avācya) and invisible (bltar med pa: adraṣṭavya), \\
+⟦38⟧ *Translation:* Indescribable (brjod du med pa: avācya) and invisible (bltar med pa: adraṣṭavya), \\
 *Lindtner 1981:* [It is also] inexpressible (avācya) and invisible (adraṣṭavya), \\
 *DharmaMitra:* Inexpressible and invisible,
 
@@ -38,7 +38,7 @@ nyon mongs shes bya'i sgrib pa spangs/ /
 | immutable       | assembled, compounded | not made              |
 | ADJ · predicate | V pf. ('du ba)        | NEG + V pf. (byed pa) |
 
-⟦39⟧ immutable ('gyur ba med pa: avikāra) and uncompounded ('dus ma byas: asaṃskṛta) \\
+⟦39⟧ *Translation:* immutable ('gyur ba med pa: avikāra) and uncompounded ('dus ma byas: asaṃskṛta) \\
 *Lindtner 1981:* unchangeable (avikāra) and uncompounded (asaṃskṛta). \\
 *DharmaMitra:* Unchanging and unconditioned—
 
@@ -51,7 +51,7 @@ nyon mongs shes bya'i sgrib pa spangs/ /
 | yogin         | by  | that         | realizes | if           |
 | N · agent     | ERG | DEM · object | V tr.    | CONV · cond. |
 
-⟦40⟧ if a yogin (rnal 'byor pa: yogin) realizes that, \\
+⟦40⟧ *Translation:* if a yogin (rnal 'byor pa: yogin) realizes that, \\
 *Lindtner 1981:* *When* a yogi understands it \\
 *DharmaMitra:* *When* a yogi realizes this, \\
 → Lindtner 1981, DharmaMitra: temporal "when" for the conditional "if"
@@ -65,7 +65,7 @@ nyon mongs shes bya'i sgrib pa spangs/ /
 | affliction | of the knowable | obstruction | abandoned                    |
 | N          | N + GEN         | N · object  | V pf. ('pong ba) · main verb |
 
-⟦41⟧ the obstructions of affliction (nyon mongs: kleśa) and of the knowable (śes bya'i sgrib pa: jñeyāvaraṇa) are abandoned. \\
+⟦41⟧ *Translation:* the obstructions of affliction (nyon mongs: kleśa) and of the knowable (śes bya'i sgrib pa: jñeyāvaraṇa) are abandoned. \\
 *Lindtner 1981:* *he abandons* the obstructions of defilement and cognizable *(kleśajñeyāvaraṇa)*. \\
 *DharmaMitra:* The obscurations of afflictions and the knowable are abandoned. \\
 → Lindtner 1981: active, with the yogin as agent; and one compound, not two obstructions
