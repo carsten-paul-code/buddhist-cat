@@ -187,11 +187,15 @@ line, or with the symbol `drop' for a line dropped as empty."
             (funcall emit (if filled text 'drop))))
       (pcase-let ((`(section ,pos ,name ,children) node))
         (let ((contexts (bcat-template--contexts (bcat-template--value name stack))))
-          (if pos
-              (dolist (ctx contexts)
-                (bcat-template--walk children (cons ctx stack) emit))
-            (unless contexts
-              (bcat-template--walk children stack emit))))))))
+          (cond
+           ((and pos contexts)
+            (dolist (ctx contexts)
+              (bcat-template--walk children (cons ctx stack) emit)))
+           ((not (or pos contexts))
+            (bcat-template--walk children stack emit))
+           ;; A section that does not render counts as a dropped line,
+           ;; so the blank lines around it become one.
+           (t (funcall emit 'drop))))))))
 
 (defun bcat-template-render (template context)
   "TEMPLATE (text, comments and inclusions already resolved — see

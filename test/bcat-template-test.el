@@ -114,6 +114,18 @@ temp work folder WORK with source file SRC.  Helper (put PATH TEXT)."
          (delete-directory tool t)
          (delete-directory work t)))))
 
+(ert-deftest bcat-template-skipped-section-blank-lines ()
+  "A section that does not render counts like a dropped line: the blank
+lines around it become one (29.10.: an empty segment of the Sanskrit
+template left two blank lines where *Forms:* was missing).  Positive
+and inverted sections alike."
+  (should (equal "a\n\nb\n"
+                 (bcat-template-render "a\n\n{{#x}}\nX\n{{/x}}\n\nb\n" '((x)))))
+  (should (equal "a\n\nb\n"
+                 (bcat-template-render "a\n\n{{^x}}\nX\n{{/x}}\n\nb\n" '((x . "1")))))
+  (should (equal "a\n\nX\n\nb\n"
+                 (bcat-template-render "a\n\n{{#x}}\nX\n{{/x}}\n\nb\n" '((x . "1"))))))
+
 (ert-deftest bcat-template-comment-blocks-and-partials ()
   "#+begin_comment blocks document the template and never reach the
 output; {{> name}} on its own line inserts template NAME (found like

@@ -1,6 +1,6 @@
 #+TITLE: Function Reference — buddhist-cat
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-10-29T09:59:58
+#+DATE: 2026-10-29T10:45:57
 #+OPTIONS: toc:2 num:nil
 
 Source tree: ~/Users/cp/buddhist-cat~  ·  90 modules  ·  1962 forms
@@ -13612,7 +13612,7 @@ line, or with the symbol `drop' for a line dropped as empty.
 ** ~bcat-template-render~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 196
+:LINE: 200
 :SIGNATURE: (bcat-template-render template context)
 :END:
 
@@ -13622,7 +13622,7 @@ TEMPLATE (text, comments and inclusions already resolved — see
 ** ~bcat-template-render-named~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 226
+:LINE: 230
 :SIGNATURE: (bcat-template-render-named name context &optional source-file)
 :END:
 
