@@ -4303,6 +4303,11 @@ sich.  `48c15a2' Statusanzeige: persist/bcat-status.el, Puffer
 *Buddhist CAT* (unten, q), Block je Lauf, Zeile je Satz (angelegt/neu
 gebaut · DharmaMitra · Claude/nicht lesbar mit Grund · Zuordnung · PDF
 · reMarkable mit Dokumentname); Upload hat dafür ein optionales DONE.
+`5deea57' Rezitation zeilenweise Devanāgarī, darunter IAST (Carsten:
+„wie es vorher im Tibetischen war“).  Sie hängt nicht an Claude — eine
+fertige Datei lässt sich ohne Abruf nachziehen (bcat-sentence--recitation
+aus der Quelle, Versblock per bcat-sentence--write ersetzen; für TĀ 1007
+so gemacht).
 ERT 2666.  Offen: maschinelle Sandhi-Gegenprobe des Padapāṭha (wie
 padapatha-pdf.py) fehlt noch; MSA-Synopse (§5.68) hängt am alten
 Handout — in Vorlagenquellen ist C-c u H jetzt der Satz-Export.
