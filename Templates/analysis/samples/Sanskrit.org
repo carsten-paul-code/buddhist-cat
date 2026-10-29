@@ -1,0 +1,128 @@
+#+TITLE: Sentence 1007 Analysis
+#+STARTUP: showall
+#+OPTIONS: toc:nil num:nil title:nil author:nil date:nil
+#+TIBETAN_LAYOUT: cascade
+#+SOURCE_LANG: sa
+#+CAT_TEMPLATE: sanskrit
+#+SOURCE: [[file:../tantraloka-1.org::*Sentence 1007][tantraloka-1.org / Sentence 1007]]
+#+SEGMENTS: 685, 686
+#+TIBETAN_HASH: 278bbfdd3c8267ca2fa02d43120ea44f
+#+CREATED: 2026-10-14
+#+LAST_ANALYZED: 2026-10-29
+
+* Recitation
+Śloka (Anuṣṭubh) — vier Pādas zu 8 Silben; in den geraden Pādas Silbe 5–7 ⏑ – ⏑; keine feste Binnenpause — Pause am Pāda-Ende. \\
+Zeichen: ¦ Pause (yati) · | Pāda-Ende in der Zeile · – schwer (guru) · ⏑ leicht (laghu)
+
+#+begin_verse
+atra madvāgaśaktāpi | yanniyantraṇamullaset /
+tatpārameśvaraṃ śrīman|mahānandavijṛmbhitam // 7
+#+end_verse
+
+| at  | ra | mad | vā  | ga | śak | tā  | pi  |
+| –   | ⏑  | –   | –   | ⏑  | –   | –   | ⏑   |
+| yan | ni | yan | tra | ṇa | mul | la  | set |
+| –   | ⏑  | –   | ⏑   | ⏑  | –   | ⏑   | –   |
+| tat | pā | ra  | meś | va | raṃ | śrī | man |
+| –   | –  | ⏑   | –   | ⏑  | –   | –   | –   |
+| ma  | hā | nan | da  | vi | jṛm | bhi | tam |
+| ⏑   | –  | –   | ⏑   | ⏑  | –   | ⏑   | –   |
+
+* Text
+#+begin_verse
+atra madvāgaśaktāpi yanniyantraṇamullaset /
+tatpārameśvaraṃ śrīmanmahānandavijṛmbhitam // 7
+#+end_verse
+
+#+begin_verse
+atra [here] mad-vāk [my speech] aśaktā [incapable] api [although] yat [whatever] niyantraṇam [control] ullaset [may shine forth] /
+tat [that] pārameśvaram [the Supreme Lord's] śrīmat-mahā-ānanda-vijṛmbhitam [unfolding of glorious great bliss] //
+#+end_verse
+
+*Translation:* Although my speech (vāc) is incapable (aśakta) here, whatever control (niyantraṇa) may shine forth (ullaset) — that belongs to the Supreme Lord (pārameśvara): it is the unfolding (vijṛmbhita) of glorious great bliss (mahānanda).
+
+* Segments
+** Segment 685
+| atra | mad-vāk     | aśaktā                              | api      |
+| —    | mad · vāc   | a-√śak-ta                           | —        |
+|      | my · speech | a- not · √śak (5) be able · -ta ppp |          |
+| here | my speech   | incapable                           | although |
+| ind. | f. nom. sg. | ppp. f. nom. sg.                    | ind.     |
+
+| yat               | niyantraṇam                                 | ullaset                 |
+| —                 | ni-√yantr-ana                               | ud-√las                 |
+|                   | ni- in · √yantr (10) restrain · -ana action | ud- up · √las (1) shine |
+| whatever          | control                                     | may shine forth         |
+| pron. n. nom. sg. | n. nom. sg.                                 | opt. 3 sg. P            |
+
+⟦685⟧ *Translation:* Although my speech (vāc) is incapable (aśakta) here, whatever control (niyantraṇa) may shine forth (ullaset) — \\
+*Dyczkowski 2023:* Although my speech is powerless here (in this task), whatever *restriction* may arise (on one's understanding of the teachings is not my fault, rather) \\
+*DharmaMitra:* In this matter, whatever *unfettered expression* may emerge, even though my own voice is powerless, \\
+→ Dyczkowski 2023: niyantraṇa as a restriction on the reader's understanding, not as control over the speech \\
+→ DharmaMitra: niyantraṇa reversed — „unfettered expression“
+
+*Sandhi:* madvāg aśaktā: final -k voiced before a vowel → -g · aśaktā + api → aśaktāpi (ā + a → ā) · yat + niyantraṇam → yan niyantraṇam (t before a nasal → n) · niyantraṇam ullaset: m before a vowel stays · ud + laset → ullaset (d + l → ll)
+
+*Forms:*
+- /mad-vāk/ — vāc- f. (consonant stem in -c; final c → k); prathamā vibhakti ekavacana (nom. sg.); subject
+- /aśaktā/ — aśakta- adj. (a-stem, f. -ā); negated bhūte kṛdanta (ppp., kta) of √śak (5, svādi, P: śaknoti „he is able“); prathamā ekavacana f.; predicate of /mad-vāk/
+- /yat/ — yad- relative pronoun, n.; prathamā ekavacana; with /niyantraṇam/
+- /niyantraṇam/ — niyantraṇa- n. (a-stem), action noun in -ana (lyuṭ) of ni-√yantr (10, curādi: yantrayati); prathamā ekavacana; subject of /ullaset/
+- /ullaset/ — ud-√las (1, bhvādi, P: lasati); vidhiliṅ (optative), parasmaipada, prathamapuruṣa ekavacana (3rd sg.); present stem lasa- + -īt → laset
+
+*Compounds:* /mad-vāk/ — ṣaṣṭhī tatpuruṣa: mama vāk „my speech“ (mad- = asmad- in composition)
+
+*Structure:* atra [adverb] · /mad-vāk/ [subject] /aśaktā/ [predicate] /api/ [concessive] → concessive clause · /yat niyantraṇam/ [subject] /ullaset/ [V opt.] → relative clause, taken up by /tat/ in 686
+
+*Note:* madvāgaśaktāpi hides the privative a-: mad-vāk aśaktā api „though my speech is incapable“ — not mat-vāk-śaktā „capable“; the a- disappears in ā + a → ā. The optative in a generalising relative clause: „whatever … may“.
+
+*Concepts:* *niyantraṇa* — control, regulation; here the ordering of the words of the commentary, which Jayaratha does not claim as his own achievement.
+
+** Segment 686
+| tat               | pārameśvaram                              |
+| —                 | parama · īśvara · -a                      |
+|                   | supreme · lord · vṛddhi + -a belonging to |
+| that              | the Supreme Lord's                        |
+| pron. n. nom. sg. | adj. n. nom. sg.                          |
+
+| śrīmat-mahā-ānanda-vijṛmbhitam                                                                      |
+| śrī-mat · mahā · ā-√nand-a · vi-√jṛmbh-ita                                                          |
+| śrī glory · -mat having · mahā great · ā-√nand (1) rejoice · vi- apart · √jṛmbh (1) open · -ita ppp |
+| unfolding of glorious great bliss                                                                   |
+| n. nom. sg.                                                                                         |
+
+⟦686⟧ *Translation:* that belongs to the Supreme Lord (pārameśvara): it is the unfolding (vijṛmbhita) of glorious great bliss (mahānanda). \\
+*Dyczkowski 2023:* that is (all) the venerable expansion of the Supreme Lord's great bliss (which both hides and reveals the truth). (7) \\
+*DharmaMitra:* that is the unfolding of the glorious Great Bliss of the Supreme Lord.
+
+*Sandhi:* tat pārameśvaram: no change · pārameśvaram śrīman° → pārameśvaraṃ (m before a consonant → ṃ) · śrīmat + mahā° → śrīman (t before a nasal → n) · mahā + ānanda → mahānanda (ā + ā → ā)
+
+*Forms:*
+- /tat/ — tad- demonstrative, n.; prathamā ekavacana; correlative of /yat/, subject
+- /pārameśvaram/ — pārameśvara- adj. (a-stem), taddhita derivative with vṛddhi of the first syllable from parameśvara- „the Supreme Lord“: „belonging to the Supreme Lord“; n. prathamā ekavacana; predicate of /tat/
+- /śrīmat-mahā-ānanda-vijṛmbhitam/ — vijṛmbhita- n. (a-stem), bhūte kṛdanta (ppp., kta) of vi-√jṛmbh (1, bhvādi, Ā: jṛmbhate) used as a noun „unfolding“; prathamā ekavacana; second predicate of /tat/
+
+*Compounds:* /pārameśvaram/ — from parameśvara, karmadhāraya: paramaś cāsāv īśvaraś ca „the lord who is supreme“ (a + ī → e) · /śrīmat-mahā-ānanda-vijṛmbhitam/ — ṣaṣṭhī tatpuruṣa: śrīmato mahānandasya vijṛmbhitam „the unfolding of glorious great bliss“; within it mahā-ānanda karmadhāraya (mahān ānandaḥ; mahat → mahā- in composition), śrīman-mahānanda karmadhāraya (śrīmān mahānandaḥ)
+
+*Structure:* /tat/ [subject, correlative] · /pārameśvaram/ [predicate] · /śrīmat-mahā-ānanda-vijṛmbhitam/ [second predicate] → main clause; copula (asti) understood
+
+*Concepts:* *vijṛmbhita* (vijṛmbhaṇa) — „yawning open, unfolding“: in the Trika the spontaneous self-expansion of consciousness (śakti); with mahānanda, the bliss of the Supreme Lord unfolding itself.
+
+* Sentence
+** Grammar
+Two clauses. The first (685) joins a concessive clause — atra mad-vāk aśaktā api, „though my speech is incapable here“ — to a relative clause, yat niyantraṇam ullaset, whose optative generalises („whatever control may shine forth“). The second (686) is the main clause: the correlative tat takes up yat … niyantraṇam and receives two nominal predicates, pārameśvaram and the compound śrīmat-mahā-ānanda-vijṛmbhitam; the copula is understood. The verse is the commentator's humility formula: any mastery in what follows is the Lord's, not his.
+
+** Translations compared
+*Translation:* Although my speech (vāc) is incapable (aśakta) here, whatever control (niyantraṇa) may shine forth (ullaset) — that belongs to the Supreme Lord (pārameśvara): it is the unfolding (vijṛmbhita) of glorious great bliss (mahānanda).
+
+*Dyczkowski 2023:* Although my speech is powerless here (in this task), whatever *restriction* may arise (on one's understanding of the teachings is not my fault, rather) that is (all) the venerable expansion of the Supreme Lord's great bliss (which both hides and reveals the truth). (7)
+
+*DharmaMitra:* In this matter, whatever *unfettered expression* may emerge, even though my own voice is powerless, that is the unfolding of the glorious Great Bliss of the Supreme Lord.
+
+All three read the concessive clause alike. They part over niyantraṇa: Dyczkowski takes it as a restriction on the reader's understanding (and adds that it is not the author's fault), DharmaMitra reverses it into „unfettered expression“; the translation here reads control or ordering of the words, which the Lord, not the commentator, brings about.
+
+* Working Translation
+
+* My Notes
+
+* Footnotes
