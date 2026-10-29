@@ -13,8 +13,11 @@
 ;; signs, independent vowels, anusvāra (ṃ), visarga (ḥ),
 ;; candrabindu (m̐), avagraha ('), daṇḍa ।/॥ (kept — script-neutral
 ;; punctuation the importer splits on), Devanagari digits.
-;; NOT covered (out of scope): nukta forms (क़ …), Vedic accents,
-;; IAST→Devanagari (the reverse direction is not built).
+;; NOT covered (out of scope): nukta forms (क़ …), Vedic accents.
+;;
+;; The reverse direction, IAST→Devanagari (§5.74, 29.10.2026: the
+;; sentence files show the Devanagari above the IAST — Carsten moves
+;; from Roman script to Uchen and Devanagari), uses the same tables.
 
 ;;; Code:
 
@@ -109,6 +112,74 @@ Idempotent; nil-safe."
   (when str
     (tibetan-sanskrit-script-devanagari-to-iast
      (ucs-normalize-NFC-string str))))
+
+;; ----------------------------------------------------------------------------
+;; IAST → Devanagari
+;; ----------------------------------------------------------------------------
+
+(defconst tibetan-sanskrit-script--iast-tokens
+  (sort (append
+         (mapcar (lambda (c) (list (cdr c) 'consonant (car c)))
+                 tibetan-sanskrit-script--consonants)
+         (mapcar (lambda (v)
+                   (list (cdr v) 'vowel (car v)
+                         (car (rassoc (cdr v) tibetan-sanskrit-script--vowel-signs))))
+                 tibetan-sanskrit-script--independent-vowels)
+         (mapcar (lambda (g) (list (cdr g) 'sign (car g)))
+                 tibetan-sanskrit-script--signs)
+         (list (list "ṁ" 'sign ?ं)
+               (list "//" 'danda ?॥) (list "/" 'danda ?।))
+         (mapcar (lambda (d) (list (number-to-string d) 'digit (+ ?० d)))
+                 (number-sequence 0 9)))
+        (lambda (a b) (> (length (car a)) (length (car b)))))
+  "IAST pieces, longest first: (IAST KIND DEVANAGARI [VOWEL-SIGN]) — the
+tables of the Devanagari→IAST direction turned round, plus ṁ (another
+IAST spelling of the anusvāra), the daṇḍas `/' `//' and the digits.")
+
+(defun tibetan-sanskrit-script-iast-to-devanagari (str)
+  "STR (IAST) in Devanagari.  A consonant waits for its vowel: a vowel
+becomes its sign (inherent a: nothing), another consonant makes a
+conjunct with the virāma, anything else (space, punctuation, the end)
+leaves the virāma too — word-final consonants.  The longest IAST piece
+is taken first (kh before k, ai before a, m̐ before m); `/' and `//'
+become । and ॥; other characters pass through.  Capitals count as
+small letters.  nil-safe."
+  (when str
+    (let* ((s (downcase (ucs-normalize-NFC-string str)))
+           (len (length s))
+           (i 0)
+           (out nil)
+           (pending nil))
+      (cl-flet ((close ()
+                  (when pending
+                    (push tibetan-sanskrit-script--virama out)
+                    (setq pending nil))))
+        (while (< i len)
+          (let ((tok (cl-find-if
+                      (lambda (e)
+                        (let ((k (car e)))
+                          (and (<= (+ i (length k)) len)
+                               (string= k (substring s i (+ i (length k)))))))
+                      tibetan-sanskrit-script--iast-tokens)))
+            (pcase (nth 1 tok)
+              ('consonant
+               (close)
+               (push (nth 2 tok) out)
+               (setq pending t))
+              ('vowel
+               (if pending
+                   (progn (when (nth 3 tok) (push (nth 3 tok) out))
+                          (setq pending nil))
+                 (push (nth 2 tok) out)))
+              ((or 'sign 'digit 'danda)
+               (close)
+               (push (nth 2 tok) out))
+              (_
+               (close)
+               (push (aref s i) out)))
+            (setq i (+ i (if tok (length (car tok)) 1)))))
+        (close))
+      (concat (nreverse out)))))
 
 (provide 'tibetan-sanskrit-script)
 

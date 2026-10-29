@@ -106,6 +106,46 @@ structure (pāda breaks) survives untouched."
   (should (equal "" (tibetan-sanskrit-script-devanagari-to-iast "")))
   (should (equal "" (tibetan-sanskrit-script-normalize ""))))
 
+;; ----------------------------------------------------------------------------
+;; IAST → Devanāgarī (§5.74, Carsten 29.10.: from Roman script to Uchen
+;; and Devanāgarī — the sentence file shows the Devanāgarī above the IAST)
+;; ----------------------------------------------------------------------------
+
+(ert-deftest tibetan-sanskrit-script-iast-to-devanagari-verse ()
+  "TĀ sentence 1007 (Jayaratha, introductory verse 7): conjuncts by
+virāma, final consonants with virāma, anusvāra, the daṇḍas / and // as
+। and ॥, the verse number in Devanāgarī digits."
+  (should (equal "अत्र मद्वागशक्तापि यन्नियन्त्रणमुल्लसेत् ।"
+                 (tibetan-sanskrit-script-iast-to-devanagari
+                  "atra madvāgaśaktāpi yanniyantraṇamullaset /")))
+  (should (equal "तत्पारमेश्वरं श्रीमन्महानन्दविजृम्भितम् ॥ ७"
+                 (tibetan-sanskrit-script-iast-to-devanagari
+                  "tatpārameśvaraṃ śrīmanmahānandavijṛmbhitam // 7"))))
+
+(ert-deftest tibetan-sanskrit-script-iast-to-devanagari-letters ()
+  "Aspirates and the two-letter vowels before their first letter
+\(kh, ai, au), initial vowels, ṛ, visarga, avagraha, candrabindu, ṁ as
+anusvāra, capitals; anything else passes through."
+  (dolist (c '(("saṃdigdhāḥ ke'pi" . "संदिग्धाः केऽपि")
+               ("aiśvaryam auṣadham" . "ऐश्वर्यम् औषधम्")
+               ("kṛṣṇaḥ ṛṣiḥ" . "कृष्णः ऋषिः")
+               ("khaḍga bhīṣma" . "खड्ग भीष्म")
+               ("haṁsa" . "हंस")
+               ("Śiva" . "शिव")
+               ("ūrdhvam īśvara" . "ऊर्ध्वम् ईश्वर")
+               ("a, b?" . "अ, ब्?")))
+    (should (equal (cdr c) (tibetan-sanskrit-script-iast-to-devanagari (car c)))))
+  (should-not (tibetan-sanskrit-script-iast-to-devanagari nil)))
+
+(ert-deftest tibetan-sanskrit-script-round-trip ()
+  "IAST → Devanāgarī → IAST gives the text back (the daṇḍas come back
+as ।/॥, which the importer keeps)."
+  (dolist (s '("atra madvāgaśaktāpi yanniyantraṇamullaset"
+               "vimalakalāśrayābhinavasṛṣṭimahā jananī"
+               "saṃdigdhāḥ ke'pi kiṃ brūyāṃ śrotāro yadanāgatāḥ"))
+    (should (equal s (tibetan-sanskrit-script-devanagari-to-iast
+                      (tibetan-sanskrit-script-iast-to-devanagari s))))))
+
 (provide 'tibetan-sanskrit-script-test)
 
 ;;; tibetan-sanskrit-script-test.el ends here

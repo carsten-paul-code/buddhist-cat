@@ -1,9 +1,9 @@
 #+TITLE: Function Reference — buddhist-cat
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-10-29T10:58:32
+#+DATE: 2026-10-29T16:27:07
 #+OPTIONS: toc:2 num:nil
 
-Source tree: ~/Users/cp/buddhist-cat~  ·  90 modules  ·  1976 forms
+Source tree: ~/Users/cp/buddhist-cat~  ·  90 modules  ·  1978 forms
 
 Regenerated automatically by:
 
@@ -38,7 +38,7 @@ python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/buddhist-c
   - [[#core/tibetan-org-structure.el][core/tibetan-org-structure.el]]  (37)
   - [[#core/tibetan-sanskrit-parallel-dharmamitra.el][core/tibetan-sanskrit-parallel-dharmamitra.el]]  (22)
   - [[#core/tibetan-sanskrit-parallel.el][core/tibetan-sanskrit-parallel.el]]  (24)
-  - [[#core/tibetan-sanskrit-script.el][core/tibetan-sanskrit-script.el]]  (7)
+  - [[#core/tibetan-sanskrit-script.el][core/tibetan-sanskrit-script.el]]  (9)
   - [[#core/tibetan-steinert.el][core/tibetan-steinert.el]]  (16)
   - [[#core/tibetan-text-classifier.el][core/tibetan-text-classifier.el]]  (9)
   - [[#core/tibetan-thesaurus.el][core/tibetan-thesaurus.el]]  (34)
@@ -5596,7 +5596,7 @@ keeps the toggle one-keystroke.
 ** ~tibetan-sanskrit-script-devanagari-to-iast~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 55
+:LINE: 58
 :SIGNATURE: (tibetan-sanskrit-script-devanagari-to-iast str)
 :END:
 
@@ -5614,7 +5614,7 @@ inherent a in place.
 ** ~tibetan-sanskrit-script-normalize~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 104
+:LINE: 107
 :SIGNATURE: (tibetan-sanskrit-script-normalize str)
 :END:
 
@@ -5623,10 +5623,25 @@ The importer's single entry point for mixed IAST/Devanagari input.
 Line structure survives untouched (pāda breaks are data).
 Idempotent; nil-safe.
 
+** ~tibetan-sanskrit-script-iast-to-devanagari~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 139
+:SIGNATURE: (tibetan-sanskrit-script-iast-to-devanagari str)
+:END:
+
+STR (IAST) in Devanagari.  A consonant waits for its vowel: a vowel
+becomes its sign (inherent a: nothing), another consonant makes a
+conjunct with the virāma, anything else (space, punctuation, the end)
+leaves the virāma too — word-final consonants.  The longest IAST piece
+is taken first (kh before k, ai before a, m̐ before m); `/' and `//'
+become । and ॥; other characters pass through.  Capitals count as
+small letters.  nil-safe.
+
 ** ~tibetan-sanskrit-script--consonants~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 24
+:LINE: 27
 :DEFAULT: '
 :END:
 
@@ -5635,7 +5650,7 @@ Idempotent; nil-safe.
 ** ~tibetan-sanskrit-script--independent-vowels~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 35
+:LINE: 38
 :DEFAULT: '
 :END:
 
@@ -5644,7 +5659,7 @@ Idempotent; nil-safe.
 ** ~tibetan-sanskrit-script--vowel-signs~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 42
+:LINE: 45
 :DEFAULT: '
 :END:
 
@@ -5653,7 +5668,7 @@ Idempotent; nil-safe.
 ** ~tibetan-sanskrit-script--signs~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 48
+:LINE: 51
 :DEFAULT: '
 :END:
 
@@ -5662,11 +5677,24 @@ Idempotent; nil-safe.
 ** ~tibetan-sanskrit-script--virama~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 52
+:LINE: 55
 :DEFAULT: ?्
 :END:
 
 The Devanagari virāma (vowel killer).
+
+** ~tibetan-sanskrit-script--iast-tokens~  /constant/
+:PROPERTIES:
+:KIND: defconst
+:LINE: 120
+:DEFAULT: (sort (append
+         (mapcar (lambda (c) (list (cdr c) 'consonant (car c)))
+                 tibetan-sanskrit-script--
+:END:
+
+IAST pieces, longest first: (IAST KIND DEVANAGARI [VOWEL-SIGN]) — the
+tables of the Devanagari→IAST direction turned round, plus ṁ (another
+IAST spelling of the anusvāra), the daṇḍas `/' `//' and the digits.
 
 
 * core/tibetan-steinert.el
