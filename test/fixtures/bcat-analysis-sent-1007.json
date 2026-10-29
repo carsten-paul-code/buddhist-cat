@@ -1,0 +1,174 @@
+{
+ "segments": [
+  {
+   "num": 685,
+   "words": [
+    {
+     "word": "atra",
+     "formation": "—",
+     "parts": "",
+     "gloss": "here",
+     "form": "ind."
+    },
+    {
+     "word": "mad-vāk",
+     "formation": "mad · vāc",
+     "parts": "my · speech",
+     "gloss": "my speech",
+     "form": "f. nom. sg."
+    },
+    {
+     "word": "aśaktā",
+     "formation": "a-√śak-ta",
+     "parts": "a- not · √śak (5) be able · -ta ppp",
+     "gloss": "incapable",
+     "form": "ppp. f. nom. sg."
+    },
+    {
+     "word": "api",
+     "formation": "—",
+     "parts": "",
+     "gloss": "although",
+     "form": "ind."
+    },
+    {
+     "word": "yat",
+     "formation": "—",
+     "parts": "",
+     "gloss": "whatever",
+     "form": "pron. n. nom. sg."
+    },
+    {
+     "word": "niyantraṇam",
+     "formation": "ni-√yantr-ana",
+     "parts": "ni- in · √yantr (10) restrain · -ana action",
+     "gloss": "control",
+     "form": "n. nom. sg."
+    },
+    {
+     "word": "ullaset",
+     "formation": "ud-√las",
+     "parts": "ud- up · √las (1) shine",
+     "gloss": "may shine forth",
+     "form": "opt. 3 sg. P"
+    }
+   ],
+   "translation": "Although my speech (vāc) is incapable (aśakta) here, whatever control (niyantraṇa) may shine forth (ullaset) —",
+   "references": [
+    {
+     "name": "Dyczkowski 2023",
+     "text": "Although my speech is powerless here (in this task), whatever *restriction* may arise (on one's understanding of the teachings is not my fault, rather)"
+    },
+    {
+     "name": "DharmaMitra",
+     "text": "In this matter, whatever *unfettered expression* may emerge, even though my own voice is powerless,"
+    }
+   ],
+   "shift": [
+    "Dyczkowski 2023: niyantraṇa as a restriction on the reader's understanding, not as control over the speech",
+    "DharmaMitra: niyantraṇa reversed — „unfettered expression“"
+   ],
+   "sandhi": "madvāg aśaktā: final -k voiced before a vowel → -g · aśaktā + api → aśaktāpi (ā + a → ā) · yat + niyantraṇam → yan niyantraṇam (t before a nasal → n) · niyantraṇam ullaset: m before a vowel stays · ud + laset → ullaset (d + l → ll)",
+   "forms": [
+    {
+     "word": "mad-vāk",
+     "analysis": "vāc- f. (consonant stem in -c; final c → k); prathamā vibhakti ekavacana (nom. sg.); subject"
+    },
+    {
+     "word": "aśaktā",
+     "analysis": "aśakta- adj. (a-stem, f. -ā); negated bhūte kṛdanta (ppp., kta) of √śak (5, svādi, P: śaknoti „he is able“); prathamā ekavacana f.; predicate of /mad-vāk/"
+    },
+    {
+     "word": "yat",
+     "analysis": "yad- relative pronoun, n.; prathamā ekavacana; with /niyantraṇam/"
+    },
+    {
+     "word": "niyantraṇam",
+     "analysis": "niyantraṇa- n. (a-stem), action noun in -ana (lyuṭ) of ni-√yantr (10, curādi: yantrayati); prathamā ekavacana; subject of /ullaset/"
+    },
+    {
+     "word": "ullaset",
+     "analysis": "ud-√las (1, bhvādi, P: lasati); vidhiliṅ (optative), parasmaipada, prathamapuruṣa ekavacana (3rd sg.); present stem lasa- + -īt → laset"
+    }
+   ],
+   "compounds": [
+    {
+     "word": "mad-vāk",
+     "analysis": "ṣaṣṭhī tatpuruṣa: mama vāk „my speech“ (mad- = asmad- in composition)"
+    }
+   ],
+   "structure": "atra [adverb] · /mad-vāk/ [subject] /aśaktā/ [predicate] /api/ [concessive] → concessive clause · /yat niyantraṇam/ [subject] /ullaset/ [V opt.] → relative clause, taken up by /tat/ in 686",
+   "note": "madvāgaśaktāpi hides the privative a-: mad-vāk aśaktā api „though my speech is incapable“ — not mat-vāk-śaktā „capable“; the a- disappears in ā + a → ā. The optative in a generalising relative clause: „whatever … may“.",
+   "concepts": "*niyantraṇa* — control, regulation; here the ordering of the words of the commentary, which Jayaratha does not claim as his own achievement."
+  },
+  {
+   "num": 686,
+   "words": [
+    {
+     "word": "tat",
+     "formation": "—",
+     "parts": "",
+     "gloss": "that",
+     "form": "pron. n. nom. sg."
+    },
+    {
+     "word": "pārameśvaram",
+     "formation": "parama · īśvara · -a",
+     "parts": "supreme · lord · vṛddhi + -a belonging to",
+     "gloss": "the Supreme Lord's",
+     "form": "adj. n. nom. sg."
+    },
+    {
+     "word": "śrīmat-mahā-ānanda-vijṛmbhitam",
+     "formation": "śrī-mat · mahā · ā-√nand-a · vi-√jṛmbh-ita",
+     "parts": "śrī glory · -mat having · mahā great · ā-√nand (1) rejoice · vi- apart · √jṛmbh (1) open · -ita ppp",
+     "gloss": "unfolding of glorious great bliss",
+     "form": "n. nom. sg."
+    }
+   ],
+   "translation": "that belongs to the Supreme Lord (pārameśvara): it is the unfolding (vijṛmbhita) of glorious great bliss (mahānanda).",
+   "references": [
+    {
+     "name": "Dyczkowski 2023",
+     "text": "that is (all) the venerable expansion of the Supreme Lord's great bliss (which both hides and reveals the truth). (7)"
+    },
+    {
+     "name": "DharmaMitra",
+     "text": "that is the unfolding of the glorious Great Bliss of the Supreme Lord."
+    }
+   ],
+   "shift": [],
+   "sandhi": "tat pārameśvaram: no change · pārameśvaram śrīman° → pārameśvaraṃ (m before a consonant → ṃ) · śrīmat + mahā° → śrīman (t before a nasal → n) · mahā + ānanda → mahānanda (ā + ā → ā)",
+   "forms": [
+    {
+     "word": "tat",
+     "analysis": "tad- demonstrative, n.; prathamā ekavacana; correlative of /yat/, subject"
+    },
+    {
+     "word": "pārameśvaram",
+     "analysis": "pārameśvara- adj. (a-stem), taddhita derivative with vṛddhi of the first syllable from parameśvara- „the Supreme Lord“: „belonging to the Supreme Lord“; n. prathamā ekavacana; predicate of /tat/"
+    },
+    {
+     "word": "śrīmat-mahā-ānanda-vijṛmbhitam",
+     "analysis": "vijṛmbhita- n. (a-stem), bhūte kṛdanta (ppp., kta) of vi-√jṛmbh (1, bhvādi, Ā: jṛmbhate) used as a noun „unfolding“; prathamā ekavacana; second predicate of /tat/"
+    }
+   ],
+   "compounds": [
+    {
+     "word": "pārameśvaram",
+     "analysis": "from parameśvara, karmadhāraya: paramaś cāsāv īśvaraś ca „the lord who is supreme“ (a + ī → e)"
+    },
+    {
+     "word": "śrīmat-mahā-ānanda-vijṛmbhitam",
+     "analysis": "ṣaṣṭhī tatpuruṣa: śrīmato mahānandasya vijṛmbhitam „the unfolding of glorious great bliss“; within it mahā-ānanda karmadhāraya (mahān ānandaḥ; mahat → mahā- in composition), śrīman-mahānanda karmadhāraya (śrīmān mahānandaḥ)"
+    }
+   ],
+   "structure": "/tat/ [subject, correlative] · /pārameśvaram/ [predicate] · /śrīmat-mahā-ānanda-vijṛmbhitam/ [second predicate] → main clause; copula (asti) understood",
+   "note": "",
+   "concepts": "*vijṛmbhita* (vijṛmbhaṇa) — „yawning open, unfolding“: in the Trika the spontaneous self-expansion of consciousness (śakti); with mahānanda, the bliss of the Supreme Lord unfolding itself."
+  }
+ ],
+ "grammar": "Two clauses. The first (685) joins a concessive clause — atra mad-vāk aśaktā api, „though my speech is incapable here“ — to a relative clause, yat niyantraṇam ullaset, whose optative generalises („whatever control may shine forth“). The second (686) is the main clause: the correlative tat takes up yat … niyantraṇam and receives two nominal predicates, pārameśvaram and the compound śrīmat-mahā-ānanda-vijṛmbhitam; the copula is understood. The verse is the commentator's humility formula: any mastery in what follows is the Lord's, not his.",
+ "translation": "Although my speech (vāc) is incapable (aśakta) here, whatever control (niyantraṇa) may shine forth (ullaset) — that belongs to the Supreme Lord (pārameśvara): it is the unfolding (vijṛmbhita) of glorious great bliss (mahānanda).",
+ "comparison": "All three read the concessive clause alike. They part over niyantraṇa: Dyczkowski takes it as a restriction on the reader's understanding (and adds that it is not the author's fault), DharmaMitra reverses it into „unfettered expression“; the translation here reads control or ordering of the words, which the Lord, not the commentator, brings about."
+}

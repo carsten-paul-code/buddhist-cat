@@ -21,6 +21,7 @@
 (require 'bcat-analysis)
 (require 'tibetan-gloss-table)
 (require 'bcat-template-sent-009)
+(require 'bcat-template-sent-1007)
 
 (defconst bcat-analysis-test--root
   (expand-file-name ".." (file-name-directory (or load-file-name buffer-file-name))))
@@ -66,6 +67,112 @@ sentence comparison."
                     (bcat-analysis-context (bcat-analysis-test--base)
                                            (bcat-analysis-parse (bcat-analysis-test--answer))
                                            bcat-analysis-test--refs))))))
+
+(defun bcat-analysis-test--answer-1007 ()
+  "Claude's answer for TĀ sentence 1007 in the Sanskrit contract (drawn
+from the reviewed sample, test/fixtures/bcat-analysis-sent-1007.json)."
+  (with-temp-buffer
+    (insert-file-contents
+     (expand-file-name "test/fixtures/bcat-analysis-sent-1007.json" bcat-analysis-test--root))
+    (buffer-string)))
+
+(defun bcat-analysis-test--base-1007 ()
+  "The rump fields of sentence 1007: header, recitation, segments with
+num and samhita, user slots — what C-c u A knows without AI."
+  (let ((fix bcat-template-test--sent-1007))
+    (cons (cons 'segments (mapcar (lambda (s) (list (assq 'num s) (assq 'samhita s)))
+                                  (alist-get 'segments fix)))
+          (cl-remove-if (lambda (c) (memq (car c) '(segments grammar comparison glosses translation)))
+                        fix))))
+
+(defconst bcat-analysis-test--refs-1007
+  '(("Dyczkowski 2023" . "Although my speech is powerless here (in this task), whatever restriction may arise (on one's understanding of the teachings is not my fault, rather) that is (all) the venerable expansion of the Supreme Lord's great bliss (which both hides and reveals the truth). (7)")
+    ("DharmaMitra" . "In this matter, whatever unfettered expression may emerge, even though my own voice is powerless, that is the unfolding of the glorious Great Bliss of the Supreme Lord."))
+  "The reference translations of sentence 1007 as sent with the request.")
+
+(ert-deftest bcat-analysis-sanskrit-golden-1007 ()
+  "Claude's answer for TĀ 1007 (Sanskrit contract) → template fields →
+the Sanskrit template = the reviewed sample, character for character:
+padapāṭha with vocabulary under * Text, the tables split by width,
+Sandhi, Forms and Compounds per segment, a „→“ line per translator."
+  (let ((bcat-template-directory
+         (expand-file-name "Templates/analysis" bcat-analysis-test--root))
+        (expected (with-temp-buffer
+                    (insert-file-contents
+                     (expand-file-name "Templates/analysis/samples/Sanskrit.org"
+                                       bcat-analysis-test--root))
+                    (buffer-string))))
+    (should (equal expected
+                   (bcat-template-render-named
+                    "sanskrit"
+                    (bcat-analysis-sanskrit-context (bcat-analysis-test--base-1007)
+                                                    (bcat-analysis-parse (bcat-analysis-test--answer-1007))
+                                                    bcat-analysis-test--refs-1007))))))
+
+(ert-deftest bcat-analysis-sanskrit-prompts ()
+  "Sanskrit system prompt: the JSON contract (padapāṭha words with
+formation, parts, gloss, form; sandhi, forms, compounds), the
+Devavāṇīpraveśikā terminology (prathama puruṣa = 3rd person), the
+escaping rule, the target language; user prompt: context, every
+segment as transmitted, the references."
+  (let ((sys (bcat-analysis-sanskrit-system-prompt "en"))
+        (user (bcat-analysis-sanskrit-user-prompt
+               1007 nil
+               '((685 "atra madvāgaśaktāpi yanniyantraṇamullaset /")
+                 (686 "tatpārameśvaraṃ śrīmanmahānandavijṛmbhitam // 7"))
+               '(("Dyczkowski 2023" . "Although my speech"))
+               '("Abhinavagupta, Tantrāloka"))))
+    (dolist (key '("\"words\"" "\"formation\"" "\"parts\"" "\"gloss\"" "\"form\""
+                   "\"sandhi\"" "\"forms\"" "\"compounds\"" "\"shift\"" "\"structure\""
+                   "\"grammar\"" "\"comparison\""))
+      (should (string-match-p (regexp-quote key) sys)))
+    (should (string-match-p "Devavāṇīpraveśikā" sys))
+    (should (string-match-p "prathama puruṣa is the 3rd person" sys))
+    (should (string-match-p "madvāgaśaktāpi = mad-vāk aśaktā api" sys))
+    (should (string-match-p "never a backslash before an apostrophe" sys))
+    (should (string-match-p "not its notes" sys))
+    (should-not (string-match-p "in full" sys))
+    (should (string-match-p "in English" sys))
+    (should (string-match-p "in German" (bcat-analysis-sanskrit-system-prompt "de")))
+    (should (string-match-p "\\`Abhinavagupta, Tantrāloka" user))
+    (should (string-match-p (regexp-quote "[685] atra madvāgaśaktāpi yanniyantraṇamullaset /\n[686] tatpārameśvaraṃ") user))
+    (should (string-match-p "=== Dyczkowski 2023 ===\nAlthough my speech" user))))
+
+(ert-deftest bcat-analysis-sanskrit-tables ()
+  "The word table of a Sanskrit segment (word / formation / parts /
+gloss / form) is split into separate tables, none wider than
+`bcat-analysis-sanskrit-table-width' — a shared column grid made the
+long compound widen every column (29.10.); nothing is cut."
+  (let* ((bcat-analysis-sanskrit-table-width 40)
+         (words '(((word . "atra") (formation . "—") (parts . "") (gloss . "here") (form . "ind."))
+                  ((word . "ullaset") (formation . "ud-√las") (parts . "ud- up · √las (1) shine")
+                   (gloss . "may shine forth") (form . "opt. 3 sg. P"))
+                  ((word . "api") (formation . "—") (parts . "") (gloss . "although") (form . "ind."))))
+         (out (bcat-analysis-sanskrit-tables words))
+         (tables (split-string out "\n\n")))
+    (should (= 2 (length tables)))
+    (should (string-prefix-p "| atra | ullaset" (nth 0 tables)))
+    (should (string-prefix-p "| api" (nth 1 tables)))
+    (should (string-match-p "ud- up · √las (1) shine" out))
+    (dolist (tb tables)
+      (dolist (row (split-string tb "\n"))
+        (should (<= (string-width row) 40))))
+    (should (equal "" (bcat-analysis-sanskrit-tables nil)))))
+
+(ert-deftest bcat-analysis-padapatha-line ()
+  "The padapāṭha line under * Text: each word with its gloss in
+brackets, the daṇḍas of the transmitted line at the end (the verse
+number stays with the transmitted line)."
+  (should (equal "atra [here] mad-vāk [my speech] api /"
+                 (bcat-analysis-padapatha-line
+                  "atra madvāgapi /"
+                  '(((word . "atra") (gloss . "here")) ((word . "mad-vāk") (gloss . "my speech"))
+                    ((word . "api") (gloss . ""))))))
+  (should (equal "tat [that] //"
+                 (bcat-analysis-padapatha-line "tat // 7" '(((word . "tat") (gloss . "that"))))))
+  (should (equal "iha [here]"
+                 (bcat-analysis-padapatha-line "iha" '(((word . "iha") (gloss . "here"))))))
+  (should-not (bcat-analysis-padapatha-line "tat // 7" nil)))
 
 (ert-deftest bcat-analysis-parse-tolerant ()
   "The JSON object is found inside a code fence or prose; anything

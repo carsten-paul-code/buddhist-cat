@@ -1,9 +1,9 @@
 #+TITLE: Function Reference — buddhist-cat
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-10-29T10:49:34
+#+DATE: 2026-10-29T10:53:47
 #+OPTIONS: toc:2 num:nil
 
-Source tree: ~/Users/cp/buddhist-cat~  ·  90 modules  ·  1965 forms
+Source tree: ~/Users/cp/buddhist-cat~  ·  90 modules  ·  1973 forms
 
 Regenerated automatically by:
 
@@ -62,7 +62,7 @@ python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/buddhist-c
   - [[#doc-prep/tibetan-segment-migrate.el][doc-prep/tibetan-segment-migrate.el]]  (12)
   - [[#doc-prep/tibetan-sentence-structure.el][doc-prep/tibetan-sentence-structure.el]]  (25)
   - [[#doc-prep/tibetan-wylie-ingest.el][doc-prep/tibetan-wylie-ingest.el]]  (26)
-  - [[#persist/bcat-analysis.el][persist/bcat-analysis.el]]  (26)
+  - [[#persist/bcat-analysis.el][persist/bcat-analysis.el]]  (34)
   - [[#persist/bcat-export.el][persist/bcat-export.el]]  (19)
   - [[#persist/bcat-sentence.el][persist/bcat-sentence.el]]  (45)
   - [[#persist/bcat-template.el][persist/bcat-template.el]]  (17)
@@ -12631,10 +12631,35 @@ User prompt of the alignment request: SEGS ((NUM TIBETAN WYLIE
 TRANSLATION) …) with the translation already in the file, REFS the new
 reference translations ((NAME . TEXT) …).
 
+** ~bcat-analysis-sanskrit-system-prompt~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 112
+:SIGNATURE: (bcat-analysis-sanskrit-system-prompt target)
+:END:
+
+The system prompt of the Sanskrit sentence analysis (§5.74, Carsten
+29.10.: his Sanskrit is rudimentary, the class has Sanskrit
+professionals and goes deep into the grammar — roots, gaṇa, stems;
+terminology of the Devavāṇīpraveśikā) for the target language code
+TARGET — constant per document, so the prompt cache stays warm.
+
+** ~bcat-analysis-sanskrit-user-prompt~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 146
+:SIGNATURE: (bcat-analysis-sanskrit-user-prompt sent-num verse segs refs &optional context)
+:END:
+
+The user prompt for the Sanskrit sentence SENT-NUM (VERSE its :VERSE:
+or nil): SEGS ((NUM TEXT) …) the segments as transmitted, REFS ((NAME .
+TEXT) …) the reference translations, CONTEXT the document's
+#+TIBETAN_CLAUDE_CONTEXT lines.
+
 ** ~bcat-analysis--json-problem~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 123
+:LINE: 173
 :SIGNATURE: (bcat-analysis--json-problem err start)
 :END:
 
@@ -12644,7 +12669,7 @@ start of the answer (the object began at START).
 ** ~bcat-analysis--repair-json~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 131
+:LINE: 181
 :SIGNATURE: (bcat-analysis--repair-json text)
 :END:
 
@@ -12660,7 +12685,7 @@ comes back unchanged.
 ** ~bcat-analysis--decode~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 173
+:LINE: 223
 :SIGNATURE: (bcat-analysis--decode json)
 :END:
 
@@ -12669,7 +12694,7 @@ JSON (a string) as an alist with symbol keys and lists for arrays.
 ** ~bcat-analysis-read~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 178
+:LINE: 228
 :SIGNATURE: (bcat-analysis-read response)
 :END:
 
@@ -12681,7 +12706,7 @@ the object, and mends what `bcat-analysis--repair-json' mends.
 ** ~bcat-analysis-parse~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 202
+:LINE: 252
 :SIGNATURE: (bcat-analysis-parse response)
 :END:
 
@@ -12691,7 +12716,7 @@ is none (see `bcat-analysis-read').
 ** ~bcat-analysis-keep-response~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 207
+:LINE: 257
 :SIGNATURE: (bcat-analysis-keep-response file response)
 :END:
 
@@ -12701,7 +12726,7 @@ read, under `bcat-analysis-response-directory'; return its path.
 ** ~bcat-analysis--particle-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 227
+:LINE: 277
 :SIGNATURE: (bcat-analysis--particle-p word)
 :END:
 
@@ -12713,7 +12738,7 @@ member of compound“ — several syllables, so a word all the same.
 ** ~bcat-analysis--field~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 237
+:LINE: 287
 :SIGNATURE: (bcat-analysis--field alist key)
 :END:
 
@@ -12722,7 +12747,7 @@ String value of KEY in ALIST, trimmed; "" when absent.
 ** ~bcat-analysis-gloss-table~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 242
+:LINE: 292
 :SIGNATURE: (bcat-analysis-gloss-table words)
 :END:
 
@@ -12733,7 +12758,7 @@ for no words.
 ** ~bcat-analysis-glossed-line~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 263
+:LINE: 313
 :SIGNATURE: (bcat-analysis-glossed-line wylie words)
 :END:
 
@@ -12748,7 +12773,7 @@ WORDS do not cover its syllables exactly: the text is never altered.
 ** ~bcat-analysis-glosses-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 292
+:LINE: 342
 :SIGNATURE: (bcat-analysis-glosses-p segments)
 :END:
 
@@ -12758,7 +12783,7 @@ the template then shows the glossed verse below the plain one.
 ** ~bcat-analysis--reference-lines~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 301
+:LINE: 351
 :SIGNATURE: (bcat-analysis--reference-lines refs)
 :END:
 
@@ -12767,7 +12792,7 @@ the template then shows the glossed verse below the plain one.
 ** ~bcat-analysis-strip-marks~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 308
+:LINE: 358
 :SIGNATURE: (bcat-analysis-strip-marks text)
 :END:
 
@@ -12776,7 +12801,7 @@ TEXT without org bold marks (the meaning-shift marks of a fetch).
 ** ~bcat-analysis--loose-regexp~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 312
+:LINE: 362
 :SIGNATURE: (bcat-analysis--loose-regexp text)
 :END:
 
@@ -12785,7 +12810,7 @@ A regexp for TEXT that lets any run of whitespace stand for its spaces.
 ** ~bcat-analysis--reference-parts~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 316
+:LINE: 366
 :SIGNATURE: (bcat-analysis--reference-parts segments name)
 :END:
 
@@ -12795,7 +12820,7 @@ order — each with its passages in org bold.
 ** ~bcat-analysis-mark-reference~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 330
+:LINE: 380
 :SIGNATURE: (bcat-analysis-mark-reference text parts)
 :END:
 
@@ -12808,10 +12833,20 @@ Whitespace may differ; a part or passage not found changes nothing.
 The text itself is never taken from the answer (29.10.: Claude's copy
 of Lindtner's verse 9 dropped his note).
 
+** ~bcat-analysis-shift-lines~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 415
+:SIGNATURE: (bcat-analysis-shift-lines seg)
+:END:
+
+The „→“ lines of SEG (Claude's segment object): its shift, one line,
+or — the Sanskrit contract — a list with one line per translator.
+
 ** ~bcat-analysis-translations-block~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 365
+:LINE: 423
 :SIGNATURE: (bcat-analysis-translations-block num seg)
 :END:
 
@@ -12824,7 +12859,7 @@ line breaks between.
 ** ~bcat-analysis-comparison~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 379
+:LINE: 436
 :SIGNATURE: (bcat-analysis-comparison parsed &optional refs)
 :END:
 
@@ -12835,7 +12870,7 @@ with the marks of its segment parts, the comparison paragraph.
 ** ~bcat-analysis-context~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 400
+:LINE: 457
 :SIGNATURE: (bcat-analysis-context base parsed &optional refs)
 :END:
 
@@ -12845,10 +12880,55 @@ PARSED (Claude's answer) and REFS, the reference translations sent
 with the request ((NAME . TEXT) …).  Segments are matched by number; a
 segment Claude skipped keeps its rump fields.
 
+** ~bcat-analysis-sanskrit-tables~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 509
+:SIGNATURE: (bcat-analysis-sanskrit-tables words)
+:END:
+
+The tables of a Sanskrit segment's WORDS (Claude's padapāṭha: word,
+formation, parts, gloss, form — five rows), split into separate tables
+of at most `bcat-analysis-sanskrit-table-width'; nothing is cut.  ""
+for no words.
+
+** ~bcat-analysis-padapatha-line~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 533
+:SIGNATURE: (bcat-analysis-padapatha-line samhita words)
+:END:
+
+The padapāṭha line of a segment for * Text: each of WORDS with its
+gloss in brackets, then the daṇḍas closing the transmitted line SAMHITA
+(its verse number stays there).  nil without words.
+
+** ~bcat-analysis--word-entries~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 547
+:SIGNATURE: (bcat-analysis--word-entries entries)
+:END:
+
+ENTRIES (alists with word and analysis) as "/word/ — analysis".
+
+** ~bcat-analysis-sanskrit-context~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 554
+:SIGNATURE: (bcat-analysis-sanskrit-context base parsed &optional refs)
+:END:
+
+Template fields of a fetched Sanskrit sentence: BASE (the rump —
+header, recitation, segments with num and samhita, user slots)
+completed from PARSED (Claude's answer, Sanskrit contract) and REFS,
+the reference translations sent ((NAME . TEXT) …).  A segment Claude
+skipped keeps its rump fields.
+
 ** ~bcat-analysis-response-directory~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 116
+:LINE: 166
 :TYPE: 'directory
 :GROUP: buddhist-cat
 :DEFAULT: (expand-file-name "bcat-responses" temporary-file-directory)
@@ -12857,10 +12937,23 @@ segment Claude skipped keeps its rump fields.
 Where an answer C-c u G could not read is kept, one file per answer
 (sentence file name + time) — outside the corpus, for diagnosis.
 
+** ~bcat-analysis-sanskrit-table-width~  /customize variable/
+:PROPERTIES:
+:KIND: defcustom
+:LINE: 502
+:TYPE: 'integer
+:GROUP: buddhist-cat
+:DEFAULT: 95
+:END:
+
+Widest org table (characters) for the words of a Sanskrit segment;
+wider segments are split into several tables (not into bands of one
+table: a shared column grid let a long compound widen every column).
+
 ** ~bcat-analysis--particle-labels~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 222
+:LINE: 272
 :DEFAULT: '
 :END:
 

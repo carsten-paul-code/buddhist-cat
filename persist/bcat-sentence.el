@@ -393,9 +393,9 @@ Everything else stays as it is."
                  (arrows (cl-remove-if-not (lambda (l) (string-prefix-p "→ " l)) lines))
                  (others (cl-remove-if (lambda (l) (string-prefix-p "→ " l)) lines))
                  (new-refs (bcat-analysis--reference-lines (alist-get 'references seg)))
-                 (shift (bcat-analysis--field seg 'shift))
+
                  (all (append others new-refs arrows
-                              (unless (string-empty-p shift) (list (concat "→ " shift))))))
+                              (bcat-analysis-shift-lines seg))))
             (delete-region start end)
             (goto-char start)
             (insert (mapconcat #'identity all " \\\\\n"))))))

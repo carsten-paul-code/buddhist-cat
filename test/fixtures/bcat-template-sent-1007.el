@@ -26,17 +26,17 @@ tatpārameśvaraṃ śrīman|mahānandavijṛmbhitam // 7")
      ((num . "685")
       (samhita . "atra madvāgaśaktāpi yanniyantraṇamullaset /")
       (glossed . "atra [here] mad-vāk [my speech] aśaktā [incapable] api [although] yat [whatever] niyantraṇam [control] ullaset [may shine forth] /")
-      (gloss-table . "| atra | mad-vāk     | aśaktā                              | api      |
-| —    | mad · vāc   | a-√śak-ta                           | —        |
-|      | my · speech | a- not · √śak (5) be able · -ta ppp |          |
-| here | my speech   | incapable                           | although |
-| ind. | f. nom. sg. | ppp. f. nom. sg.                    | ind.     |
+      (gloss-table . "| atra | mad-vāk     | aśaktā                              | api      | yat               |
+| —    | mad · vāc   | a-√śak-ta                           | —        | —                 |
+|      | my · speech | a- not · √śak (5) be able · -ta ppp |          |                   |
+| here | my speech   | incapable                           | although | whatever          |
+| ind. | f. nom. sg. | ppp. f. nom. sg.                    | ind.     | pron. n. nom. sg. |
 
-| yat               | niyantraṇam                                 | ullaset                 |
-| —                 | ni-√yantr-ana                               | ud-√las                 |
-|                   | ni- in · √yantr (10) restrain · -ana action | ud- up · √las (1) shine |
-| whatever          | control                                     | may shine forth         |
-| pron. n. nom. sg. | n. nom. sg.                                 | opt. 3 sg. P            |")
+| niyantraṇam                                 | ullaset                 |
+| ni-√yantr-ana                               | ud-√las                 |
+| ni- in · √yantr (10) restrain · -ana action | ud- up · √las (1) shine |
+| control                                     | may shine forth         |
+| n. nom. sg.                                 | opt. 3 sg. P            |")
       (translations . "⟦685⟧ *Translation:* Although my speech (vāc) is incapable (aśakta) here, whatever control (niyantraṇa) may shine forth (ullaset) — \\\\
 *Dyczkowski 2023:* Although my speech is powerless here (in this task), whatever *restriction* may arise (on one's understanding of the teachings is not my fault, rather) \\\\
 *DharmaMitra:* In this matter, whatever *unfettered expression* may emerge, even though my own voice is powerless, \\\\

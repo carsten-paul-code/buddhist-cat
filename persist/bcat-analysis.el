@@ -109,6 +109,56 @@ reference translations ((NAME . TEXT) …)."
    (mapconcat (lambda (r) (format "=== %s ===\n%s" (car r) (string-trim (cdr r)))) refs "\n")
    "\n\nReturn the JSON object now."))
 
+(defun bcat-analysis-sanskrit-system-prompt (target)
+  "The system prompt of the Sanskrit sentence analysis (§5.74, Carsten
+29.10.: his Sanskrit is rudimentary, the class has Sanskrit
+professionals and goes deep into the grammar — roots, gaṇa, stems;
+terminology of the Devavāṇīpraveśikā) for the target language code
+TARGET — constant per document, so the prompt cache stays warm."
+  (let ((lang (bcat-analysis--language target)))
+    (format "You are a Sanskritist preparing one sentence or verse of a Sanskrit text for a university reading class of experienced Sanskritists; one participant reads Sanskrit only haltingly, so every form is spelled out. Work segment by segment, then on the whole sentence. Use the grammatical terminology of Goldman & Sutherland Goldman, Devavāṇīpraveśikā: Sanskrit terms, with the English equivalent where it helps. Answer with ONE JSON object and nothing else (no prose, no code fence):
+
+{\"segments\": [{\"num\": <segment number>, \"words\": [{\"word\": \"…\", \"formation\": \"…\", \"parts\": \"…\", \"gloss\": \"…\", \"form\": \"…\"}], \"translation\": \"…\", \"references\": [{\"name\": \"…\", \"text\": \"…\"}], \"shift\": [\"…\"], \"sandhi\": \"…\", \"forms\": [{\"word\": \"…\", \"analysis\": \"…\"}], \"compounds\": [{\"word\": \"…\", \"analysis\": \"…\"}], \"structure\": \"…\", \"note\": \"…\", \"concepts\": \"…\"}], \"grammar\": \"…\", \"translation\": \"…\", \"comparison\": \"…\"}
+
+Rules:
+- segments: one entry per given segment, same numbers, same order.
+- words: the segment's padapāṭha — every word with all sandhi undone, in pausa form, in order, together giving the whole segment; the members of a compound joined by hyphens (\"mad-vāk\", \"śrīmat-mahā-ānanda-vijṛmbhitam\"). Check the resolution: a privative a- or an initial vowel can vanish in sandhi (madvāgaśaktāpi = mad-vāk aśaktā api).
+- formation: how the word is built — prefixes, √root, suffix: \"a-√śak-ta\", \"ni-√yantr-ana\", \"ud-√las\"; for a compound its members separated by \" · \", each with its formation (\"śrī-mat · mahā · ā-√nand-a · vi-√jṛmbh-ita\"); \"—\" for indeclinables and pronouns.
+- parts: the meaning of each part of the formation, in the same order, separated by \" · \", a root with its gaṇa number: \"a- not · √śak (5) be able · -ta ppp\"; \"\" when formation is \"—\".
+- gloss: the meaning in THIS context, short.
+- form: a compact label — \"f. nom. sg.\", \"ppp. f. nom. sg.\", \"opt. 3 sg. P\", \"pron. n. nom. sg.\", \"adj. n. nom. sg.\", \"ind.\".
+- translation (segment): this segment's part of your translation; the parts read in order form the sentence translation. Give key terms with the Sanskrit in parentheses, e.g. \"incapable (aśakta)\".
+- references (segment): for every reference translation given, the part that corresponds to this segment, quoted verbatim (keep its brackets; not its notes). Mark with org bold *…* ONLY passages that shift the meaning against the Sanskrit or against your reading; stylistic variation is not marked.
+- shift: one line per translator with marked passages, beginning with the translator's name: \"Dyczkowski 2023: niyantraṇa as a restriction on the reader's understanding\"; [] when nothing is marked.
+- sandhi: every junction of the segment resolved, separated by \" · \": \"madvāg aśaktā: final -k voiced before a vowel → -g · aśaktā + api → aśaktāpi (ā + a → ā)\"; internal sandhi of a prefix where it changes the form (\"ud + laset → ullaset (d + l → ll)\").
+- forms: one entry per declined or conjugated word (none for indeclinables), word as in words. Nominals: stem with gender and stem class, vibhakti and vacana with the English (\"prathamā vibhakti ekavacana (nom. sg.)\"), function. Verbs: √root with gaṇa number, gaṇa name, pada and the 3rd sg. present (\"√las (1, bhvādi, P: lasati)\"), lakāra with the English, pada, puruṣa and vacana with the English (\"prathamapuruṣa ekavacana (3rd sg.)\" — prathama puruṣa is the 3rd person), the present stem. Participles and other kṛdanta: their name and suffix (\"bhūte kṛdanta (ppp., kta)\", \"tvānta/lyabanta (gerund)\", \"tumanta (infinitive)\"). Taddhita derivatives: base and suffix, with vṛddhi or guṇa where it occurs.
+- compounds: one entry per compound — the samāsa type and the vigraha with its meaning: \"ṣaṣṭhī tatpuruṣa: mama vāk „my speech“\"; for longer compounds the inner structure; [] when there is none.
+- structure: the segment's syntax in one line, org markup — Sanskrit words /italic/, functions in brackets: \"/yat niyantraṇam/ [subject] /ullaset/ [V opt.] → relative clause, taken up by /tat/ in 686\".
+- note: only for a grammatical peculiarity or a real ambiguity, one or two sentences; otherwise \"\".
+- concepts: technical concepts (Buddhist, Śaiva, philosophical) occurring in THIS segment — the term in *bold*, a short encyclopedic note of two or three sentences; \"\" when there is none.
+- grammar: an overview of the whole sentence — the clauses and how they are linked, the verbs, subjects, elisions (an understood copula).
+- translation (sentence): your translation of the whole sentence (the segment parts joined).
+- comparison: one to three sentences on the meaning-shifting differences between the translations including yours; \"\" when there are none.
+- JSON escaping: only \\\" and \\\\ — never a backslash before an apostrophe.
+- Write glosses, notes and explanations in %s. Never mention yourself."
+            lang)))
+
+(defun bcat-analysis-sanskrit-user-prompt (sent-num verse segs refs &optional context)
+  "The user prompt for the Sanskrit sentence SENT-NUM (VERSE its :VERSE:
+or nil): SEGS ((NUM TEXT) …) the segments as transmitted, REFS ((NAME .
+TEXT) …) the reference translations, CONTEXT the document's
+#+TIBETAN_CLAUDE_CONTEXT lines."
+  (concat
+   (if context (concat (mapconcat #'identity context "\n") "\n\n") "")
+   (format "Sentence %d%s — segments:\n" sent-num (if verse (format " (%s)" verse) ""))
+   (mapconcat (lambda (s) (format "[%d] %s" (nth 0 s) (string-trim (nth 1 s)))) segs "\n")
+   "\n\nReference translations:\n"
+   (if refs
+       (mapconcat (lambda (r) (format "=== %s ===\n%s" (car r) (string-trim (cdr r))))
+                  refs "\n")
+     "none")
+   "\n\nReturn the JSON object now."))
+
 ;; ----------------------------------------------------------------------------
 ;; Parsing the answer
 ;; ----------------------------------------------------------------------------
@@ -362,6 +412,14 @@ of Lindtner's verse 9 dropped his note)."
                          (substring text (car sp) (cdr sp)) "*"
                          (substring text (cdr sp)))))))
 
+(defun bcat-analysis-shift-lines (seg)
+  "The „→“ lines of SEG (Claude's segment object): its shift, one line,
+or — the Sanskrit contract — a list with one line per translator."
+  (let ((sh (alist-get 'shift seg)))
+    (mapcar (lambda (l) (concat "→ " (string-trim l)))
+            (cl-remove-if (lambda (l) (or (not (stringp l)) (string-blank-p l)))
+                          (if (listp sh) sh (list sh))))))
+
 (defun bcat-analysis-translations-block (num seg)
   "The left-aligned translation block of segment NUM from SEG (Claude's
 segment object): ⟦NUM⟧ own translation (labelled like the sentence's —
@@ -372,8 +430,7 @@ line breaks between."
                 (let ((tr (bcat-analysis--field seg 'translation)))
                   (unless (string-empty-p tr) (list (format "⟦%d⟧ *Translation:* %s" num tr))))
                 (bcat-analysis--reference-lines (alist-get 'references seg))
-                (let ((sh (bcat-analysis--field seg 'shift)))
-                  (unless (string-empty-p sh) (list (concat "→ " sh)))))))
+                (bcat-analysis-shift-lines seg))))
     (mapconcat #'identity lines " \\\\\n")))
 
 (defun bcat-analysis-comparison (parsed &optional refs)
@@ -433,6 +490,104 @@ segment Claude skipped keeps its rump fields."
     (append
      `((segments . ,segments)
        (glosses . ,(bcat-analysis-glosses-p segments))
+       (translation . ,(bcat-analysis--field parsed 'translation))
+       (grammar . ,(bcat-analysis--field parsed 'grammar))
+       (comparison . ,(bcat-analysis-comparison parsed refs)))
+     base)))
+
+;; ----------------------------------------------------------------------------
+;; Sanskrit (§5.74, Carsten 29.10.)
+;; ----------------------------------------------------------------------------
+
+(defcustom bcat-analysis-sanskrit-table-width 95
+  "Widest org table (characters) for the words of a Sanskrit segment;
+wider segments are split into several tables (not into bands of one
+table: a shared column grid let a long compound widen every column)."
+  :type 'integer
+  :group 'buddhist-cat)
+
+(defun bcat-analysis-sanskrit-tables (words)
+  "The tables of a Sanskrit segment's WORDS (Claude's padapāṭha: word,
+formation, parts, gloss, form — five rows), split into separate tables
+of at most `bcat-analysis-sanskrit-table-width'; nothing is cut.  \"\"
+for no words."
+  (let* ((cols (mapcar (lambda (w)
+                         (mapcar (lambda (k) (tibetan-gloss-table--cell (bcat-analysis--field w k)))
+                                 '(word formation parts gloss form)))
+                       words))
+         (width (lambda (col) (+ 3 (apply #'max (mapcar #'string-width col)))))
+         (chunks '()) (chunk '()) (used 1))
+    (dolist (col cols)
+      (let ((w (funcall width col)))
+        (when (and chunk (> (+ used w) bcat-analysis-sanskrit-table-width))
+          (push (nreverse chunk) chunks)
+          (setq chunk nil used 1))
+        (push col chunk)
+        (setq used (+ used w))))
+    (when chunk (push (nreverse chunk) chunks))
+    (mapconcat (lambda (ch)
+                 (tibetan-gloss-table--format-rows
+                  (cl-loop for r below 5 collect (mapcar (lambda (col) (nth r col)) ch))))
+               (nreverse chunks) "\n\n")))
+
+(defun bcat-analysis-padapatha-line (samhita words)
+  "The padapāṭha line of a segment for * Text: each of WORDS with its
+gloss in brackets, then the daṇḍas closing the transmitted line SAMHITA
+\(its verse number stays there).  nil without words."
+  (when words
+    (let ((dandas (and (string-match "\\(/+\\(?:[ \t]*/+\\)*\\)[ \t]*[0-9]*[a-z]*[ \t]*\\'" samhita)
+                       (match-string 1 samhita))))
+      (concat (mapconcat (lambda (w)
+                           (let ((wd (bcat-analysis--field w 'word))
+                                 (gl (bcat-analysis--field w 'gloss)))
+                             (if (string-empty-p gl) wd (format "%s [%s]" wd gl))))
+                         words " ")
+              (if dandas (concat " " dandas) "")))))
+
+(defun bcat-analysis--word-entries (entries)
+  "ENTRIES (alists with word and analysis) as \"/word/ — analysis\"."
+  (mapcar (lambda (e) (format "/%s/ — %s" (bcat-analysis--field e 'word)
+                              (bcat-analysis--field e 'analysis)))
+          (cl-remove-if (lambda (e) (string-empty-p (bcat-analysis--field e 'analysis)))
+                        entries)))
+
+(defun bcat-analysis-sanskrit-context (base parsed &optional refs)
+  "Template fields of a fetched Sanskrit sentence: BASE (the rump —
+header, recitation, segments with num and samhita, user slots)
+completed from PARSED (Claude's answer, Sanskrit contract) and REFS,
+the reference translations sent ((NAME . TEXT) …).  A segment Claude
+skipped keeps its rump fields."
+  (let* ((by-num (mapcar (lambda (s) (cons (alist-get 'num s) s))
+                         (alist-get 'segments parsed)))
+         (segments
+          (mapcar
+           (lambda (seg)
+             (let* ((num (alist-get 'num seg))
+                    (n (if (stringp num) (string-to-number num) num))
+                    (c (cdr (assoc n by-num)))
+                    (words (alist-get 'words c)))
+               (if (null c)
+                   seg
+                 (append
+                  `((glossed . ,(bcat-analysis-padapatha-line
+                                 (or (alist-get 'samhita seg) "") words))
+                    (gloss-table . ,(bcat-analysis-sanskrit-tables words))
+                    (translations . ,(bcat-analysis-translations-block n c))
+                    (sandhi . ,(bcat-analysis--field c 'sandhi))
+                    (forms . ,(mapconcat (lambda (l) (concat "- " l))
+                                         (bcat-analysis--word-entries (alist-get 'forms c))
+                                         "\n"))
+                    (compounds . ,(string-join
+                                   (bcat-analysis--word-entries (alist-get 'compounds c))
+                                   " · "))
+                    (structure . ,(bcat-analysis--field c 'structure))
+                    (note . ,(bcat-analysis--field c 'note))
+                    (concepts . ,(bcat-analysis--field c 'concepts)))
+                  seg))))
+           (alist-get 'segments base))))
+    (append
+     `((segments . ,segments)
+       (glosses . ,(and (cl-some (lambda (s) (alist-get 'glossed s)) segments) t))
        (translation . ,(bcat-analysis--field parsed 'translation))
        (grammar . ,(bcat-analysis--field parsed 'grammar))
        (comparison . ,(bcat-analysis-comparison parsed refs)))
