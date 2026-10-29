@@ -30,7 +30,9 @@ tatpārameśvaraṃ śrīman|mahānandavijṛmbhitam // 7
 
 * Text
 #+begin_verse
+अत्र मद्वागशक्तापि यन्नियन्त्रणमुल्लसेत् ।
 atra madvāgaśaktāpi yanniyantraṇamullaset /
+तत्पारमेश्वरं श्रीमन्महानन्दविजृम्भितम् ॥ ७
 tatpārameśvaraṃ śrīmanmahānandavijṛmbhitam // 7
 #+end_verse
 

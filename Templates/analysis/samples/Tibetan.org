@@ -11,9 +11,13 @@
 
 * Text
 #+begin_verse
+བརྗོད་དུ་མེད་པ་བལྟར་མེད་པ། །
 brjod du med pa bltar med pa/ /
+འགྱུར་བ་མེད་པ་འདུས་མ་བྱས། །
 'gyur ba med pa 'dus ma byas/ /
+རྣལ་འབྱོར་པ་ཡིས་དེ་རྟོགས་ན། །
 rnal 'byor pa yis de rtogs na/ /
+ཉོན་མོངས་ཤེས་བྱའི་སྒྲིབ་པ་སྤངས། །
 nyon mongs shes bya'i sgrib pa spangs/ /
 #+end_verse
 

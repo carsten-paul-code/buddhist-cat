@@ -12,6 +12,7 @@
     (last-analyzed . "2026-10-28")
     (segments
      ((num . "38")
+      (uchen . "བརྗོད་དུ་མེད་པ་བལྟར་མེད་པ། །")
       (wylie . "brjod du med pa bltar med pa/ /")
       (glossed . "brjod du med pa [indescribable] bltar med pa [invisible] / /")
       (gloss-table . "| [[steinert:brjod du med pa][brjod du med pa]] | [[steinert:bltar med pa][bltar med pa]]    |
@@ -24,6 +25,7 @@
       (note . "/brjod du med pa/ = verb stem + terminative /du/ + /med pa/, the negated potential: \"there is no expressing [it]\"; likewise /blta-r med pa/ \"cannot be seen\".")
       (concepts . "*brjod du med pa / bltar med pa* (Skt. avācya / adraṣṭavya) — standard apophatic epithets of the ultimate truth (paramārtha-satya) in Madhyamaka: beyond conventional expression (brjod pa) and beyond ordinary perception (blta ba), since it transcends the subject–object duality of saṃvṛti cognition; recurrent e.g. in the Laṅkāvatārasūtra."))
      ((num . "39")
+      (uchen . "འགྱུར་བ་མེད་པ་འདུས་མ་བྱས། །")
       (wylie . "'gyur ba med pa 'dus ma byas/ /")
       (glossed . "'gyur ba med pa [immutable] 'dus [assembled, compounded] ma byas [not made] / /")
       (gloss-table . "| [[steinert:'gyur ba med pa]['gyur ba med pa]] | [[steinert:'dus]['dus]]                  | [[steinert:ma byas][ma byas]]               |
@@ -36,6 +38,7 @@
       (note . "")
       (concepts . "*'dus ma byas* (Skt. asaṃskṛta) — \"uncompounded/unconditioned\": in Abhidharma the phenomena not produced by causes and conditions (saṃskāra); here, in Madhyamaka usage, the ultimate nature (dharmatā/śūnyatā) as free from causal construction, against the saṃskṛta dharmas."))
      ((num . "40")
+      (uchen . "རྣལ་འབྱོར་པ་ཡིས་དེ་རྟོགས་ན། །")
       (wylie . "rnal 'byor pa yis de rtogs na/ /")
       (glossed . "rnal 'byor pa [yogin] yis [ERG] de [that] rtogs [realizes] na [CONV · cond.] / /")
       (gloss-table . "| [[steinert:rnal 'byor pa][rnal 'byor pa]] | yis | [[steinert:de][de]]           | [[steinert:rtogs][rtogs]]    | na           |
@@ -49,6 +52,7 @@
       (note . "/na/ = \"if\" (realization as condition); \"when\" is grammatically possible as well (both §2.8).")
       (concepts . ""))
      ((num . "41")
+      (uchen . "ཉོན་མོངས་ཤེས་བྱའི་སྒྲིབ་པ་སྤངས། །")
       (wylie . "nyon mongs shes bya'i sgrib pa spangs/ /")
       (glossed . "nyon mongs [affliction] shes bya'i [of the knowable] sgrib pa [obstruction] spangs [abandoned] / /")
       (gloss-table . "| [[steinert:nyon mongs][nyon mongs]] | [[steinert:shes bya'i][shes bya'i]]      | [[steinert:sgrib pa][sgrib pa]]    | [[steinert:spangs][spangs]]                       |

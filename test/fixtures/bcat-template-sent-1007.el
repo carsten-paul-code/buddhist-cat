@@ -24,6 +24,7 @@ tatpārameśvaraṃ śrīman|mahānandavijṛmbhitam // 7")
     (translation . "Although my speech (vāc) is incapable (aśakta) here, whatever control (niyantraṇa) may shine forth (ullaset) — that belongs to the Supreme Lord (pārameśvara): it is the unfolding (vijṛmbhita) of glorious great bliss (mahānanda).")
     (segments
      ((num . "685")
+      (devanagari . "अत्र मद्वागशक्तापि यन्नियन्त्रणमुल्लसेत् ।")
       (samhita . "atra madvāgaśaktāpi yanniyantraṇamullaset /")
       (glossed . "atra [here] mad-vāk [my speech] aśaktā [incapable] api [although] yat [whatever] niyantraṇam [control] ullaset [may shine forth] /")
       (gloss-table . "| atra | mad-vāk     | aśaktā                              | api      | yat               |
@@ -53,6 +54,7 @@ tatpārameśvaraṃ śrīman|mahānandavijṛmbhitam // 7")
       (note . "madvāgaśaktāpi hides the privative a-: mad-vāk aśaktā api „though my speech is incapable“ — not mat-vāk-śaktā „capable“; the a- disappears in ā + a → ā. The optative in a generalising relative clause: „whatever … may“.")
       (concepts . "*niyantraṇa* — control, regulation; here the ordering of the words of the commentary, which Jayaratha does not claim as his own achievement."))
      ((num . "686")
+      (devanagari . "तत्पारमेश्वरं श्रीमन्महानन्दविजृम्भितम् ॥ ७")
       (samhita . "tatpārameśvaraṃ śrīmanmahānandavijṛmbhitam // 7")
       (glossed . "tat [that] pārameśvaram [the Supreme Lord's] śrīmat-mahā-ānanda-vijṛmbhitam [unfolding of glorious great bliss] //")
       (gloss-table . "| tat               | pārameśvaram                              |

@@ -37,7 +37,7 @@
   "The rump fields of sentence 9: header, segments (num, wylie), user
 slots — what C-c u A knows without AI."
   (let ((fix bcat-template-test--sent-009))
-    (cons (cons 'segments (mapcar (lambda (s) (list (assq 'num s) (assq 'wylie s)))
+    (cons (cons 'segments (mapcar (lambda (s) (list (assq 'num s) (assq 'uchen s) (assq 'wylie s)))
                                   (alist-get 'segments fix)))
           (cl-remove-if (lambda (c) (memq (car c) '(segments grammar comparison glosses translation)))
                         fix))))
@@ -80,7 +80,7 @@ from the reviewed sample, test/fixtures/bcat-analysis-sent-1007.json)."
   "The rump fields of sentence 1007: header, recitation, segments with
 num and samhita, user slots — what C-c u A knows without AI."
   (let ((fix bcat-template-test--sent-1007))
-    (cons (cons 'segments (mapcar (lambda (s) (list (assq 'num s) (assq 'samhita s)))
+    (cons (cons 'segments (mapcar (lambda (s) (list (assq 'num s) (assq 'devanagari s) (assq 'samhita s)))
                                   (alist-get 'segments fix)))
           (cl-remove-if (lambda (c) (memq (car c) '(segments grammar comparison glosses translation)))
                         fix))))

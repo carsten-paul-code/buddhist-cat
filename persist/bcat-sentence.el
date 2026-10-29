@@ -20,6 +20,7 @@
 (require 'subr-x)
 (require 'bcat-template)
 (require 'bcat-analysis)
+(require 'tibetan-sanskrit-script)
 
 (declare-function tibetan-analysis--cascade-p "tibetan-analysis-claude" (file))
 (declare-function tibetan-analysis--resolve-source-lang "tibetan-analysis-claude" (file))
@@ -171,10 +172,16 @@ existing file (user slots, `created')."
                       (if sanskrit
                           ;; Without AI there is no padapāṭha: the line
                           ;; as transmitted.
-                          `((num . ,(car s)) (samhita . ,(string-trim (cdr s))))
+                          (let ((samhita (string-trim (cdr s))))
+                            `((num . ,(car s))
+                              ;; Carsten 29.10.: Devanāgarī above the IAST
+                              (devanagari . ,(tibetan-sanskrit-script-iast-to-devanagari samhita))
+                              (samhita . ,samhita)))
                         (let ((wylie (bcat-sentence--wylie (cdr s)))
                               (rows (bcat-sentence--dictionary-rows (cdr s))))
                           `((num . ,(car s))
+                            ;; Carsten 29.10.: Uchen above the Wylie
+                            (uchen . ,(string-trim (cdr s)))
                             (wylie . ,wylie)
                             (glossed . ,(bcat-analysis-glossed-line
                                          wylie (bcat-sentence--dictionary-words rows)))

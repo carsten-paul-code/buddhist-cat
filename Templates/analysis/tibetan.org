@@ -19,12 +19,14 @@ Erwartete Ausgabe: samples/Tibetan.org.  Kommentarblöcke wie dieser
 erscheinen nicht in der Satzdatei.
 
 Felder: sent-num source-link segment-list hash created last-analyzed;
-segments: num wylie glossed gloss-table translations structure note
+segments: num uchen wylie glossed gloss-table translations structure note
 concepts (glossed = die Verszeile mit den Glossen in Klammern);
 glosses (gesetzt, wenn eine Zeile Glossen hat) translation (die
 Übersetzung des ganzen Satzes, nach C-c u G) grammar comparison
 working-translation my-notes footnotes.
-* Text (Carsten 29.10.): blanker Vers, Vers mit Vokabeln, Übersetzung —
+* Text (Carsten 29.10.): je Segment Uchen über Wylie („erste Zeile
+Uchen, zweite Zeile Wylie“, wie im alten Handout), Vers mit Vokabeln,
+Übersetzung —
 die Übersetzung steht zusätzlich unter Translations compared.
 #+end_comment
 #+TITLE: Sentence {{sent-num}} Analysis
@@ -41,6 +43,7 @@ die Übersetzung steht zusätzlich unter Translations compared.
 * Text
 #+begin_verse
 {{#segments}}
+{{uchen}}
 {{wylie}}
 {{/segments}}
 #+end_verse

@@ -127,8 +127,8 @@ dictionary glosses in brackets — the same units as the tables
       ;; vocabulary; no translation line before C-c u G.
       (should (string-match-p
                (regexp-quote (concat "* Text\n#+begin_verse\n"
-                                     "brjod du med pa bltar med pa/ /\n"
-                                     "'gyur ba med pa 'dus ma byas/ /\n"
+                                     "བརྗོད་དུ་མེད་པ་བལྟར་མེད་པ། །\nbrjod du med pa bltar med pa/ /\n"
+                                     "འགྱུར་བ་མེད་པ་འདུས་མ་བྱས། །\n'gyur ba med pa 'dus ma byas/ /\n"
                                      "#+end_verse\n\n#+begin_verse\n"
                                      "brjod du med pa [inexpressible; ineffable] bltar med pa [invisible] / /\n"
                                      "'gyur ba med pa [immutable] 'dus [collect; assemble…] ma byas / /\n"
@@ -142,8 +142,8 @@ lines twice would be noise."
     (cl-letf (((symbol-function 'tibetan-gloss-table--unit-rows) #'ignore))
       (should (string-match-p
                (regexp-quote (concat "* Text\n#+begin_verse\n"
-                                     "brjod du med pa bltar med pa/ /\n"
-                                     "'gyur ba med pa 'dus ma byas/ /\n"
+                                     "བརྗོད་དུ་མེད་པ་བལྟར་མེད་པ། །\nbrjod du med pa bltar med pa/ /\n"
+                                     "འགྱུར་བ་མེད་པ་འདུས་མ་བྱས། །\n'gyur ba med pa 'dus ma byas/ /\n"
                                      "#+end_verse\n\n* Segments"))
                (bcat-sentence-test--create src))))))
 
@@ -174,8 +174,8 @@ no padapāṭha), the reference under Translations compared.  No AI."
           (should (string-match-p
                    (regexp-quote
                     (concat "\n\n* Text\n#+begin_verse\n"
-                            "atra madvāgaśaktāpi yanniyantraṇamullaset /\n"
-                            "tatpārameśvaraṃ śrīmanmahānandavijṛmbhitam // 7\n#+end_verse\n\n"
+                            "अत्र मद्वागशक्तापि यन्नियन्त्रणमुल्लसेत् ।\natra madvāgaśaktāpi yanniyantraṇamullaset /\n"
+                            "तत्पारमेश्वरं श्रीमन्महानन्दविजृम्भितम् ॥ ७\ntatpārameśvaraṃ śrīmanmahānandavijṛmbhitam // 7\n#+end_verse\n\n"
                             "* Segments\n** Segment 685\n\n** Segment 686\n\n* Sentence\n"))
                    text))
           (should (string-match-p
@@ -190,7 +190,8 @@ no padapāṭha), the reference under Translations compared.  No AI."
     (let ((text (bcat-sentence-test--create-n src 1008)))
       (should-not (string-match-p "^\\* Recitation" text))
       (should (string-match-p
-               (regexp-quote "* Text\n#+begin_verse\niha khalu śāstrādāv alaukikāśīrvādamukhena parāmṛśati\n#+end_verse")
+               (regexp-quote (concat "* Text\n#+begin_verse\nइह खलु शास्त्रादाव् अलौकिकाशीर्वादमुखेन परामृशति\n"
+                                     "iha khalu śāstrādāv alaukikāśīrvādamukhena parāmṛśati\n#+end_verse"))
                text)))))
 
 (ert-deftest bcat-sentence-create-from-template ()
@@ -209,7 +210,7 @@ slots — and none of the old sections.  No AI request is made."
           ;; One verse line per pāda (with the dictionary glosses in
           ;; brackets where known — exact form: create-glossed-text).
           (should (string-match-p
-                   "#\\+begin_verse\nbrjod du med pa .*/ /\n'gyur ba med pa .*/ /\n#\\+end_verse"
+                   "#\\+begin_verse\nབརྗོད་དུ་མེད་པ་བལྟར་མེད་པ། །\nbrjod du med pa .*/ /\nའགྱུར་བ་མེད་པ་འདུས་མ་བྱས། །\n'gyur ba med pa .*/ /\n#\\+end_verse"
                    text))
           (should (string-match-p "^\\* Segments\n\\*\\* Segment 38\n| " text))
           (should (string-match-p "^\\*\\* Segment 39\n| " text))
