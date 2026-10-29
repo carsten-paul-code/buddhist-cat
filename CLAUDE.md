@@ -12,7 +12,7 @@ NACH VORLAGE — Reading-Klassen, Tibetisch: `#+CAT_TEMPLATE: tibetan' im
 Quellkopf, Gliederung * Text / * Segments / * Sentence, C-c u A = Rumpf
 ohne KI, C-c u G = ein JSON-Abruf je Satz (+ DharmaMitra, + kleiner
 Zuordnungs-Abruf für ergänzte Vergleichsübersetzungen), endet mit C-c u H
-= die Satzdatei als PDF aufs reMarkable; ERT 2631.
+= die Satzdatei als PDF aufs reMarkable; ERT 2637.
 Previous: §5.73: UMBENENNUNG IN
 BUDDHIST CAT — erster Schritt: die Hülle (Hauptdatei/Feature
 buddhist-cat, alter Name lädt weiter, Customize-Gruppe, Menü, Repo,
@@ -4198,8 +4198,34 @@ eine unlesbare Antwort (Analyse wie Zuordnung) wird unter
 Anführungszeichen in Strings — genau die Defekte, die die verlangte
 wörtliche Kopie von Lindtners Anmerkung (Absatz, Eimer-Zitat mit
 "…"Befleckungen"…") erzeugt; Ursache für Satz 9 nicht belegt.
-ERT 2631.  Offen erwägen: Satz-Referenzen nicht wörtlich zurückfordern,
-sondern nur die zu markierenden Stellen (wir haben die Texte schon).
+ERT 2631.
+
+**Nachbesserung 29.10.** (Carsten nach dem ersten echten Satz 9):
+- `91eec29' Satz-Referenzen bleiben UNSER Text: Prompt (Analyse wie
+  Zuordnung) verlangt keine Vollkopie mehr („not its notes“ für die
+  Ausschnitte); `bcat-analysis-mark-reference' überträgt die fetten
+  Marken der Segment-Ausschnitte der Reihe nach auf den gesendeten
+  Text (`bcat-analysis-context base parsed REFS').  Behebt den
+  Verlust von Lindtners Anmerkung (Claude hatte sie beim Abschreiben
+  weggelassen) und die JSON-Brüchigkeit.
+- `b409720' Segment-Übersetzung beschriftet: `⟦N⟧ *Translation:* …'
+  (unbeschriftet las sie sich nicht als Übersetzung); ⟦N⟧ bleibt vorn
+  (Fetch-Zustand), `--own-translations' liest beide Formen.
+- `bcda730' Vers unter `* Text' mit den Vokabeln in Klammern
+  („Wenn ich einen Satz segmentweise übersetze muss ich … blättern“):
+  `rnal 'byor pa [yogin] yis [ERG] … na [CONV · cond.] / /';
+  `bcat-analysis-glossed-line' (Claudes Wörter; im Rumpf die
+  Wörterbuch-Einheiten der Tabelle), deckt die Wortliste die Silben
+  nicht exakt ab → blankes Wylie.  Vorlagenfeld `{{glossed}}'
+  (`{{wylie}}' = blanker Vers).
+- `ad22135' PDF: glossierte Verszeilen aus `\mbox'-Einheiten, Shad
+  mit `~' gebunden, Vers flatterrechts — Umbruch nur zwischen
+  Wort+Glosse (vorher „[ob-struction]“, „/“ allein, Überlauf).
+ERT 2637 (2. Skip = pyewts fehlt dem python3 der Shell).
+**Offen:** C-c u G lässt eine vollständige Datei liegen — eine
+geänderte Vorlage erreicht fertige Sätze nur per neuem Abruf.
+Vorschlag an Carsten: Claudes geparste Antwort neben der Datei
+aufheben, dann rendert C-c u G fertige Sätze ohne Abruf neu.
 
 LEHRE: `make compile' VOR dem Commit separat prüfen — in 3c erschienen
 Warnungen erst nach der Commit-Kette (es war ein veraltetes .elc).
