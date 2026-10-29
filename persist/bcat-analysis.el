@@ -218,11 +218,15 @@ read, under `bcat-analysis-response-directory'; return its path."
   "Function labels of case and converb particles — such a word gets no
 dictionary link in the table.")
 
-(defun bcat-analysis--particle-p (function)
-  "Non-nil when FUNCTION (a word's function string) is a particle label."
-  (and (stringp function)
-       (string-match "\\`[ \t]*\\([A-Z]+\\)" function)
-       (member (match-string 1 function) bcat-analysis--particle-labels)))
+(defun bcat-analysis--particle-p (word)
+  "Non-nil when WORD (an alist with wylie and function) is a particle: a
+single syllable whose function begins with a case or converb label.
+29.10.: Claude gave the word „shes bya'i“ the function „GEN · second
+member of compound“ — several syllables, so a word all the same."
+  (let ((function (bcat-analysis--field word 'function)))
+    (and (not (string-match-p " " (bcat-analysis--field word 'wylie)))
+         (string-match "\\`[ \t]*\\([A-Z]+\\)" function)
+         (member (match-string 1 function) bcat-analysis--particle-labels))))
 
 (defun bcat-analysis--field (alist key)
   "String value of KEY in ALIST, trimmed; \"\" when absent."
@@ -239,7 +243,7 @@ for no words."
       (dolist (w words)
         (let ((wy (bcat-analysis--field w 'wylie))
               (fn (bcat-analysis--field w 'function)))
-          (push (if (bcat-analysis--particle-p fn)
+          (push (if (bcat-analysis--particle-p w)
                     (tibetan-gloss-table--cell wy)
                   (format "[[steinert:%s][%s]]" wy (tibetan-gloss-table--cell wy)))
                 r1)
@@ -272,7 +276,7 @@ WORDS do not cover its syllables exactly: the text is never altered."
                     (let* ((wy (bcat-analysis--field w 'wylie))
                            (fn (bcat-analysis--field w 'function))
                            (gl (bcat-analysis--field w 'gloss))
-                           (show (cond ((bcat-analysis--particle-p fn) fn)
+                           (show (cond ((bcat-analysis--particle-p w) fn)
                                        ((member gl '("" "?")) "")
                                        (t gl))))
                       (if (string-empty-p show) wy (format "%s [%s]" wy show))))

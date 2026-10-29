@@ -175,6 +175,24 @@ reference translation by name (or \"none\")."
     (should (string-match-p "Reference translations:\nnone"
                             (bcat-analysis-user-prompt 1 nil '((1 "ཀ" "ka")) nil)))))
 
+(ert-deftest bcat-analysis-word-with-case-function ()
+  "29.10., bDen 9 seg. 41: Claude gave the word „shes bya'i“ (the
+knowable + genitive clitic) the function „GEN · second member of
+compound“.  It was taken for a particle: no dictionary link in the
+table, and the verse showed the label instead of its gloss.  Only a
+single syllable can be a particle; a word of several syllables keeps
+its link and its gloss whatever its function begins with."
+  (let ((words '(((wylie . "nyon mongs") (gloss . "afflictions") (function . "N · first member"))
+                 ((wylie . "shes bya'i") (gloss . "of the knowable")
+                  (function . "GEN · second member of compound"))
+                 ((wylie . "sgrib pa") (gloss . "obscurations") (function . "N · object, ABS"))
+                 ((wylie . "spangs") (gloss . "abandoned") (function . "V pf. (spong ba)")))))
+    (should (string-match-p (regexp-quote "[[steinert:shes bya'i][shes bya'i]]")
+                            (bcat-analysis-gloss-table words)))
+    (should (equal (concat "nyon mongs [afflictions] shes bya'i [of the knowable] "
+                           "sgrib pa [obscurations] spangs [abandoned] / /")
+                   (bcat-analysis-glossed-line "nyon mongs shes bya'i sgrib pa spangs/ /" words)))))
+
 (ert-deftest bcat-analysis-gloss-table-cells ()
   "Particles (function = a case or converb label) get no dictionary
 link; a long gloss is cut to the table budget; a `|' in a cell is

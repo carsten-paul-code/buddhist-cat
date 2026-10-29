@@ -1,6 +1,6 @@
 #+TITLE: Function Reference — buddhist-cat
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-10-29T09:06:18
+#+DATE: 2026-10-29T09:48:43
 #+OPTIONS: toc:2 num:nil
 
 Source tree: ~/Users/cp/buddhist-cat~  ·  90 modules  ·  1961 forms
@@ -12675,15 +12675,18 @@ read, under `bcat-analysis-response-directory'; return its path.
 :PROPERTIES:
 :KIND: defun
 :LINE: 221
-:SIGNATURE: (bcat-analysis--particle-p function)
+:SIGNATURE: (bcat-analysis--particle-p word)
 :END:
 
-Non-nil when FUNCTION (a word's function string) is a particle label.
+Non-nil when WORD (an alist with wylie and function) is a particle: a
+single syllable whose function begins with a case or converb label.
+29.10.: Claude gave the word „shes bya'i“ the function „GEN · second
+member of compound“ — several syllables, so a word all the same.
 
 ** ~bcat-analysis--field~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 227
+:LINE: 231
 :SIGNATURE: (bcat-analysis--field alist key)
 :END:
 
@@ -12692,7 +12695,7 @@ String value of KEY in ALIST, trimmed; "" when absent.
 ** ~bcat-analysis-gloss-table~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 232
+:LINE: 236
 :SIGNATURE: (bcat-analysis-gloss-table words)
 :END:
 
@@ -12703,7 +12706,7 @@ for no words.
 ** ~bcat-analysis-glossed-line~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 253
+:LINE: 257
 :SIGNATURE: (bcat-analysis-glossed-line wylie words)
 :END:
 
@@ -12718,7 +12721,7 @@ WORDS do not cover its syllables exactly: the text is never altered.
 ** ~bcat-analysis--reference-lines~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 282
+:LINE: 286
 :SIGNATURE: (bcat-analysis--reference-lines refs)
 :END:
 
@@ -12727,7 +12730,7 @@ WORDS do not cover its syllables exactly: the text is never altered.
 ** ~bcat-analysis-strip-marks~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 289
+:LINE: 293
 :SIGNATURE: (bcat-analysis-strip-marks text)
 :END:
 
@@ -12736,7 +12739,7 @@ TEXT without org bold marks (the meaning-shift marks of a fetch).
 ** ~bcat-analysis--loose-regexp~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 293
+:LINE: 297
 :SIGNATURE: (bcat-analysis--loose-regexp text)
 :END:
 
@@ -12745,7 +12748,7 @@ A regexp for TEXT that lets any run of whitespace stand for its spaces.
 ** ~bcat-analysis--reference-parts~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 297
+:LINE: 301
 :SIGNATURE: (bcat-analysis--reference-parts segments name)
 :END:
 
@@ -12755,7 +12758,7 @@ order — each with its passages in org bold.
 ** ~bcat-analysis-mark-reference~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 311
+:LINE: 315
 :SIGNATURE: (bcat-analysis-mark-reference text parts)
 :END:
 
@@ -12771,7 +12774,7 @@ of Lindtner's verse 9 dropped his note).
 ** ~bcat-analysis-translations-block~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 346
+:LINE: 350
 :SIGNATURE: (bcat-analysis-translations-block num seg)
 :END:
 
@@ -12784,7 +12787,7 @@ line breaks between.
 ** ~bcat-analysis-comparison~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 360
+:LINE: 364
 :SIGNATURE: (bcat-analysis-comparison parsed &optional refs)
 :END:
 
@@ -12795,7 +12798,7 @@ with the marks of its segment parts, the comparison paragraph.
 ** ~bcat-analysis-context~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 381
+:LINE: 385
 :SIGNATURE: (bcat-analysis-context base parsed &optional refs)
 :END:
 
