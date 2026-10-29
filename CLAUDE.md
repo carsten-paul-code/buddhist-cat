@@ -4295,7 +4295,15 @@ Rezitation), * Text = Padapāṭha in IAST ({{padapatha}}, Rumpf: die
 weg; `93d1c7d' Prompt: Glosse ≤ 30 Zeichen ohne Kommentar, →-Zeilen
 nur mit Markierung, Sandhi „as it stands in the transmitted text“.
 Modell in Carstens gptel: claude-opus-4-8 (Sandhi-Zeile fehlerhaft).
-ERT 2659.  Offen: maschinelle Sandhi-Gegenprobe des Padapāṭha (wie
+`56c7846' C-u C-c u G analysiert fertige Sätze neu (immer mit Frage,
+Nutzer-Slots bleiben); ohne Präfix sagt C-c u G „vollständig — nichts
+abgerufen (neu abrufen: C-u C-c u G)“ — Carsten hatte nach dem
+Neustart C-c u G auf den fertigen Satz 1007 gedrückt, nichts änderte
+sich.  `48c15a2' Statusanzeige: persist/bcat-status.el, Puffer
+*Buddhist CAT* (unten, q), Block je Lauf, Zeile je Satz (angelegt/neu
+gebaut · DharmaMitra · Claude/nicht lesbar mit Grund · Zuordnung · PDF
+· reMarkable mit Dokumentname); Upload hat dafür ein optionales DONE.
+ERT 2666.  Offen: maschinelle Sandhi-Gegenprobe des Padapāṭha (wie
 padapatha-pdf.py) fehlt noch; MSA-Synopse (§5.68) hängt am alten
 Handout — in Vorlagenquellen ist C-c u H jetzt der Satz-Export.
 
