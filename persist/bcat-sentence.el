@@ -21,6 +21,7 @@
 (require 'bcat-template)
 (require 'bcat-analysis)
 (require 'tibetan-sanskrit-script)
+(require 'bcat-status)
 
 (declare-function tibetan-analysis--cascade-p "tibetan-analysis-claude" (file))
 (declare-function tibetan-analysis--resolve-source-lang "tibetan-analysis-claude" (file))
@@ -454,10 +455,15 @@ Everything else stays as it is."
 
 (defun bcat-sentence--unreadable (what file response problem)
   "Report that the answer of kind WHAT for FILE could not be read
-\(PROBLEM says why) and keep RESPONSE for diagnosis.  Returns nil."
-  (message "C-c u G: %s für %s nicht lesbar (%s) — Datei unverändert; Antwort: %s"
-           what (file-name-nondirectory file) problem
-           (bcat-analysis-keep-response file response))
+\(PROBLEM says why) and keep RESPONSE for diagnosis — as a message and
+on FILE's status line.  Returns nil."
+  (let ((path (bcat-analysis-keep-response file response)))
+    (message "C-c u G: %s für %s nicht lesbar (%s) — Datei unverändert; Antwort: %s"
+             what (file-name-nondirectory file) problem path)
+    (bcat-status-step file (if (equal what "Zuordnung") :align :claude)
+                      (format "%s: nicht lesbar (%s) — Antwort: %s"
+                              (if (equal what "Zuordnung") "Zuordnung" "Claude")
+                              problem path)))
   nil)
 
 (defun bcat-sentence--align-land (file response)
@@ -469,6 +475,7 @@ the answer is unreadable."
         (bcat-sentence--unreadable "Zuordnung" file response (cdr read))
       (bcat-sentence--save-visit file)
       (bcat-sentence--write file (bcat-sentence--align-merge (bcat-sentence--text file) parsed))
+      (bcat-status-step file :align "Zuordnung ✓")
       (run-hook-with-args 'bcat-sentence-after-fetch-functions file)
       file)))
 
@@ -494,6 +501,7 @@ no DharmaMitra, no new analysis."
                 refs
                 (plist-get meta :claude-context)))))
      (lambda (f response) (bcat-sentence--align-land f response)))
+    (bcat-status-step file :align "Zuordnung angefragt")
     'fired))
 
 (defun bcat-sentence--references-for (file sent-num source-file)
@@ -508,19 +516,22 @@ compared of FILE."
 (defun bcat-sentence--prepare (file sentence source-file)
   "Make FILE a template file before a fetch: create a missing one, and
 rebuild one still in the old layout (Carsten: „komplett neu bauen“) —
-user slots, #+CREATED and references pasted by hand carried over."
+user slots, #+CREATED and references pasted by hand carried over.
+Returns `created', `rebuilt' or nil (the file was a template file)."
   (let ((sent-num (plist-get sentence :sent-num))
         (segs (plist-get sentence :segs)))
     (cond
      ((not (file-exists-p file))
-      (tibetan-cascade--create-file sent-num segs source-file))
+      (tibetan-cascade--create-file sent-num segs source-file)
+      'created)
      ((not (bcat-sentence-file-p file))
       (bcat-sentence--save-visit file)
       (let ((names (mapcar #'car (bcat-sentence--references sent-num source-file))))
         (bcat-sentence-create-file
          sent-num segs source-file file
          (bcat-sentence--extra-references names (bcat-sentence--old-references file))
-         (bcat-sentence--keep file)))))))
+         (bcat-sentence--keep file)))
+      'rebuilt))))
 
 (defun bcat-sentence--dharmamitra (file sentence)
   "DharmaMitra's translation of SENTENCE for FILE, or nil (an outage
@@ -583,6 +594,7 @@ marked from the answer's segment parts."
                                                 #'bcat-analysis-context)
                                               base parsed refs)
                                      source-file))
+        (bcat-status-step file :claude "Claude ✓")
         (run-hook-with-args 'bcat-sentence-after-fetch-functions file)
         file))))
 
@@ -596,6 +608,7 @@ request through the queue."
                       tibetan-dharmamitra-sentence-request-delay 6.5))))
     (when (boundp 'tibetan-sentence-claude--dm-schedule-count)
       (cl-incf tibetan-sentence-claude--dm-schedule-count))
+    (bcat-status-step file :dm "DharmaMitra …")
     (run-at-time
      delay nil
      (lambda ()
@@ -603,6 +616,9 @@ request through the queue."
                                                    source-file))
               (dm (bcat-sentence--dharmamitra file sentence))
               (refs (if dm (append refs (list (cons "DharmaMitra" dm))) refs)))
+         (bcat-status-step file :dm (if dm "DharmaMitra ✓" "DharmaMitra –"))
+         ;; Before the submit: the landing (later, or at once) overwrites it.
+         (bcat-status-step file :claude "Claude angefragt")
          (require 'tibetan-translation-discussion)
          (tibetan-discussion--submit
           "bcat-analysis" file
@@ -632,10 +648,19 @@ Returns (:sentences N :fired N :complete N :align N)."
                        (org-mode)
                        (tibetan-cascade--collect-sentences))))
          (file-of (lambda (s) (tibetan-sentence--filepath (plist-get s :sent-num) folder src))))
+    (bcat-status-begin (if force "C-u C-c u G" "C-c u G") label
+                       (mapcar (lambda (s) (cons (funcall file-of s)
+                                                 (format "Satz %d" (plist-get s :sent-num))))
+                               sentences))
     (if (ignore-errors (tibetan-analysis--defer-mt-p src))
         (progn (message "%s: #+TIBETAN_DEFER_MT — kein Abruf" label)
+               (dolist (s sentences)
+                 (bcat-status-step (funcall file-of s) :state "#+TIBETAN_DEFER_MT — kein Abruf"))
                (list :sentences (length sentences) :fired 0 :complete 0 :align 0))
-      (dolist (s sentences) (bcat-sentence--prepare (funcall file-of s) s src))
+      (dolist (s sentences)
+        (pcase (bcat-sentence--prepare (funcall file-of s) s src)
+          ('created (bcat-status-step (funcall file-of s) :file "angelegt"))
+          ('rebuilt (bcat-status-step (funcall file-of s) :file "neu gebaut"))))
       (let* ((states (mapcar (lambda (s)
                                (cons s (if force
                                            'full
@@ -654,6 +679,12 @@ Returns (:sentences N :fired N :complete N :align N)."
                        (t (y-or-n-p (format "%s: %d Sätze an Claude senden (%d neue Analyse(n), %d Zuordnung(en))? "
                                             label (length todo) (- (length todo) align) align))))))
              (fired 0))
+        (dolist (c states)
+          (cond ((null (cdr c))
+                 (bcat-status-step (funcall file-of (car c)) :state
+                                   "vollständig — nichts abgerufen (neu abrufen: C-u C-c u G)"))
+                ((not go)
+                 (bcat-status-step (funcall file-of (car c)) :state "Abruf abgelehnt"))))
         (when go
           (dolist (c todo)
             (when (eq 'fired

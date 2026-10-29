@@ -275,6 +275,44 @@ no error, nil."
         (should-not (tibetan-discussion-paper--upload pdf "Rgyan" "Satz 1")))
       (delete-file pdf))))
 
+(ert-deftest tibetan-discussion-paper-upload-reports-done ()
+  "§5.74, 29.10.: the status of C-c u G shows the upload's outcome —
+the optional DONE gets (t NAME) for the document as placed (stamped
+when the name was taken) or (nil REASON) — 429, no rmapi."
+  (let ((reply "uploading: [x]...\nOK\n") (results '())
+        (pdf (make-temp-file "paper-" nil ".pdf")))
+    (unwind-protect
+        (cl-letf (((symbol-function 'tibetan-discussion-paper--rmapi-session)
+                   (lambda (_commands cb) (funcall cb 0 reply) t))
+                  ((symbol-function 'executable-find)
+                   (lambda (name &rest _) (and (equal name "rmapi") "/usr/bin/rmapi"))))
+          (let ((tibetan-discussion-paper-remarkable-folder "Reading")
+                (done (lambda (ok what) (push (list ok what) results))))
+            (tibetan-discussion-paper--upload pdf "Rgyan" "Satz 1" done)
+            (should (equal '((t "/Reading/Rgyan/Satz 1")) results))
+            (setq results '() reply "ERROR: entry already exists\n")
+            (cl-letf (((symbol-function 'tibetan-discussion-paper--rmapi-session)
+                       (let ((n 0))
+                         (lambda (_commands cb)
+                           (cl-incf n)
+                           (funcall cb 0 (if (= n 1) "ERROR: entry already exists\n"
+                                           "uploading: [x]...\nOK\n"))
+                           t))))
+              (tibetan-discussion-paper--upload pdf "Rgyan" "Satz 1" done))
+            (should (car (car results)))
+            (should (string-match-p "\\`/Reading/Rgyan/Satz 1 20[0-9-]\\{8\\} [0-9]\\{4\\}\\'"
+                                    (cadr (car results))))
+            (setq results '() reply "uploading: [x]...ERROR: request failed with status 429\n")
+            (tibetan-discussion-paper--upload pdf "Rgyan" "Satz 1" done)
+            (should (equal nil (car (car results))))
+            (should (string-match-p "429" (cadr (car results))))))
+      (cl-letf (((symbol-function 'executable-find) (lambda (&rest _) nil)))
+        (let ((results '()))
+          (tibetan-discussion-paper--upload pdf "Rgyan" "Satz 1"
+                                            (lambda (ok what) (push (list ok what) results)))
+          (should (equal '((nil "rmapi nicht gefunden")) results))))
+      (delete-file pdf))))
+
 (ert-deftest tibetan-discussion-paper-upload-many-one-session ()
   "Bulk upload: ONE session — base folder, each work folder once, then
 one put per paper (one token for fifteen papers)."

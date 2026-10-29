@@ -53,7 +53,7 @@ Switched off (`bcat-export-auto' nil): nothing."
       (cl-letf (((symbol-function 'bcat-export-pdf)
                  (lambda (file &rest _) (push file exported) "/tmp/x.pdf"))
                 ((symbol-function 'tibetan-discussion-paper--upload)
-                 (lambda (pdf title label) (push (list pdf title label) uploaded) t))
+                 (lambda (pdf title label &optional _done) (push (list pdf title label) uploaded) t))
                 ;; The fixture lives under the temp directory, which the
                 ;; hook skips (next test) — here it stands for a real source.
                 ((symbol-function 'tibetan-discussion-paper--temp-source-p) #'ignore))
@@ -68,6 +68,27 @@ Switched off (`bcat-export-auto' nil): nothing."
           (bcat-export-after-fetch (tibetan-sentence--filepath 9 folder src)))
         (should-not exported)
         (should-not uploaded)))))
+
+(ert-deftest bcat-export-status ()
+  "Carsten 29.10.: a status after C-c u G.  The export writes on the
+sentence's status line — PDF, then the upload with the document name
+as placed (or the reason it failed)."
+  (bcat-sentence-test--with-source
+    (bcat-sentence-test--create src)
+    (let ((file (tibetan-sentence--filepath 9 folder src))
+          (bcat-status-show nil)
+          (bcat-status--entries (make-hash-table :test 'equal)))
+      (when (get-buffer bcat-status-buffer-name) (kill-buffer bcat-status-buffer-name))
+      (bcat-status-begin "C-c u G" "Satz 9" (list (cons file "Satz 9")))
+      (cl-letf (((symbol-function 'bcat-export-pdf) (lambda (&rest _) "/tmp/x.pdf"))
+                ((symbol-function 'tibetan-discussion-paper--upload)
+                 (lambda (_pdf _title _label &optional done)
+                   (funcall done t "/Reading/bDen/Satz 9 2026-10-29 1802") t)))
+        (let ((bcat-export-upload t)) (bcat-export-file file)))
+      (should (string-match-p
+               "^  Satz 9  PDF ✓ · reMarkable ✓ /Reading/bDen/Satz 9 2026-10-29 1802$"
+               (with-current-buffer bcat-status-buffer-name (buffer-string))))
+      (kill-buffer bcat-status-buffer-name))))
 
 (ert-deftest bcat-export-after-fetch-skips-fixtures ()
   "A sentence file under `temporary-file-directory' is a test fixture:

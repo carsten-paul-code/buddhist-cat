@@ -1,9 +1,9 @@
 #+TITLE: Function Reference — buddhist-cat
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-10-29T17:59:10
+#+DATE: 2026-10-29T18:02:39
 #+OPTIONS: toc:2 num:nil
 
-Source tree: ~/Users/cp/buddhist-cat~  ·  90 modules  ·  1983 forms
+Source tree: ~/Users/cp/buddhist-cat~  ·  91 modules  ·  1993 forms
 
 Regenerated automatically by:
 
@@ -65,6 +65,7 @@ python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/buddhist-c
   - [[#persist/bcat-analysis.el][persist/bcat-analysis.el]]  (35)
   - [[#persist/bcat-export.el][persist/bcat-export.el]]  (25)
   - [[#persist/bcat-sentence.el][persist/bcat-sentence.el]]  (46)
+  - [[#persist/bcat-status.el][persist/bcat-status.el]]  (10)
   - [[#persist/bcat-template.el][persist/bcat-template.el]]  (17)
   - [[#persist/tibetan-analysis-claude.el][persist/tibetan-analysis-claude.el]]  (77)
   - [[#persist/tibetan-analysis-combine.el][persist/tibetan-analysis-combine.el]]  (14)
@@ -13016,7 +13017,7 @@ table: a shared column grid let a long compound widen every column).
 ** ~bcat-export--latex-escape~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 59
+:LINE: 60
 :SIGNATURE: (bcat-export--latex-escape s)
 :END:
 
@@ -13025,7 +13026,7 @@ S with the LaTeX special characters escaped.
 ** ~bcat-export-head-lines~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 70
+:LINE: 71
 :SIGNATURE: (bcat-export-head-lines folder work sent-num verse)
 :END:
 
@@ -13035,7 +13036,7 @@ The #+LATEX_HEADER lines of the running head: FOLDER · WORK
 ** ~bcat-export-info~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 83
+:LINE: 84
 :SIGNATURE: (bcat-export-info file)
 :END:
 
@@ -13046,7 +13047,7 @@ What the PDF of the sentence FILE is labelled with: (:source :folder
 ** ~bcat-export--font-lines~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 126
+:LINE: 127
 :SIGNATURE: (bcat-export--font-lines)
 :END:
 
@@ -13055,7 +13056,7 @@ What the PDF of the sentence FILE is labelled with: (:source :folder
 ** ~bcat-export--script-of~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 135
+:LINE: 136
 :SIGNATURE: (bcat-export--script-of line)
 :END:
 
@@ -13065,7 +13066,7 @@ Latin letters), else nil.
 ** ~bcat-export--verse-scripts~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 142
+:LINE: 143
 :SIGNATURE: (bcat-export--verse-scripts latex)
 :END:
 
@@ -13078,7 +13079,7 @@ IAST).  Roman-only lines stay as they are.
 ** ~bcat-export--verse-units~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 170
+:LINE: 171
 :SIGNATURE: (bcat-export--verse-units latex)
 :END:
 
@@ -13093,7 +13094,7 @@ Lines without a gloss (or starting with a command) stay as they are.
 ** ~bcat-export--verse-lines~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 185
+:LINE: 186
 :SIGNATURE: (bcat-export--verse-lines latex)
 :END:
 
@@ -13103,7 +13104,7 @@ LATEX with each glossed verse line made of \mbox units (see
 ** ~bcat-export--verse-filter~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 211
+:LINE: 212
 :SIGNATURE: (bcat-export--verse-filter text backend _info)
 :END:
 
@@ -13114,7 +13115,7 @@ exporting to LaTeX (BACKEND).
 ** ~bcat-export--drop-machine-sections~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 219
+:LINE: 220
 :SIGNATURE: (bcat-export--drop-machine-sections &rest _)
 :END:
 
@@ -13126,7 +13127,7 @@ For `org-export-before-processing-functions' — the file stays as it is.
 ** ~bcat-export-pdf~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 232
+:LINE: 233
 :SIGNATURE: (bcat-export-pdf file &optional head)
 :END:
 
@@ -13140,7 +13141,7 @@ stay untouched outside.
 ** ~bcat-export-file~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 263
+:LINE: 264
 :SIGNATURE: (bcat-export-file file)
 :END:
 
@@ -13150,7 +13151,7 @@ reMarkable (`bcat-export-upload').  Returns the PDF path.
 ** ~bcat-export-after-fetch~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 277
+:LINE: 284
 :SIGNATURE: (bcat-export-after-fetch file)
 :END:
 
@@ -13163,7 +13164,7 @@ rmapi failure must not spoil the landed analysis.
 ** ~bcat-export~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 294
+:LINE: 302
 :SIGNATURE: (bcat-export)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -13179,7 +13180,7 @@ old handout.
 ** ~bcat-export-auto~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 43
+:LINE: 44
 :TYPE: 'boolean
 :GROUP: buddhist-cat
 :DEFAULT: t
@@ -13191,7 +13192,7 @@ sentence file goes to PDF and onto the reMarkable.
 ** ~bcat-export-upload~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 49
+:LINE: 50
 :TYPE: 'boolean
 :GROUP: buddhist-cat
 :DEFAULT: t
@@ -13203,7 +13204,7 @@ document „Satz N“); nil only writes the PDF next to the file.
 ** ~bcat-export-tibetan-font~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 113
+:LINE: 114
 :TYPE: 'string
 :GROUP: buddhist-cat
 :DEFAULT: "Noto Serif Tibetan"
@@ -13215,7 +13216,7 @@ font of the old handout's Uchen line.
 ** ~bcat-export-devanagari-font~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 119
+:LINE: 120
 :TYPE: 'string
 :GROUP: buddhist-cat
 :DEFAULT: "Noto Sans Devanagari"
@@ -13228,7 +13229,7 @@ conjunct (29.10.: Arial Unicode MS).
 ** ~org-latex-compiler~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 35
+:LINE: 36
 :END:
 
 /(no docstring)/
@@ -13236,7 +13237,7 @@ conjunct (29.10.: Arial Unicode MS).
 ** ~org-latex-pdf-process~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 36
+:LINE: 37
 :END:
 
 /(no docstring)/
@@ -13244,7 +13245,7 @@ conjunct (29.10.: Arial Unicode MS).
 ** ~org-latex-tables-centered~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 37
+:LINE: 38
 :END:
 
 /(no docstring)/
@@ -13252,7 +13253,7 @@ conjunct (29.10.: Arial Unicode MS).
 ** ~org-export-filter-table-functions~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 38
+:LINE: 39
 :END:
 
 /(no docstring)/
@@ -13260,7 +13261,7 @@ conjunct (29.10.: Arial Unicode MS).
 ** ~org-export-filter-verse-block-functions~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 39
+:LINE: 40
 :END:
 
 /(no docstring)/
@@ -13268,7 +13269,7 @@ conjunct (29.10.: Arial Unicode MS).
 ** ~org-export-before-processing-functions~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 40
+:LINE: 41
 :END:
 
 /(no docstring)/
@@ -13276,7 +13277,7 @@ conjunct (29.10.: Arial Unicode MS).
 ** ~tibetan-cascade-subtree-confirm-threshold~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 41
+:LINE: 42
 :END:
 
 /(no docstring)/
@@ -13291,7 +13292,7 @@ conjunct (29.10.: Arial Unicode MS).
 ** ~bcat-sentence--template-line~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 48
+:LINE: 49
 :SIGNATURE: (bcat-sentence--template-line file)
 :END:
 
@@ -13300,7 +13301,7 @@ The value of FILE's #+CAT_TEMPLATE: line, or nil.
 ** ~bcat-sentence-template-name~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 57
+:LINE: 58
 :SIGNATURE: (bcat-sentence-template-name source-file)
 :END:
 
@@ -13313,7 +13314,7 @@ cascade sources and while `bcat-sentence-templates' is on.
 ** ~bcat-sentence--sanskrit-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 68
+:LINE: 69
 :SIGNATURE: (bcat-sentence--sanskrit-p source-file)
 :END:
 
@@ -13323,7 +13324,7 @@ template (§5.74, 29.10.).
 ** ~bcat-sentence-file-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 73
+:LINE: 74
 :SIGNATURE: (bcat-sentence-file-p file)
 :END:
 
@@ -13334,7 +13335,7 @@ anything that is no sentence file (a source carries the line too).
 ** ~bcat-sentence--with-source~  /macro/
 :PROPERTIES:
 :KIND: defmacro
-:LINE: 84
+:LINE: 85
 :SIGNATURE: (bcat-sentence--with-source source-file &rest body)
 :END:
 
@@ -13345,7 +13346,7 @@ Run BODY with the dictionary lookups bound to SOURCE-FILE: its folder
 ** ~bcat-sentence--wylie~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 100
+:LINE: 101
 :SIGNATURE: (bcat-sentence--wylie text)
 :END:
 
@@ -13354,7 +13355,7 @@ TEXT (Tibetan Unicode) as one Wylie line.
 ** ~bcat-sentence--dictionary-rows~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 104
+:LINE: 105
 :SIGNATURE: (bcat-sentence--dictionary-rows text)
 :END:
 
@@ -13365,7 +13366,7 @@ is known — C-c u G replaces it), or nil.
 ** ~bcat-sentence--dictionary-table~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 110
+:LINE: 111
 :SIGNATURE: (bcat-sentence--dictionary-table rows)
 :END:
 
@@ -13374,7 +13375,7 @@ ROWS (`bcat-sentence--dictionary-rows') as an org table; "" for none.
 ** ~bcat-sentence--plain-cell~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 114
+:LINE: 115
 :SIGNATURE: (bcat-sentence--plain-cell cell)
 :END:
 
@@ -13384,7 +13385,7 @@ CELL of a gloss table as plain text: links reduced to their text,
 ** ~bcat-sentence--dictionary-words~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 122
+:LINE: 123
 :SIGNATURE: (bcat-sentence--dictionary-words rows)
 :END:
 
@@ -13395,7 +13396,7 @@ the label row (last).
 ** ~bcat-sentence--recitation~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 133
+:LINE: 134
 :SIGNATURE: (bcat-sentence--recitation texts)
 :END:
 
@@ -13409,7 +13410,7 @@ without the pāda letters).
 ** ~bcat-sentence--references~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 149
+:LINE: 150
 :SIGNATURE: (bcat-sentence--references sent-num source-file)
 :END:
 
@@ -13420,7 +13421,7 @@ never Carsten's own „Übersetzung …“ rubric (as in the materializer).
 ** ~bcat-sentence--comparison~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 159
+:LINE: 160
 :SIGNATURE: (bcat-sentence--comparison refs)
 :END:
 
@@ -13429,7 +13430,7 @@ REFS ((NAME . BODY) …) as the paragraphs of Translations compared.
 ** ~bcat-sentence-rump-context~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 164
+:LINE: 165
 :SIGNATURE: (bcat-sentence-rump-context sent-num segs source-file
                                             &optional extra-refs keep)
 :END:
@@ -13443,7 +13444,7 @@ existing file (user slots, `created').
 ** ~bcat-sentence-create-file~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 214
+:LINE: 215
 :SIGNATURE: (bcat-sentence-create-file sent-num segs source-file filepath
                                            &optional extra-refs keep)
 :END:
@@ -13455,7 +13456,7 @@ no AI) and return FILEPATH.  EXTRA-REFS and KEEP as in
 ** ~bcat-sentence--text~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 231
+:LINE: 232
 :SIGNATURE: (bcat-sentence--text file)
 :END:
 
@@ -13464,7 +13465,7 @@ The contents of FILE ("" when missing).
 ** ~bcat-sentence--l1-body~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 237
+:LINE: 238
 :SIGNATURE: (bcat-sentence--l1-body text heading)
 :END:
 
@@ -13474,7 +13475,7 @@ nil when absent or empty.
 ** ~bcat-sentence--keep~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 252
+:LINE: 253
 :SIGNATURE: (bcat-sentence--keep file)
 :END:
 
@@ -13484,7 +13485,7 @@ Fields of FILE that a rebuild carries over: the user slots and the
 ** ~bcat-sentence--compared~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 264
+:LINE: 265
 :SIGNATURE: (bcat-sentence--compared file)
 :END:
 
@@ -13494,7 +13495,7 @@ as ((NAME . TEXT) …) — every `*NAME:* TEXT' paragraph, in order.
 ** ~bcat-sentence--old-references~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 279
+:LINE: 280
 :SIGNATURE: (bcat-sentence--old-references file)
 :END:
 
@@ -13505,7 +13506,7 @@ slots (DharmaMitra, Discussion).
 ** ~bcat-sentence--extra-references~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 298
+:LINE: 299
 :SIGNATURE: (bcat-sentence--extra-references names refs)
 :END:
 
@@ -13515,7 +13516,7 @@ a machine name (Translation, DharmaMitra) — marks stripped.
 ** ~bcat-sentence--write~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 307
+:LINE: 308
 :SIGNATURE: (bcat-sentence--write file text)
 :END:
 
@@ -13526,7 +13527,7 @@ were read by the caller).
 ** ~bcat-sentence--save-visit~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 328
+:LINE: 329
 :SIGNATURE: (bcat-sentence--save-visit file)
 :END:
 
@@ -13536,7 +13537,7 @@ typing is read (and kept) by a rebuild.
 ** ~bcat-sentence--unaligned~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 355
+:LINE: 356
 :SIGNATURE: (bcat-sentence--unaligned file)
 :END:
 
@@ -13547,7 +13548,7 @@ stripped.
 ** ~bcat-sentence-fetch-state~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 367
+:LINE: 368
 :SIGNATURE: (bcat-sentence-fetch-state file seg-nums)
 :END:
 
@@ -13559,7 +13560,7 @@ nil when the file is complete.
 ** ~bcat-sentence--own-translations~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 382
+:LINE: 383
 :SIGNATURE: (bcat-sentence--own-translations text)
 :END:
 
@@ -13569,7 +13570,7 @@ The ⟦N⟧ translations in TEXT: ((N . TRANSLATION) …), without the
 ** ~bcat-sentence--block-lines~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 391
+:LINE: 392
 :SIGNATURE: (bcat-sentence--block-lines block)
 :END:
 
@@ -13578,7 +13579,7 @@ The lines of a translation BLOCK without their org line breaks.
 ** ~bcat-sentence--align-merge~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 396
+:LINE: 397
 :SIGNATURE: (bcat-sentence--align-merge text parsed)
 :END:
 
@@ -13592,17 +13593,18 @@ Everything else stays as it is.
 ** ~bcat-sentence--unreadable~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 455
+:LINE: 456
 :SIGNATURE: (bcat-sentence--unreadable what file response problem)
 :END:
 
 Report that the answer of kind WHAT for FILE could not be read
-(PROBLEM says why) and keep RESPONSE for diagnosis.  Returns nil.
+(PROBLEM says why) and keep RESPONSE for diagnosis — as a message and
+on FILE's status line.  Returns nil.
 
 ** ~bcat-sentence--align-land~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 463
+:LINE: 469
 :SIGNATURE: (bcat-sentence--align-land file response)
 :END:
 
@@ -13612,7 +13614,7 @@ the answer is unreadable.
 ** ~bcat-sentence--align-one~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 475
+:LINE: 482
 :SIGNATURE: (bcat-sentence--align-one file sentence source-file)
 :END:
 
@@ -13622,7 +13624,7 @@ no DharmaMitra, no new analysis.
 ** ~bcat-sentence--references-for~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 499
+:LINE: 507
 :SIGNATURE: (bcat-sentence--references-for file sent-num source-file)
 :END:
 
@@ -13633,18 +13635,19 @@ compared of FILE.
 ** ~bcat-sentence--prepare~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 508
+:LINE: 516
 :SIGNATURE: (bcat-sentence--prepare file sentence source-file)
 :END:
 
 Make FILE a template file before a fetch: create a missing one, and
 rebuild one still in the old layout (Carsten: „komplett neu bauen“) —
 user slots, #+CREATED and references pasted by hand carried over.
+Returns `created', `rebuilt' or nil (the file was a template file).
 
 ** ~bcat-sentence--dharmamitra~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 525
+:LINE: 536
 :SIGNATURE: (bcat-sentence--dharmamitra file sentence)
 :END:
 
@@ -13654,7 +13657,7 @@ must not stop the analysis).
 ** ~bcat-sentence--prompts~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 541
+:LINE: 552
 :SIGNATURE: (bcat-sentence--prompts sentence source-file refs)
 :END:
 
@@ -13664,7 +13667,7 @@ the Sanskrit prompts for a Sanskrit source, the Tibetan ones else.
 ** ~bcat-sentence--land~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 561
+:LINE: 572
 :SIGNATURE: (bcat-sentence--land file sentence source-file refs response)
 :END:
 
@@ -13677,7 +13680,7 @@ marked from the answer's segment parts.
 ** ~bcat-sentence--fetch-one~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 589
+:LINE: 601
 :SIGNATURE: (bcat-sentence--fetch-one file sentence source-file)
 :END:
 
@@ -13688,7 +13691,7 @@ request through the queue.
 ** ~bcat-sentence-fetch~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 614
+:LINE: 630
 :SIGNATURE: (bcat-sentence-fetch scope &optional force)
 :END:
 
@@ -13704,7 +13707,7 @@ Returns (:sentences N :fired N :complete N :align N).
 ** ~bcat-sentence-templates~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 40
+:LINE: 41
 :TYPE: 'boolean
 :GROUP: buddhist-cat
 :DEFAULT: t
@@ -13718,7 +13721,7 @@ the old pipeline.
 ** ~tibetan-analysis--target-lang~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 37
+:LINE: 38
 :END:
 
 /(no docstring)/
@@ -13726,7 +13729,7 @@ the old pipeline.
 ** ~tibetan-analysis--source-lang~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 38
+:LINE: 39
 :END:
 
 /(no docstring)/
@@ -13734,7 +13737,7 @@ the old pipeline.
 ** ~bcat-sentence--user-slots~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 246
+:LINE: 247
 :DEFAULT: '
 :END:
 
@@ -13743,7 +13746,7 @@ the old pipeline.
 ** ~tibetan-cascade-subtree-confirm-threshold~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 347
+:LINE: 348
 :END:
 
 /(no docstring)/
@@ -13751,7 +13754,7 @@ the old pipeline.
 ** ~tibetan-dharmamitra-sentence-request-delay~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 348
+:LINE: 349
 :END:
 
 /(no docstring)/
@@ -13759,7 +13762,7 @@ the old pipeline.
 ** ~tibetan-sentence-claude--dm-schedule-count~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 349
+:LINE: 350
 :END:
 
 /(no docstring)/
@@ -13767,12 +13770,114 @@ the old pipeline.
 ** ~bcat-sentence-after-fetch-functions~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 351
+:LINE: 352
 :DEFAULT: nil
 :END:
 
 Abnormal hook run with the sentence FILE after C-c u G has written
 it (§5.74) — C-c u H (PDF + reMarkable) hangs here.
+
+
+* persist/bcat-status.el
+:PROPERTIES:
+:CUSTOM_ID: persist/bcat-status.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/persist/bcat-status.el
+:END:
+
+** ~bcat-status-mode~  /major mode/
+:PROPERTIES:
+:KIND: define-derived-mode
+:LINE: 38
+:SIGNATURE: (bcat-status-mode …)
+:END:
+
+/(no docstring)/
+
+** ~bcat-status--buffer~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 41
+:SIGNATURE: (bcat-status--buffer)
+:END:
+
+/(no docstring)/
+
+** ~bcat-status--line~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 47
+:SIGNATURE: (bcat-status--line label steps)
+:END:
+
+The text of a sentence line: LABEL and STEPS in the fixed order.
+
+** ~bcat-status-begin~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 54
+:SIGNATURE: (bcat-status-begin command label items)
+:END:
+
+Open a block for a run of COMMAND ("C-c u G") on LABEL; ITEMS
+((FILE . SENTENCE-LABEL) …) get a line each.  Shows the buffer
+(`bcat-status-show') without selecting it.
+
+** ~bcat-status-step~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 74
+:SIGNATURE: (bcat-status-step file key text)
+:END:
+
+Write step KEY (one of `bcat-status--order') of FILE's line as TEXT;
+a later TEXT for the same step replaces the earlier one.  Nothing for a
+file without a line.
+
+** ~bcat-status-show~  /customize variable/
+:PROPERTIES:
+:KIND: defcustom
+:LINE: 24
+:TYPE: 'boolean
+:GROUP: bcat-status
+:DEFAULT: t
+:END:
+
+When non-nil, a run of C-c u G / C-c u H shows the status buffer.
+
+** ~bcat-status-buffer-name~  /constant/
+:PROPERTIES:
+:KIND: defconst
+:LINE: 29
+:DEFAULT: "*Buddhist CAT*"
+:END:
+
+The status buffer.
+
+** ~bcat-status--order~  /constant/
+:PROPERTIES:
+:KIND: defconst
+:LINE: 32
+:DEFAULT: '
+:END:
+
+/(no docstring)/
+
+** ~bcat-status--entries~  /variable/
+:PROPERTIES:
+:KIND: defvar
+:LINE: 35
+:DEFAULT: (make-hash-table :test 'equal)
+:END:
+
+Sentence file → (MARKER LABEL STEPS) of its line in the newest block.
+
+** ~bcat-status~  /customize group/
+:PROPERTIES:
+:KIND: defgroup
+:LINE: 20
+:END:
+
+The status buffer of C-c u G / C-c u H.
 
 
 * persist/bcat-template.el
@@ -21513,7 +21618,7 @@ The session commands that create FOLDER-BASE and FOLDER and put TMP.
 :PROPERTIES:
 :KIND: defun
 :LINE: 459
-:SIGNATURE: (tibetan-discussion-paper--upload pdf title label)
+:SIGNATURE: (tibetan-discussion-paper--upload pdf title label &optional done)
 :END:
 
 Upload PDF to the reMarkable with rmapi: into the folder
@@ -21524,13 +21629,15 @@ sentence or § — "Satz 28", "Saetze 24-28"; names ASCII-only,
 document of that name already exists there, a second session puts
 it with a time stamp appended instead, so notes written on the
 earlier one are never overwritten.  Asynchronous; the result is
-reported as a message.  Returns non-nil when the upload was started,
-nil (with a message) when rmapi is not installed.
+reported as a message and to DONE, when given: (t PATH) with the
+document as placed, or (nil REASON) — the status of C-c u G (§5.74).
+Returns non-nil when the upload was started, nil (with a message) when
+rmapi is not installed.
 
 ** ~tibetan-discussion-paper-upload-many~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 506
+:LINE: 510
 :SIGNATURE: (tibetan-discussion-paper-upload-many items)
 :END:
 
@@ -21542,7 +21649,7 @@ session's command list, or nil without rmapi.
 ** ~tibetan-discussion-paper--generated-buffer-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 544
+:LINE: 548
 :SIGNATURE: (tibetan-discussion-paper--generated-buffer-p)
 :END:
 
@@ -21551,7 +21658,7 @@ Non-nil when the current buffer is a generated discussion paper.
 ** ~tibetan-discussion-paper--title-and-label~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 550
+:LINE: 554
 :SIGNATURE: (tibetan-discussion-paper--title-and-label org)
 :END:
 
@@ -21561,7 +21668,7 @@ Non-nil when the current buffer is a generated discussion paper.
 ** ~tibetan-discussion-paper--export-and-upload~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 560
+:LINE: 564
 :SIGNATURE: (tibetan-discussion-paper--export-and-upload org &optional no-open)
 :END:
 
@@ -21572,7 +21679,7 @@ return the PDF.
 ** ~tibetan-discussion-paper--sentence-scope~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 591
+:LINE: 595
 :SIGNATURE: (tibetan-discussion-paper--sentence-scope source-file sent-num)
 :END:
 
@@ -21581,7 +21688,7 @@ The one-sentence scope of SENT-NUM in SOURCE-FILE.
 ** ~tibetan-discussion-paper--complete-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 596
+:LINE: 600
 :SIGNATURE: (tibetan-discussion-paper--complete-p file)
 :END:
 
@@ -21593,7 +21700,7 @@ Section asks for one.
 ** ~tibetan-discussion-paper-auto-build~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 611
+:LINE: 615
 :SIGNATURE: (tibetan-discussion-paper-auto-build scope &optional date)
 :END:
 
@@ -21604,7 +21711,7 @@ nothing happens and nil is returned.  Returns the PDF otherwise.
 ** ~tibetan-discussion-paper--temp-source-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 627
+:LINE: 631
 :SIGNATURE: (tibetan-discussion-paper--temp-source-p file)
 :END:
 
@@ -21617,7 +21724,7 @@ to the device.
 ** ~tibetan-discussion-paper--after-fetch~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 637
+:LINE: 641
 :SIGNATURE: (tibetan-discussion-paper--after-fetch source-file sentences folder requested)
 :END:
 
@@ -21628,7 +21735,7 @@ remembered for `--maybe-build'.
 ** ~tibetan-discussion-paper--maybe-build~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 655
+:LINE: 659
 :SIGNATURE: (tibetan-discussion-paper--maybe-build file)
 :END:
 
@@ -21638,7 +21745,7 @@ build it once and forget it.
 ** ~tibetan-discussion-paper~  /function (cl)/  ⚡  ↗
 :PROPERTIES:
 :KIND: cl-defun
-:LINE: 678
+:LINE: 682
 :SIGNATURE: (tibetan-discussion-paper &optional org-only)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -21680,7 +21787,7 @@ with rmapi (`tibetan-discussion-paper-remarkable-folder').
 ** ~tibetan-discussion-paper-auto~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 577
+:LINE: 581
 :TYPE: 'boolean
 :GROUP: buddhist-cat
 :DEFAULT: t
@@ -21724,7 +21831,7 @@ Non-nil while an rmapi session runs.
 ** ~tibetan-discussion-paper--pending~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 587
+:LINE: 591
 :DEFAULT: (make-hash-table :test #'equal)
 :END:
 

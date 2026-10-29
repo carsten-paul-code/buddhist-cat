@@ -456,7 +456,7 @@ rest vanish.  Carsten (20.10.): the folder \"bDen pa gnyis la \\='jug pa
         (list "mkdir" folder)
         (list "put" tmp folder)))
 
-(defun tibetan-discussion-paper--upload (pdf title label)
+(defun tibetan-discussion-paper--upload (pdf title label &optional done)
   "Upload PDF to the reMarkable with rmapi: into the folder
 `/<tibetan-discussion-paper-remarkable-folder>/<TITLE>' (one folder
 per work, created when missing), as the document LABEL (the
@@ -465,11 +465,14 @@ sentence or § — \"Satz 28\", \"Saetze 24-28\"; names ASCII-only,
 document of that name already exists there, a second session puts
 it with a time stamp appended instead, so notes written on the
 earlier one are never overwritten.  Asynchronous; the result is
-reported as a message.  Returns non-nil when the upload was started,
-nil (with a message) when rmapi is not installed."
+reported as a message and to DONE, when given: (t PATH) with the
+document as placed, or (nil REASON) — the status of C-c u G (§5.74).
+Returns non-nil when the upload was started, nil (with a message) when
+rmapi is not installed."
   (if (not (executable-find "rmapi"))
       (progn
         (message "rmapi nicht gefunden — PDF liegt unter %s" pdf)
+        (when done (funcall done nil "rmapi nicht gefunden"))
         nil)
     (let* ((base (concat "/" (string-trim tibetan-discussion-paper-remarkable-folder
                                           "/+" "/+")))
@@ -487,7 +490,8 @@ nil (with a message) when rmapi is not installed."
                        (pcase (tibetan-discussion-paper--put-result out docname)
                          ('ok
                           (ignore-errors (delete-directory dir t))
-                          (message "reMarkable: %s/%s" folder docname))
+                          (message "reMarkable: %s/%s" folder docname)
+                          (when done (funcall done t (format "%s/%s" folder docname))))
                          ((and 'exists (guard (functionp retry)))
                           ;; Name taken: once more with a time stamp —
                           ;; the earlier document stays.
@@ -495,11 +499,11 @@ nil (with a message) when rmapi is not installed."
                                                  (format-time-string "%Y-%m-%d %H%M"))))
                          (_
                           (ignore-errors (delete-directory dir t))
-                          (message "reMarkable-Upload fehlgeschlagen (%s): %s — PDF liegt unter %s"
-                                   docname
-                                   (string-trim (replace-regexp-in-string
-                                                 "\\[/[^]]*\\]>[ \t]*" "" out))
-                                   pdf)))))))))
+                          (let ((reason (string-trim (replace-regexp-in-string
+                                                      "\\[/[^]]*\\]>[ \t]*" "" out))))
+                            (message "reMarkable-Upload fehlgeschlagen (%s): %s — PDF liegt unter %s"
+                                     docname reason pdf)
+                            (when done (funcall done nil reason)))))))))))
       (funcall put name (lambda (stamped) (funcall put stamped nil)))
       t)))
 

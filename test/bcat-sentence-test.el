@@ -440,6 +440,31 @@ that nothing was fetched and how to fetch anew."
                                           (string-match-p "C-u C-c u G" m)))
                          messages))))))
 
+(ert-deftest bcat-sentence-fetch-status ()
+  "Carsten 29.10.: „So eine Statusanzeige nach C-c u G wäre eigentlich
+auch ganz nett.“  The status buffer shows per sentence what happened:
+the file built, DharmaMitra, Claude — and for a filled file that
+nothing was fetched and how to fetch anew; an unreadable answer with
+its reason."
+  (bcat-sentence-test--with-source
+    (let ((bcat-status-show nil)
+          (bcat-status--entries (make-hash-table :test 'equal))
+          (bcat-analysis-response-directory (expand-file-name "responses" dir)))
+      (when (get-buffer bcat-status-buffer-name) (kill-buffer bcat-status-buffer-name))
+      (bcat-sentence-test--with-stubs bcat-sentence-test--answer
+        (bcat-sentence-test--fetch src)
+        (bcat-sentence-test--fetch src))
+      (let ((text (with-current-buffer bcat-status-buffer-name (buffer-string))))
+        (should (string-match-p "^C-c u G · Satz 9 · [0-9:]+\n  Satz 9  angelegt · DharmaMitra ✓ · Claude ✓$" text))
+        (should (string-match-p "^  Satz 9  vollständig — nichts abgerufen (neu abrufen: C-u C-c u G)$" text)))
+      (kill-buffer bcat-status-buffer-name)
+      (bcat-sentence-test--with-stubs "no json"
+        (cl-letf (((symbol-function 'y-or-n-p) (lambda (_q) t)))
+          (tibetan-cascade-fetch (list :source src :sent-nums '(9) :label "Satz 9") t)))
+      (should (string-match-p "^  Satz 9  DharmaMitra ✓ · Claude: nicht lesbar (kein JSON-Objekt) — Antwort: .*sent-009-bden-"
+                              (with-current-buffer bcat-status-buffer-name (buffer-string))))
+      (kill-buffer bcat-status-buffer-name))))
+
 (ert-deftest bcat-sentence-fetch-force-refetches ()
   "C-u C-c u G: a filled file is analysed anew (DharmaMitra + Claude)
 after a question naming the count — the user slots stay; declined,

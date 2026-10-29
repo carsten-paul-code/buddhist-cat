@@ -20,13 +20,14 @@
 (require 'cl-lib)
 (require 'subr-x)
 (require 'bcat-sentence)
+(require 'bcat-status)
 
 (declare-function tibetan-sentence--source-file-from-analysis "tibetan-sentence-persist" (analysis-file))
 (declare-function tibetan-sentence--sent-id-from-filename "tibetan-sentence-persist" (filename))
 (declare-function tibetan-sentence--filepath "tibetan-sentence-persist" (sent-num &optional folder source-file))
 (declare-function tibetan-cascade--collect-sentences "tibetan-cascade" ())
 (declare-function tibetan-cascade--scope-at-point "tibetan-cascade" ())
-(declare-function tibetan-discussion-paper--upload "tibetan-discussion-paper" (pdf title label))
+(declare-function tibetan-discussion-paper--upload "tibetan-discussion-paper" (pdf title label &optional done))
 (declare-function tibetan-discussion-paper--temp-source-p "tibetan-discussion-paper" (file))
 (declare-function tibetan-handout "tibetan-handout" (&optional org-only))
 (declare-function org-latex-export-to-pdf "ox-latex")
@@ -267,10 +268,16 @@ reMarkable (`bcat-export-upload').  Returns the PDF path."
          (pdf (bcat-export-pdf file (bcat-export-head-lines
                                      (plist-get info :folder) (plist-get info :work)
                                      (plist-get info :sent-num) (plist-get info :verse)))))
+    (bcat-status-step file :pdf "PDF ✓")
     (if bcat-export-upload
         (progn
           (require 'tibetan-discussion-paper)
-          (tibetan-discussion-paper--upload pdf (plist-get info :work) (plist-get info :label)))
+          (bcat-status-step file :upload "reMarkable …")
+          (tibetan-discussion-paper--upload
+           pdf (plist-get info :work) (plist-get info :label)
+           (lambda (ok what)
+             (bcat-status-step file :upload (if ok (concat "reMarkable ✓ " what)
+                                              (concat "reMarkable: Fehler — " what))))))
       (message "PDF: %s" pdf))
     pdf))
 
@@ -286,7 +293,8 @@ rmapi failure must not spoil the landed analysis."
     (condition-case err
         (bcat-export-file file)
       (error (message "C-c u H nach C-c u G fehlgeschlagen (%s): %s"
-                      (file-name-nondirectory file) (error-message-string err))))))
+                      (file-name-nondirectory file) (error-message-string err))
+             (bcat-status-step file :pdf (concat "PDF: Fehler — " (error-message-string err)))))))
 
 (add-hook 'bcat-sentence-after-fetch-functions #'bcat-export-after-fetch)
 
@@ -303,6 +311,8 @@ old handout."
     (cond
      ((and file (bcat-sentence-file-p file))
       (when (buffer-modified-p) (save-buffer))
+      (bcat-status-begin "C-c u H" (file-name-base file)
+                         (list (cons file (plist-get (bcat-export-info file) :label))))
       (bcat-export-file file))
      ((and file (string-match-p "\\`sent-[0-9]" (file-name-nondirectory file)))
       (let ((src (tibetan-sentence--source-file-from-analysis file)))
@@ -324,6 +334,9 @@ old handout."
             (when (and (> (length ready) tibetan-cascade-subtree-confirm-threshold)
                        (not (y-or-n-p (format "%d PDFs erzeugen und hochladen? " (length ready)))))
               (user-error "Abgebrochen"))
+            (bcat-status-begin "C-c u H" (plist-get scope :label)
+                               (mapcar (lambda (f) (cons f (plist-get (bcat-export-info f) :label)))
+                                       ready))
             (mapc #'bcat-export-file ready)
             (message "C-c u H: %d PDF(s)%s" (length ready)
                      (if (> old 0)
