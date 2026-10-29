@@ -132,6 +132,12 @@ segment as transmitted, the references."
     (should (string-match-p "never a backslash before an apostrophe" sys))
     (should (string-match-p "not its notes" sys))
     (should-not (string-match-p "in full" sys))
+    ;; 29.10., TĀ 1007 (first real answer): glosses of 60 characters with
+    ;; comments split a segment into five tables; a „Dyczkowski 2023: []“
+    ;; line; a sandhi said to be written apart that the text joins.
+    (should (string-match-p "at most 30 characters" sys))
+    (should (string-match-p "never a line for a translator without marks" sys))
+    (should (string-match-p "as it stands in the transmitted text" sys))
     (should (string-match-p "in English" sys))
     (should (string-match-p "in German" (bcat-analysis-sanskrit-system-prompt "de")))
     (should (string-match-p "\\`Abhinavagupta, Tantrāloka" user))
