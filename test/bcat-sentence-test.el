@@ -423,6 +423,53 @@ missing is fetched) and leaves the file as it is."
         (should-not done)
         (should (equal before (bcat-sentence-test--file-text src)))))))
 
+(ert-deftest bcat-sentence-fetch-complete-says-how-to-refetch ()
+  "29.10., TĀ 1007: C-c u G on a filled file did nothing, and the only
+sign was „0 abgerufen … 1 vollständig“.  The message now says plainly
+that nothing was fetched and how to fetch anew."
+  (bcat-sentence-test--with-source
+    (bcat-sentence-test--create src)
+    (bcat-sentence-test--with-stubs bcat-sentence-test--answer
+      (bcat-sentence-test--fetch src)
+      (let ((messages '()))
+        (cl-letf (((symbol-function 'message)
+                   (lambda (fmt &rest args) (push (apply #'format-message fmt args) messages))))
+          (bcat-sentence-test--fetch src))
+        (should (cl-some (lambda (m) (and (string-match-p "vollständig" m)
+                                          (string-match-p "nichts abgerufen" m)
+                                          (string-match-p "C-u C-c u G" m)))
+                         messages))))))
+
+(ert-deftest bcat-sentence-fetch-force-refetches ()
+  "C-u C-c u G: a filled file is analysed anew (DharmaMitra + Claude)
+after a question naming the count — the user slots stay; declined,
+nothing is sent."
+  (bcat-sentence-test--with-source
+    (bcat-sentence-test--create src)
+    (let ((file (tibetan-sentence--filepath 9 folder src)))
+      (bcat-sentence-test--with-stubs bcat-sentence-test--answer
+        (bcat-sentence-test--fetch src))
+      (with-temp-buffer
+        (insert-file-contents file)
+        (goto-char (point-min))
+        (re-search-forward "^\\* My Notes\n")
+        (insert "Meine Notiz.\n")
+        (write-region (point-min) (point-max) file nil 0))
+      (let ((asked nil) (dm 0))
+        (bcat-sentence-test--with-stubs bcat-sentence-test--answer
+          (cl-letf (((symbol-function 'y-or-n-p) (lambda (q) (setq asked q) nil)))
+            (tibetan-cascade-fetch (list :source src :sent-nums '(9) :label "Satz 9") t))
+          (should (string-match-p "1 Satz.*neu analysieren" asked))
+          (should (= 0 submits))
+          (cl-letf (((symbol-function 'y-or-n-p) (lambda (_q) t))
+                    ((symbol-function 'tibetan-dharmamitra-api-chat-translate)
+                     (lambda (&rest _) (cl-incf dm) "DM")))
+            (tibetan-cascade-fetch (list :source src :sent-nums '(9) :label "Satz 9") t))
+          (should (= 1 submits))
+          (should (= 1 dm))
+          (should (equal (list file) done)))
+        (should (string-match-p "^\\* My Notes\nMeine Notiz\\.$" (bcat-sentence-test--file-text src)))))))
+
 (ert-deftest bcat-sentence-fetch-rebuilds-old-layout ()
   "Carsten: „bei C-c u G komplett neu bauen, wenn noch im alten Layout“.
 An old-layout file is rebuilt in the template form and analysed; My

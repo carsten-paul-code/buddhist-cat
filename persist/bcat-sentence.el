@@ -611,11 +611,13 @@ request through the queue."
             (bcat-sentence--land f sentence source-file refs response))))))
     'fired))
 
-(defun bcat-sentence-fetch (scope)
+(defun bcat-sentence-fetch (scope &optional force)
   "C-c u G for a source with a template (§5.74): every sentence of
 SCOPE gets its file in the template form (created, or rebuilt from the
 old layout) and — when still incomplete — one analysis (DharmaMitra,
-then Claude).  A filled file is left alone.  More than
+then Claude).  A filled file is left alone — FORCE (C-u C-c u G)
+analyses it anew, after a question naming the count (29.10., TĀ 1007:
+nothing changed and nothing said so).  More than
 `tibetan-cascade-subtree-confirm-threshold' requests ask first.
 Returns (:sentences N :fired N :complete N :align N)."
   (let* ((src (plist-get scope :source))
@@ -635,15 +637,22 @@ Returns (:sentences N :fired N :complete N :align N)."
                (list :sentences (length sentences) :fired 0 :complete 0 :align 0))
       (dolist (s sentences) (bcat-sentence--prepare (funcall file-of s) s src))
       (let* ((states (mapcar (lambda (s)
-                               (cons s (bcat-sentence-fetch-state
-                                        (funcall file-of s) (mapcar #'car (plist-get s :segs)))))
+                               (cons s (if force
+                                           'full
+                                         (bcat-sentence-fetch-state
+                                          (funcall file-of s) (mapcar #'car (plist-get s :segs))))))
                              sentences))
              (todo (cl-remove-if-not #'cdr states))
              (align (cl-count-if (lambda (c) (eq (cdr c) 'align)) states))
              (go (and todo
-                      (or (<= (length todo) tibetan-cascade-subtree-confirm-threshold)
-                          (y-or-n-p (format "%s: %d Sätze an Claude senden (%d neue Analyse(n), %d Zuordnung(en))? "
-                                            label (length todo) (- (length todo) align) align)))))
+                      (cond
+                       (force
+                        (y-or-n-p (format "%s: %d %s neu analysieren — je ein DharmaMitra- und ein Claude-Abruf, deine Einträge bleiben? "
+                                          label (length todo)
+                                          (if (= 1 (length todo)) "Satz" "Sätze"))))
+                       ((<= (length todo) tibetan-cascade-subtree-confirm-threshold) t)
+                       (t (y-or-n-p (format "%s: %d Sätze an Claude senden (%d neue Analyse(n), %d Zuordnung(en))? "
+                                            label (length todo) (- (length todo) align) align))))))
              (fired 0))
         (when go
           (dolist (c todo)
@@ -652,10 +661,12 @@ Returns (:sentences N :fired N :complete N :align N)."
                           (bcat-sentence--align-one (funcall file-of (car c)) (car c) src)
                         (bcat-sentence--fetch-one (funcall file-of (car c)) (car c) src)))
               (cl-incf fired))))
-        (message "%s: %d Satz/Sätze — %d abgerufen (davon %d Zuordnung neuer Vergleichsübersetzungen), %d vollständig%s"
-                 label (length sentences) fired (if go align 0)
-                 (cl-count-if-not #'cdr states)
-                 (if (and todo (not go)) " (Abruf abgelehnt)" ""))
+        (if (null todo)
+            (message "%s: vollständig — nichts abgerufen (neu abrufen: C-u C-c u G)" label)
+          (message "%s: %d Satz/Sätze — %d abgerufen (davon %d Zuordnung neuer Vergleichsübersetzungen), %d vollständig%s"
+                   label (length sentences) fired (if go align 0)
+                   (cl-count-if-not #'cdr states)
+                   (if (and todo (not go)) " (Abruf abgelehnt)" "")))
         (list :sentences (length sentences) :fired fired
               :complete (cl-count-if-not #'cdr states) :align align)))))
 

@@ -64,7 +64,7 @@
 (declare-function bcat-sentence-template-name "bcat-sentence" (source-file))
 (declare-function bcat-sentence-create-file "bcat-sentence" (sent-num segs source-file filepath))
 (declare-function bcat-sentence-file-p "bcat-sentence" (file))
-(declare-function bcat-sentence-fetch "bcat-sentence" (scope))
+(declare-function bcat-sentence-fetch "bcat-sentence" (scope &optional force))
 
 ;; The §184-handout gloss tables (Masterarbeit three-view plan,
 ;; 2026-09-15).  Soft — the emitter is fboundp-guarded and
@@ -2541,7 +2541,7 @@ Not run when the user declined the fetch.  §5.64: the discussion
 paper builds the papers of the sentences that needed nothing and
 remembers the rest.")
 
-(defun tibetan-cascade-fetch (scope)
+(defun tibetan-cascade-fetch (scope &optional force)
   "Fetch Claude + DharmaMitra for the sentences of SCOPE (§5.60).
 SCOPE is a `tibetan-cascade--scope-at-point' plist.  Missing cascade
 files are created first (the AI-free skeleton); then every sentence
@@ -2553,12 +2553,13 @@ the leaf still defers under #+TIBETAN_DEFER_MT).  Independent of the
 auto-fire switches — this IS the explicit request.  More than
 `tibetan-cascade-subtree-confirm-threshold' → `y-or-n-p' with the
 count.  Returns (:sentences N :created N :fired N :complete N).
-§5.74: a source with a template (Tibetan) takes its own path —
+§5.74: a source with a template takes its own path —
 `bcat-sentence-fetch' (template files, one analysis per sentence, no
-old companion requests)."
+old companion requests); FORCE (C-u C-c u G) analyses filled sentences
+anew there.  Sources without a template ignore FORCE (C-u C-c u R)."
   (if (and (fboundp 'bcat-sentence-template-name)
            (bcat-sentence-template-name (plist-get scope :source)))
-      (bcat-sentence-fetch scope)
+      (bcat-sentence-fetch scope force)
     (tibetan-cascade--fetch-legacy scope)))
 
 (defun tibetan-cascade--fetch-legacy (scope)
@@ -2634,15 +2635,17 @@ old companion requests)."
             :companion companion))))
 
 ;;;###autoload
-(defun tibetan-fetch ()
+(defun tibetan-fetch (&optional force)
   "C-c u G: fetch Claude + DharmaMitra for the unit at point (§5.60).
 In a cascade source: the sentence at point, or every sentence under
 the heading at point (§, Section, group, `* Tibetan Text'); in a
 sent-NNN analysis buffer: that sentence.  Only what is still missing
 is fetched (`tibetan-cascade-fetch').  Since §5.60 C-c u A only
 creates/opens — this is THE way AI content arrives (C-u C-c u R
-re-fires explicitly, overwriting)."
-  (interactive)
+re-fires explicitly, overwriting).  With a prefix argument FORCE
+\(C-u C-c u G, sources with a template, §5.74): filled sentences are
+analysed anew too, after a question."
+  (interactive "P")
   (let ((file (buffer-file-name)))
     (when (and file
                (not (string-match-p "\\`sent-[0-9]"
@@ -2655,7 +2658,7 @@ re-fires explicitly, overwriting)."
       (unless (tibetan-analysis--cascade-p (plist-get scope :source))
         (user-error
          "C-c u G holt nur für Kaskaden-Quellen ab; hier feuert C-c u R (Neuanalyse)"))
-      (tibetan-cascade-fetch scope))))
+      (tibetan-cascade-fetch scope force))))
 
 ;;;###autoload
 (defun tibetan-cascade-reanalyze-subtree (source-file &optional force)
