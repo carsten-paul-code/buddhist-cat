@@ -12,7 +12,7 @@ NACH VORLAGE — Reading-Klassen, Tibetisch: `#+CAT_TEMPLATE: tibetan' im
 Quellkopf, Gliederung * Text / * Segments / * Sentence, C-c u A = Rumpf
 ohne KI, C-c u G = ein JSON-Abruf je Satz (+ DharmaMitra, + kleiner
 Zuordnungs-Abruf für ergänzte Vergleichsübersetzungen), endet mit C-c u H
-= die Satzdatei als PDF aufs reMarkable; ERT 2639.
+= die Satzdatei als PDF aufs reMarkable; ERT 2640.
 Previous: §5.73: UMBENENNUNG IN
 BUDDHIST CAT — erster Schritt: die Hülle (Hauptdatei/Feature
 buddhist-cat, alter Name lädt weiter, Customize-Gruppe, Menü, Repo,
@@ -4229,6 +4229,15 @@ ERT 2637 (2. Skip = pyewts fehlt dem python3 der Shell).
   Vers, darunter (nur wenn eine Zeile Glossen hat, Feld `glosses') der
   Vers mit Vokabeln, dann `*Translation:*' des ganzen Satzes (Feld
   `translation', bleibt auch unter Translations compared).  ERT 2639.
+- `9efcfc9' dritter Satz-9-Abruf „nicht lesbar“ — dank 957ea88 lag die
+  Antwort vor: Claude hatte in der Strukturzeile `=\'i=' geschrieben
+  (\' ist kein JSON-Escape).  Die Reparatur lässt einen Backslash vor
+  einem Nicht-Escape-Zeichen weg.  Die aufgehobene Antwort wurde per
+  `bcat-sentence--land' ohne neuen Abruf eingesetzt (DharmaMitra-Text
+  aus dem Git-Stand, da die Datei ihn nicht mehr hatte).  Lücke: bei
+  einer unlesbaren Antwort geht auch der DharmaMitra-Text des Laufs
+  verloren — spricht für das Aufheben von Antwort + Referenzen.
+  ERT 2640.
 **Offen:** C-c u G lässt eine vollständige Datei liegen — eine
 geänderte Vorlage erreicht fertige Sätze nur per neuem Abruf.
 Vorschlag an Carsten: Claudes geparste Antwort neben der Datei
