@@ -3,6 +3,8 @@
 ;; „→“-Vereinheitlichung).  Gerüst tibetan.org + diese Daten = Musterdatei.
 (defconst bcat-template-test--sent-009
   `((sent-num . "9")
+    (glosses . t)
+    (translation . "Indescribable (brjod du med pa: avācya) and invisible (bltar med pa: adraṣṭavya), immutable ('gyur ba med pa: avikāra) and uncompounded ('dus ma byas: asaṃskṛta) — if a yogin (rnal 'byor pa: yogin) realizes that, the obstructions of affliction (nyon mongs: kleśa) and of the knowable (śes bya'i sgrib pa: jñeyāvaraṇa) are abandoned.")
     (source-link . "[[file:../bden-gnyis-cat.org::*Sentence 9][bden-gnyis-cat.org / Sentence 9]]")
     (segment-list . "38, 39, 40, 41")
     (hash . "0fb9a1413fd15e6cec234b8abb1e02b9")

@@ -87,11 +87,28 @@ dictionary glosses in brackets — the same units as the tables
                    '(("[[steinert:'gyur ba med pa]['gyur ba med pa]]" "[[steinert:'dus]['dus]]" "ma byas")
                      ("immutable" "collect; assemble…" "")
                      ("?" "?" "?"))))))
+      ;; Carsten 29.10.: first the plain verse, then the one with the
+      ;; vocabulary; no translation line before C-c u G.
       (should (string-match-p
-               (regexp-quote (concat "#+begin_verse\n"
+               (regexp-quote (concat "* Text\n#+begin_verse\n"
+                                     "brjod du med pa bltar med pa/ /\n"
+                                     "'gyur ba med pa 'dus ma byas/ /\n"
+                                     "#+end_verse\n\n#+begin_verse\n"
                                      "brjod du med pa [inexpressible; ineffable] bltar med pa [invisible] / /\n"
                                      "'gyur ba med pa [immutable] 'dus [collect; assemble…] ma byas / /\n"
-                                     "#+end_verse"))
+                                     "#+end_verse\n\n* Segments"))
+               (bcat-sentence-test--create src))))))
+
+(ert-deftest bcat-sentence-create-text-without-glosses ()
+  "No word known to the dictionaries: the plain verse only — the same
+lines twice would be noise."
+  (bcat-sentence-test--with-source
+    (cl-letf (((symbol-function 'tibetan-gloss-table--unit-rows) #'ignore))
+      (should (string-match-p
+               (regexp-quote (concat "* Text\n#+begin_verse\n"
+                                     "brjod du med pa bltar med pa/ /\n"
+                                     "'gyur ba med pa 'dus ma byas/ /\n"
+                                     "#+end_verse\n\n* Segments"))
                (bcat-sentence-test--create src))))))
 
 (ert-deftest bcat-sentence-create-from-template ()

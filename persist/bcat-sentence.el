@@ -148,7 +148,16 @@ files (pasted by hand); KEEP an alist of fields carried over from an
 existing file (user slots, `created')."
   (bcat-sentence--with-source source-file
     (let* ((name (file-name-nondirectory source-file))
-           (date (format-time-string "%Y-%m-%d")))
+           (date (format-time-string "%Y-%m-%d"))
+           (segments (mapcar (lambda (s)
+                               (let ((wylie (bcat-sentence--wylie (cdr s)))
+                                     (rows (bcat-sentence--dictionary-rows (cdr s))))
+                                 `((num . ,(car s))
+                                   (wylie . ,wylie)
+                                   (glossed . ,(bcat-analysis-glossed-line
+                                                wylie (bcat-sentence--dictionary-words rows)))
+                                   (gloss-table . ,(bcat-sentence--dictionary-table rows)))))
+                             segs)))
       (append
        keep
        `((sent-num . ,sent-num)
@@ -158,15 +167,8 @@ existing file (user slots, `created')."
          (hash . ,(ignore-errors (tibetan-sentence--compute-hash (mapconcat #'cdr segs ""))))
          (created . ,date)
          (last-analyzed . ,date)
-         (segments . ,(mapcar (lambda (s)
-                                (let ((wylie (bcat-sentence--wylie (cdr s)))
-                                      (rows (bcat-sentence--dictionary-rows (cdr s))))
-                                  `((num . ,(car s))
-                                    (wylie . ,wylie)
-                                    (glossed . ,(bcat-analysis-glossed-line
-                                                 wylie (bcat-sentence--dictionary-words rows)))
-                                    (gloss-table . ,(bcat-sentence--dictionary-table rows)))))
-                              segs))
+         (segments . ,segments)
+         (glosses . ,(bcat-analysis-glosses-p segments))
          (comparison . ,(bcat-sentence--comparison
                          (append (bcat-sentence--references sent-num source-file)
                                  extra-refs))))))))

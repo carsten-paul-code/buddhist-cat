@@ -283,6 +283,15 @@ WORDS do not cover its syllables exactly: the text is never altered."
                   words " ")
        (if (string-empty-p tail) "" (concat " " (string-trim tail)))))))
 
+(defun bcat-analysis-glosses-p (segments)
+  "t when a verse line of SEGMENTS (template fields) carries glosses —
+the template then shows the glossed verse below the plain one."
+  (and (cl-some (lambda (s)
+                  (let ((g (alist-get 'glossed s)))
+                    (and g (not (equal g (alist-get 'wylie s))))))
+                segments)
+       t))
+
 (defun bcat-analysis--reference-lines (refs)
   "\"*NAME:* TEXT\" for each of REFS (alists with name and text)."
   (mapcar (lambda (r) (format "*%s:* %s" (bcat-analysis--field r 'name)
@@ -388,34 +397,37 @@ header, segments with num and wylie, user sections) completed from
 PARSED (Claude's answer) and REFS, the reference translations sent
 with the request ((NAME . TEXT) …).  Segments are matched by number; a
 segment Claude skipped keeps its rump fields."
-  (let ((by-num (mapcar (lambda (s) (cons (alist-get 'num s) s))
-                        (alist-get 'segments parsed))))
+  (let* ((by-num (mapcar (lambda (s) (cons (alist-get 'num s) s))
+                         (alist-get 'segments parsed)))
+         (segments
+          (mapcar
+           (lambda (seg)
+             (let* ((num (alist-get 'num seg))
+                    (c (cdr (assoc (if (stringp num) (string-to-number num) num)
+                                   by-num))))
+               (if (null c)
+                   seg
+                 (append
+                  `((glossed . ,(let* ((wy (alist-get 'wylie seg))
+                                       (g (and wy (bcat-analysis-glossed-line
+                                                   wy (alist-get 'words c)))))
+                                  ;; Words that do not cover the line:
+                                  ;; whatever the rump had.
+                                  (if (or (null g) (equal g wy))
+                                      (or (alist-get 'glossed seg) wy)
+                                    g)))
+                    (gloss-table . ,(bcat-analysis-gloss-table (alist-get 'words c)))
+                    (translations . ,(bcat-analysis-translations-block
+                                      (if (stringp num) (string-to-number num) num) c))
+                    (structure . ,(bcat-analysis--field c 'structure))
+                    (note . ,(bcat-analysis--field c 'note))
+                    (concepts . ,(bcat-analysis--field c 'concepts)))
+                  seg))))
+           (alist-get 'segments base))))
     (append
-     `((segments
-        . ,(mapcar
-            (lambda (seg)
-              (let* ((num (alist-get 'num seg))
-                     (c (cdr (assoc (if (stringp num) (string-to-number num) num)
-                                    by-num))))
-                (if (null c)
-                    seg
-                  (append
-                   `((glossed . ,(let* ((wy (alist-get 'wylie seg))
-                                        (g (and wy (bcat-analysis-glossed-line
-                                                    wy (alist-get 'words c)))))
-                                   ;; Words that do not cover the line:
-                                   ;; whatever the rump had.
-                                   (if (or (null g) (equal g wy))
-                                       (or (alist-get 'glossed seg) wy)
-                                     g)))
-                     (gloss-table . ,(bcat-analysis-gloss-table (alist-get 'words c)))
-                     (translations . ,(bcat-analysis-translations-block
-                                       (if (stringp num) (string-to-number num) num) c))
-                     (structure . ,(bcat-analysis--field c 'structure))
-                     (note . ,(bcat-analysis--field c 'note))
-                     (concepts . ,(bcat-analysis--field c 'concepts)))
-                   seg))))
-            (alist-get 'segments base)))
+     `((segments . ,segments)
+       (glosses . ,(bcat-analysis-glosses-p segments))
+       (translation . ,(bcat-analysis--field parsed 'translation))
        (grammar . ,(bcat-analysis--field parsed 'grammar))
        (comparison . ,(bcat-analysis-comparison parsed refs)))
      base)))

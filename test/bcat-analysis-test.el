@@ -38,7 +38,8 @@ slots — what C-c u A knows without AI."
   (let ((fix bcat-template-test--sent-009))
     (cons (cons 'segments (mapcar (lambda (s) (list (assq 'num s) (assq 'wylie s)))
                                   (alist-get 'segments fix)))
-          (cl-remove-if (lambda (c) (memq (car c) '(segments grammar comparison))) fix))))
+          (cl-remove-if (lambda (c) (memq (car c) '(segments grammar comparison glosses translation)))
+                        fix))))
 
 (defconst bcat-analysis-test--refs
   '(("Lindtner 1981" . "[It is also] inexpressible (avācya) and invisible (adraṣṭavya), unchangeable (avikāra) and uncompounded (asaṃskṛta). When a yogi understands it he abandons the obstructions of defilement and cognizable (kleśajñeyāvaraṇa).")
