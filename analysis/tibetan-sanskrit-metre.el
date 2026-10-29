@@ -442,9 +442,10 @@ Viveka prose also ends in `//'."
                            (delete-dups (mapcar #'length padas)) "/")
                 (plist-get m :gana))))))
 
-(defun tibetan-metre--table (m)
+(defun tibetan-metre--table (m &optional bare)
   "One org table for the verse: per pāda a syllable row and a weight
-row; a `¦' column at the caesura; columns shared by all pādas."
+row; a `¦' column at the caesura; columns shared by all pādas.  The
+first column names the pāda (a, b, …) unless BARE."
   (let* ((padas (plist-get m :padas))
          (cut-of (lambda (i)
                    (cond ((plist-get m :caesura) (list (nth i (plist-get m :caesura))))
@@ -462,7 +463,9 @@ row; a `¦' column at the caesura; columns shared by all pādas."
                (push (if (eq (plist-get s :weight) 'G) "–" "⏑") wrow)
                (when (memq k cuts)
                  (push "¦" srow) (push "¦" wrow)))
-             (list (cons label (nreverse srow)) (cons "" (nreverse wrow))))))
+             (if bare
+                 (list (nreverse srow) (nreverse wrow))
+               (list (cons label (nreverse srow)) (cons "" (nreverse wrow)))))))
          (ncol (apply #'max (mapcar #'length rows)))
          (rows (mapcar (lambda (r) (append r (make-list (- ncol (length r)) "")))
                        rows))
@@ -478,36 +481,55 @@ row; a `¦' column at the caesura; columns shared by all pādas."
                                        " |"))))
      rows "\n")))
 
-(defun tibetan-metre-section (segments)
-  "The `** Metre' org block for the verse SEGMENTS, or nil for prose.
-An unrecognised verse (double daṇḍa at the end) gets a visible note
-with the bare scansion per line — never silence."
+(defconst tibetan-metre--legend
+  "Zeichen: ¦ Pause (yati) · | Pāda-Ende in der Zeile · – schwer (guru) · ⏑ leicht (laghu)"
+  "The sign legend under the metre line.")
+
+(defun tibetan-metre-recitation (segments &optional bare)
+  "The recitation of the verse SEGMENTS in parts, or nil for prose:
+:header (lines — metre with pattern and pause rule, a note when the
+metre has one, the sign legend), :verse (the lines with their pauses)
+and :table (the scansion, `tibetan-metre--table', the pāda letters
+dropped when BARE).  An unrecognised verse (double daṇḍa at the end)
+gets a note as header, no :verse, and the bare scansion per line as an
+example block — never silence."
   (let ((m (tibetan-metre-identify segments)))
     (cond
      (m
-      (concat
-       "** Metre\n"
-       (format "%s — %s; %s.\n" (plist-get m :name)
-               (tibetan-metre--description m) (tibetan-metre--pause-rule m))
-       (if (plist-get m :note) (concat (plist-get m :note) "\n") "")
-       "Zeichen: ¦ Pause (yati) · | Pāda-Ende in der Zeile · – schwer (guru) · ⏑ leicht (laghu)\n\n"
-       "#+begin_verse\n"
-       (mapconcat #'identity (tibetan-metre-mark-segments segments) "\n")
-       "\n#+end_verse\n\n"
-       (tibetan-metre--table m) "\n\n"))
+      (list :header (delq nil
+                          (list (format "%s — %s; %s." (plist-get m :name)
+                                        (tibetan-metre--description m)
+                                        (tibetan-metre--pause-rule m))
+                                (plist-get m :note)
+                                tibetan-metre--legend))
+            :verse (mapconcat #'identity (tibetan-metre-mark-segments segments) "\n")
+            :table (tibetan-metre--table m bare)))
      ((tibetan-metre--verse-p segments)
-      (concat
-       "** Metre\n"
-       "Metrum nicht erkannt — Silbenfolge je Zeile (Lesefehler oder seltenes Metrum?):\n\n"
-       "#+begin_example\n"
-       (mapconcat (lambda (seg)
-                    (let ((sc (tibetan-metre-scheme seg)))
-                      (format "%2d  %s"
-                              (length sc)
-                              (mapconcat (lambda (c) (if (eq c ?G) "–" "⏑"))
-                                         (string-to-list sc) " "))))
-                  segments "\n")
-       "\n#+end_example\n\n")))))
+      (list :header '("Metrum nicht erkannt — Silbenfolge je Zeile (Lesefehler oder seltenes Metrum?):")
+            :table (concat
+                    "#+begin_example\n"
+                    (mapconcat (lambda (seg)
+                                 (let ((sc (tibetan-metre-scheme seg)))
+                                   (format "%2d  %s"
+                                           (length sc)
+                                           (mapconcat (lambda (c) (if (eq c ?G) "–" "⏑"))
+                                                      (string-to-list sc) " "))))
+                               segments "\n")
+                    "\n#+end_example"))))))
+
+(defun tibetan-metre-section (segments)
+  "The `** Metre' org block for the verse SEGMENTS, or nil for prose
+\(from `tibetan-metre-recitation': an unrecognised verse gets its note
+and the bare scansion per line)."
+  (when-let ((r (tibetan-metre-recitation segments)))
+    (concat
+     "** Metre\n"
+     (mapconcat #'identity (plist-get r :header) "\n")
+     "\n\n"
+     (if (plist-get r :verse)
+         (concat "#+begin_verse\n" (plist-get r :verse) "\n#+end_verse\n\n")
+       "")
+     (plist-get r :table) "\n\n")))
 
 (defun tibetan-metre-label (segments)
   "One printable line for the verse SEGMENTS — name · pause rule —

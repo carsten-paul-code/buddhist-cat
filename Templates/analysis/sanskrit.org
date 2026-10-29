@@ -12,8 +12,9 @@ Suche (Kaskade): <Ordner der Quelle>/Templates/analysis/,
 Werkzeug.  Erwartete Ausgabe: samples/Sanskrit.org.
 
 Felder: sent-num source-link segment-list hash created last-analyzed;
-recitation (der Vers mit Pausen; nur bei Versen) metre (Metrum,
-Pausenregel, Zeichenerklärung) scansion (Silbentabelle);
+metre (Metrum, Pausenregel, Zeichenerklärung — nur bei Versen; ein
+nicht erkannter Vers hat hier den Hinweis) recitation (der Vers mit
+Pausen) scansion (Silbentabelle bzw. Silbenfolge je Zeile);
 segments: num samhita (die Zeile wie überliefert) glossed (Padapāṭha,
 Sandhis aufgelöst, Vokabeln in Klammern) gloss-table translations
 sandhi forms compounds structure note concepts;
@@ -34,17 +35,19 @@ Goldman 1999).
 #+CREATED: {{created}}
 #+LAST_ANALYZED: {{last-analyzed}}
 
-{{#recitation}}
+{{#metre}}
 * Recitation
 {{metre}}
+{{#recitation}}
 
 #+begin_verse
 {{recitation}}
 #+end_verse
+{{/recitation}}
 
 {{scansion}}
 
-{{/recitation}}
+{{/metre}}
 * Text
 #+begin_verse
 {{#segments}}

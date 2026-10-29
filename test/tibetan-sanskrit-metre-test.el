@@ -206,5 +206,31 @@ and the syllable table; nil for prose."
   (should-not (tibetan-metre-label '("iha khalu śāstrādāv alaukika /")))
   (should-not (tibetan-metre-table '("iha khalu śāstrādāv alaukika /"))))
 
+(ert-deftest tibetan-metre-recitation-parts ()
+  "The recitation in parts for the sentence template (§5.74, Carsten
+29.10.: „Es geht ja mit der Rezitation los“): header lines (metre with
+pattern and pause rule, the sign legend), the verse with its pauses,
+the scansion table — with BARE without the pāda letters a–d, which
+„verwirren eher als sie helfen“.  An unrecognised verse: the note and
+the bare scansion as an example block, no verse; prose: nil."
+  (let* ((lines '("atra madvāgaśaktāpi yanniyantraṇamullaset /"
+                  "tatpārameśvaraṃ śrīmanmahānandavijṛmbhitam // 7"))
+         (r (tibetan-metre-recitation lines t)))
+    (should (equal (list (concat "Śloka (Anuṣṭubh) — vier Pādas zu 8 Silben; in den geraden "
+                                 "Pādas Silbe 5–7 ⏑ – ⏑; keine feste Binnenpause — Pause am Pāda-Ende.")
+                         (concat "Zeichen: ¦ Pause (yati) · | Pāda-Ende in der Zeile · – schwer "
+                                 "(guru) · ⏑ leicht (laghu)"))
+                   (plist-get r :header)))
+    (should (equal (concat "atra madvāgaśaktāpi | yanniyantraṇamullaset /\n"
+                           "tatpārameśvaraṃ śrīman|mahānandavijṛmbhitam // 7")
+                   (plist-get r :verse)))
+    (should (string-prefix-p "| at  | ra | mad |" (plist-get r :table)))
+    (should (string-prefix-p "| a | at  |" (plist-get (tibetan-metre-recitation lines) :table))))
+  (let ((r (tibetan-metre-recitation '("abc def ghi /" "jkl // 3") t)))
+    (should (string-match-p "nicht erkannt" (car (plist-get r :header))))
+    (should-not (plist-get r :verse))
+    (should (string-prefix-p "#+begin_example\n" (plist-get r :table))))
+  (should-not (tibetan-metre-recitation '("iha khalu śāstrādāv alaukika /") t)))
+
 (provide 'tibetan-sanskrit-metre-test)
 ;;; tibetan-sanskrit-metre-test.el ends here

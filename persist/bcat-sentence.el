@@ -38,7 +38,7 @@
 
 (defcustom bcat-sentence-templates t
   "When non-nil, C-c u A creates new sentence files from the template
-\(§5.74) — for the languages that have one (Tibetan so far).  nil
+\(§5.74) — for the languages that have one (Tibetan, Sanskrit).  nil
 keeps the old layout; the test suite switches it off for the tests of
 the old pipeline."
   :type 'boolean
@@ -124,6 +124,17 @@ the label row (last)."
                    (function . ,(bcat-sentence--plain-cell l))))
                (car rows) (nth (- (length rows) 2) rows) (car (last rows)))))
 
+(defun bcat-sentence--recitation (texts)
+  "Recitation fields of a Sanskrit sentence with the segment lines TEXTS
+\(Carsten 29.10.: „Es geht ja mit der Rezitation los“): metre (its
+header lines with org line breaks), recitation (the verse with its
+pauses), scansion (without the pāda letters) — nil for prose."
+  (require 'tibetan-sanskrit-metre)
+  (when-let ((r (tibetan-metre-recitation texts t)))
+    `((metre . ,(mapconcat #'identity (plist-get r :header) " \\\\\n"))
+      (recitation . ,(plist-get r :verse))
+      (scansion . ,(plist-get r :table)))))
+
 (defun bcat-sentence--references (sent-num source-file)
   "The reference translations of sentence SENT-NUM: ((NAME . BODY) …)
 from the §-references of its Section and the sentence references —
@@ -149,17 +160,25 @@ existing file (user slots, `created')."
   (bcat-sentence--with-source source-file
     (let* ((name (file-name-nondirectory source-file))
            (date (format-time-string "%Y-%m-%d"))
-           (segments (mapcar (lambda (s)
-                               (let ((wylie (bcat-sentence--wylie (cdr s)))
-                                     (rows (bcat-sentence--dictionary-rows (cdr s))))
-                                 `((num . ,(car s))
-                                   (wylie . ,wylie)
-                                   (glossed . ,(bcat-analysis-glossed-line
-                                                wylie (bcat-sentence--dictionary-words rows)))
-                                   (gloss-table . ,(bcat-sentence--dictionary-table rows)))))
-                             segs)))
+           (sanskrit (equal "sanskrit" (bcat-sentence-template-name source-file)))
+           (segments
+            (mapcar (lambda (s)
+                      (if sanskrit
+                          ;; Without AI there is no padapāṭha: the line
+                          ;; as transmitted.
+                          `((num . ,(car s)) (samhita . ,(string-trim (cdr s))))
+                        (let ((wylie (bcat-sentence--wylie (cdr s)))
+                              (rows (bcat-sentence--dictionary-rows (cdr s))))
+                          `((num . ,(car s))
+                            (wylie . ,wylie)
+                            (glossed . ,(bcat-analysis-glossed-line
+                                         wylie (bcat-sentence--dictionary-words rows)))
+                            (gloss-table . ,(bcat-sentence--dictionary-table rows))))))
+                    segs)))
       (append
        keep
+       (and sanskrit
+            (bcat-sentence--recitation (mapcar (lambda (s) (string-trim (cdr s))) segs)))
        `((sent-num . ,sent-num)
          (source-link . ,(format "[[file:../%s::*Sentence %d][%s / Sentence %d]]"
                                  name sent-num name sent-num))

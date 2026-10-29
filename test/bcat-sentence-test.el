@@ -42,6 +42,42 @@
           "[It is also] inexpressible (avācya) and invisible (adraṣṭavya).\n")
   "Sentence references for sentence 9.")
 
+(defconst bcat-sentence-test--sa-source
+  (concat "#+TITLE: Tantrāloka, Kapitel 1 — CAT-Quelle\n"
+          "#+TIBETAN_LAYOUT: cascade\n"
+          "#+SOURCE_LANG: sa\n"
+          "#+CAT_TEMPLATE: sanskrit\n"
+          "#+TIBETAN_TARGET_LANG: en\n"
+          "#+TIBETAN_SENTENCE_REFS: refs.org\n\n"
+          "* Einleitende Verse\n** Section Jayaratha: Einleitungsverse\n"
+          "*** Sentence 1007\n:PROPERTIES:\n:VIVEKA: Einleitung\n:END:\n"
+          "**** Segment 685\natra madvāgaśaktāpi yanniyantraṇamullaset /\n"
+          "**** Segment 686\ntatpārameśvaraṃ śrīmanmahānandavijṛmbhitam // 7\n\n"
+          "*** Sentence 1008\n:PROPERTIES:\n:VIVEKA: Uddeśa zu TĀ 1.1\n:END:\n"
+          "**** Segment 687\niha khalu śāstrādāv alaukikāśīrvādamukhena parāmṛśati\n")
+  "A Sanskrit cascade source: Jayaratha's seventh introductory verse
+\(TĀ sentence 1007, a śloka) and a prose sentence of the Viveka.")
+
+(defconst bcat-sentence-test--sa-refs
+  (concat "#+TITLE: Dyczkowski 2023\n\n"
+          "** Sentence 1007\n*** Dyczkowski 2023\n"
+          "Although my speech is powerless here (in this task), whatever restriction may arise.\n")
+  "Sentence references for TĀ sentence 1007.")
+
+(defmacro bcat-sentence-test--with-sa-source (&rest body)
+  "Like `bcat-sentence-test--with-source' with the Sanskrit source."
+  (declare (indent 0))
+  `(bcat-sentence-test--with-source
+     (with-temp-file src (insert bcat-sentence-test--sa-source))
+     (with-temp-file (expand-file-name "refs.org" dir) (insert bcat-sentence-test--sa-refs))
+     ,@body))
+
+(defun bcat-sentence-test--create-n (src n)
+  "Create sentence N of SRC the way C-c u A does; return its text."
+  (let ((file (tibetan-cascade--create-file
+               n (tibetan-cascade--segs-for-sentence src n) src)))
+    (with-temp-buffer (insert-file-contents file) (buffer-string))))
+
 (defmacro bcat-sentence-test--with-source (&rest body)
   "Temp Tibetan cascade source SRC (+ refs.org) in DIR; FOLDER = its
 analysis/.  Templates on, the tool templates from the repository."
@@ -110,6 +146,52 @@ lines twice would be noise."
                                      "'gyur ba med pa 'dus ma byas/ /\n"
                                      "#+end_verse\n\n* Segments"))
                (bcat-sentence-test--create src))))))
+
+(ert-deftest bcat-sentence-create-sanskrit ()
+  "C-c u A on a Sanskrit source with #+CAT_TEMPLATE: sanskrit (§5.74,
+Carsten 29.10.): the Recitation first — metre, the verse with its
+pauses, the scansion without pāda letters —, * Text with the lines as
+transmitted, the segments (empty before C-c u G: without AI there is
+no padapāṭha), the reference under Translations compared.  No AI."
+  (bcat-sentence-test--with-sa-source
+    (let ((fired nil))
+      (cl-letf (((symbol-function 'tibetan-sentence-claude--request)
+                 (lambda (&rest _) (setq fired t))))
+        (let ((text (bcat-sentence-test--create-n src 1007)))
+          (should (string-match-p "^#\\+CAT_TEMPLATE: sanskrit$" text))
+          (should (string-match-p "^#\\+SOURCE_LANG: sa$" text))
+          (should (string-match-p
+                   (regexp-quote
+                    (concat "\n\n* Recitation\n"
+                            "Śloka (Anuṣṭubh) — vier Pādas zu 8 Silben; in den geraden Pādas "
+                            "Silbe 5–7 ⏑ – ⏑; keine feste Binnenpause — Pause am Pāda-Ende. \\\\\n"
+                            "Zeichen: ¦ Pause (yati) · | Pāda-Ende in der Zeile · – schwer (guru) "
+                            "· ⏑ leicht (laghu)\n\n"
+                            "#+begin_verse\natra madvāgaśaktāpi | yanniyantraṇamullaset /\n"
+                            "tatpārameśvaraṃ śrīman|mahānandavijṛmbhitam // 7\n#+end_verse\n\n"
+                            "| at  | ra | mad |"))
+                   text))
+          (should (string-match-p
+                   (regexp-quote
+                    (concat "\n\n* Text\n#+begin_verse\n"
+                            "atra madvāgaśaktāpi yanniyantraṇamullaset /\n"
+                            "tatpārameśvaraṃ śrīmanmahānandavijṛmbhitam // 7\n#+end_verse\n\n"
+                            "* Segments\n** Segment 685\n\n** Segment 686\n\n* Sentence\n"))
+                   text))
+          (should (string-match-p
+                   (regexp-quote "** Translations compared\n*Dyczkowski 2023:* Although my speech")
+                   text))
+          (should-not (string-match-p "steinert:\\|Translation:\\|Sanskrit Analysis\\|Word Analysis" text))
+          (should-not fired))))))
+
+(ert-deftest bcat-sentence-create-sanskrit-prose ()
+  "Viveka prose: no Recitation, the sentence under * Text."
+  (bcat-sentence-test--with-sa-source
+    (let ((text (bcat-sentence-test--create-n src 1008)))
+      (should-not (string-match-p "^\\* Recitation" text))
+      (should (string-match-p
+               (regexp-quote "* Text\n#+begin_verse\niha khalu śāstrādāv alaukikāśīrvādamukhena parāmṛśati\n#+end_verse")
+               text)))))
 
 (ert-deftest bcat-sentence-create-from-template ()
   "C-c u A on a Tibetan cascade source writes the template form: marker
