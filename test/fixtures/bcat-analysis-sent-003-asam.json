@@ -1,0 +1,399 @@
+{
+ "segments": [
+  {
+   "num": 22,
+   "words": [
+    {
+     "word": "kasmāt",
+     "lemma": "kim",
+     "formation": "—",
+     "parts": "",
+     "gloss": "why",
+     "form": "pron. abl. sg. (ind.)"
+    },
+    {
+     "word": "pañca",
+     "lemma": "pañcan",
+     "formation": "—",
+     "parts": "",
+     "gloss": "five",
+     "form": "num. m. nom. pl."
+    },
+    {
+     "word": "eva",
+     "lemma": "eva",
+     "formation": "—",
+     "parts": "",
+     "gloss": "only",
+     "form": "ind."
+    },
+    {
+     "word": "skandhāḥ",
+     "lemma": "skandha",
+     "formation": "—",
+     "parts": "",
+     "gloss": "aggregates",
+     "form": "m. nom. pl."
+    }
+   ],
+   "translation": "Why are there just five aggregates (skandha)? —",
+   "references": [
+    {
+     "name": "Rahula/Boin-Webb 2001",
+     "text": "Why are there only five aggregates?"
+    },
+    {
+     "name": "DharmaMitra",
+     "text": "Why are there exactly five aggregates (skandhas)?"
+    }
+   ],
+   "shift": [],
+   "sandhi": "pañca + eva → pañcaiva (a + e → ai)",
+   "forms": [
+    {
+     "word": "kasmāt",
+     "analysis": "kim- interrogative pronoun, pañcamī vibhakti ekavacana (abl. sg.), used adverbially: „why“"
+    },
+    {
+     "word": "pañca",
+     "analysis": "pañcan- numeral, prathamā vibhakti (nom. pl.); qualifies /skandhāḥ/"
+    },
+    {
+     "word": "skandhāḥ",
+     "analysis": "skandha- m. (a-stem); prathamā vibhakti bahuvacana (nom. pl.); subject, copula understood"
+    }
+   ],
+   "compounds": [],
+   "structure": "/kasmāt/ [interrogative] · /pañca eva/ [predicate: just five] · /skandhāḥ/ [subject] → the question of the catechism; answered by 23–28",
+   "note": "",
+   "concepts": ""
+  },
+  {
+   "num": 23,
+   "words": [
+    {
+     "word": "pañca-ākāra-ātma-vastu-udbhāvanatām",
+     "lemma": "pañca-ākāra-ātman-vastu-udbhāvanatā",
+     "formation": "pañca · ā-√kṛ-a · ātman · √vas-tu · ud-√bhū-ana-tā",
+     "parts": "five · form, mode · self · thing · bring forth (caus.) + abstract",
+     "gloss": "showing a fivefold self-basis",
+     "form": "f. acc. sg."
+    },
+    {
+     "word": "upādāya",
+     "lemma": "upa-ā-√dā",
+     "formation": "upa-ā-√dā-ya",
+     "parts": "upa- near · ā- to · √dā (3) give, take",
+     "gloss": "on account of",
+     "form": "ger."
+    }
+   ],
+   "translation": "On account of their bringing to light (udbhāvanatā) the basis of self (ātmavastu) in five modes:",
+   "references": [
+    {
+     "name": "Rahula/Boin-Webb 2001",
+     "text": "Because of the five methods by means of which *[the idea] of self (ātman)* makes its appearance:"
+    },
+    {
+     "name": "DharmaMitra",
+     "text": "Because they serve to manifest the objective basis of the self (ātmavastu) in five ways:"
+    }
+   ],
+   "shift": [
+    "Rahula/Boin-Webb 2001: ātmavastu as „[the idea] of self“ — the basis (vastu) is dropped"
+   ],
+   "sandhi": "pañca + ākāra → pañcākāra (a + ā → ā) · ākāra + ātma → ākārātma (a + ā → ā) · vastu + udbhāvanatām → vastūdbhāvanatām (u + u → ū)",
+   "forms": [
+    {
+     "word": "pañca-ākāra-ātma-vastu-udbhāvanatām",
+     "analysis": "udbhāvanatā- f. (ā-stem): abstract in -tā from udbhāvana- n., action noun in -ana of the causative of ud-√bhū (1, bhvādi, P: bhavati; caus. bhāvayati „make appear“); dvitīyā vibhakti ekavacana (acc. sg.); object of /upādāya/"
+    },
+    {
+     "word": "upādāya",
+     "analysis": "lyabanta (gerund) of upa-ā-√dā (3, juhotyādi, U: dadāti); „having taken“, used as a postposition with the accusative: „on account of“"
+    }
+   ],
+   "compounds": [
+    {
+     "word": "pañca-ākāra-ātma-vastu-udbhāvanatām",
+     "analysis": "ṣaṣṭhī tatpuruṣa: pañcākārasya ātmavastuna udbhāvanatā „the bringing to light of the five-mode self-basis“; within it ātma-vastu ṣaṣṭhī tatpuruṣa (ātmano vastu „the basis/thing of the self“) and pañca-ākāra bahuvrīhi qualifying it (pañca ākārā yasya „having five modes“)"
+    }
+   ],
+   "structure": "/…-udbhāvanatām/ [object, acc.] /upādāya/ [postposition: „on account of“] → the answer, headed by the general statement; 24–28 list the five modes",
+   "note": "ātmavastu is the thing taken as self, not the self: the skandhas bring to light five bases on which the idea of a self rests.",
+   "concepts": "*ātmavastu* — the „basis of self“: what the notion of a self is projected onto; the AS derives the number of the skandhas from the five ways such a basis appears."
+  },
+  {
+   "num": 24,
+   "words": [
+    {
+     "word": "sa-parigraha-deha-ātma-vastu-udbhāvanatām",
+     "lemma": "sa-parigraha-deha-ātman-vastu-udbhāvanatā",
+     "formation": "sa · pari-√grah-a · deha · ātman · √vas-tu · ud-√bhū-ana-tā",
+     "parts": "with · pari- around · √grah (9) seize · body · self · thing · bringing",
+     "gloss": "self-basis: body + possessions",
+     "form": "f. acc. sg."
+    },
+    {
+     "word": "upādāya",
+     "lemma": "upa-ā-√dā",
+     "formation": "upa-ā-√dā-ya",
+     "parts": "upa- near · ā- to · √dā (3) give, take",
+     "gloss": "on account of",
+     "form": "ger."
+    }
+   ],
+   "translation": "the self-basis that is the body together with its possessions (saparigraha-deha),",
+   "references": [
+    {
+     "name": "Rahula/Boin-Webb 2001",
+     "text": "self as *physical apprehension*,"
+    },
+    {
+     "name": "DharmaMitra",
+     "text": "1. By manifesting the objective basis of the self as the body together with its possessions;"
+    }
+   ],
+   "shift": [
+    "Rahula/Boin-Webb 2001: saparigraha-deha as „physical apprehension“ — the body itself recedes"
+   ],
+   "sandhi": "deha + ātma → dehātma (a + ā → ā) · vastu + udbhāvanatām → vastūdbhāvanatām (u + u → ū)",
+   "forms": [
+    {
+     "word": "sa-parigraha-deha-ātma-vastu-udbhāvanatām",
+     "analysis": "udbhāvanatā- f., dvitīyā ekavacana (acc. sg.), as in 23; object of /upādāya/"
+    },
+    {
+     "word": "upādāya",
+     "analysis": "lyabanta (gerund) of upa-ā-√dā (3, juhotyādi), as in 23"
+    }
+   ],
+   "compounds": [
+    {
+     "word": "sa-parigraha-deha-ātma-vastu-udbhāvanatām",
+     "analysis": "ṣaṣṭhī tatpuruṣa as in 23; sa-parigraha-deha karmadhāraya „the body with its possessions“ (sa-parigraha bahuvrīhi: saha parigraheṇa); deha-ātmavastu karmadhāraya „the self-basis that is the body“"
+    }
+   ],
+   "structure": "object + /upādāya/ → first of the five modes",
+   "note": "",
+   "concepts": ""
+  },
+  {
+   "num": 25,
+   "words": [
+    {
+     "word": "upabhoga-ātma-vastu-udbhāvanatām",
+     "lemma": "upabhoga-ātman-vastu-udbhāvanatā",
+     "formation": "upa-√bhuj-a · ātman · √vas-tu · ud-√bhū-ana-tā",
+     "parts": "upa- near · √bhuj (7) enjoy · self · thing · bringing",
+     "gloss": "self-basis: experience",
+     "form": "f. acc. sg."
+    },
+    {
+     "word": "upādāya",
+     "lemma": "upa-ā-√dā",
+     "formation": "upa-ā-√dā-ya",
+     "parts": "upa- near · ā- to · √dā (3) give, take",
+     "gloss": "on account of",
+     "form": "ger."
+    }
+   ],
+   "translation": "the self-basis that is experience (upabhoga),",
+   "references": [
+    {
+     "name": "Rahula/Boin-Webb 2001",
+     "text": "self as experience,"
+    },
+    {
+     "name": "DharmaMitra",
+     "text": "2. By manifesting the objective basis of the self as the object of experience;"
+    }
+   ],
+   "shift": [],
+   "sandhi": "upabhoga + ātma → upabhogātma (a + ā → ā) · vastu + udbhāvanatām → vastūdbhāvanatām",
+   "forms": [
+    {
+     "word": "upabhoga-ātma-vastu-udbhāvanatām",
+     "analysis": "udbhāvanatā- f., dvitīyā ekavacana (acc. sg.), as in 23"
+    },
+    {
+     "word": "upādāya",
+     "analysis": "lyabanta (gerund) of upa-ā-√dā (3, juhotyādi), as in 23"
+    }
+   ],
+   "compounds": [
+    {
+     "word": "upabhoga-ātma-vastu-udbhāvanatām",
+     "analysis": "ṣaṣṭhī tatpuruṣa as in 23; upabhoga-ātmavastu karmadhāraya „the self-basis that is experience“"
+    }
+   ],
+   "structure": "",
+   "note": "",
+   "concepts": ""
+  },
+  {
+   "num": 26,
+   "words": [
+    {
+     "word": "vyavahāra-ātma-vastu-udbhāvanatām",
+     "lemma": "vyavahāra-ātman-vastu-udbhāvanatā",
+     "formation": "vi-ava-√hṛ-a · ātman · √vas-tu · ud-√bhū-ana-tā",
+     "parts": "vi- apart · ava- down · √hṛ (1) carry · self · thing · bringing",
+     "gloss": "self-basis: expression",
+     "form": "f. acc. sg."
+    },
+    {
+     "word": "upādāya",
+     "lemma": "upa-ā-√dā",
+     "formation": "upa-ā-√dā-ya",
+     "parts": "upa- near · ā- to · √dā (3) give, take",
+     "gloss": "on account of",
+     "form": "ger."
+    }
+   ],
+   "translation": "the self-basis that is conventional expression (vyavahāra),",
+   "references": [
+    {
+     "name": "Rahula/Boin-Webb 2001",
+     "text": "self as expression,"
+    },
+    {
+     "name": "DharmaMitra",
+     "text": "3. By manifesting the objective basis of the self as the ground for conventional designation (vyavahāra);"
+    }
+   ],
+   "shift": [],
+   "sandhi": "vyavahāra + ātma → vyavahārātma (a + ā → ā) · vastu + udbhāvanatām → vastūdbhāvanatām",
+   "forms": [
+    {
+     "word": "vyavahāra-ātma-vastu-udbhāvanatām",
+     "analysis": "udbhāvanatā- f., dvitīyā ekavacana (acc. sg.), as in 23"
+    },
+    {
+     "word": "upādāya",
+     "analysis": "lyabanta (gerund) of upa-ā-√dā (3, juhotyādi), as in 23"
+    }
+   ],
+   "compounds": [
+    {
+     "word": "vyavahāra-ātma-vastu-udbhāvanatām",
+     "analysis": "ṣaṣṭhī tatpuruṣa as in 23; vyavahāra-ātmavastu karmadhāraya „the self-basis that is conventional expression“"
+    }
+   ],
+   "structure": "",
+   "note": "",
+   "concepts": ""
+  },
+  {
+   "num": 27,
+   "words": [
+    {
+     "word": "dharma-adharma-abhisaṃskāra-ātma-vastu-udbhāvanatām",
+     "lemma": "dharma-adharma-abhisaṃskāra-ātman-vastu-udbhāvanatā",
+     "formation": "dharma · a-dharma · abhi-sam-√kṛ-a · ātman · √vas-tu · ud-√bhū-ana-tā",
+     "parts": "merit · not · merit · abhi- toward · sam- together · √kṛ (8) make · self · thing · bringing",
+     "gloss": "self-basis: forming (de)merit",
+     "form": "f. acc. sg."
+    },
+    {
+     "word": "upādāya",
+     "lemma": "upa-ā-√dā",
+     "formation": "upa-ā-√dā-ya",
+     "parts": "upa- near · ā- to · √dā (3) give, take",
+     "gloss": "on account of",
+     "form": "ger."
+    }
+   ],
+   "translation": "the self-basis that is the forming of merit and demerit (dharmādharmābhisaṃskāra),",
+   "references": [
+    {
+     "name": "Rahula/Boin-Webb 2001",
+     "text": "self as *the agent* of all right and all wrong,"
+    },
+    {
+     "name": "DharmaMitra",
+     "text": "4. By manifesting the objective basis of the self as the formative activity (abhisaṃskāra) of merit and demerit (dharma-adharma);"
+    }
+   ],
+   "shift": [
+    "Rahula/Boin-Webb 2001: abhisaṃskāra („forming“) as „the agent“ — the activity becomes a doer"
+   ],
+   "sandhi": "dharma + adharma → dharmādharma (a + a → ā) · adharma + abhisaṃskāra → adharmābhisaṃskāra (a + a → ā) · abhisaṃskāra + ātma → abhisaṃskārātma (a + ā → ā) · vastu + udbhāvanatām → vastūdbhāvanatām",
+   "forms": [
+    {
+     "word": "dharma-adharma-abhisaṃskāra-ātma-vastu-udbhāvanatām",
+     "analysis": "udbhāvanatā- f., dvitīyā ekavacana (acc. sg.), as in 23"
+    },
+    {
+     "word": "upādāya",
+     "analysis": "lyabanta (gerund) of upa-ā-√dā (3, juhotyādi), as in 23"
+    }
+   ],
+   "compounds": [
+    {
+     "word": "dharma-adharma-abhisaṃskāra-ātma-vastu-udbhāvanatām",
+     "analysis": "ṣaṣṭhī tatpuruṣa as in 23; dharma-adharma dvandva „merit and demerit“; dharmādharma-abhisaṃskāra ṣaṣṭhī tatpuruṣa „the forming of merit and demerit“; this as karmadhāraya with ātmavastu"
+    }
+   ],
+   "structure": "",
+   "note": "",
+   "concepts": ""
+  },
+  {
+   "num": 28,
+   "words": [
+    {
+     "word": "tad-āśraya-ātma-vastu-udbhāvanatām",
+     "lemma": "tad-āśraya-ātman-vastu-udbhāvanatā",
+     "formation": "tad · ā-√śri-a · ātman · √vas-tu · ud-√bhū-ana-tā",
+     "parts": "that · ā- to · √śri (1) lean on · self · thing · bringing",
+     "gloss": "self-basis: their support",
+     "form": "f. acc. sg."
+    },
+    {
+     "word": "upādāya",
+     "lemma": "upa-ā-√dā",
+     "formation": "upa-ā-√dā-ya",
+     "parts": "upa- near · ā- to · √dā (3) give, take",
+     "gloss": "on account of",
+     "form": "ger."
+    }
+   ],
+   "translation": "and the self-basis that is the support of these (tadāśraya).",
+   "references": [
+    {
+     "name": "Rahula/Boin-Webb 2001",
+     "text": "and self as the basis of all that."
+    },
+    {
+     "name": "DharmaMitra",
+     "text": "5. By manifesting the objective basis of the self as the support (āśraya) for those [preceding aggregates]."
+    }
+   ],
+   "shift": [],
+   "sandhi": "tad + āśraya → tadāśraya (d before a vowel stays) · āśraya + ātma → āśrayātma (a + ā → ā) · vastu + udbhāvanatām → vastūdbhāvanatām",
+   "forms": [
+    {
+     "word": "tad-āśraya-ātma-vastu-udbhāvanatām",
+     "analysis": "udbhāvanatā- f., dvitīyā ekavacana (acc. sg.), as in 23"
+    },
+    {
+     "word": "upādāya",
+     "analysis": "lyabanta (gerund) of upa-ā-√dā (3, juhotyādi), as in 23"
+    }
+   ],
+   "compounds": [
+    {
+     "word": "tad-āśraya-ātma-vastu-udbhāvanatām",
+     "analysis": "ṣaṣṭhī tatpuruṣa as in 23; tad-āśraya ṣaṣṭhī tatpuruṣa „the support of those“ (tad- in composition for the plural: the four preceding)"
+    }
+   ],
+   "structure": "",
+   "note": "tadāśraya points back to the four preceding bases — the fifth mode is their support (in the AS: vijñāna).",
+   "concepts": ""
+  }
+ ],
+ "grammar": "One question and its answer, the catechism form of the AS.  The question (22) is a nominal sentence with an understood copula: kasmāt pañcaiva skandhāḥ.  The answer (23–28) has no finite verb: six accusatives in -udbhāvanatām, each governed by the gerund upādāya used as a postposition („on account of“).  23 states the principle — the self-basis appears in five modes —, 24–28 list the five, each a compound ending in -ātmavastūdbhāvanatām.",
+ "translation": "Why are there just five aggregates (skandha)? — On account of their bringing to light (udbhāvanatā) the basis of self (ātmavastu) in five modes: the self-basis that is the body together with its possessions (saparigraha-deha), the self-basis that is experience (upabhoga), the self-basis that is conventional expression (vyavahāra), the self-basis that is the forming of merit and demerit (dharmādharmābhisaṃskāra), and the self-basis that is the support of these (tadāśraya).",
+ "comparison": "Rahula/Boin-Webb reduce ātmavastu to „self“ and turn the forming of merit and demerit into „the agent“; DharmaMitra keeps the basis („objective basis“, with an added „objective“) and stays close to udbhāvanatā („manifest“).  Neither reflects the Tibetan's „stating“ (brjod pa)."
+}

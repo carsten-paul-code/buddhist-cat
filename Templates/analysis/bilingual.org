@@ -1,0 +1,143 @@
+#+begin_comment
+VORLAGE Zweisprachig — Gerüst einer Satzdatei Sanskrit + Tibetisch
+(Buddhist CAT, §5.74, Carsten 30.10.).  Für eine Sanskrit-Quelle mit
+#+CAT_TEMPLATE: bilingual und #+CAT_PARALLEL: <tibetische Quelle>
+(gleiche Satznummern).  Ablauf im Unterricht: das Sanskrit laut lesen,
+zerlegen, übersetzen — dann das Tibetische laut lesen und auf
+Unterschiede eingehen — dann mit den Referenzübersetzungen vergleichen
+— schließlich ein Übersetzungsvorschlag (* Working Translation).
+Keine Rezitation („kann wegfallen“).
+
+Platzhalter und Abschnitte wie in tibetan.org: {{name}} setzt einen Wert
+ein; eine Zeile, deren Platzhalter ALLE leer sind, fällt samt
+Beschriftung weg; {{#x}} … {{/x}} erscheint nur, wenn x einen Wert hat
+(bei einer Liste je Eintrag).  Suche (Kaskade): <Ordner der
+Quelle>/Templates/analysis/, <Ordner der Quelle>/Resources/Templates/
+analysis/, dann die Vorgabe im Werkzeug.  Erwartete Ausgabe:
+samples/Bilingual.org.
+
+Felder: sent-num source-link segment-list hash created last-analyzed;
+parallel-link parallel-segment-list (die tibetische Quelle);
+segments (Sanskrit): num devanagari samhita (die Zeile wie überliefert)
+padapatha (IAST, Sandhis aufgelöst; im Rumpf noch die überlieferte)
+glossed (Padapāṭha mit Vokabeln) gloss-table sandhi forms compounds
+structure note concepts — parallel („ · Tib. 40–44“: die tibetischen
+Segmente, die Claude diesem Segment zuordnet) tibetan-block (deren
+Uchen über Wylie mit Vokabeln) differences (was das Tibetische anders
+sagt oder liest; fehlt, wo nichts ist — Carsten 30.10.) translations;
+glosses (gesetzt, wenn es einen Padapāṭha gibt);
+tibetan (die tibetischen Segmente: num uchen wylie glossed) tibetan-p
+tibetan-glosses; translation grammar rendering (das Tibetische auf
+Satzebene) comparison word-analysis (Sanskrit, für Zettel-Hervorhebung
+usw.; im PDF nicht gedruckt) working-translation my-notes footnotes.
+Grammatische Begriffe nach der Devavāṇīpraveśikā.
+#+end_comment
+#+TITLE: Sentence {{sent-num}} Analysis
+#+STARTUP: showall
+#+OPTIONS: toc:nil num:nil title:nil author:nil date:nil
+#+TIBETAN_LAYOUT: cascade
+#+SOURCE_LANG: sa
+#+CAT_TEMPLATE: bilingual
+#+SOURCE: {{source-link}}
+#+CAT_PARALLEL: {{parallel-link}}
+#+SEGMENTS: {{segment-list}}
+#+CAT_PARALLEL_SEGMENTS: {{parallel-segment-list}}
+#+TIBETAN_HASH: {{hash}}
+#+CREATED: {{created}}
+#+LAST_ANALYZED: {{last-analyzed}}
+
+* Text
+#+begin_verse
+{{#segments}}
+{{devanagari}}
+{{samhita}}
+{{/segments}}
+#+end_verse
+
+#+begin_verse
+{{#segments}}
+{{padapatha}}
+{{/segments}}
+#+end_verse
+{{#glosses}}
+
+#+begin_verse
+{{#segments}}
+{{glossed}}
+{{/segments}}
+#+end_verse
+{{/glosses}}
+{{#tibetan-p}}
+
+#+begin_verse
+{{#tibetan}}
+{{uchen}}
+{{wylie}}
+{{/tibetan}}
+#+end_verse
+{{/tibetan-p}}
+{{#tibetan-glosses}}
+
+#+begin_verse
+{{#tibetan}}
+{{glossed}}
+{{/tibetan}}
+#+end_verse
+{{/tibetan-glosses}}
+
+*Translation:* {{translation}}
+
+* Segments
+{{#segments}}
+** Segment {{num}}{{parallel}}
+{{gloss-table}}
+
+*Sandhi:* {{sandhi}}
+
+{{#forms}}
+*Forms:*
+{{forms}}
+{{/forms}}
+
+*Compounds:* {{compounds}}
+
+*Structure:* {{structure}}
+
+*Note:* {{note}}
+
+*Concepts:* {{concepts}}
+
+{{#tibetan-block}}
+#+begin_verse
+{{tibetan-block}}
+#+end_verse
+{{/tibetan-block}}
+
+*Differences:* {{differences}}
+
+{{translations}}
+
+{{/segments}}
+{{#word-analysis}}
+** Word Analysis
+{{word-analysis}}
+
+{{/word-analysis}}
+* Sentence
+** Grammar
+{{grammar}}
+
+** Tibetan rendering
+{{rendering}}
+
+** Translations compared
+{{comparison}}
+
+* Working Translation
+{{working-translation}}
+
+* My Notes
+{{my-notes}}
+
+* Footnotes
+{{footnotes}}

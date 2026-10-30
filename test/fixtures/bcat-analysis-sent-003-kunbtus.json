@@ -1,0 +1,265 @@
+{
+ "segments": [
+  {
+   "num": 77,
+   "sanskrit": 22,
+   "words": [
+    {
+     "wylie": "ci'i phyir",
+     "gloss": "why",
+     "function": "INT · adverbial"
+    },
+    {
+     "wylie": "phung po",
+     "gloss": "aggregate",
+     "function": "N · subject"
+    },
+    {
+     "wylie": "rnams",
+     "gloss": "plural",
+     "function": "PL"
+    },
+    {
+     "wylie": "lnga",
+     "gloss": "five",
+     "function": "NUM · predicate"
+    },
+    {
+     "wylie": "kho na",
+     "gloss": "only",
+     "function": "ADV · restrictive"
+    },
+    {
+     "wylie": "zhe na",
+     "gloss": "if one asks",
+     "function": "QUOT + CONV · question"
+    }
+   ]
+  },
+  {
+   "num": 78,
+   "sanskrit": 23,
+   "words": [
+    {
+     "wylie": "bdag gi gzhi",
+     "gloss": "basis of self",
+     "function": "N · object"
+    },
+    {
+     "wylie": "rnam pa",
+     "gloss": "mode",
+     "function": "N"
+    },
+    {
+     "wylie": "lnga",
+     "gloss": "five",
+     "function": "NUM"
+    },
+    {
+     "wylie": "brjod pa'i",
+     "gloss": "of stating",
+     "function": "V nmlz. + GEN"
+    },
+    {
+     "wylie": "phyir",
+     "gloss": "because",
+     "function": "N · causal"
+    },
+    {
+     "wylie": "te",
+     "gloss": "",
+     "function": "CONV"
+    }
+   ]
+  },
+  {
+   "num": 79,
+   "sanskrit": 24,
+   "words": [
+    {
+     "wylie": "bdag gi gzhi",
+     "gloss": "basis of self",
+     "function": "N · object"
+    },
+    {
+     "wylie": "lus",
+     "gloss": "body",
+     "function": "N · apposition"
+    },
+    {
+     "wylie": "yongs su gzung ba",
+     "gloss": "what is appropriated",
+     "function": "V nmlz."
+    },
+    {
+     "wylie": "dang bcas pa",
+     "gloss": "together with",
+     "function": "ADJ"
+    },
+    {
+     "wylie": "brjod pa",
+     "gloss": "stating",
+     "function": "V nmlz."
+    },
+    {
+     "wylie": "dang",
+     "gloss": "",
+     "function": "COM"
+    }
+   ]
+  },
+  {
+   "num": 80,
+   "sanskrit": 25,
+   "words": [
+    {
+     "wylie": "bdag gi gzhi",
+     "gloss": "basis of self",
+     "function": "N · object"
+    },
+    {
+     "wylie": "longs spyod",
+     "gloss": "experience",
+     "function": "N · apposition"
+    },
+    {
+     "wylie": "brjod pa",
+     "gloss": "stating",
+     "function": "V nmlz."
+    },
+    {
+     "wylie": "dang",
+     "gloss": "",
+     "function": "COM"
+    }
+   ]
+  },
+  {
+   "num": 81,
+   "sanskrit": 26,
+   "words": [
+    {
+     "wylie": "bdag gi gzhi",
+     "gloss": "basis of self",
+     "function": "N · object"
+    },
+    {
+     "wylie": "tha snyad",
+     "gloss": "convention",
+     "function": "N · apposition"
+    },
+    {
+     "wylie": "brjod pa",
+     "gloss": "stating",
+     "function": "V nmlz."
+    },
+    {
+     "wylie": "dang",
+     "gloss": "",
+     "function": "COM"
+    }
+   ]
+  },
+  {
+   "num": 82,
+   "sanskrit": 27,
+   "words": [
+    {
+     "wylie": "bdag gi gzhi",
+     "gloss": "basis of self",
+     "function": "N · object"
+    },
+    {
+     "wylie": "chos",
+     "gloss": "merit",
+     "function": "N"
+    },
+    {
+     "wylie": "dang",
+     "gloss": "",
+     "function": "COM"
+    },
+    {
+     "wylie": "chos ma yin pa",
+     "gloss": "demerit",
+     "function": "N"
+    },
+    {
+     "wylie": "mngon par 'du byed pa",
+     "gloss": "forming",
+     "function": "V nmlz."
+    },
+    {
+     "wylie": "brjod pa",
+     "gloss": "stating",
+     "function": "V nmlz."
+    },
+    {
+     "wylie": "dang",
+     "gloss": "",
+     "function": "COM"
+    }
+   ]
+  },
+  {
+   "num": 83,
+   "sanskrit": 28,
+   "words": [
+    {
+     "wylie": "bdag gi gzhi",
+     "gloss": "basis of self",
+     "function": "N · object"
+    },
+    {
+     "wylie": "de dag",
+     "gloss": "those",
+     "function": "DEM PL"
+    },
+    {
+     "wylie": "gi",
+     "gloss": "",
+     "function": "GEN"
+    },
+    {
+     "wylie": "gnas",
+     "gloss": "support",
+     "function": "N · apposition"
+    },
+    {
+     "wylie": "brjod pa'i",
+     "gloss": "of stating",
+     "function": "V nmlz. + GEN"
+    },
+    {
+     "wylie": "phyir",
+     "gloss": "because",
+     "function": "N · causal"
+    },
+    {
+     "wylie": "ro",
+     "gloss": "final",
+     "function": "FIN"
+    }
+   ]
+  }
+ ],
+ "differences": [
+  {
+   "sanskrit": 23,
+   "text": "/udbhāvanatā/ („bringing to light, making appear“) is rendered /brjod pa/ („stating, expressing“), /upādāya/ („on account of“) as /phyir/ („because“); the abstract -tā is not rendered.  The Tibetan has the skandhas state the self-basis rather than bring it forth."
+  },
+  {
+   "sanskrit": 24,
+   "text": "/parigraha/ is rendered /yongs su gzung ba/ („what is fully grasped, appropriated“) — the body with what it has appropriated, not its outward possessions."
+  },
+  {
+   "sanskrit": 27,
+   "text": "The dvandva is spelled out with /dang/; /abhisaṃskāra/ becomes the verbal phrase /mngon par 'du byed pa/ („forming, compounding“)."
+  },
+  {
+   "sanskrit": 28,
+   "text": "/tad-/ is read as plural, /de dag/ („those“); /phyir ro/ closes the answer that /phyir te/ opened in 78."
+  }
+ ],
+ "rendering": "The Tibetan keeps the structure: /zhe na/ marks the question, /phyir te/ opens and /phyir ro/ closes the answer, /dang/ joins the five modes.  It renders the key terms consistently — /ātmavastu/ as /bdag gi gzhi/ („basis of self“), /udbhāvanatām upādāya/ as /brjod pa'i phyir/ („because of stating“).  That last choice shifts the sense: in the Sanskrit the skandhas bring the self-basis to light (/udbhāvanā/, from the causative of ud-√bhū); in the Tibetan they state or express it (/brjod pa/) — the translators read /udbhāvana/ in its sense „making known, declaring“."
+}
