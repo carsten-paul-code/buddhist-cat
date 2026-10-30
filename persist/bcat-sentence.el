@@ -227,11 +227,21 @@ no AI) and return FILEPATH.  EXTRA-REFS and KEEP as in
 `bcat-sentence-rump-context'."
   (bcat-sentence--write
    filepath
-   (bcat-template-render-named
+   (bcat-sentence--render
     (bcat-sentence-template-name source-file)
     (bcat-sentence-rump-context sent-num segs source-file extra-refs keep)
     source-file))
   filepath)
+
+(defun bcat-sentence--render (name context source-file)
+  "The template NAME rendered with CONTEXT (cascade for SOURCE-FILE),
+followed by the file's own sections (`own-sections' in CONTEXT, from
+`bcat-sentence--keep') unchanged — the template does not know them."
+  (let ((text (bcat-template-render-named name context source-file))
+        (own (alist-get 'own-sections context)))
+    (if own
+        (concat (string-trim-right text) "\n\n" own "\n")
+      text)))
 
 ;; ----------------------------------------------------------------------------
 ;; Reading a sentence file (either layout)
@@ -258,15 +268,46 @@ nil when absent or empty."
     (footnotes . "Footnotes"))
   "The user's own sections: never written by the tool, carried over.")
 
+(defconst bcat-sentence--tool-sections
+  '("Recitation" "Text" "Segments" "Sentence"
+    "Translation" "Reading" "Provided Translations" "Tibetan Text" "Tibetan Analysis"
+    "Sanskrit Text" "Sanskrit Analysis" "Combined Analysis" "Auto-Analysis"
+    "Reference Translations" "DharmaMitra Translation (Tibetan)"
+    "DharmaMitra Translation (Sanskrit)" "Sanskrit (DharmaMitra)")
+  "The L1 sections the tool writes, in the template form and in the old
+layouts: a rebuild makes them anew.  Any other L1 section besides the
+user slots belongs to someone and is kept (`bcat-sentence--own-sections').")
+
+(defun bcat-sentence--own-sections (text)
+  "The L1 sections of TEXT that the tool does not write and that are no
+user slot — added by hand or for another script (AS and MSA, 26.10.:
+* Handout, the input of handout-synopse.py, corrected in class) —
+verbatim, in order, as one string; nil when there are none."
+  (let ((starts '()) (pos 0))
+    (while (string-match "^\\* \\(.*\\)$" text pos)
+      (push (cons (match-beginning 0) (string-trim (match-string 1 text))) starts)
+      (setq pos (match-end 0)))
+    (setq starts (nreverse starts))
+    (let ((own (cl-loop for rest on starts
+                        for (beg . title) = (car rest)
+                        unless (or (member title bcat-sentence--tool-sections)
+                                   (rassoc title bcat-sentence--user-slots))
+                        collect (string-trim-right
+                                 (substring text beg (if (cdr rest) (car (cadr rest)) (length text)))))))
+      (and own (mapconcat #'identity own "\n\n")))))
+
 (defun bcat-sentence--keep (file)
-  "Fields of FILE that a rebuild carries over: the user slots and the
-#+CREATED date."
-  (let ((text (bcat-sentence--text file)))
+  "Fields of FILE that a rebuild carries over: the user slots, the
+#+CREATED date and the file's own sections (30.10.: the rebuild from the
+old layout dropped the AS/MSA * Handout)."
+  (let* ((text (bcat-sentence--text file))
+         (own (bcat-sentence--own-sections text)))
     (append
      (delq nil (mapcar (lambda (slot)
                          (let ((body (bcat-sentence--l1-body text (cdr slot))))
                            (and body (cons (car slot) body))))
                        bcat-sentence--user-slots))
+     (and own (list (cons 'own-sections own)))
      (and (string-match "^#\\+CREATED:[ \t]*\\(.+\\)$" text)
           (list (cons 'created (string-trim (match-string 1 text))))))))
 
@@ -596,12 +637,12 @@ marked from the answer's segment parts."
              (base (cons (cons 'last-analyzed (format-time-string "%Y-%m-%d")) base)))
         (bcat-sentence--write
          file
-         (bcat-template-render-named (bcat-sentence-file-p file)
-                                     (funcall (if (bcat-sentence--sanskrit-p source-file)
-                                                  #'bcat-analysis-sanskrit-context
-                                                #'bcat-analysis-context)
-                                              base parsed refs)
-                                     source-file))
+         (bcat-sentence--render (bcat-sentence-file-p file)
+                                (funcall (if (bcat-sentence--sanskrit-p source-file)
+                                             #'bcat-analysis-sanskrit-context
+                                           #'bcat-analysis-context)
+                                         base parsed refs)
+                                source-file))
         (bcat-status-step file :claude "Claude ✓")
         (run-hook-with-args 'bcat-sentence-after-fetch-functions file)
         file))))

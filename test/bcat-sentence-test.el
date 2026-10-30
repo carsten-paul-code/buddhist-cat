@@ -527,6 +527,39 @@ compared)."
           (should (string-match-p "^\\* My Notes\nAlte Notiz\\.$" text))
           (should (string-match-p "^\\*Eigene 2026:\\* My own rendering of verse nine\\.$" text)))))))
 
+(ert-deftest bcat-sentence-fetch-keeps-own-sections ()
+  "30.10.: AS and MSA sentence files carry a `* Handout' section (the
+input of handout-synopse.py, corrected in class, with the SG 2015
+reference — put there because C-c u G rebuilds * Provided
+Translations).  The rebuild from the old layout dropped every L1
+section it did not know.  A section the tool does not write is kept
+verbatim at the end — through the rebuild and every later landing,
+never twice; the old machine sections are not carried over."
+  (bcat-sentence-test--with-source
+    (let ((bcat-sentence-templates nil))
+      (bcat-sentence-test--create src))
+    (let ((file (tibetan-sentence--filepath 9 folder src))
+          (handout (concat "* Handout\n# Eingabe für handout-synopse.py\n"
+                           "** Segment 38\n:PROPERTIES:\n:BO: 38\n:END:\n*** Skt.\nInexpressible.\n"
+                           "** SG 2015 (Japanese, English draft)\n[Q] Why?\n")))
+      (with-temp-buffer
+        (insert-file-contents file)
+        (goto-char (point-max))
+        (insert "\n" handout)
+        (write-region (point-min) (point-max) file nil 0))
+      (bcat-sentence-test--with-stubs bcat-sentence-test--answer
+        (bcat-sentence-test--fetch src)
+        (let ((text (bcat-sentence-test--file-text src)))
+          (should (equal "tibetan" (bcat-sentence-file-p file)))
+          (should (string-match-p (regexp-quote (concat "* Footnotes\n\n" handout)) text))
+          (should-not (string-match-p "^\\* Provided Translations\\|^\\* Tibetan Analysis\\|^\\* Reading" text)))
+        ;; A later landing (C-u C-c u G) keeps it once.
+        (cl-letf (((symbol-function 'y-or-n-p) (lambda (&rest _) t)))
+          (tibetan-cascade-fetch (list :source src :sent-nums '(9) :label "Satz 9") t))
+        (let ((text (bcat-sentence-test--file-text src)))
+          (should (= 1 (cl-count-if (lambda (l) (equal l "* Handout")) (split-string text "\n"))))
+          (should (string-suffix-p handout text)))))))
+
 (ert-deftest bcat-sentence-fetch-keeps-reference-text ()
   "28.10., bDen 9: Claude copied Lindtner's verse without his note, and
 the note was gone from the file.  The paragraphs under Translations
