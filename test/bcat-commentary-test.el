@@ -15,6 +15,7 @@
 (require 'ert)
 (require 'cl-lib)
 (require 'bcat-sentence-test)
+(require 'bcat-commentary)
 
 (defconst bcat-commentary-test--sanskrit
   (concat "#+TITLE: Mahāyānasūtrālaṃkāra IX mit Bhāṣya — CAT-Quelle (Sanskrit)\n"
@@ -254,6 +255,72 @@ keeps its prompt unchanged."
         (should (string-match-p "^\\*Hint:\\* The bhāṣya reads the broken pot"
                                 (bcat-sentence-test--text-of f))))))
   (should-not (string-match-p "bhasya" (bcat-analysis-sanskrit-system-prompt "en"))))
+
+;; ----------------------------------------------------------------------------
+;; Lemmata: which pāda a commentary segment quotes
+;; ----------------------------------------------------------------------------
+
+(defconst bcat-commentary-test--padas
+  '((139 . "ji ltar chu yi snod chag na/ /")
+    (140 . "zla ba'i gzugs brnyan mi snang ba/ /")
+    (141 . "de bzhin sems can ngan pa la/ /")
+    (142 . "sangs rgyas gzugs kyang mi snang ngo / /"))
+  "The Tibetan pādas of MSA IX.16.")
+
+(ert-deftest bcat-commentary-lemma ()
+  "Sthiramati quotes the pādas as lemmata, now and then with his own
+reading.  A segment is the lemma of a pāda when it consists of the
+pāda's wording (a closing quote marker aside) and covers most of it;
+its readings are the syllables where it differs.  An explanation that
+uses the pāda's words (630) is no lemma; neither is an introduction."
+  (cl-flet ((lemma (w) (bcat-commentary-lemma w bcat-commentary-test--padas)))
+    (should (equal '(139) (lemma "ji ltar chu yi snod chag na/ /")))
+    (should (equal '(140 ("bzhin" . "ba")) (lemma "zla ba'i gzugs brnyan mi snang bzhin/ /")))
+    (should (equal '(142 ("ni" . "kyang")) (lemma "sangs rgyas gzugs ni mi snang ngo / /")))
+    (should (equal '(140) (lemma "zla ba'i gzugs brnyan mi snang ba zhes bya ba la/")))
+    (should-not (lemma "dper na chu med pa'i snod du yang zla ba'i gzugs brnyan mi 'byung la snod chag pa'i nang du yang zla ba'i gzugs brnyan mi 'byung ste 'di ni dpe'o/ /"))
+    (should-not (lemma "dpe bstan pa'i phyir/"))
+    (should-not (lemma "zhes bya ba smos te/"))))
+
+(defconst bcat-commentary-test--padas-60
+  '((459 . "sangs rgyas rnams kyi sku dbye ba/ /")
+    (460 . "rang bzhin longs spyod rdzogs pa dang / /")
+    (461 . "gzhan ni sprul pa'i sku yin te/ /")
+    (462 . "dang po gnyis pa'i rten yin no/ /"))
+  "The Tibetan pādas of MSA IX.60.")
+
+(ert-deftest bcat-commentary-lemmata-marked ()
+  "MSA IX.60: Sthiramati quotes in his own wording and word order, often
+only part of a pāda — what stands before his quote marker („… zhes bya
+ba la/“, „… ces bya bas“; also in the next segment) is a lemma when at
+least half of it stands in one pāda, „in his own wording“.  A quotation
+of the bhāṣya is no verse lemma.  „thog ma gnyis po'i gnas“ for „dang
+po gnyis pa'i rten“ is left to Claude."
+  (let ((lemmata (bcat-commentary-lemmata
+                  '((1780 . "sangs rgyas kyi sku rnam par dbye ba'i tshigs su bcad pa bdun te zhes bya ba la/")
+                    (1781 . "gong du sku gsum tha dad du 'jug pa mdo tsam du bstan nas/")
+                    (1783 . "rang bzhin dang ni zhes bya ni/")
+                    (1786 . "rdzogs longs spyod ces bya bas rdzogs par longs spyod pa'i sku bstan te/")
+                    (1790 . "sprul pa'i sku yang gzhan yin te/ /")
+                    (1791 . "zhes bya ba la/")
+                    (1795 . "sangs rgyas rnams kyi sku dbye ba/ /")
+                    (1798 . "thog ma gnyis po'i gnas yin no/ /")
+                    (1799 . "zhes bya ba la thog ma ni chos kyi sku la bya ste/"))
+                  bcat-commentary-test--padas-60
+                  '("sangs rgyas kyi sku rab tu dbye ba la tshigs su bcad pa bdun no/ /"))))
+    (should (equal '((1783 460 . free) (1786 460 . free) (1790 461 . free) (1795 459))
+                   lemmata))))
+
+(ert-deftest bcat-commentary-reading-text ()
+  "A lemma's readings as text for the files: „verbatim“ without any,
+„in his own wording“ for a free quotation, else what Sthiramati reads
+for the verse's wording."
+  (should (equal "verbatim" (bcat-commentary-reading-text nil)))
+  (should (equal "in his own wording" (bcat-commentary-reading-text 'free)))
+  (should (equal "Sthiramati reads /bzhin/ for /ba/"
+                 (bcat-commentary-reading-text '(("bzhin" . "ba")))))
+  (should (equal "Sthiramati reads /ni/ for /kyang/; adds /dang/; omits /yi/"
+                 (bcat-commentary-reading-text '(("ni" . "kyang") ("dang" . "") ("" . "yi"))))))
 
 (provide 'bcat-commentary-test)
 ;;; bcat-commentary-test.el ends here

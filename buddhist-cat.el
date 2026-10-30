@@ -535,6 +535,7 @@ in the appropriate instance."
 (require 'bcat-sentence)
 (require 'bcat-analysis)
 (require 'bcat-parallel)
+(require 'bcat-commentary)
 (require 'bcat-export)
 
 (provide 'buddhist-cat)
