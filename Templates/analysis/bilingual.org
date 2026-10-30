@@ -31,7 +31,11 @@ glosses (gesetzt, wenn es einen Padapāṭha gibt);
 tibetan (die tibetischen Segmente: num uchen wylie glossed) tibetan-p
 tibetan-glosses; translation grammar rendering (das Tibetische auf
 Satzebene) comparison word-analysis (Sanskrit, für Zettel-Hervorhebung
-usw.; im PDF nicht gedruckt) working-translation my-notes footnotes.
+usw.; im PDF nicht gedruckt) bhasya-p bhasya-sanskrit (num devanagari samhita) bhasya-tibetan (num
+uchen wylie) bhasya-sanskrit-p bhasya-tibetan-p bhasya-hint — im
+Versmodus (MSA, :VERSE:) die übrigen Sätze der Section, Carsten 30.10.:
+„im Vers als zusätzliche Section (unten) mit Text und hint“;
+working-translation my-notes footnotes.
 Grammatische Begriffe nach der Devavāṇīpraveśikā.
 #+end_comment
 #+TITLE: Sentence {{sent-num}} Analysis
@@ -129,6 +133,29 @@ Grammatische Begriffe nach der Devavāṇīpraveśikā.
 ** Translations compared
 {{comparison}}
 
+{{#bhasya-p}}
+* Bhāṣya
+{{#bhasya-sanskrit-p}}
+#+begin_verse
+{{#bhasya-sanskrit}}
+{{devanagari}}
+{{samhita}}
+{{/bhasya-sanskrit}}
+#+end_verse
+
+{{/bhasya-sanskrit-p}}
+{{#bhasya-tibetan-p}}
+#+begin_verse
+{{#bhasya-tibetan}}
+{{uchen}}
+{{wylie}}
+{{/bhasya-tibetan}}
+#+end_verse
+
+{{/bhasya-tibetan-p}}
+*Hint:* {{bhasya-hint}}
+
+{{/bhasya-p}}
 * Working Translation
 {{working-translation}}
 

@@ -664,13 +664,18 @@ SOURCE-FILE when the sentence module is not loaded."
                                                    source-file)
                      (expand-file-name (format "sent-%03d.org" sent-num)
                                        folder))))
-    (if (and (fboundp 'bcat-sentence-template-name)
-             (bcat-sentence-template-name source-file))
-        ;; §5.74: languages with a template get the new form
-        ;; (whole original / segments / sentence) — no AI, the
-        ;; references already under Translations compared.
-        (bcat-sentence-create-file sent-num segs source-file filepath)
-      (tibetan-cascade--create-file-legacy sent-num segs source-file filepath))))
+    (cond
+     ((not (and (fboundp 'bcat-sentence-template-name)
+                (bcat-sentence-template-name source-file)))
+      (tibetan-cascade--create-file-legacy sent-num segs source-file filepath))
+     ;; Verse mode (MSA, 30.10.): a bhāṣya sentence lives in the file of
+     ;; its verse — created when missing, never overwritten.
+     ((not (eql sent-num (plist-get (bcat-sentence-owner sent-num source-file) :sent-num)))
+      (bcat-sentence-ensure-file sent-num source-file))
+     ;; §5.74: languages with a template get the new form
+     ;; (whole original / segments / sentence) — no AI, the
+     ;; references already under Translations compared.
+     (t (bcat-sentence-create-file sent-num segs source-file filepath)))))
 
 (defun tibetan-cascade--create-file-legacy (sent-num segs source-file filepath)
   "The pre-template sentence file (old layout) for SENT-NUM at FILEPATH;
@@ -1728,6 +1733,8 @@ touched."
 (declare-function tibetan-sentence-claude--schedule-dm
                   "tibetan-sentence-claude")
 (declare-function tibetan-sentence--filepath "tibetan-sentence-persist")
+(declare-function bcat-sentence-owner "bcat-sentence" (sent-num source-file))
+(declare-function bcat-sentence-ensure-file "bcat-sentence" (sent-num source-file))
 
 (defun tibetan-cascade--generated-reading-lines (file source-file units)
   "Decorated Reading lines for UNITS, erzeugt mit DENSELBEN
@@ -2334,11 +2341,15 @@ is what counts."
     (let* ((folder (file-name-as-directory
                     (expand-file-name
                      "analysis" (file-name-directory source-file))))
-           (file (if (fboundp 'tibetan-sentence--filepath)
-                     (tibetan-sentence--filepath sent-num folder
-                                                 source-file)
-                   (expand-file-name (format "sent-%03d.org" sent-num)
-                                     folder))))
+           ;; Template sources: the file that holds the sentence (in
+           ;; verse mode the verse's), created when missing (§5.74).
+           (file (or (and (fboundp 'bcat-sentence-ensure-file)
+                          (bcat-sentence-ensure-file sent-num source-file))
+                     (if (fboundp 'tibetan-sentence--filepath)
+                         (tibetan-sentence--filepath sent-num folder
+                                                     source-file)
+                       (expand-file-name (format "sent-%03d.org" sent-num)
+                                         folder)))))
       (unless (file-exists-p file)
         (tibetan-cascade--create-file
          sent-num

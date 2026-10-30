@@ -90,6 +90,32 @@ resolved relative to it: the Tibetan translation of a Sanskrit source
     (let ((v (bcat-sentence--header-value source-file "CAT_PARALLEL")))
       (and v (expand-file-name v (file-name-directory (expand-file-name source-file)))))))
 
+(defvar bcat-sentence--sentence-cache (make-hash-table :test #'equal)
+  "Source file → (MODTIME . SENTENCES), see `bcat-sentence--sentences'.")
+
+(defun bcat-sentence--sentences (file)
+  "The sentences of the cascade source FILE — the plists of
+`tibetan-cascade--collect-sentences' (:sent-num :segs :verse
+:section-label …) — read again only when FILE changed: the MSA
+commentary has 1009 sentences, asked for again and again per verse."
+  (let* ((key (file-truename file))
+         (mtime (file-attribute-modification-time (file-attributes key)))
+         (hit (gethash key bcat-sentence--sentence-cache)))
+    (if (and hit (equal (car hit) mtime))
+        (cdr hit)
+      (let ((sentences (with-temp-buffer
+                         (insert-file-contents key)
+                         (org-mode)
+                         (tibetan-cascade--collect-sentences))))
+        (puthash key (cons mtime sentences) bcat-sentence--sentence-cache)
+        sentences))))
+
+(defun bcat-sentence--sentence (sent-num file)
+  "Sentence SENT-NUM of the source FILE as a plist, or nil."
+  (and file (file-readable-p file)
+       (cl-find sent-num (bcat-sentence--sentences file)
+                :key (lambda (s) (plist-get s :sent-num)))))
+
 (defun bcat-sentence--paired-p (source-file)
   "Non-nil when SOURCE-FILE and its #+CAT_PARALLEL source form a pair —
 a bilingual Sanskrit source and a bilingual-tibetan one, each naming the
@@ -103,22 +129,117 @@ other (Carsten 30.10.: one C-c u G builds the files of both)."
          (let ((back (bcat-sentence-parallel-source parallel)))
            (and back (file-exists-p back) (file-equal-p back source-file))))))
 
-(defun bcat-sentence--parallel-segs (sent-num source-file)
-  "Sentence SENT-NUM of the other language of SOURCE-FILE as
-\((NUM . TEXT) …) — same sentence numbers —, or nil."
+(defun bcat-sentence--parallel-sentence (sent-num source-file)
+  "The sentence of the other language that goes with SENT-NUM of
+SOURCE-FILE (a plist), or nil: the one with the same :VERSE: when
+SENT-NUM is a verse (MSA: the sources share Sections and verses, not
+sentence numbers), else the one with the same number (AS)."
   (let ((parallel (bcat-sentence-parallel-source source-file)))
-    (and parallel (tibetan-cascade--segs-for-sentence parallel sent-num))))
+    (when parallel
+      (let ((verse (plist-get (bcat-sentence--sentence sent-num source-file) :verse)))
+        (if verse
+            (cl-find verse (bcat-sentence--sentences parallel)
+                     :key (lambda (s) (plist-get s :verse)) :test #'equal)
+          (bcat-sentence--sentence sent-num parallel))))))
+
+(defun bcat-sentence--parallel-segs (sent-num source-file)
+  "The segments ((NUM . TEXT) …) of the sentence of the other language
+that goes with SENT-NUM of SOURCE-FILE, or nil."
+  (plist-get (bcat-sentence--parallel-sentence sent-num source-file) :segs))
+
+(defun bcat-sentence--analysis-folder (source-file)
+  "The analysis/ folder of SOURCE-FILE."
+  (file-name-as-directory
+   (expand-file-name "analysis" (file-name-directory (expand-file-name source-file)))))
 
 (defun bcat-sentence-partner-file (sent-num source-file)
-  "The sentence file of SENT-NUM in the other language of the bilingual
-SOURCE-FILE (in the analysis/ folder of its #+CAT_PARALLEL source), or
-nil."
-  (let ((parallel (bcat-sentence-parallel-source source-file)))
-    (and parallel
-         (tibetan-sentence--filepath
-          sent-num (file-name-as-directory
-                    (expand-file-name "analysis" (file-name-directory parallel)))
-          parallel))))
+  "The sentence file in the other language of the bilingual SOURCE-FILE
+that goes with SENT-NUM (in the analysis/ folder of its #+CAT_PARALLEL
+source), or nil."
+  (let ((parallel (bcat-sentence-parallel-source source-file))
+        (other (bcat-sentence--parallel-sentence sent-num source-file)))
+    (and parallel other
+         (tibetan-sentence--filepath (plist-get other :sent-num)
+                                     (bcat-sentence--analysis-folder parallel)
+                                     parallel))))
+
+;; ----------------------------------------------------------------------------
+;; Verse mode (MSA, Carsten 30.10.): one file per verse, the bhāṣya in it
+;; ----------------------------------------------------------------------------
+
+(defun bcat-sentence--verse-mode-p (source-file)
+  "Non-nil when the bilingual SOURCE-FILE is read verse by verse — its
+sentences carry :VERSE: (MSA: per Section a kārikā and the bhāṣya).
+Then each verse has a file; the other sentences of its Section, the
+bhāṣya, stand in it."
+  (and (bcat-sentence-parallel-source source-file)
+       (cl-some (lambda (s) (plist-get s :verse)) (bcat-sentence--sentences source-file))
+       t))
+
+(defun bcat-sentence--section-sentences (sentence source-file)
+  "The sentences of SOURCE-FILE in the Section of SENTENCE (a plist), in
+order."
+  (let ((label (plist-get sentence :section-label)))
+    (and label
+         (cl-remove-if-not (lambda (s) (equal label (plist-get s :section-label)))
+                           (bcat-sentence--sentences source-file)))))
+
+(defun bcat-sentence-owner (sent-num source-file)
+  "The sentence (a plist) whose file holds SENT-NUM of SOURCE-FILE: in
+verse mode the verse of its Section (a bhāṣya sentence has no file of
+its own), else the sentence itself; nil when there is none."
+  (let ((sentence (bcat-sentence--sentence sent-num source-file)))
+    (if (and sentence (not (plist-get sentence :verse))
+             (bcat-sentence--verse-mode-p source-file))
+        (cl-find-if (lambda (s) (plist-get s :verse))
+                    (bcat-sentence--section-sentences sentence source-file))
+      sentence)))
+
+(defun bcat-sentence-ensure-file (sent-num source-file)
+  "The file that holds sentence SENT-NUM of the template source
+SOURCE-FILE, created (no AI) when missing — in verse mode the file of
+its verse; never overwritten.  nil when SOURCE-FILE has no template or
+no such sentence."
+  (when (bcat-sentence-template-name source-file)
+    (let ((owner (bcat-sentence-owner sent-num source-file)))
+      (when owner
+        (let ((file (tibetan-sentence--filepath (plist-get owner :sent-num)
+                                                (bcat-sentence--analysis-folder source-file)
+                                                source-file)))
+          (unless (file-exists-p file)
+            (bcat-sentence-create-file (plist-get owner :sent-num) (plist-get owner :segs)
+                                       source-file file))
+          file)))))
+
+(defun bcat-sentence--bhasya-segs (sentence source-file)
+  "The segments of the other sentences of SENTENCE's Section in
+SOURCE-FILE — the bhāṣya around the verse —, in order."
+  (cl-loop for s in (bcat-sentence--section-sentences sentence source-file)
+           unless (plist-get s :verse) append (plist-get s :segs)))
+
+(defun bcat-sentence--bhasya-fields (sent-num source-file)
+  "Verse mode: the bhāṣya of the verse SENT-NUM of SOURCE-FILE in both
+languages (Carsten 30.10.: „im Vers als zusätzliche Section (unten) mit
+Text und hint“) — the Sanskrit as Devanāgarī over IAST, the Tibetan as
+Uchen over Wylie; nil when the verse has none."
+  (when (bcat-sentence--verse-mode-p source-file)
+    (let* ((own (bcat-sentence--sentence sent-num source-file))
+           (other (bcat-sentence--parallel-sentence sent-num source-file))
+           (own-b (and own (bcat-sentence--bhasya-segs own source-file)))
+           (other-b (and other (bcat-sentence--bhasya-segs
+                                other (bcat-sentence-parallel-source source-file))))
+           (sanskrit (bcat-sentence--sanskrit-p source-file))
+           (skt (if sanskrit own-b other-b))
+           (tib (if sanskrit other-b own-b)))
+      (when (or skt tib)
+        `((bhasya-p . t)
+          (bhasya-sanskrit . ,(mapcar #'bcat-sentence--sanskrit-segment skt))
+          (bhasya-sanskrit-p . ,(and skt t))
+          (bhasya-tibetan . ,(mapcar (lambda (s) `((num . ,(car s))
+                                                   (uchen . ,(string-trim (cdr s)))
+                                                   (wylie . ,(bcat-sentence--wylie (cdr s)))))
+                                     tib))
+          (bhasya-tibetan-p . ,(and tib t)))))))
 
 (defun bcat-sentence-file-p (file)
   "The template the sentence FILE (sent-NNN…) was built from (its
@@ -298,6 +419,7 @@ existing file (user slots, `created')."
             (bcat-sentence--recitation (mapcar (lambda (s) (string-trim (cdr s))) segs)))
        (and (assoc template bcat-sentence--pair-templates)
             (bcat-sentence--parallel-fields sent-num source-file))
+       (bcat-sentence--bhasya-fields sent-num source-file)
        `((sent-num . ,sent-num)
          (source-link . ,(format "[[file:../%s::*Sentence %d][%s / Sentence %d]]"
                                  name sent-num name sent-num))
@@ -903,22 +1025,27 @@ In the Tibetan source of a bilingual pair it runs through the Sanskrit
 one: the Tibetan request needs the Sanskrit answer, and both files come
 from the same requests.  Returns (:sentences N :fired N :complete N
 :align N)."
-  (let* ((src (let ((s (plist-get scope :source)))
-                (if (and (equal (bcat-sentence-template-name s) "bilingual-tibetan")
-                         (bcat-sentence--paired-p s))
-                    (bcat-sentence-parallel-source s)
-                  s)))
+  (let* ((given (plist-get scope :source))
+         (redirect (and (equal (bcat-sentence-template-name given) "bilingual-tibetan")
+                        (bcat-sentence--paired-p given)))
+         (src (if redirect (bcat-sentence-parallel-source given) given))
          (pair (bcat-sentence--paired-p src))
          (label (plist-get scope :label))
-         (nums (plist-get scope :sent-nums))
+         ;; From the Tibetan source: its sentence → its verse (verse
+         ;; mode) → the Sanskrit sentence that goes with it.
+         (nums (if redirect
+                   (delq nil (mapcar (lambda (n)
+                                       (plist-get (bcat-sentence--parallel-sentence
+                                                   (or (plist-get (bcat-sentence-owner n given) :sent-num) n)
+                                                   given)
+                                                  :sent-num))
+                                     (plist-get scope :sent-nums)))
+                 (plist-get scope :sent-nums)))
          (folder (file-name-as-directory
                   (expand-file-name "analysis" (file-name-directory src))))
-         (sentences (cl-remove-if-not
-                     (lambda (s) (memq (plist-get s :sent-num) nums))
-                     (with-temp-buffer
-                       (insert-file-contents src)
-                       (org-mode)
-                       (tibetan-cascade--collect-sentences))))
+         ;; Verse mode: a bhāṣya sentence stands for its verse.
+         (sentences (delete-dups
+                     (delq nil (mapcar (lambda (n) (bcat-sentence-owner n src)) nums))))
          (file-of (lambda (s) (tibetan-sentence--filepath (plist-get s :sent-num) folder src))))
     (bcat-status-begin (if force "C-u C-c u G" "C-c u G") label
                        (mapcar (lambda (s) (cons (funcall file-of s)

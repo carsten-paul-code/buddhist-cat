@@ -20,7 +20,11 @@ das Claude ihm zuordnet) sanskrit-block (beim ersten Segment einer
 Gruppe: Devanāgarī über dem Padapāṭha mit Vokabeln) differences (ebenda,
 nur wo es welche gibt); glosses; sanskrit (die Sanskrit-Segmente: num
 devanagari samhita glossed) sanskrit-p sanskrit-glosses; translation
-grammar rendering comparison working-translation my-notes footnotes.
+grammar rendering comparison bhasya-p bhasya-sanskrit (num devanagari samhita) bhasya-tibetan (num
+uchen wylie) bhasya-sanskrit-p bhasya-tibetan-p bhasya-hint — im
+Versmodus (MSA, :VERSE:) die übrigen Sätze der Section, Carsten 30.10.:
+„im Vers als zusätzliche Section (unten) mit Text und hint“;
+working-translation my-notes footnotes.
 #+end_comment
 #+TITLE: Sentence {{sent-num}} Analysis
 #+STARTUP: showall
@@ -102,6 +106,29 @@ grammar rendering comparison working-translation my-notes footnotes.
 ** Translations compared
 {{comparison}}
 
+{{#bhasya-p}}
+* Bhāṣya
+{{#bhasya-tibetan-p}}
+#+begin_verse
+{{#bhasya-tibetan}}
+{{uchen}}
+{{wylie}}
+{{/bhasya-tibetan}}
+#+end_verse
+
+{{/bhasya-tibetan-p}}
+{{#bhasya-sanskrit-p}}
+#+begin_verse
+{{#bhasya-sanskrit}}
+{{devanagari}}
+{{samhita}}
+{{/bhasya-sanskrit}}
+#+end_verse
+
+{{/bhasya-sanskrit-p}}
+*Hint:* {{bhasya-hint}}
+
+{{/bhasya-p}}
 * Working Translation
 {{working-translation}}
 
