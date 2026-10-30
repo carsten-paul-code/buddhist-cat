@@ -235,6 +235,22 @@ are."
   (let ((plain "\\begin{verse}\nbrjod du med pa/ /\\\\\n\\end{verse}\n"))
     (should (equal plain (bcat-export--verse-units plain)))))
 
+(ert-deftest bcat-export-verse-scripts-foreign-signs ()
+  "30.10., TĀ Satz 1001: in the recitation the pause sign ¦ stands in
+the Devanāgarī line, and Noto Sans Devanagari has no ¦ — an empty box
+in the PDF (LuaLaTeX: „Missing character: There is no ¦ (U+00A6) in
+font Noto Sans Devanagari“, 12 times).  A sign of neither the line's
+script nor ASCII is set in the main font, inside the line."
+  (should (equal (concat "\\begin{verse}\n"
+                         "{\\bcatdeva\\large यस्मात् {\\normalfont ¦} ह्यानन्द ।}\\\\*\n"
+                         "yasmāt ¦ hyānanda /\\\\[1ex]\n"
+                         "\\end{verse}\n")
+                 (bcat-export--verse-scripts
+                  (concat "\\begin{verse}\n"
+                          "यस्मात् ¦ ह्यानन्द ।\\\\\n"
+                          "yasmāt ¦ hyānanda /\\\\\n"
+                          "\\end{verse}\n")))))
+
 (ert-deftest bcat-export-verse-scripts ()
   "29.10.: Uchen above Wylie, Devanāgarī above IAST.  Through the
 fallback font the Devanāgarī lost its conjuncts (visible virāmas) and

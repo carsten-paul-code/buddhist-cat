@@ -204,6 +204,18 @@ Latin letters), else nil."
     (cond ((string-match-p "[\u0F00-\u0FFF]" line) 'tibetan)
           ((string-match-p "[\u0900-\u097F]" line) 'devanagari))))
 
+(defun bcat-export--foreign-signs (body script)
+  "BODY of a line in SCRIPT (`tibetan' or `devanagari') with every run of
+signs of neither the script nor ASCII set in the main font — 30.10.,
+TĀ 1001: Noto Sans Devanagari has no ¦, the recitation's pause sign,
+and the PDF showed an empty box."
+  (replace-regexp-in-string
+   (if (eq script 'tibetan)
+       "[^[:ascii:]\u0F00-\u0FFF\u200C\u200D]+"
+     "[^[:ascii:]\u0900-\u097F\u1CD0-\u1CFF\uA8E0-\uA8FF\u200C\u200D]+")
+   (lambda (signs) (format "{\\normalfont %s}" signs))
+   body t t))
+
 (defun bcat-export--verse-scripts (latex)
   "LATEX of a verse block with each line in the original script set in
 its own font, larger (\\bcattib / \\bcatdeva, \\large — the old
@@ -226,7 +238,8 @@ they are."
            (setq after-script t)
            ;; `\\*': no page break before the transcription (30.10.).
            (format "{%s\\large %s}%s"
-                   (if (eq script 'tibetan) "\\bcattib" "\\bcatdeva") body
+                   (if (eq script 'tibetan) "\\bcattib" "\\bcatdeva")
+                   (bcat-export--foreign-signs body script)
                    (if (string-prefix-p "\\\\" brk) (concat "\\\\*" (substring brk 2)) brk)))
           ((and after-script (string-prefix-p "\\\\" brk))
            (setq after-script nil)
