@@ -37,7 +37,6 @@
 (declare-function org-end-of-subtree "org" (&optional invisible-ok to-heading element))
 (declare-function org-export-derived-backend-p "ox" (backend &rest backends))
 (defvar org-latex-compiler)
-(defvar org-export-with-broken-links)
 (defvar org-latex-pdf-process)
 (defvar org-latex-tables-centered)
 (defvar org-export-filter-table-functions)
@@ -334,9 +333,6 @@ stay untouched outside."
         (with-current-buffer buf
           (when (buffer-modified-p) (save-buffer))
           (let ((org-latex-compiler "lualatex")
-                ;; A link without target (Claude's text) is marked, the
-                ;; PDF comes — 30.10., IX.60: one aborted the commentary.
-                (org-export-with-broken-links 'mark)
                 (org-latex-pdf-process
                  '("%latex -interaction nonstopmode -output-directory %o %f"
                    "%latex -interaction nonstopmode -output-directory %o %f"))
