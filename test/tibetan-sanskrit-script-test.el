@@ -122,6 +122,17 @@ virāma, final consonants with virāma, anusvāra, the daṇḍas / and // as
                  (tibetan-sanskrit-script-iast-to-devanagari
                   "tatpārameśvaraṃ śrīmanmahānandavijṛmbhitam // 7"))))
 
+(ert-deftest tibetan-sanskrit-script-iast-to-devanagari-period-danda ()
+  "30.10., AS sentence 3: the Abhidharmasamuccaya edition writes the
+daṇḍa as a full stop (\"kasmāt pañcaiva skandhāḥ.\"); the Devanāgarī
+showed the stop.  It becomes ।, like `/'."
+  (should (equal "कस्मात् पञ्चैव स्कन्धाः।"
+                 (tibetan-sanskrit-script-iast-to-devanagari
+                  "kasmāt pañcaiva skandhāḥ.")))
+  (should (equal "तदाश्रयात्मवस्तूद्भावनताम् उपादाय।"
+                 (tibetan-sanskrit-script-iast-to-devanagari
+                  "tadāśrayātmavastūdbhāvanatām upādāya."))))
+
 (ert-deftest tibetan-sanskrit-script-iast-to-devanagari-letters ()
   "Aspirates and the two-letter vowels before their first letter
 \(kh, ai, au), initial vowels, ṛ, visarga, avagraha, candrabindu, ṁ as

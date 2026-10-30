@@ -128,21 +128,25 @@ Idempotent; nil-safe."
          (mapcar (lambda (g) (list (cdr g) 'sign (car g)))
                  tibetan-sanskrit-script--signs)
          (list (list "ṁ" 'sign ?ं)
-               (list "//" 'danda ?॥) (list "/" 'danda ?।))
+               (list "//" 'danda ?॥) (list "/" 'danda ?।)
+               ;; The AS edition's daṇḍa (30.10.).
+               (list "." 'danda ?।))
          (mapcar (lambda (d) (list (number-to-string d) 'digit (+ ?० d)))
                  (number-sequence 0 9)))
         (lambda (a b) (> (length (car a)) (length (car b)))))
   "IAST pieces, longest first: (IAST KIND DEVANAGARI [VOWEL-SIGN]) — the
 tables of the Devanagari→IAST direction turned round, plus ṁ (another
-IAST spelling of the anusvāra), the daṇḍas `/' `//' and the digits.")
+IAST spelling of the anusvāra), the daṇḍas `/' `//' and `.' (the
+Abhidharmasamuccaya edition writes the daṇḍa as a full stop) and the
+digits.")
 
 (defun tibetan-sanskrit-script-iast-to-devanagari (str)
   "STR (IAST) in Devanagari.  A consonant waits for its vowel: a vowel
 becomes its sign (inherent a: nothing), another consonant makes a
 conjunct with the virāma, anything else (space, punctuation, the end)
 leaves the virāma too — word-final consonants.  The longest IAST piece
-is taken first (kh before k, ai before a, m̐ before m); `/' and `//'
-become । and ॥; other characters pass through.  Capitals count as
+is taken first (kh before k, ai before a, m̐ before m); `/' and `.'
+become ।, `//' ॥; other characters pass through.  Capitals count as
 small letters.  nil-safe."
   (when str
     (let* ((s (downcase (ucs-normalize-NFC-string str)))
