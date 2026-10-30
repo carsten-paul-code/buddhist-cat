@@ -1272,12 +1272,14 @@ never overwritten (user-error) — a generated one is regenerated."
 
 (defvar org-latex-pdf-process)
 (declare-function org-latex-export-to-pdf "ox-latex")
+(declare-function bcat-export-remove-tex "bcat-export" (pdf))
 
 (defun tibetan-handout-export-pdf (org-file)
   "Export ORG-FILE to PDF beside it and return the PDF path.
 LuaLaTeX (the file's #+LATEX_COMPILER), two runs for longtable —
 bound locally, so the user's own `org-latex-pdf-process' (latexmk …)
-neither breaks nor is changed."
+neither breaks nor is changed.  The .tex goes once the PDF is there
+\(`bcat-export-remove-tex', Carsten 30.10.)."
   (require 'ox-latex)
   (let ((buf (find-file-noselect org-file)))
     (unwind-protect
@@ -1285,8 +1287,9 @@ neither breaks nor is changed."
           (let ((org-latex-pdf-process
                  '("%latex -interaction nonstopmode -output-directory %o %f"
                    "%latex -interaction nonstopmode -output-directory %o %f")))
-            (expand-file-name (org-latex-export-to-pdf)
-                              (file-name-directory org-file))))
+            (let ((pdf (expand-file-name (org-latex-export-to-pdf)
+                                         (file-name-directory org-file))))
+              (if (fboundp 'bcat-export-remove-tex) (bcat-export-remove-tex pdf) pdf))))
       (unless (buffer-modified-p buf)
         (kill-buffer buf)))))
 

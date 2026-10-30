@@ -712,7 +712,8 @@ Neu-Generieren verloren gehen."
 
 (ert-deftest tibetan-handout-export-pdf-smoke ()
   "Echter LuaLaTeX-Lauf (nur wo lualatex + der Tibetisch-Font
-vorhanden sind): die erzeugte .org wird zu einem PDF."
+vorhanden sind): die erzeugte .org wird zu einem PDF, die .tex wird
+danach weggeräumt."
   (skip-unless (and (executable-find "lualatex")
                     (executable-find "luaotfload-tool")
                     (zerop (call-process "luaotfload-tool" nil nil nil
@@ -723,7 +724,9 @@ vorhanden sind): die erzeugte .org wird zu einem PDF."
                  "2026-10-09"))
            (pdf (tibetan-handout-export-pdf out)))
       (should (file-exists-p pdf))
-      (should (string-suffix-p "rgyan-sent-654.pdf" pdf)))))
+      (should (string-suffix-p "rgyan-sent-654.pdf" pdf))
+      ;; Carsten 30.10.: the .tex goes once the PDF is there.
+      (should-not (file-exists-p (concat (file-name-sans-extension pdf) ".tex"))))))
 
 ;; ----------------------------------------------------------------------------
 ;; §5.68 — Synopse-Vorspann (Siglen, Stellen, Parallele, Kommentar)

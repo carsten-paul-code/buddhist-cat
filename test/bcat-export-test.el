@@ -61,10 +61,27 @@ IX.60), without one „Satz N“; the copy in the source's handouts/ is
       (should (equal "Satz 9" (plist-get info :label)))
       (should (equal (expand-file-name "handouts/bden-satz-9.pdf" dir) (plist-get info :handout))))))
 
-(ert-deftest bcat-export-file-copies-to-handouts ()
-  "C-c u H (and so C-c u G) puts the PDF also into the handouts folder
-under its speaking name — each export anew, the latest wins; the PDF
-beside the sentence file stays."
+(ert-deftest bcat-export-file-moves-only-its-own-pdf ()
+  "30.10.: the first version moved whatever path the export returned —
+a test stub's /tmp/x.pdf existed on Carsten's machine and was moved
+into the fixture and deleted with it.  Only the PDF beside the sentence
+file (the one the export made) goes to handouts/; any other file stays
+where it is."
+  (bcat-sentence-test--with-source
+    (bcat-sentence-test--create src)
+    (let ((elsewhere (make-temp-file "bcat-foreign-" nil ".pdf" "FOREIGN")))
+      (unwind-protect
+          (cl-letf (((symbol-function 'bcat-export-pdf) (lambda (&rest _) elsewhere)))
+            (let ((bcat-export-upload nil))
+              (bcat-export-file (tibetan-sentence--filepath 9 folder src))
+              (should (file-exists-p elsewhere))
+              (should-not (file-exists-p (expand-file-name "handouts/bden-9.pdf" dir)))))
+        (when (file-exists-p elsewhere) (delete-file elsewhere))))))
+
+(ert-deftest bcat-export-file-moves-to-handouts ()
+  "C-c u H (and so C-c u G) puts the PDF into the handouts folder under
+its speaking name — Carsten 30.10.: „Das PDF brauchen wir nicht noch
+mal im Analyse Ordner“ — each export anew, the latest wins."
   (bcat-sentence-test--with-source
     (bcat-sentence-test--create src)
     (let* ((file (tibetan-sentence--filepath 9 folder src))
@@ -74,11 +91,12 @@ beside the sentence file stays."
       (cl-letf (((symbol-function 'bcat-export-pdf)
                  (lambda (&rest _) (with-temp-file pdf (insert content)) pdf)))
         (let ((bcat-export-upload nil))
-          (bcat-export-file file)
-          (should (file-exists-p pdf))
+          (should (equal copy (bcat-export-file file)))
+          (should-not (file-exists-p pdf))
           (should (equal "PDF 1" (with-temp-buffer (insert-file-contents copy) (buffer-string))))
           (setq content "PDF 2")
           (bcat-export-file file)
+          (should-not (file-exists-p pdf))
           (should (equal "PDF 2" (with-temp-buffer (insert-file-contents copy) (buffer-string)))))))))
 
 (ert-deftest bcat-export-after-fetch-uploads ()
@@ -90,7 +108,7 @@ Switched off (`bcat-export-auto' nil): nothing."
     (bcat-sentence-test--create src)
     (let ((exported '()) (uploaded '()))
       (cl-letf (((symbol-function 'bcat-export-pdf)
-                 (lambda (file &rest _) (push file exported) "/tmp/x.pdf"))
+                 (lambda (file &rest _) (push file exported) "/nonexistent/bcat-test.pdf"))
                 ((symbol-function 'tibetan-discussion-paper--upload)
                  (lambda (pdf title label &optional _done) (push (list pdf title label) uploaded) t))
                 ;; The fixture lives under the temp directory, which the
@@ -101,7 +119,7 @@ Switched off (`bcat-export-auto' nil): nothing."
             (add-hook 'bcat-sentence-after-fetch-functions #'bcat-export-after-fetch)
             (bcat-sentence-test--fetch src)))
         (should (equal (list (tibetan-sentence--filepath 9 folder src)) exported))
-        (should (equal '(("/tmp/x.pdf" "bDen pa gnyis la 'jug pa" "SDA 9")) uploaded))
+        (should (equal '(("/nonexistent/bcat-test.pdf" "bDen pa gnyis la 'jug pa" "SDA 9")) uploaded))
         (setq exported nil uploaded nil)
         (let ((bcat-export-auto nil))
           (bcat-export-after-fetch (tibetan-sentence--filepath 9 folder src)))
@@ -119,7 +137,7 @@ as placed (or the reason it failed)."
           (bcat-status--entries (make-hash-table :test 'equal)))
       (when (get-buffer bcat-status-buffer-name) (kill-buffer bcat-status-buffer-name))
       (bcat-status-begin "C-c u G" "Satz 9" (list (cons file "Satz 9")))
-      (cl-letf (((symbol-function 'bcat-export-pdf) (lambda (&rest _) "/tmp/x.pdf"))
+      (cl-letf (((symbol-function 'bcat-export-pdf) (lambda (&rest _) "/nonexistent/bcat-test.pdf"))
                 ((symbol-function 'tibetan-discussion-paper--upload)
                  (lambda (_pdf _title _label &optional done)
                    (funcall done t "/Reading/bDen/Satz 9 2026-10-29 1802") t)))
@@ -139,7 +157,7 @@ runner's switch does not apply) must not put fixtures on the device
     (bcat-sentence-test--create src)
     (let ((exported 0) (uploaded 0))
       (cl-letf (((symbol-function 'bcat-export-pdf)
-                 (lambda (&rest _) (cl-incf exported) "/tmp/x.pdf"))
+                 (lambda (&rest _) (cl-incf exported) "/nonexistent/bcat-test.pdf"))
                 ((symbol-function 'tibetan-discussion-paper--upload)
                  (lambda (&rest _) (cl-incf uploaded) t)))
         (let ((bcat-export-auto t) (bcat-export-upload t))
@@ -156,7 +174,7 @@ file is not exported (C-c u G first)."
     (let ((file (tibetan-sentence--filepath 9 folder src))
           (exported '()))
       (cl-letf (((symbol-function 'bcat-export-pdf)
-                 (lambda (f &rest _) (push f exported) "/tmp/x.pdf"))
+                 (lambda (f &rest _) (push f exported) "/nonexistent/bcat-test.pdf"))
                 ((symbol-function 'tibetan-discussion-paper--upload) (lambda (&rest _) t)))
         (with-current-buffer (find-file-noselect file)
           (bcat-export))
@@ -275,8 +293,9 @@ file.  Other sections at the end stay in the PDF."
 
 (ert-deftest bcat-export-pdf-smoke ()
   "Real LuaLaTeX run (only where lualatex is installed): the reviewed
-Tibetan sample becomes a PDF; its .tex has no title, no centred and no
-tabularx tables, and carries the running head."
+Tibetan sample becomes a PDF and the .tex is cleared away; kept on
+request, the .tex has no title, no centred and no tabularx tables, and
+carries the running head."
   (skip-unless (executable-find "lualatex"))
   (let* ((dir (make-temp-file "bcat-export-" t))
          (file (expand-file-name "sent-009-bden.org" dir)))
@@ -285,8 +304,13 @@ tabularx tables, and carries the running head."
           (copy-file (expand-file-name "../Templates/analysis/samples/Tibetan.org"
                                        (file-name-directory (locate-library "bcat-export-test")))
                      file)
+          ;; Carsten 30.10.: „das .tex können wir … wegräumen, wenn das
+          ;; PDF erzeugt ist“ — kept only on request (for these checks).
           (let ((pdf (bcat-export-pdf file (bcat-export-head-lines "Tibetisch V" "bDen" 9 "SDA 9"))))
-            (should (file-exists-p pdf)))
+            (should (file-exists-p pdf))
+            (should-not (file-exists-p (expand-file-name "sent-009-bden.tex" dir))))
+          (let ((bcat-export-keep-tex t))
+            (bcat-export-pdf file (bcat-export-head-lines "Tibetisch V" "bDen" 9 "SDA 9")))
           (let ((tex (with-temp-buffer
                        (insert-file-contents (expand-file-name "sent-009-bden.tex" dir))
                        (buffer-string))))

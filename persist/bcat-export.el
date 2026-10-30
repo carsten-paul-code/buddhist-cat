@@ -296,6 +296,23 @@ sentence files (Carsten 30.10.: not in the PDF).  For
         (delete-region beg (point))
         (goto-char beg)))))
 
+(defcustom bcat-export-keep-tex nil
+  "Keep the .tex beside the PDF — only for looking into the LaTeX.
+Carsten 30.10.: „das .tex können wir an sich auch wegräumen, wenn das
+PDF erzeugt ist“; a failed run keeps it anyway (no PDF, nothing
+removed)."
+  :type 'boolean
+  :group 'buddhist-cat)
+
+(defun bcat-export-remove-tex (pdf)
+  "Remove the .tex of PDF once PDF exists (unless `bcat-export-keep-tex');
+return PDF.  Shared by every LaTeX export of the tool (sentence files,
+old handout, discussion paper)."
+  (let ((tex (concat (file-name-sans-extension pdf) ".tex")))
+    (when (and (not bcat-export-keep-tex) (file-exists-p pdf) (file-exists-p tex))
+      (delete-file tex)))
+  pdf)
+
 (defun bcat-export-pdf (file &optional head)
   "Export the sentence FILE to PDF beside it and return the PDF path.
 HEAD (lines from `bcat-export-head-lines') goes into the export copy,
@@ -324,23 +341,29 @@ stay untouched outside."
                 (org-export-before-processing-functions
                  (append (list insert-head #'bcat-export--drop-machine-sections)
                          org-export-before-processing-functions)))
-            (expand-file-name (org-latex-export-to-pdf) (file-name-directory file))))
+            (bcat-export-remove-tex
+             (expand-file-name (org-latex-export-to-pdf) (file-name-directory file)))))
       (unless visited (kill-buffer buf)))))
 
 (defun bcat-export-file (file)
-  "C-c u H for the sentence FILE: PDF with running head, then onto the
+  "C-c u H for the sentence FILE: PDF with running head, moved into the
+handouts folder under its speaking name (Carsten 30.10.: „Das PDF
+brauchen wir nicht noch mal im Analyse Ordner“), then onto the
 reMarkable (`bcat-export-upload').  Returns the PDF path."
   (let* ((info (bcat-export-info file))
          (pdf (bcat-export-pdf file (bcat-export-head-lines
                                      (plist-get info :folder) (plist-get info :work)
                                      (plist-get info :sent-num) (plist-get info :verse)))))
-    (let ((copy (plist-get info :handout)))
-      (when (and copy (file-exists-p pdf))
+    (let ((target (plist-get info :handout)))
+      ;; Only the PDF the export made beside FILE — never another file.
+      (when (and target (file-exists-p pdf)
+                 (file-equal-p (file-name-directory pdf) (file-name-directory file)))
         (condition-case err
-            (progn (make-directory (file-name-directory copy) t)
-                   (copy-file pdf copy t))
-          (error (message "PDF nicht in handouts/ kopiert (%s): %s"
-                          (file-name-nondirectory copy) (error-message-string err))))))
+            (progn (make-directory (file-name-directory target) t)
+                   (rename-file pdf target t)
+                   (setq pdf target))
+          (error (message "PDF nicht nach handouts/ verschoben (%s): %s"
+                          (file-name-nondirectory target) (error-message-string err))))))
     (bcat-status-step file :pdf "PDF ✓")
     (if bcat-export-upload
         (progn
