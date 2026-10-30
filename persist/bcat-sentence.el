@@ -444,6 +444,24 @@ a source without commentary."
            (commentary-link . ,(cdr (assq :link links))))
          context)))))
 
+(declare-function tibetan-cascade--ref-bodies "tibetan-cascade" (refs-file heading-re))
+
+(defun bcat-sentence--lecture-fields (sent-num source-file)
+  "The lectures on sentence SENT-NUM from the #+CAT_LECTURES: file of
+SOURCE-FILE (`** Sentence N' / `*** <lecture>', as the verse references):
+\((lectures-p . t) (lectures ((lecture-name . N) (lecture-body . B)) …)),
+or nil.  Carsten 30.10.: Sanderson's lectures on TĀ 1.1–15 in the
+sentence file and its PDF — the preparation on the reMarkable, with
+handwritten notes.  Never in a prompt."
+  (let* ((v (bcat-sentence--header-value source-file "CAT_LECTURES"))
+         (file (and v (expand-file-name v (file-name-directory source-file))))
+         (bodies (and file (tibetan-cascade--ref-bodies
+                            file (format "^\\*\\* Sentence %d\\b" sent-num)))))
+    (when bodies
+      `((lectures-p . t)
+        (lectures . ,(mapcar (lambda (b) `((lecture-name . ,(car b)) (lecture-body . ,(cdr b))))
+                             bodies))))))
+
 (defun bcat-sentence-rump-context (sent-num segs source-file
                                             &optional extra-refs keep)
   "Template fields of the new sentence file SENT-NUM (SEGS = its
@@ -470,6 +488,7 @@ existing file (user slots, `created')."
        (and (assoc template bcat-sentence--pair-templates)
             (bcat-sentence--parallel-fields sent-num source-file))
        (bcat-sentence--bhasya-fields sent-num source-file)
+       (bcat-sentence--lecture-fields sent-num source-file)
        `((sent-num . ,sent-num)
          (source-link . ,(format "[[file:../%s::*Sentence %d][%s / Sentence %d]]"
                                  name sent-num name sent-num))

@@ -23,7 +23,7 @@ segments: num uchen wylie glossed gloss-table translations structure note
 concepts (glossed = die Verszeile mit den Glossen in Klammern);
 glosses (gesetzt, wenn eine Zeile Glossen hat) translation (die
 Übersetzung des ganzen Satzes, nach C-c u G) grammar comparison
-working-translation my-notes footnotes.
+lectures-p lectures (lecture-name lecture-body — #+CAT_LECTURES:, Sanderson zu TĀ 1.1–15, Carsten 30.10.: im PDF zum Annotieren) working-translation my-notes footnotes.
 * Text (Carsten 29.10.): je Segment Uchen über Wylie („erste Zeile
 Uchen, zweite Zeile Wylie“, wie im alten Handout), Vers mit Vokabeln,
 Übersetzung —
@@ -79,6 +79,14 @@ die Übersetzung steht zusätzlich unter Translations compared.
 ** Translations compared
 {{comparison}}
 
+{{#lectures-p}}
+* Lectures
+{{#lectures}}
+** {{lecture-name}}
+{{lecture-body}}
+
+{{/lectures}}
+{{/lectures-p}}
 * Working Translation
 {{working-translation}}
 

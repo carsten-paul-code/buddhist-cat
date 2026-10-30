@@ -28,7 +28,7 @@ glosses (gesetzt, wenn es einen Padapāṭha gibt) translation grammar
 comparison word-analysis (je Segment Padapāṭha und „- Wort — Lemma;
 Form“: daraus lesen Zettel-Hervorhebung, Diskussion und
 padapatha-pdf.py die Lemmata; im PDF nicht gedruckt)
-working-translation my-notes footnotes.
+lectures-p lectures (lecture-name lecture-body — #+CAT_LECTURES:, Sanderson zu TĀ 1.1–15, Carsten 30.10.: im PDF zum Annotieren) working-translation my-notes footnotes.
 Grammatische Begriffe nach der Devavāṇīpraveśikā (Goldman & Sutherland
 Goldman 1999).
 #+end_comment
@@ -111,6 +111,14 @@ Goldman 1999).
 ** Translations compared
 {{comparison}}
 
+{{#lectures-p}}
+* Lectures
+{{#lectures}}
+** {{lecture-name}}
+{{lecture-body}}
+
+{{/lectures}}
+{{/lectures-p}}
 * Working Translation
 {{working-translation}}
 

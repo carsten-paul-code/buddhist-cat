@@ -532,6 +532,48 @@ compared)."
           (should (string-match-p "^\\* My Notes\nAlte Notiz\\.$" text))
           (should (string-match-p "^\\*Eigene 2026:\\* My own rendering of verse nine\\.$" text)))))))
 
+(ert-deftest bcat-sentence-lectures ()
+  "Carsten 30.10.: Sanderson's lectures on TĀ 1.1–15 (transcripts with
+time stamps) belong in the sentence file of their verse — „als
+Vorbereitung das PDF auf dem Remarkable anschauen und mir
+handschriftliche Notizen machen. Deshalb will ich Sanderson im PDF
+haben.“  A source with #+CAT_LECTURES: names a file of `** Sentence N'
+/ `*** <lecture>' passages; the sentence file gets them under
+* Lectures (after the analysis, in the PDF), never in the prompt."
+  (bcat-sentence-test--with-source
+    (with-temp-file src
+      (insert (replace-regexp-in-string "#\\+TIBETAN_SENTENCE_REFS: refs.org\n"
+                                        "\\&#+CAT_LECTURES: lectures.org\n"
+                                        bcat-sentence-test--source)))
+    (with-temp-file (expand-file-name "lectures.org" dir)
+      (insert "#+TITLE: Sanderson — Passagen je Vers\n\n* TĀ 1\n** Sentence 9\n"
+              "*** Sanderson, Readings I (27.01.2022)\n"
+              "[[https://www.youtube.com/watch?v=hxaz7FbtPFk&t=620s][0:10:20]] It's an immensely tricky verse.\n\n"
+              "[[https://www.youtube.com/watch?v=hxaz7FbtPFk&t=688s][0:11:28]] And Jayaratha, our only surviving commentator.\n"))
+    (let ((text (bcat-sentence-test--create-n src 9)))
+      (should (string-match-p
+               (regexp-quote (concat "* Lectures\n** Sanderson, Readings I (27.01.2022)\n"
+                                     "[[https://www.youtube.com/watch?v=hxaz7FbtPFk&t=620s][0:10:20]] It's an immensely tricky verse.\n\n"
+                                     "[[https://www.youtube.com/watch?v=hxaz7FbtPFk&t=688s][0:11:28]] And Jayaratha"))
+               text))
+      (should (< (string-match "^\\* Sentence$" text) (string-match "^\\* Lectures$" text)
+                 (string-match "^\\* Working Translation$" text))))
+    (bcat-sentence-test--with-stubs bcat-sentence-test--answer
+      (bcat-sentence-test--fetch src)
+      (should-not (cl-some (lambda (p) (string-match-p "immensely tricky" (cdr p))) prompts))
+      (should (string-match-p "^\\* Lectures\n\\*\\* Sanderson"
+                              (bcat-sentence-test--file-text src))))
+    (with-temp-buffer
+      (insert (bcat-sentence-test--file-text src))
+      (org-mode)
+      (bcat-export--drop-machine-sections)
+      (should (string-match-p "^\\* Lectures$" (buffer-string))))))
+
+(ert-deftest bcat-sentence-no-lectures ()
+  "Without #+CAT_LECTURES: no * Lectures."
+  (bcat-sentence-test--with-source
+    (should-not (string-match-p "Lectures" (bcat-sentence-test--create-n src 9)))))
+
 (ert-deftest bcat-sentence-status-dharmamitra-limit ()
   "30.10., TĀ 1002–1007: „DharmaMitra –“ on every line, the reason
 (DharmaMitra's daily limit) only in *Messages*.  The status line says
