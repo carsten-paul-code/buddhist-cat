@@ -106,17 +106,11 @@ ci'i phyir [why] phung po [aggregate] rnams [plural] lnga [five] kho na [only] z
 *DharmaMitra:* Why are there exactly five aggregates (skandhas)?
 
 ** Segment 23 · Tib. 78
-| pañca-ākāra-ātma-vastu-udbhāvanatām                               |
-| pañca · ā-√kṛ-a · ātman · √vas-tu · ud-√bhū-ana-tā                |
-| five · form, mode · self · thing · bring forth (caus.) + abstract |
-| showing a fivefold self-basis                                     |
-| f. acc. sg.                                                       |
-
-| upādāya                                |
-| upa-ā-√dā-ya                           |
-| upa- near · ā- to · √dā (3) give, take |
-| on account of                          |
-| ger.                                   |
+| pañca-ākāra-ātma-vastu-udbhāvanatām                               | upādāya                                |
+| pañca · ā-√kṛ-a · ātman · √vas-tu · ud-√bhū-ana-tā                | upa-ā-√dā-ya                           |
+| five · form, mode · self · thing · bring forth (caus.) + abstract | upa- near · ā- to · √dā (3) give, take |
+| showing a fivefold self-basis                                     | on account of                          |
+| f. acc. sg.                                                       | ger.                                   |
 
 *Sandhi:* pañca + ākāra → pañcākāra (a + ā → ā) · ākāra + ātma → ākārātma (a + ā → ā) · vastu + udbhāvanatām → vastūdbhāvanatām (u + u → ū)
 
@@ -145,17 +139,11 @@ bdag gi gzhi [basis of self] rnam pa [mode] lnga [five] brjod pa'i [of stating] 
 → Rahula/Boin-Webb 2001: ātmavastu as „[the idea] of self“ — the basis (vastu) is dropped
 
 ** Segment 24 · Tib. 79
-| sa-parigraha-deha-ātma-vastu-udbhāvanatām                              |
-| sa · pari-√grah-a · deha · ātman · √vas-tu · ud-√bhū-ana-tā            |
-| with · pari- around · √grah (9) seize · body · self · thing · bringing |
-| self-basis: body + possessions                                         |
-| f. acc. sg.                                                            |
-
-| upādāya                                |
-| upa-ā-√dā-ya                           |
-| upa- near · ā- to · √dā (3) give, take |
-| on account of                          |
-| ger.                                   |
+| sa-parigraha-deha-ātma-vastu-udbhāvanatām                              | upādāya                                |
+| sa · pari-√grah-a · deha · ātman · √vas-tu · ud-√bhū-ana-tā            | upa-ā-√dā-ya                           |
+| with · pari- around · √grah (9) seize · body · self · thing · bringing | upa- near · ā- to · √dā (3) give, take |
+| self-basis: body + possessions                                         | on account of                          |
+| f. acc. sg.                                                            | ger.                                   |
 
 *Sandhi:* deha + ātma → dehātma (a + ā → ā) · vastu + udbhāvanatām → vastūdbhāvanatām (u + u → ū)
 
@@ -180,17 +168,11 @@ bdag gi gzhi [basis of self] lus [body] yongs su gzung ba [what is appropriated]
 → Rahula/Boin-Webb 2001: saparigraha-deha as „physical apprehension“ — the body itself recedes
 
 ** Segment 25 · Tib. 80
-| upabhoga-ātma-vastu-udbhāvanatām                      |
-| upa-√bhuj-a · ātman · √vas-tu · ud-√bhū-ana-tā        |
-| upa- near · √bhuj (7) enjoy · self · thing · bringing |
-| self-basis: experience                                |
-| f. acc. sg.                                           |
-
-| upādāya                                |
-| upa-ā-√dā-ya                           |
-| upa- near · ā- to · √dā (3) give, take |
-| on account of                          |
-| ger.                                   |
+| upabhoga-ātma-vastu-udbhāvanatām                      | upādāya                                |
+| upa-√bhuj-a · ātman · √vas-tu · ud-√bhū-ana-tā        | upa-ā-√dā-ya                           |
+| upa- near · √bhuj (7) enjoy · self · thing · bringing | upa- near · ā- to · √dā (3) give, take |
+| self-basis: experience                                | on account of                          |
+| f. acc. sg.                                           | ger.                                   |
 
 *Sandhi:* upabhoga + ātma → upabhogātma (a + ā → ā) · vastu + udbhāvanatām → vastūdbhāvanatām
 
@@ -210,17 +192,11 @@ bdag gi gzhi [basis of self] longs spyod [experience] brjod pa [stating] dang [C
 *DharmaMitra:* 2. By manifesting the objective basis of the self as the object of experience;
 
 ** Segment 26 · Tib. 81
-| vyavahāra-ātma-vastu-udbhāvanatām                               |
-| vi-ava-√hṛ-a · ātman · √vas-tu · ud-√bhū-ana-tā                 |
-| vi- apart · ava- down · √hṛ (1) carry · self · thing · bringing |
-| self-basis: expression                                          |
-| f. acc. sg.                                                     |
-
-| upādāya                                |
-| upa-ā-√dā-ya                           |
-| upa- near · ā- to · √dā (3) give, take |
-| on account of                          |
-| ger.                                   |
+| vyavahāra-ātma-vastu-udbhāvanatām                               | upādāya                                |
+| vi-ava-√hṛ-a · ātman · √vas-tu · ud-√bhū-ana-tā                 | upa-ā-√dā-ya                           |
+| vi- apart · ava- down · √hṛ (1) carry · self · thing · bringing | upa- near · ā- to · √dā (3) give, take |
+| self-basis: expression                                          | on account of                          |
+| f. acc. sg.                                                     | ger.                                   |
 
 *Sandhi:* vyavahāra + ātma → vyavahārātma (a + ā → ā) · vastu + udbhāvanatām → vastūdbhāvanatām
 
@@ -273,17 +249,11 @@ bdag gi gzhi [basis of self] chos [merit] dang [COM] chos ma yin pa [demerit] mn
 → Rahula/Boin-Webb 2001: abhisaṃskāra („forming“) as „the agent“ — the activity becomes a doer
 
 ** Segment 28 · Tib. 83
-| tad-āśraya-ātma-vastu-udbhāvanatām                        |
-| tad · ā-√śri-a · ātman · √vas-tu · ud-√bhū-ana-tā         |
-| that · ā- to · √śri (1) lean on · self · thing · bringing |
-| self-basis: their support                                 |
-| f. acc. sg.                                               |
-
-| upādāya                                |
-| upa-ā-√dā-ya                           |
-| upa- near · ā- to · √dā (3) give, take |
-| on account of                          |
-| ger.                                   |
+| tad-āśraya-ātma-vastu-udbhāvanatām                        | upādāya                                |
+| tad · ā-√śri-a · ātman · √vas-tu · ud-√bhū-ana-tā         | upa-ā-√dā-ya                           |
+| that · ā- to · √śri (1) lean on · self · thing · bringing | upa- near · ā- to · √dā (3) give, take |
+| self-basis: their support                                 | on account of                          |
+| f. acc. sg.                                               | ger.                                   |
 
 *Sandhi:* tad + āśraya → tadāśraya (d before a vowel stays) · āśraya + ātma → āśrayātma (a + ā → ā) · vastu + udbhāvanatām → vastūdbhāvanatām
 

@@ -576,10 +576,13 @@ segment Claude skipped keeps its rump fields."
 ;; Sanskrit (§5.74, Carsten 29.10.)
 ;; ----------------------------------------------------------------------------
 
-(defcustom bcat-analysis-sanskrit-table-width 95
+(defcustom bcat-analysis-sanskrit-table-width 120
   "Widest org table (characters) for the words of a Sanskrit segment;
 wider segments are split into several tables (not into bands of one
-table: a shared column grid let a long compound widen every column)."
+table: a shared column grid let a long compound widen every column).
+120 (30.10., was 95): in the PDF of AS sentence 3 a table of 115
+characters fits the page, one of 134 runs into the margin; Carsten
+wanted compound and upādāya side by side as in the preview."
   :type 'integer
   :group 'buddhist-cat)
 

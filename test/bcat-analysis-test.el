@@ -179,6 +179,23 @@ long compound widen every column (29.10.); nothing is cut."
         (should (<= (string-width row) 40))))
     (should (equal "" (bcat-analysis-sanskrit-tables nil)))))
 
+(ert-deftest bcat-analysis-sanskrit-table-width-default ()
+  "Carsten 30.10.: the tables as in the reviewed preview of AS sentence
+3 — compound and upādāya side by side.  Measured in its PDF: a table of
+115 characters (segment 24) fits the page, one of 134 (segment 27) runs
+into the margin.  With the default width segments 23 and 24 keep one
+table, segment 27 is split."
+  (let ((segments (alist-get 'segments
+                             (bcat-analysis-parse (bcat-analysis-test--answer-003 "asam")))))
+    (cl-flet ((tables (n) (length (split-string
+                                   (bcat-analysis-sanskrit-tables
+                                    (alist-get 'words (cl-find n segments
+                                                               :key (lambda (s) (alist-get 'num s)))))
+                                   "\n\n"))))
+      (should (= 1 (tables 23)))
+      (should (= 1 (tables 24)))
+      (should (= 2 (tables 27))))))
+
 (ert-deftest bcat-analysis-padapatha-line ()
   "The padapāṭha line under * Text: each word with its gloss in
 brackets, the daṇḍas of the transmitted line at the end (the verse
