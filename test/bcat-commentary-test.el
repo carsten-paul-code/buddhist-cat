@@ -322,5 +322,21 @@ for the verse's wording."
   (should (equal "Sthiramati reads /ni/ for /kyang/; adds /dang/; omits /yi/"
                  (bcat-commentary-reading-text '(("ni" . "kyang") ("dang" . "") ("" . "yi"))))))
 
+(ert-deftest bcat-verse-partner-file-numbers ()
+  "30.10.: the Tibetan file of a verse pair was handled under the
+SANSKRIT sentence number — prepared as sentence 36 of the Tibetan source
+\(a stray sent-036-mdo.org), its header „Sentence 36“, its references
+looked up for sentence 36.  In the MSA the numbers differ: the Tibetan
+verse IX.16 is sentence 64, and only its file exists."
+  (bcat-commentary-test--with-msa
+    (bcat-sentence-test--with-stubs #'bcat-commentary-test--verse-answers
+      (bcat-sentence-test--fetch-n src 36))
+    (should (equal (list (file-name-nondirectory (tibetan-sentence--filepath 64 tfolder tsrc)))
+                   (directory-files tfolder nil "\\`sent-")))
+    (let ((text (bcat-sentence-test--text-of (tibetan-sentence--filepath 64 tfolder tsrc))))
+      (should (string-match-p "^#\\+TITLE: Sentence 64 Analysis$" text))
+      (should (string-match-p (regexp-quote "#+SOURCE: [[file:../mdo-cat.org::*Sentence 64]") text))
+      (should (string-match-p "^#\\+CAT_PARALLEL_SEGMENTS: 92, 93$" text)))))
+
 (provide 'bcat-commentary-test)
 ;;; bcat-commentary-test.el ends here

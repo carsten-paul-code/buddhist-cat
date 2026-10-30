@@ -892,9 +892,11 @@ has them, HINT the hint on the bhāṣya from the Sanskrit answer.
 Returns the file."
   (let* ((n (plist-get sentence :sent-num))
          (parallel (bcat-sentence-parallel-source source-file))
+         ;; The Tibetan sentence's own number (MSA: 64 for the Sanskrit 36).
+         (other (bcat-sentence--parallel-sentence n source-file))
          (tfile (bcat-sentence-partner-file n source-file)))
     (bcat-sentence--write-analysed
-     tfile n (bcat-sentence--parallel-segs n source-file) parallel
+     tfile (plist-get other :sent-num) (plist-get other :segs) parallel
      (lambda (base)
        (cons (cons 'bhasya-hint hint)
              (bcat-analysis-partner-context (bcat-analysis-context base tibetan trefs)
@@ -966,11 +968,12 @@ the rendering.  Its references are those of the Tibetan sentence — in a
 pair with the ones added by hand to the Tibetan file and DharmaMitra on
 the Tibetan."
   (let* ((n (plist-get sentence :sent-num))
+         (other (bcat-sentence--parallel-sentence n source-file))
          (tfile (bcat-sentence-partner-file n source-file))
-         (trefs (bcat-sentence--references-for tfile n (bcat-sentence-parallel-source source-file)))
+         (trefs (bcat-sentence--references-for tfile (plist-get other :sent-num)
+                                               (bcat-sentence-parallel-source source-file)))
          (dm (and (bcat-sentence--paired-p source-file)
-                  (bcat-sentence--dharmamitra
-                   tfile (list :sent-num n :segs (bcat-sentence--parallel-segs n source-file)))))
+                  (bcat-sentence--dharmamitra tfile other)))
          (trefs (if dm (append trefs (list (cons "DharmaMitra" dm))) trefs)))
     (require 'tibetan-translation-discussion)
     ;; Before the submit: the landing (later, or at once) overwrites it.
@@ -985,10 +988,10 @@ the Tibetan."
   "`bcat-sentence--prepare' for the Tibetan file of SENTENCE of the
 paired SOURCE-FILE; nil when the Tibetan lacks the sentence."
   (let* ((n (plist-get sentence :sent-num))
-         (segs (bcat-sentence--parallel-segs n source-file)))
-    (when segs
+         (other (bcat-sentence--parallel-sentence n source-file)))
+    (when (plist-get other :segs)
       (bcat-sentence--prepare (bcat-sentence-partner-file n source-file)
-                              (list :sent-num n :segs segs)
+                              other
                               (bcat-sentence-parallel-source source-file)))))
 
 (defun bcat-sentence--pair-state (file sentence source-file)
