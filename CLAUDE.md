@@ -12,7 +12,7 @@ NACH VORLAGE — Reading-Klassen, Tibetisch: `#+CAT_TEMPLATE: tibetan' im
 Quellkopf, Gliederung * Text / * Segments / * Sentence, C-c u A = Rumpf
 ohne KI, C-c u G = ein JSON-Abruf je Satz (+ DharmaMitra, + kleiner
 Zuordnungs-Abruf für ergänzte Vergleichsübersetzungen), endet mit C-c u H
-= die Satzdatei als PDF aufs reMarkable; Sanskrit seit 29.10. (Rezitation zuerst); * Text Tibetisch Uchen über Wylie, Sanskrit Rezitation in Devanāgarī + Text als IAST-Padapāṭha; ZWEISPRACHIG seit 30.10.: `#+CAT_TEMPLATE: bilingual' + `#+CAT_PARALLEL:' (AS), C-c u G = Sanskrit-Abruf, dann tibetischer Abruf (Claude ordnet die tibetischen Segmente zu); fremde L1-Abschnitte (`* Handout') überstehen jeden Neubau; PAAR seit 30.10.: tibetische Quelle `bilingual-tibetan' + `#+CAT_PARALLEL' zurück → ein C-c u G baut beide Satzdateien (tibetisch mit voller Analyse), Kopf-Links, C-c u J springt; Ausgabegrenze 32000; ERT 2693.
+= die Satzdatei als PDF aufs reMarkable; Sanskrit seit 29.10. (Rezitation zuerst); * Text Tibetisch Uchen über Wylie, Sanskrit Rezitation in Devanāgarī + Text als IAST-Padapāṭha; ZWEISPRACHIG seit 30.10.: `#+CAT_TEMPLATE: bilingual' + `#+CAT_PARALLEL:' (AS), C-c u G = Sanskrit-Abruf, dann tibetischer Abruf (Claude ordnet die tibetischen Segmente zu); fremde L1-Abschnitte (`* Handout') überstehen jeden Neubau; PAAR seit 30.10.: tibetische Quelle `bilingual-tibetan' + `#+CAT_PARALLEL' zurück → ein C-c u G baut beide Satzdateien (tibetisch mit voller Analyse), Kopf-Links, C-c u J springt; Ausgabegrenze 32000; MIT KOMMENTAR seit 30.10. abends (MSA IX + Sthiramati): Versmodus (Vers ↔ Vers über :VERSE:, Bhāṣya unten mit *Hint:*), Kommentardokument je Vers-Section (`#+CAT_TEMPLATE: commentary', comm-IX.N-savbh.org, volle tibetische Analyse + Lemma-Zeilen), ein C-c u G = Verspaar + Kommentar, beide PDFs; C-c u K springt Vers ↔ Kommentar; ERT 2715.
 Previous: §5.73: UMBENENNUNG IN
 BUDDHIST CAT — erster Schritt: die Hülle (Hauptdatei/Feature
 buddhist-cat, alter Name lädt weiter, Customize-Gruppe, Menü, Repo,
@@ -4461,11 +4461,81 @@ ERT 2689.
   für ein Skt|Tib-Nebeneinander.
 ERT 2693.
 
+#### Mit Kommentar: MSA IX mit Sthiramati (30.10. abends)
+
+Carsten: „Sanskrit und Tibetisch (Verse) werden ja zusammen übersetzt
+und der Kommentar dann separat … Allerdings sollten bei C-c u G immer
+beide analysiert und auf das Remarkable gepusht werden.“  Entscheidungen:
+Einheit = Vers (Section IX.N); Bhāṣya „im Vers als zusätzliche Section
+(unten) mit Text und hint“; Kommentar „volle Analyse“, „zwei Dokumente“.
+
+- Versmodus (Quelle mit :VERSE:-Sätzen): Paarung Vers ↔ Vers über
+  :VERSE: statt Satznummer (`318ef20'; IX.60 = Skt. Satz 128 ↔ Tib. 183,
+  tibetische Partnerdatei unter eigener Nummer `9e1fcf2'); die übrigen
+  Sätze der Section = Bhāṣya, unten als `* Bhāṣya' (Devanāgarī/IAST,
+  Uchen/Wylie) mit *Hint:* aus dem Sanskrit-Abruf (`bhasya_hint',
+  `2e067c3'); ein Bhāṣya-Satz öffnet die Versdatei
+  (`bcat-sentence-owner').
+- Lemmata (`2fb41ec', persist/bcat-commentary.el): LCS der Wylie-Silben
+  gegen die tibetischen Pādas, Lesarten („Sthiramati reads /bzhin/ for
+  /ba/“); markierte Zitate (zhes/ces/shes) mit ≥ 2 und ≥ ½ der Silben in
+  einem Pāda, mehr als im Bhāṣya → „in his own wording“.  Grenze: IX.60
+  findet das Werkzeug 2 von 4 Pāda-Zitaten (1783 „rang bzhin dang ni“
+  und 1786 „rdzogs longs spyod“ passen ebenso aufs Bhāṣya, das den Vers
+  umschreibt), dazu 1798 in eigener Formulierung, IX.61–63 keines —
+  dafür das `lemma'-Feld des Kommentar-Abrufs (Claude vor Werkzeug, wo
+  Claude eine Zeile nennt; 0 = keine Angabe, das Werkzeug bleibt).
+- Kommentardokument (`629c784'): `#+CAT_TEMPLATE: commentary' in der
+  Sthiramati-Quelle + `#+CAT_COMMENTS_ON' (Sanskrit-Quelle), in der
+  Sanskrit-Quelle `#+CAT_COMMENTARY'.  Je Kommentar-Section
+  analysis/comm-IX.N-savbh.org (IX.65 hat keine eigene, IX.64 deckt es
+  mit: `bcat-commentary-section'); Vorlage commentary.org: Kopf mit
+  #+CAT_VERSE/#+SENTENCES/#+SEGMENTS, * Verse (tibetisch), je
+  Kommentarsatz Text → Übersetzung → Segmente (Tabelle, Structure, Note,
+  Concepts, *Lemma:* mit Links auf Tib.-Pāda und Skt.-Segment, ⟦N⟧) →
+  *Grammar:*, * Commentary ** Translation (durchlaufend).  Versdateien
+  je Segment „*Sthiramati:* lemmata in 258, 259“ (Links).
+- Kommentar-Abruf (`1ce3de2'): C-c u G auf Vers/Bhāṣya/tibetische
+  Quelle/Sthiramati-Quelle/Kommentardokument → Verspaar wie gehabt +
+  einmal je Section `bcat-commentary-fetch': DharmaMitra je
+  Kommentarsatz, dann Claude mit dem Vers zeilenweise, in Teilen ≤
+  `bcat-commentary-chunk-segments' (30) an Satzgrenzen; Antwort =
+  tibetische Segmentregeln (`04d0d53', Prompts byteweise gleich) +
+  `lemma' + Grammatik je Kommentarsatz.  Nur fehlendes (Zustand
+  `commentary', wenn nur der Kommentar fehlt); unlesbarer Teil →
+  Antwort aufbewahrt, kein PDF, bleibt offen.  Am Ende: Lemma-Zeilen in
+  beiden Versdateien nachgezogen, Hook → PDF des Kommentars.
+  Statusschritt :commentary.
+- `da9b25b' C-c u G/H im Kommentardokument (bcat-sentence-file-p kennt
+  comm-, Geltungsbereich = Kommentarquelle + #+SENTENCES; PDF in den
+  Werkordner der Verse, Name = Titel); `19c36f1' C-c u K
+  (`bcat-commentary-jump'): Versdatei → erstes Kommentarsegment, das das
+  Segment zitiert; Lemma → tibetischer Pāda; Quelle ↔ Quelle.
+- `702c686' tibetische Glossentabellen nach Breite geteilt
+  (`bcat-analysis-tibetan-table-width' 130, je Spalte breiteste Zelle
+  + 6) — Sthiramatis Prosasegmente mit 20+ Wörtern liefen über den Rand.
+- Bugs unterwegs: `d890ced' `* Bhāṣya' wurde bei jedem Neubau erneut
+  angehängt (die Vorlage selbst bestimmt jetzt, welche L1-Abschnitte
+  ihr gehören; Achtung: in `--template-sections' überschrieben
+  string-trim/split-string die Match-Daten → Endlosschleife, im Test
+  aufgefallen); `609d175' JSON-Reparatur ortsbewusst (bDen 16:
+  `\"come to realize"]' im Objektwert).
+- Korpus `19ce0d46': msa-9-cat.org bilingual, mdo-sde-rgyan-9-cat.org
+  bilingual-tibetan, savbh-9-cat.org commentary.  Trockenlauf IX.60 an
+  einer Kopie (gestubbte Antworten): drei Abrufe, beide Versdateien
+  (Handout erhalten), Kommentar 14 Sätze in einem Teil.
+ERT 2715, BDD 251.
+
 #### Offen
 
-- MSA zweisprachig mit Kommentar (Sthiramati) — Lösung mit Carsten
-  besprechen; `* Handout' (:BO:-Zuordnung der anderen Sitzung) könnte
-  Vorlage der Zuordnung sein.
+- MSA: erster echter Lauf C-c u G auf IX.60; danach aus der Antwort ein
+  Golden für commentary.org (die Entwürfe samples/Bilingual-Verse.org und
+  samples/Commentary.org sind handgeschrieben, nicht eingecheckt).
+- Das PDF der Versdatei entsteht bei ihrer Landung; landet der
+  Kommentar später, ziehen die Lemma-Zeilen in die Datei nach, nicht ins
+  schon hochgeladene PDF (erneut C-c u H).
+- Aufbewahrte Antworten ohne neuen Abruf einspielen (bDen 16) — bei
+  Bedarf ein Befehl.
 - Erst danach fliegen altes Handout, Synopse, Diskussionspapier und
   der alte Satzdatei-Pfad raus — Sanskrit-Quellen brauchen sie noch.
   `tibetan-discussion--submit' und der rmapi-Upload ziehen dann in
