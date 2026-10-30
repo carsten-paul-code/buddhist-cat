@@ -4526,9 +4526,21 @@ Einheit = Vers (Section IX.N); Bhāṣya „im Vers als zusätzliche Section
   (Handout erhalten), Kommentar 14 Sätze in einem Teil.
 ERT 2715, BDD 251.
 
+Erster echter Lauf IX.60 (30.10. 11:05): Sanskrit ✓, Sthiramati ✓ (28
+Segmente, PDF), Tibetisch „nicht lesbar (JSON-Fehler bei Zeichen
+6210)“ — ein Verweis ohne Schlüssel ({"name": "DharmaMitra", "…"}),
+`a66386a' setzt dann "text" ein.  Lemma: Claude erkannte alle fünf
+Zitate, schrieb sie aber in die Übersetzungen („verse line 2 [460]“)
+und nicht verwertbar ins Feld — `7b5d8f2' liest Pāda-Nummer,
+Zeilenplatz oder Text, Prompt verlangt die Nummer in Klammern und keine
+Zeilennummern in Übersetzungen.  Erfolgreiche Antworten werden nicht
+aufbewahrt, gptel protokolliert nicht — Befund nur aus dem Dokument.
+ERT 2717.
+
 #### Offen
 
-- MSA: erster echter Lauf C-c u G auf IX.60; danach aus der Antwort ein
+- MSA: IX.60 erneut (Tibetisch fehlt; Kommentar mit den neuen Lemmata
+  nur über C-u); danach aus der Antwort ein
   Golden für commentary.org (die Entwürfe samples/Bilingual-Verse.org und
   samples/Commentary.org sind handgeschrieben, nicht eingecheckt).
 - Das PDF der Versdatei entsteht bei ihrer Landung; landet der
