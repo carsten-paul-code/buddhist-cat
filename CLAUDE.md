@@ -4576,6 +4576,20 @@ Tabelle höchstens zeilenbreit (adjustbox max width); Glosseneinheit von
 „Missing character“ greppen; in Carstens Emacs `undo-tree-auto-save-
 history' nil binden (sonst Verlaufsdateien für Scratch-Kopien).  ERT 2730.
 
+Abends (30.10.): `a0fa0ff' Regression aus 1f6da5b behoben (Tabellenfilter
+schnitt die Leerzeile ab → „⟦N⟧ Translation:“ lief neben der Tabelle
+weiter, TĀ 1001–1007).  DharmaMitra hat ein Tageslimit von 100 Anfragen
+je Client („Daily rate limit exceeded“) → `67ae7a2' erkennen, am selben
+Tag nicht weiter fragen, Status „DharmaMitra: Tageslimit erreicht“;
+`ffd5130' Kommentar fragt DharmaMitra je Teil statt je Satz; `cd511a4'
+Zustand `dm' — C-c u G holt fehlendes DharmaMitra allein + kleine
+Zuordnungsanfrage (nicht für Partnerdatei/Kommentar; die lösen auch keine
+Neuanalyse aus).  Sanderson: `09980b7' #+CAT_LECTURES: → * Lectures
+(Passagen je Vers aus Resources/sanderson-ta1.org, erzeugt von
+WS26-27/Tantraloka/sanderson-ta1.py; im PDF, nicht im Prompt);
+`8ee11a0' Log-Parser kannte die Anführungszeichen um den Schriftnamen
+nicht.  ERT 2738.
+
 #### Offen
 
 - MSA: IX.60 erneut (Tibetisch fehlt; Kommentar mit den neuen Lemmata
