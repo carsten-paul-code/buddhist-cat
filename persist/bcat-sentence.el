@@ -715,11 +715,12 @@ finishes the file; any other ends here (C-c u H)."
         (run-hook-with-args 'bcat-sentence-after-fetch-functions file))
       file)))
 
-(defun bcat-sentence--tibetan-prompts (sentence source-file parsed)
+(defun bcat-sentence--tibetan-prompts (sentence source-file parsed trefs)
   "(SYSTEM . USER) of the Tibetan request for SENTENCE of the bilingual
 SOURCE-FILE: the Sanskrit segments with the translations of the
-Sanskrit answer PARSED, the Tibetan ones with Wylie, the Tibetan
-source's #+TIBETAN_CLAUDE_CONTEXT."
+Sanskrit answer PARSED, the Tibetan ones with Wylie, TREFS the
+reference translations of the Tibetan, the Tibetan source's
+#+TIBETAN_CLAUDE_CONTEXT."
   (let* ((n (plist-get sentence :sent-num))
          (meta (ignore-errors (tibetan-analysis--read-source-metadata source-file)))
          (pmeta (ignore-errors (tibetan-analysis--read-source-metadata
@@ -733,6 +734,7 @@ source's #+TIBETAN_CLAUDE_CONTEXT."
                    (plist-get sentence :segs))
            (mapcar (lambda (s) (list (car s) (cdr s) (bcat-sentence--wylie (cdr s))))
                    (bcat-sentence--parallel-segs n source-file))
+           trefs
            (or (plist-get pmeta :claude-context) (plist-get meta :claude-context))))))
 
 (defun bcat-sentence--tibetan-land (file sentence source-file refs parsed response)
@@ -758,7 +760,11 @@ rendering."
   (bcat-status-step file :tibetan "Tibetisch angefragt")
   (tibetan-discussion--submit
    "bcat-tibetan" file
-   (lambda () (bcat-sentence--tibetan-prompts sentence source-file parsed))
+   (lambda ()
+     (bcat-sentence--tibetan-prompts
+      sentence source-file parsed
+      (bcat-sentence--references (plist-get sentence :sent-num)
+                                 (bcat-sentence-parallel-source source-file))))
    (lambda (f response)
      (bcat-sentence--tibetan-land f sentence source-file refs parsed response))))
 

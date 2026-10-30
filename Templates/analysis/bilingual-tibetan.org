@@ -1,0 +1,112 @@
+#+begin_comment
+VORLAGE Zweisprachig, tibetische Seite — die Partnerdatei eines
+zweisprachigen Satzes (Buddhist CAT, §5.74, Carsten 30.10.: „ein
+gegenseitiges Verlinken“, „das volle Programm“).  Für eine tibetische
+Quelle mit #+CAT_TEMPLATE: bilingual-tibetan und #+CAT_PARALLEL:
+<Sanskrit-Quelle> (gleiche Satznummern), deren Sanskrit-Quelle
+#+CAT_TEMPLATE: bilingual trägt.  C-c u G — in der einen oder der
+anderen Quelle — schreibt beide Dateien aus denselben Antworten; das
+PDF bekommt nur die zweisprachige Sanskrit-Datei.  C-c u J springt
+zwischen den beiden (Satz, Segment).
+
+Platzhalter und Abschnitte wie in tibetan.org.  Erwartete Ausgabe:
+samples/Bilingual-Tibetan.org.
+
+Felder: sent-num source-link segment-list hash created last-analyzed;
+parallel-link (die Sanskrit-Satzdatei) parallel-segment-list;
+segments (Tibetisch): num uchen wylie glossed gloss-table translations
+structure note concepts — parallel („ · Skt. 17“: das Sanskrit-Segment,
+das Claude ihm zuordnet) sanskrit-block (beim ersten Segment einer
+Gruppe: Devanāgarī über dem Padapāṭha mit Vokabeln) differences (ebenda,
+nur wo es welche gibt); glosses; sanskrit (die Sanskrit-Segmente: num
+devanagari samhita glossed) sanskrit-p sanskrit-glosses; translation
+grammar rendering comparison working-translation my-notes footnotes.
+#+end_comment
+#+TITLE: Sentence {{sent-num}} Analysis
+#+STARTUP: showall
+#+OPTIONS: toc:nil num:nil title:nil author:nil date:nil
+#+TIBETAN_LAYOUT: cascade
+#+CAT_TEMPLATE: bilingual-tibetan
+#+SOURCE: {{source-link}}
+#+CAT_PARALLEL: {{parallel-link}}
+#+SEGMENTS: {{segment-list}}
+#+CAT_PARALLEL_SEGMENTS: {{parallel-segment-list}}
+#+TIBETAN_HASH: {{hash}}
+#+CREATED: {{created}}
+#+LAST_ANALYZED: {{last-analyzed}}
+
+* Text
+#+begin_verse
+{{#segments}}
+{{uchen}}
+{{wylie}}
+{{/segments}}
+#+end_verse
+{{#glosses}}
+
+#+begin_verse
+{{#segments}}
+{{glossed}}
+{{/segments}}
+#+end_verse
+{{/glosses}}
+{{#sanskrit-p}}
+
+#+begin_verse
+{{#sanskrit}}
+{{devanagari}}
+{{samhita}}
+{{/sanskrit}}
+#+end_verse
+{{/sanskrit-p}}
+{{#sanskrit-glosses}}
+
+#+begin_verse
+{{#sanskrit}}
+{{glossed}}
+{{/sanskrit}}
+#+end_verse
+{{/sanskrit-glosses}}
+
+*Translation:* {{translation}}
+
+* Segments
+{{#segments}}
+** Segment {{num}}{{parallel}}
+{{gloss-table}}
+
+*Structure:* {{structure}}
+
+*Note:* {{note}}
+
+*Concepts:* {{concepts}}
+
+{{#sanskrit-block}}
+#+begin_verse
+{{sanskrit-block}}
+#+end_verse
+{{/sanskrit-block}}
+
+*Differences:* {{differences}}
+
+{{translations}}
+
+{{/segments}}
+* Sentence
+** Grammar
+{{grammar}}
+
+** Tibetan rendering
+{{rendering}}
+
+** Translations compared
+{{comparison}}
+
+* Working Translation
+{{working-translation}}
+
+* My Notes
+{{my-notes}}
+
+* Footnotes
+{{footnotes}}

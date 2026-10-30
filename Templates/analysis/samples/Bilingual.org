@@ -5,7 +5,7 @@
 #+SOURCE_LANG: sa
 #+CAT_TEMPLATE: bilingual
 #+SOURCE: [[file:../asam-1-cat.org::*Sentence 3][asam-1-cat.org / Sentence 3]]
-#+CAT_PARALLEL: [[file:../../Tibetisch/kunbtus-1-cat.org::*Sentence 3][kunbtus-1-cat.org / Sentence 3]]
+#+CAT_PARALLEL: [[file:../../Tibetisch/analysis/sent-003-kunbtus.org][sent-003-kunbtus.org]]
 #+SEGMENTS: 22, 23, 24, 25, 26, 27, 28
 #+CAT_PARALLEL_SEGMENTS: 77, 78, 79, 80, 81, 82, 83
 #+TIBETAN_HASH: a845778a9a58bcb25a9de0b4f56596dd

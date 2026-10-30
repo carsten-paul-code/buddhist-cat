@@ -405,7 +405,7 @@ Tibetan one) for AS sentence 3, drawn from the reviewed sample."
 transmitted with their Devanāgarī, the Tibetan segments (Uchen, Wylie)."
   `((sent-num . "3")
     (source-link . "[[file:../asam-1-cat.org::*Sentence 3][asam-1-cat.org / Sentence 3]]")
-    (parallel-link . "[[file:../../Tibetisch/kunbtus-1-cat.org::*Sentence 3][kunbtus-1-cat.org / Sentence 3]]")
+    (parallel-link . "[[file:../../Tibetisch/analysis/sent-003-kunbtus.org][sent-003-kunbtus.org]]")
     (segment-list . "22, 23, 24, 25, 26, 27, 28")
     (parallel-segment-list . "77, 78, 79, 80, 81, 82, 83")
     (hash . "a845778a9a58bcb25a9de0b4f56596dd")
@@ -534,30 +534,110 @@ segment are joined, a segment without any gets none."
                    (alist-get 'glossed (car (alist-get 'tibetan ctx)))))))
 
 (ert-deftest bcat-analysis-tibetan-prompts ()
-  "The Tibetan request of a bilingual sentence: per Tibetan segment the
-Sanskrit segment it translates (in order, never decreasing) and its
-words (the rule of the Tibetan contract); differences per Sanskrit
-segment only where the Tibetan differs in substance (Carsten 30.10.:
-„wenn nichts da ist bitte weg lassen“); the rendering of the sentence.
-User prompt: the Sanskrit segments as transmitted with the translation
-of the Sanskrit answer, then the Tibetan with Wylie."
+  "The Tibetan request of a bilingual sentence — Carsten 30.10.: „das
+volle Programm“, the Tibetan file of the pair gets the whole Tibetan
+analysis: the fields of the Tibetan contract (same rules) and, per
+Tibetan segment, the Sanskrit segment it translates (in order, never
+decreasing); differences per Sanskrit segment only where the Tibetan
+differs in substance („wenn nichts da ist bitte weg lassen“); the
+rendering of the sentence.  User prompt: the Sanskrit segments as
+transmitted with the translation of the Sanskrit answer, the Tibetan
+with Wylie, the reference translations of the Tibetan."
   (let ((sys (bcat-analysis-tibetan-system-prompt "de"))
         (user (bcat-analysis-tibetan-user-prompt
                3 nil
                '((22 "kasmāt pañcaiva skandhāḥ." "Why are there just five aggregates? —"))
                '((77 "ཅིའི་ཕྱིར། །" "ci'i phyir/ /"))
+               '(("Rahula/Boin-Webb 2001" . "Why are there only five aggregates?"))
                '("Asaṅga, Abhidharmasamuccaya"))))
     (dolist (key '("\"segments\"" "\"sanskrit\"" "\"words\"" "\"wylie\"" "\"gloss\""
-                   "\"function\"" "\"differences\"" "\"text\"" "\"rendering\""))
+                   "\"function\"" "\"translation\"" "\"references\"" "\"shift\"" "\"structure\""
+                   "\"note\"" "\"concepts\"" "\"differences\"" "\"text\"" "\"grammar\""
+                   "\"comparison\"" "\"rendering\""))
       (should (string-match-p (regexp-quote key) sys)))
+    (should (string-match-p (regexp-quote (bcat-analysis--tibetan-rules "German")) sys))
     (should (string-match-p "never decrease" sys))
     (should (string-match-p "goes with the first" sys))
-    (should (string-match-p "covering every syllable of its Wylie exactly once" sys))
     (should (string-match-p "No entry where the Tibetan renders the Sanskrit faithfully" sys))
     (should (string-match-p "/italic/" sys))
     (should (string-match-p "never a backslash before an apostrophe" sys))
     (should (string-match-p "in German" sys))
-    (should (string-match-p (regexp-quote "Asaṅga, Abhidharmasamuccaya\n\nSentence 3 — Sanskrit segments:\n[22] kasmāt pañcaiva skandhāḥ.\n     Translation: Why are there just five aggregates? —\n\nTibetan segments:\n[77] Tibetan: ཅིའི་ཕྱིར། །\n     Wylie: ci'i phyir/ /\n\nReturn the JSON object now.") user))))
+    (should (string-match-p (regexp-quote "Asaṅga, Abhidharmasamuccaya\n\nSentence 3 — Sanskrit segments:\n[22] kasmāt pañcaiva skandhāḥ.\n     Translation: Why are there just five aggregates? —\n\nTibetan segments:\n[77] Tibetan: ཅིའི་ཕྱིར། །\n     Wylie: ci'i phyir/ /\n\nReference translations:\n=== Rahula/Boin-Webb 2001 ===\nWhy are there only five aggregates?\n\nReturn the JSON object now.") user))))
+
+(defun bcat-analysis-test--base-tib-003 ()
+  "The rump of the Tibetan file of AS sentence 3 (the pair's partner):
+header, the Tibetan segments (Uchen, Wylie)."
+  `((sent-num . "3")
+    (source-link . "[[file:../kunbtus-1-cat.org::*Sentence 3][kunbtus-1-cat.org / Sentence 3]]")
+    (parallel-link . "[[file:../../Sanskrit/analysis/sent-003-asam.org][sent-003-asam.org]]")
+    (segment-list . "77, 78, 79, 80, 81, 82, 83")
+    (parallel-segment-list . "22, 23, 24, 25, 26, 27, 28")
+    (hash . "6a0f1d0b7f6c2d3f0e5c9a8b7d6e5f4a")
+    (created . "2026-10-19")
+    (last-analyzed . "2026-10-30")
+    (segments . ,(alist-get 'tibetan (bcat-analysis-test--base-003)))))
+
+(defconst bcat-analysis-test--refs-tib-003
+  '(("Rahula/Boin-Webb 2001" . "Why are there only five aggregates? Because of the five methods by means of which [the idea] of self (ātman) makes its appearance: self as physical apprehension, self as experience, self as expression, self as the agent of all right and all wrong, and self as the basis of all that."))
+  "The reference translations of the Tibetan AS sentence 3 as sent.")
+
+(defun bcat-analysis-test--sanskrit-003 ()
+  "The Sanskrit segments of AS sentence 3 after the Sanskrit answer."
+  (alist-get 'segments (bcat-analysis-sanskrit-context
+                        (bcat-analysis-test--base-003)
+                        (bcat-analysis-parse (bcat-analysis-test--answer-003 "asam"))
+                        bcat-analysis-test--refs-003)))
+
+(ert-deftest bcat-analysis-partner-golden-003 ()
+  "Carsten 30.10.: the Tibetan file of the pair — the full Tibetan
+analysis (tables, structure, concepts, translations of the Tibetan) and,
+mirrored, the Sanskrit: Devanāgarī over IAST and the padapāṭha with
+vocabulary under * Text; per Tibetan segment the Sanskrit segment it
+translates (heading „ · Skt. 22“), at the first of a group the
+Sanskrit lines and the differences; the rendering.  Both answers →
+the bilingual-tibetan template = the sample, character for character."
+  (let ((bcat-template-directory
+         (expand-file-name "Templates/analysis" bcat-analysis-test--root))
+        (tibetan (bcat-analysis-parse (bcat-analysis-test--answer-003 "kunbtus")))
+        (expected (with-temp-buffer
+                    (insert-file-contents
+                     (expand-file-name "Templates/analysis/samples/Bilingual-Tibetan.org"
+                                       bcat-analysis-test--root))
+                    (buffer-string))))
+    (should (equal expected
+                   (bcat-template-render-named
+                    "bilingual-tibetan"
+                    (bcat-analysis-partner-context
+                     (bcat-analysis-context (bcat-analysis-test--base-tib-003) tibetan
+                                            bcat-analysis-test--refs-tib-003)
+                     tibetan (bcat-analysis-test--sanskrit-003)))))))
+
+(ert-deftest bcat-analysis-partner-assignment ()
+  "AS sentence 2 seen from the Tibetan: Tibetan 36–38 translate Sanskrit
+15, 39 translates 16.  Each Tibetan segment names its Sanskrit one; the
+Sanskrit lines and the differences stand once, at the first segment of
+the group; a Tibetan segment without a valid assignment goes with the
+one before; the Sanskrit glossed line falls back to the line as
+transmitted."
+  (let* ((base '((segments ((num . 36)) ((num . 37)) ((num . 38)) ((num . 39)))))
+         (sanskrit '(((num . 15) (devanagari . "D15") (samhita . "kati skandhāḥ.")
+                      (glossed . "kati [how many] skandhāḥ [aggregates]."))
+                     ((num . 16) (devanagari . "D16") (samhita . "pañca skandhāḥ."))))
+         (parsed '((segments ((num . 36) (sanskrit . 15)) ((num . 37) (sanskrit . 99))
+                             ((num . 38)) ((num . 39) (sanskrit . 16)))
+                   (differences ((sanskrit . 15) (text . "Three questions in Sanskrit.")))
+                   (rendering . "Close.")))
+         (ctx (bcat-analysis-partner-context base parsed sanskrit))
+         (segs (alist-get 'segments ctx)))
+    (should (equal '(" · Skt. 15" " · Skt. 15" " · Skt. 15" " · Skt. 16")
+                   (mapcar (lambda (s) (alist-get 'parallel s)) segs)))
+    (should (equal '("D15\nkati [how many] skandhāḥ [aggregates]." "" "" "D16\npañca skandhāḥ.")
+                   (mapcar (lambda (s) (alist-get 'sanskrit-block s)) segs)))
+    (should (equal '("Three questions in Sanskrit." "" "" "")
+                   (mapcar (lambda (s) (alist-get 'differences s)) segs)))
+    (should (alist-get 'sanskrit-p ctx))
+    (should (alist-get 'sanskrit-glosses ctx))
+    (should (equal "Close." (alist-get 'rendering ctx)))))
 
 (provide 'bcat-analysis-test)
 ;;; bcat-analysis-test.el ends here

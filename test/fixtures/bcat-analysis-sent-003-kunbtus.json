@@ -34,7 +34,18 @@
      "gloss": "if one asks",
      "function": "QUOT + CONV · question"
     }
-   ]
+   ],
+   "translation": "Why are the aggregates (phung po: skandha) only five? — if one asks:",
+   "references": [
+    {
+     "name": "Rahula/Boin-Webb 2001",
+     "text": "Why are there only five aggregates?"
+    }
+   ],
+   "shift": "",
+   "structure": "/ci'i phyir/ [interrogative] · /phung po rnams/ [subject] · /lnga kho na/ [predicate] · /zhe na/ [quotation, conditional] → the question of the catechism",
+   "note": "",
+   "concepts": ""
   },
   {
    "num": 78,
@@ -70,7 +81,18 @@
      "gloss": "",
      "function": "CONV"
     }
-   ]
+   ],
+   "translation": "because they state the basis of self (bdag gi gzhi: ātmavastu) in five modes:",
+   "references": [
+    {
+     "name": "Rahula/Boin-Webb 2001",
+     "text": "Because of the five methods by means of which [the idea] of self (ātman) *makes its appearance*:"
+    }
+   ],
+   "shift": "Rahula/Boin-Webb 2001: „makes its appearance“ follows the Sanskrit (udbhāvanā), not the Tibetan „stating“",
+   "structure": "/bdag gi gzhi rnam pa lnga/ [object] · /brjod pa'i/ [V nmlz. + GEN] /phyir/ [cause] ~te~ [explanatory] → the answer, opened by /phyir te/, closed by /phyir ro/ in 83",
+   "note": "",
+   "concepts": "*bdag gi gzhi* (ātmavastu) — the basis on which the idea of a self rests; the aggregates state it in five modes, and their number follows from these."
   },
   {
    "num": 79,
@@ -106,7 +128,18 @@
      "gloss": "",
      "function": "COM"
     }
-   ]
+   ],
+   "translation": "the basis of self that is the body together with what it has appropriated (yongs su gzung ba: parigraha) is stated,",
+   "references": [
+    {
+     "name": "Rahula/Boin-Webb 2001",
+     "text": "self as physical apprehension,"
+    }
+   ],
+   "shift": "",
+   "structure": "/bdag gi gzhi/ [object] /lus/ [apposition] /yongs su gzung ba dang bcas pa/ [attribute] · /brjod pa/ [V nmlz.] =dang= [coordination]",
+   "note": "",
+   "concepts": ""
   },
   {
    "num": 80,
@@ -132,7 +165,18 @@
      "gloss": "",
      "function": "COM"
     }
-   ]
+   ],
+   "translation": "the basis of self that is experience (longs spyod: upabhoga),",
+   "references": [
+    {
+     "name": "Rahula/Boin-Webb 2001",
+     "text": "self as experience,"
+    }
+   ],
+   "shift": "",
+   "structure": "",
+   "note": "",
+   "concepts": ""
   },
   {
    "num": 81,
@@ -158,7 +202,18 @@
      "gloss": "",
      "function": "COM"
     }
-   ]
+   ],
+   "translation": "the basis of self that is convention (tha snyad: vyavahāra),",
+   "references": [
+    {
+     "name": "Rahula/Boin-Webb 2001",
+     "text": "self as expression,"
+    }
+   ],
+   "shift": "",
+   "structure": "",
+   "note": "",
+   "concepts": ""
   },
   {
    "num": 82,
@@ -199,7 +254,18 @@
      "gloss": "",
      "function": "COM"
     }
-   ]
+   ],
+   "translation": "the basis of self that is the forming (mngon par 'du byed pa: abhisaṃskāra) of merit and demerit,",
+   "references": [
+    {
+     "name": "Rahula/Boin-Webb 2001",
+     "text": "self as the agent of all right and all wrong,"
+    }
+   ],
+   "shift": "",
+   "structure": "",
+   "note": "",
+   "concepts": ""
   },
   {
    "num": 83,
@@ -240,7 +306,18 @@
      "gloss": "final",
      "function": "FIN"
     }
-   ]
+   ],
+   "translation": "and the basis of self that is their support (gnas: āśraya) — because these are stated.",
+   "references": [
+    {
+     "name": "Rahula/Boin-Webb 2001",
+     "text": "and self as the basis of all that."
+    }
+   ],
+   "shift": "",
+   "structure": "",
+   "note": "/phyir ro/ closes the causal answer that /phyir te/ opened in 78.",
+   "concepts": ""
   }
  ],
  "differences": [
@@ -261,5 +338,8 @@
    "text": "/tad-/ is read as plural, /de dag/ („those“); /phyir ro/ closes the answer that /phyir te/ opened in 78."
   }
  ],
+ "grammar": "A question and its answer.  The question (77) ends in /zhe na/, „if one asks“.  The answer (78–83) is one causal construction: the nominalised verb /brjod pa/ „stating“ with five objects, each /bdag gi gzhi/ with an apposition, joined by /dang/ and framed by /phyir te/ (78) and /phyir ro/ (83).",
+ "translation": "Why are the aggregates only five? — if one asks: because they state the basis of self in five modes: the basis of self that is the body together with what it has appropriated, the basis of self that is experience, the basis of self that is convention, the basis of self that is the forming of merit and demerit, and the basis of self that is their support.",
+ "comparison": "Rahula/Boin-Webb follow the Sanskrit sense — the self „makes its appearance“ — where the Tibetan says that the aggregates state it (brjod pa).",
  "rendering": "The Tibetan keeps the structure: /zhe na/ marks the question, /phyir te/ opens and /phyir ro/ closes the answer, /dang/ joins the five modes.  It renders the key terms consistently — /ātmavastu/ as /bdag gi gzhi/ („basis of self“), /udbhāvanatām upādāya/ as /brjod pa'i phyir/ („because of stating“).  That last choice shifts the sense: in the Sanskrit the skandhas bring the self-basis to light (/udbhāvanā/, from the causative of ud-√bhū); in the Tibetan they state or express it (/brjod pa/) — the translators read /udbhāvana/ in its sense „making known, declaring“."
 }

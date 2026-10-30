@@ -67,6 +67,14 @@ and the Tibetan request of a bilingual pair."
 - translation (sentence): your translation of the whole sentence (the segment parts joined).
 - comparison: one to three sentences on the meaning-shifting differences between the translations including yours; \"\" when there are none."))
 
+(defun bcat-analysis--references-block (refs)
+  "The reference translations REFS ((NAME . TEXT) …) of a user prompt."
+  (concat "\n\nReference translations:\n"
+          (if refs
+              (mapconcat (lambda (r) (format "=== %s ===\n%s" (car r) (string-trim (cdr r))))
+                         refs "\n")
+            "none")))
+
 (defun bcat-analysis-system-prompt (target)
   "The system prompt of the sentence analysis for the target language
 code TARGET — constant per document, so the prompt cache stays warm."
@@ -92,11 +100,7 @@ translations (DharmaMitra among them), CONTEXT the document's
            (if verse (format " (%s)" verse) ""))
    (mapconcat (lambda (s) (bcat-analysis--segment-entry (nth 0 s) (nth 1 s) (nth 2 s)))
               segs "\n")
-   "\n\nReference translations:\n"
-   (if refs
-       (mapconcat (lambda (r) (format "=== %s ===\n%s" (car r) (string-trim (cdr r))))
-                  refs "\n")
-     "none")
+   (bcat-analysis--references-block refs)
    "\n\nReturn the JSON object now."))
 
 (defun bcat-analysis-align-system-prompt (target &optional source)
@@ -175,11 +179,7 @@ TEXT) …) the reference translations, CONTEXT the document's
    (if context (concat (mapconcat #'identity context "\n") "\n\n") "")
    (format "Sentence %d%s — segments:\n" sent-num (if verse (format " (%s)" verse) ""))
    (mapconcat (lambda (s) (bcat-analysis--segment-entry (nth 0 s) (nth 1 s))) segs "\n")
-   "\n\nReference translations:\n"
-   (if refs
-       (mapconcat (lambda (r) (format "=== %s ===\n%s" (car r) (string-trim (cdr r))))
-                  refs "\n")
-     "none")
+   (bcat-analysis--references-block refs)
    "\n\nReturn the JSON object now."))
 
 ;; Bilingual (§5.74, Carsten 30.10.): the Sanskrit request above, then
@@ -188,15 +188,17 @@ TEXT) …) the reference translations, CONTEXT the document's
 (defun bcat-analysis-tibetan-system-prompt (target)
   "System prompt of the Tibetan request of a bilingual sentence (§5.74,
 Carsten 30.10.: the class reads and translates the Sanskrit, then reads
-the Tibetan aloud and discusses where it differs) for the target
-language code TARGET: per Tibetan segment the Sanskrit segment it
-translates and its words, the differences per Sanskrit segment — none
-where there is nothing („wenn nichts da ist bitte weg lassen“) —, the
-rendering of the whole sentence.  Constant per document."
+the Tibetan aloud and discusses where it differs; the Tibetan file of
+the pair gets „das volle Programm“) for the target language code
+TARGET: the whole Tibetan analysis (the rules of the Tibetan contract)
+plus, per Tibetan segment, the Sanskrit segment it translates, the
+differences per Sanskrit segment — none where there is nothing („wenn
+nichts da ist bitte weg lassen“) — and the rendering of the sentence.
+Constant per document."
   (let ((lang (bcat-analysis--language target)))
-    (format "You compare the Tibetan translation of one sentence of a Sanskrit Buddhist text with the Sanskrit, for a university reading class that reads and translates the Sanskrit first, then reads the Tibetan aloud and discusses where it differs. Answer with ONE JSON object and nothing else (no prose, no code fence):
+    (format "You prepare the Tibetan translation of one sentence of a Sanskrit Buddhist text for a university reading class that reads and translates the Sanskrit first, then reads the Tibetan aloud, analyses it and discusses where it differs from the Sanskrit. Work segment by segment, then on the whole sentence. Answer with ONE JSON object and nothing else (no prose, no code fence):
 
-{\"segments\": [{\"num\": <Tibetan segment number>, \"sanskrit\": <Sanskrit segment number>, \"words\": [{\"wylie\": \"…\", \"gloss\": \"…\", \"function\": \"…\"}]}], \"differences\": [{\"sanskrit\": <Sanskrit segment number>, \"text\": \"…\"}], \"rendering\": \"…\"}
+{\"segments\": [{\"num\": <Tibetan segment number>, \"sanskrit\": <Sanskrit segment number>, \"words\": [{\"wylie\": \"…\", \"gloss\": \"…\", \"function\": \"…\"}], \"translation\": \"…\", \"references\": [{\"name\": \"…\", \"text\": \"…\"}], \"shift\": \"…\", \"structure\": \"…\", \"note\": \"…\", \"concepts\": \"…\"}], \"differences\": [{\"sanskrit\": <Sanskrit segment number>, \"text\": \"…\"}], \"grammar\": \"…\", \"translation\": \"…\", \"comparison\": \"…\", \"rendering\": \"…\"}
 
 Rules:
 - segments: one entry per given Tibetan segment, same numbers, same order.
@@ -205,15 +207,16 @@ Rules:
 - differences: one entry for each Sanskrit segment whose Tibetan says or reads something different — another sense or term (udbhāvanatā \"bringing to light\" rendered brjod pa \"stating\"), an addition or omission, another construction, a different reading of the Sanskrit; one to three sentences, Sanskrit and Tibetan words in /italic/. No entry where the Tibetan renders the Sanskrit faithfully: word order, particles, a plural marker or the question formula are no difference.
 - rendering: the Tibetan translation of the whole sentence in two to five sentences — how it reproduces the structure, how it renders the key terms, where it shifts the sense; Sanskrit and Tibetan words in /italic/.
 - JSON escaping: only \\\" and \\\\ — never a backslash before an apostrophe.
-- Write glosses and explanations in %s. Never mention yourself."
-            (bcat-analysis--words-rule lang) lang)))
+- Write glosses, notes and explanations in %s. Never mention yourself."
+            (bcat-analysis--tibetan-rules lang) lang)))
 
-(defun bcat-analysis-tibetan-user-prompt (sent-num verse sanskrit tibetan &optional context)
+(defun bcat-analysis-tibetan-user-prompt (sent-num verse sanskrit tibetan refs &optional context)
   "User prompt of the Tibetan request for sentence SENT-NUM (VERSE its
 :VERSE: or nil): SANSKRIT ((NUM TEXT TRANSLATION) …) the Sanskrit
 segments as transmitted with the translation of the Sanskrit answer,
-TIBETAN ((NUM TIBETAN WYLIE) …), CONTEXT the #+TIBETAN_CLAUDE_CONTEXT
-lines (the Tibetan source's)."
+TIBETAN ((NUM TIBETAN WYLIE) …), REFS ((NAME . TEXT) …) the reference
+translations of the Tibetan, CONTEXT the #+TIBETAN_CLAUDE_CONTEXT lines
+\(the Tibetan source's)."
   (concat
    (if context (concat (mapconcat #'identity context "\n") "\n\n") "")
    (format "Sentence %d%s — Sanskrit segments:\n" sent-num (if verse (format " (%s)" verse) ""))
@@ -222,6 +225,7 @@ lines (the Tibetan source's)."
    "\n\nTibetan segments:\n"
    (mapconcat (lambda (s) (bcat-analysis--segment-entry (nth 0 s) (nth 1 s) (nth 2 s)))
               tibetan "\n")
+   (bcat-analysis--references-block refs)
    "\n\nReturn the JSON object now."))
 
 ;; ----------------------------------------------------------------------------
@@ -719,6 +723,33 @@ writes numbers, now and then as strings — or nil."
                              (format "%d–%d" (car r) (cdr r))))
                (nreverse runs) ", ")))
 
+(defun bcat-analysis--assignment (tibetan parsed sa-nums)
+  "Alist (TIB-NUM . SA-NUM) for the Tibetan segments TIBETAN (alists
+with num) from the `sanskrit' fields of PARSED (the answer of the
+Tibetan request).  A Tibetan segment without a valid assignment goes
+with the one before it, the first with the first of SA-NUMS."
+  (let ((by-num (mapcar (lambda (c) (cons (bcat-analysis--num c) c))
+                        (alist-get 'segments parsed)))
+        (prev (car sa-nums)))
+    (mapcar (lambda (ts)
+              (let* ((c (cdr (assoc (bcat-analysis--num ts) by-num)))
+                     (sa (and c (bcat-analysis--num c 'sanskrit))))
+                (when (memq sa sa-nums) (setq prev sa))
+                (cons (bcat-analysis--num ts) prev)))
+            tibetan)))
+
+(defun bcat-analysis--differences (parsed n)
+  "The differences PARSED gives for the Sanskrit segment N, joined; \"\"
+for none."
+  (string-join
+   (delq nil (mapcar (lambda (d)
+                       (let ((text (bcat-analysis--field d 'text)))
+                         (and (eql n (bcat-analysis--num d 'sanskrit))
+                              (not (string-empty-p text))
+                              text)))
+                     (alist-get 'differences parsed)))
+   " "))
+
 (defun bcat-analysis-bilingual-context (base parsed)
   "Template fields of a bilingual sentence: BASE (the fields after the
 Sanskrit answer, with `tibetan', the Tibetan segments: num uchen wylie
@@ -727,20 +758,17 @@ the Tibetan lines with Claude's glosses; per Sanskrit segment the
 Tibetan segments Claude assigned to it — `parallel' for the heading
 \(\" · Tib. 40–44\"), `tibetan-block' Uchen over glossed Wylie — and its
 `differences'; the `rendering'.  AS sentence 2 has 7 Sanskrit and 41
-Tibetan segments (Carsten 30.10.: Claude assigns them).  A Tibetan
-segment without a valid assignment goes with the one before it, the
-first with the first Sanskrit segment."
+Tibetan segments (Carsten 30.10.: Claude assigns them); for segments
+without a valid assignment see `bcat-analysis--assignment'."
   (let* ((by-num (mapcar (lambda (c) (cons (bcat-analysis--num c) c))
                          (alist-get 'segments parsed)))
-         (sa-nums (mapcar #'bcat-analysis--num (alist-get 'segments base)))
-         (prev (car sa-nums))
+         (assign (bcat-analysis--assignment (alist-get 'tibetan base) parsed
+                                            (mapcar #'bcat-analysis--num (alist-get 'segments base))))
          (tibetan
           (mapcar (lambda (ts)
-                    (let* ((c (cdr (assoc (bcat-analysis--num ts) by-num)))
-                           (sa (and c (bcat-analysis--num c 'sanskrit))))
-                      (when (memq sa sa-nums) (setq prev sa))
-                      (append `((glossed . ,(bcat-analysis--glossed ts c))
-                                (sanskrit . ,prev))
+                    (let ((n (bcat-analysis--num ts)))
+                      (append `((glossed . ,(bcat-analysis--glossed ts (cdr (assoc n by-num))))
+                                (sanskrit . ,(cdr (assq n assign))))
                               ts)))
                   (alist-get 'tibetan base)))
          (segments
@@ -759,21 +787,51 @@ first with the first Sanskrit segment."
                                                  (concat (alist-get 'uchen ts) "\n"
                                                          (alist-get 'glossed ts)))
                                                mine "\n"))
-                  (differences
-                   . ,(string-join
-                       (delq nil (mapcar (lambda (d)
-                                           (let ((text (bcat-analysis--field d 'text)))
-                                             (and (eql n (bcat-analysis--num d 'sanskrit))
-                                                  (not (string-empty-p text))
-                                                  text)))
-                                         (alist-get 'differences parsed)))
-                       " ")))
+                  (differences . ,(bcat-analysis--differences parsed n)))
                 seg)))
            (alist-get 'segments base))))
     (append
      `((segments . ,segments)
        (tibetan . ,tibetan)
        (tibetan-glosses . ,(bcat-analysis-glosses-p tibetan))
+       (rendering . ,(bcat-analysis--field parsed 'rendering)))
+     base)))
+
+(defun bcat-analysis-partner-context (base parsed sanskrit)
+  "Template fields of the Tibetan file of a bilingual pair (Carsten
+30.10.: „ein gegenseitiges Verlinken“, „das volle Programm“): BASE (the
+Tibetan analysis, `bcat-analysis-context') completed from PARSED, the
+answer of the Tibetan request, and SANSKRIT, the Sanskrit segments
+after the Sanskrit answer (num devanagari samhita glossed …): per
+Tibetan segment the Sanskrit segment it translates (`parallel',
+\" · Skt. 17\"); at the first Tibetan segment of each group the
+Sanskrit lines (`sanskrit-block': Devanāgarī over the padapāṭha with
+vocabulary, or the line as transmitted) and the `differences'; the
+Sanskrit for * Text; the `rendering'."
+  (let* ((assign (bcat-analysis--assignment (alist-get 'segments base) parsed
+                                            (mapcar #'bcat-analysis--num sanskrit)))
+         (seen '())
+         (segments
+          (mapcar
+           (lambda (seg)
+             (let* ((sa (cdr (assq (bcat-analysis--num seg) assign)))
+                    (first (and sa (not (memq sa seen))))
+                    (s (and first (cl-find sa sanskrit :key #'bcat-analysis--num))))
+               (when first (push sa seen))
+               (append
+                `((parallel . ,(if sa (format " · Skt. %d" sa) ""))
+                  (sanskrit-block . ,(if s
+                                         (concat (alist-get 'devanagari s) "\n"
+                                                 (or (alist-get 'glossed s) (alist-get 'samhita s)))
+                                       ""))
+                  (differences . ,(if first (bcat-analysis--differences parsed sa) "")))
+                seg)))
+           (alist-get 'segments base))))
+    (append
+     `((segments . ,segments)
+       (sanskrit . ,sanskrit)
+       (sanskrit-p . ,(and sanskrit t))
+       (sanskrit-glosses . ,(and (cl-some (lambda (s) (alist-get 'glossed s)) sanskrit) t))
        (rendering . ,(bcat-analysis--field parsed 'rendering)))
      base)))
 
