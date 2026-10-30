@@ -553,14 +553,17 @@ to do."
         (should (directory-files bcat-analysis-response-directory nil "\\`comm-IX"))))))
 
 (ert-deftest bcat-commentary-export-info ()
-  "The commentary's PDF goes to the reMarkable beside the verse's: in the
-folder of the work the verses belong to, named after the document."
+  "The commentary's PDF goes beside the verse's: on the reMarkable in the
+folder of the work the verses belong to, named after the document; on
+disk into the handouts folder of the verses' source."
   (bcat-commentary-test--with-msa
     (let ((info (bcat-export-info (bcat-sentence-ensure-file 259 csrc))))
       (should (equal "Mahāyānasūtrālaṃkāra IX mit Bhāṣya" (plist-get info :work)))
       (should (equal "Sthiramati zu MSA IX.16, MSA IX.17" (plist-get info :label)))
       (should (equal "Sthiramati" (plist-get info :folder)))
-      (should (equal (expand-file-name "Sthiramati/handouts/savbh-IX.16.pdf" dir)
+      ;; Carsten 30.10.: „im MSA Handoutsordner hätte ich jetzt auch den
+      ;; Kommentar erwartet“ — beside the verse's msa-IX.16.pdf.
+      (should (equal (expand-file-name "Sanskrit/handouts/savbh-IX.16.pdf" dir)
                      (plist-get info :handout)))
       (should-not (plist-get info :sent-num))
       (should (string-match-p

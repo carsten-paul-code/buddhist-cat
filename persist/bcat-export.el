@@ -106,7 +106,8 @@ else but letters, digits and dots a hyphen; nil without SOURCE."
   "`bcat-export-info' for the commentary document FILE: the folder of
 the commentary source, the work of the verses it comments on (beside
 their PDFs on the reMarkable), the verses from #+CAT_VERSE, named after
-the document."
+the document; on disk beside the verses' PDFs too (savbh-IX.60.pdf in
+the handouts of the Sanskrit source)."
   (let* ((src (tibetan-sentence--source-file-from-analysis file))
          (lead (and src (bcat-commentary-lead src)))
          (verse-line (bcat-sentence--header-value file "CAT_VERSE"))
@@ -125,9 +126,11 @@ the document."
           :handout (let* ((link (bcat-sentence--header-value file "SOURCE"))
                           (section (and link (string-match "::\\*\\(?:Section \\)?\\([^]]+\\)\\]" link)
                                         (match-string 1 link))))
+                     ;; Beside the verses' PDFs (Carsten 30.10.): their
+                     ;; source's handouts/, the commentary's own name.
                      (and src section
                           (bcat-export--handout
-                           src (concat (tibetan-analysis-make-short-name src) "-" section)))))))
+                           (or lead src) (concat (tibetan-analysis-make-short-name src) "-" section)))))))
 
 (defun bcat-export-info (file)
   "What the PDF of the sentence FILE is labelled with: (:source :folder
