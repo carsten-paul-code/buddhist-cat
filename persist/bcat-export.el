@@ -221,13 +221,15 @@ exporting to LaTeX (BACKEND)."
     text))
 
 (defun bcat-export--drop-machine-sections (&rest _)
-  "Delete the `** Word Analysis' subtree from the current (export)
-buffer: machine data for the zettel highlighting and the padapāṭha
-PDF, which the table and the Forms say for the reader (§5.74, 29.10.).
-For `org-export-before-processing-functions' — the file stays as it is."
+  "Delete from the current (export) buffer the `** Word Analysis'
+subtree — machine data for the zettel highlighting and the padapāṭha
+PDF, which the table and the Forms say for the reader (§5.74, 29.10.)
+— and `* Handout', the input of handout-synopse.py kept in the AS
+sentence files (Carsten 30.10.: not in the PDF).  For
+`org-export-before-processing-functions' — the file stays as it is."
   (save-excursion
     (goto-char (point-min))
-    (while (re-search-forward "^\\*\\* Word Analysis[ \t]*$" nil t)
+    (while (re-search-forward "^\\(?:\\*\\* Word Analysis\\|\\* Handout\\)[ \t]*$" nil t)
       (let ((beg (line-beginning-position)))
         (org-end-of-subtree t t)
         (delete-region beg (point))

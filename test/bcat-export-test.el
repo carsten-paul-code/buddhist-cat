@@ -218,6 +218,22 @@ the Forms say it for the reader.  The rest stays."
                            "* Working Translation\nW\n")
                    (buffer-string)))))
 
+(ert-deftest bcat-export-drops-handout ()
+  "Carsten 30.10.: the AS sentence files keep `* Handout' (the input of
+handout-synopse.py, carried through every rebuild) — the PDF of the
+sentence file leaves it out, with all its children; it stays in the
+file.  Other sections at the end stay in the PDF."
+  (with-temp-buffer
+    (insert "* Working Translation\nW\n\n* My Notes\n\n* Footnotes\n\n"
+            "* Handout\n# Eingabe für handout-synopse.py\n** Segment 22\n*** Skt.\nWhy?\n"
+            "** SG 2015 (Japanese, English draft)\n[Q] Why?\n\n"
+            "* Eigene Liste\nL\n")
+    (org-mode)
+    (bcat-export--drop-machine-sections)
+    (should (equal (concat "* Working Translation\nW\n\n* My Notes\n\n* Footnotes\n\n"
+                           "* Eigene Liste\nL\n")
+                   (buffer-string)))))
+
 (ert-deftest bcat-export-pdf-smoke ()
   "Real LuaLaTeX run (only where lualatex is installed): the reviewed
 Tibetan sample becomes a PDF; its .tex has no title, no centred and no
