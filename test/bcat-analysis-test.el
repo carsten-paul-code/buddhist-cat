@@ -198,7 +198,15 @@ number stays with the transmitted line)."
                   "tatpārameśvaraṃ // 7"
                   '(((word . "tat") (gloss . "that")) ((word . "pārameśvaram") (gloss . "the Lord's")))
                   t)))
-  (should-not (bcat-analysis-padapatha-line "tat // 7" nil)))
+  (should-not (bcat-analysis-padapatha-line "tat // 7" nil))
+  ;; 30.10., AS sentence 3: the AS edition writes the daṇḍa as a full
+  ;; stop; it closes the padapāṭha like `/' — set close, as in the text.
+  (let ((words '(((word . "pañca") (gloss . "five")) ((word . "eva") (gloss . "only"))
+                 ((word . "skandhāḥ") (gloss . "aggregates")))))
+    (should (equal "pañca eva skandhāḥ."
+                   (bcat-analysis-padapatha-line "pañcaiva skandhāḥ." words t)))
+    (should (equal "pañca [five] eva [only] skandhāḥ [aggregates]."
+                   (bcat-analysis-padapatha-line "pañcaiva skandhāḥ." words)))))
 
 (ert-deftest bcat-analysis-parse-tolerant ()
   "The JSON object is found inside a code fence or prose; anything

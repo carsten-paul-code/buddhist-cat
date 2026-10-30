@@ -547,16 +547,19 @@ for no words."
 padapāṭha) each with its gloss in brackets, then the daṇḍas closing the
 transmitted line SAMHITA.  PLAIN: the words alone and the whole close
 of SAMHITA, daṇḍas and verse number (Carsten 29.10.: the Text in pure
-IAST with the sandhis resolved).  nil without words."
+IAST with the sandhis resolved).  The AS edition's daṇḍa, a full stop,
+closes the line set close (30.10.).  nil without words."
   (when words
-    (let ((close (and (string-match "\\(\\(/+\\(?:[ \t]*/+\\)*\\)[ \t]*[0-9]*[a-z]*\\)[ \t]*\\'" samhita)
-                      (match-string (if plain 1 2) samhita))))
+    (let ((close (and (string-match "\\(\\([/.]+\\(?:[ \t]*/+\\)*\\)[ \t]*[0-9]*[a-z]*\\)[ \t]*\\'" samhita)
+                      (string-trim (match-string (if plain 1 2) samhita)))))
       (concat (mapconcat (lambda (w)
                            (let ((wd (bcat-analysis--field w 'word))
                                  (gl (bcat-analysis--field w 'gloss)))
                              (if (or plain (string-empty-p gl)) wd (format "%s [%s]" wd gl))))
                          words " ")
-              (if close (concat " " (string-trim close)) "")))))
+              (cond ((null close) "")
+                    ((string-prefix-p "." close) close)
+                    (t (concat " " close)))))))
 
 (defun bcat-analysis--word-entries (entries)
   "ENTRIES (alists with word and analysis) as \"/word/ — analysis\"."
