@@ -4542,7 +4542,14 @@ PDF-Namen (`77754fc', Carsten: „möglichst sprechend benannt … z.B.
 Vers (:VERSE: „MSA IX.60“, „SDA 16“), sonst „Satz N“; Kopie nach
 <Quellordner>/handouts/<Kurzname>-<Versnummer>.pdf (msa-IX.60,
 savbh-IX.60, bden-16; ohne Vers <kurz>-satz-N), nicht in den
-Werkordner (dort die Synopse msa-IX.60.pdf).  ERT 2720.
+Werkordner (dort die Synopse msa-IX.60.pdf).  ERT 2720.  Dann als
+generelles Muster (`72c8553', „Das PDF brauchen wir nicht noch mal im
+Analyse Ordner … das .tex … wegräumen“): das PDF wird nach handouts/
+VERSCHOBEN (nur das neben der Satzdatei erzeugte — eine erste Fassung
+verschob den Stub-Pfad /tmp/x.pdf, den es auf Carstens Rechner gab:
+gelöscht), `bcat-export-remove-tex' nach jedem erfolgreichen LaTeX-Lauf
+(auch altes Handout/Diskussionspapier), `bcat-export-keep-tex' zum
+Debuggen.  LEHRE: Stubs nie auf echte Pfade zeigen lassen.  ERT 2721.
 
 #### Offen
 
