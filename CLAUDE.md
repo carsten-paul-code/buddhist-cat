@@ -12,7 +12,7 @@ NACH VORLAGE — Reading-Klassen, Tibetisch: `#+CAT_TEMPLATE: tibetan' im
 Quellkopf, Gliederung * Text / * Segments / * Sentence, C-c u A = Rumpf
 ohne KI, C-c u G = ein JSON-Abruf je Satz (+ DharmaMitra, + kleiner
 Zuordnungs-Abruf für ergänzte Vergleichsübersetzungen), endet mit C-c u H
-= die Satzdatei als PDF aufs reMarkable; Sanskrit seit 29.10. (Rezitation zuerst); * Text Tibetisch Uchen über Wylie, Sanskrit Rezitation in Devanāgarī + Text als IAST-Padapāṭha; ZWEISPRACHIG seit 30.10.: `#+CAT_TEMPLATE: bilingual' + `#+CAT_PARALLEL:' (AS), C-c u G = Sanskrit-Abruf, dann tibetischer Abruf (Claude ordnet die tibetischen Segmente zu); fremde L1-Abschnitte (`* Handout') überstehen jeden Neubau; PAAR seit 30.10.: tibetische Quelle `bilingual-tibetan' + `#+CAT_PARALLEL' zurück → ein C-c u G baut beide Satzdateien (tibetisch mit voller Analyse), Kopf-Links, C-c u J springt; ERT 2689.
+= die Satzdatei als PDF aufs reMarkable; Sanskrit seit 29.10. (Rezitation zuerst); * Text Tibetisch Uchen über Wylie, Sanskrit Rezitation in Devanāgarī + Text als IAST-Padapāṭha; ZWEISPRACHIG seit 30.10.: `#+CAT_TEMPLATE: bilingual' + `#+CAT_PARALLEL:' (AS), C-c u G = Sanskrit-Abruf, dann tibetischer Abruf (Claude ordnet die tibetischen Segmente zu); fremde L1-Abschnitte (`* Handout') überstehen jeden Neubau; PAAR seit 30.10.: tibetische Quelle `bilingual-tibetan' + `#+CAT_PARALLEL' zurück → ein C-c u G baut beide Satzdateien (tibetisch mit voller Analyse), Kopf-Links, C-c u J springt; Ausgabegrenze 32000; ERT 2693.
 Previous: §5.73: UMBENENNUNG IN
 BUDDHIST CAT — erster Schritt: die Hülle (Hauptdatei/Feature
 buddhist-cat, alter Name lädt weiter, Customize-Gruppe, Menü, Repo,
@@ -4440,6 +4440,26 @@ Sanskrit auf denselben Satz im Tibetischen springen.“  Entscheidungen:
   Antworten): beide Dateien, Links, Handout und #+CREATED erhalten,
   tibetische Altdatei neu gebaut.
 ERT 2689.
+
+#### Nach dem ersten echten Lauf (AS Satz 2, 30.10.)
+
+- Sanskrit-Antwort nach 41 283 Zeichen abgeschnitten (18 dhātus + 12
+  āyatanas mit Forms/Compounds ≈ 18000 Tokens) → Datei blieb Rumpf,
+  kein tibetischer Abruf.  `e894fdf' Meldung „abgeschnitten — Grenze
+  `tibetan-claude-max-tokens' erreicht“ statt „JSON-Fehler bei
+  Zeichen …“ (`bcat-analysis--unterminated-p'); `afadc58'
+  `tibetan-claude-max-tokens' 32000 (Modell erlaubt 128000, aber gptel
+  ohne Streaming — nicht höher).  Aufbewahrte Antwort:
+  <tmp>/bcat-responses/sent-002-asam-20261030-084145.txt.
+- `f76171a' bilingual.org ohne IAST-Block unter * Text (Carsten: „ohne
+  Devanagari keinen Mehrwert“): Devanāgarī/IAST, dann Padapāṭha mit
+  Vokabeln.
+- Davor: `c08119a' C-c u H ohne * Handout; `fa91bb4' Sanskrit-Tabellen
+  bis 120 Zeichen (gemessen: 115 passt auf A4 hoch, 134 nicht).
+  Querformat probiert und verworfen (Fließtext ~170 Zeichen/Zeile,
+  Tabellen füllen die Breite nicht, 9 statt 8 Seiten); sinnvoll erst
+  für ein Skt|Tib-Nebeneinander.
+ERT 2693.
 
 #### Offen
 

@@ -1,9 +1,9 @@
 #+TITLE: Function Reference — buddhist-cat
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-10-30T07:44:20
+#+DATE: 2026-10-30T08:49:33
 #+OPTIONS: toc:2 num:nil
 
-Source tree: ~/Users/cp/buddhist-cat~  ·  92 modules  ·  2032 forms
+Source tree: ~/Users/cp/buddhist-cat~  ·  92 modules  ·  2033 forms
 
 Regenerated automatically by:
 
@@ -62,7 +62,7 @@ python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/buddhist-c
   - [[#doc-prep/tibetan-segment-migrate.el][doc-prep/tibetan-segment-migrate.el]]  (12)
   - [[#doc-prep/tibetan-sentence-structure.el][doc-prep/tibetan-sentence-structure.el]]  (25)
   - [[#doc-prep/tibetan-wylie-ingest.el][doc-prep/tibetan-wylie-ingest.el]]  (26)
-  - [[#persist/bcat-analysis.el][persist/bcat-analysis.el]]  (48)
+  - [[#persist/bcat-analysis.el][persist/bcat-analysis.el]]  (49)
   - [[#persist/bcat-export.el][persist/bcat-export.el]]  (25)
   - [[#persist/bcat-parallel.el][persist/bcat-parallel.el]]  (7)
   - [[#persist/bcat-sentence.el][persist/bcat-sentence.el]]  (65)
@@ -12790,10 +12790,21 @@ character JSON does not escape is dropped (29.10.: a backslash before
 the apostrophe of the genitive particle in a structure line).  Valid JSON
 comes back unchanged.
 
-** ~bcat-analysis--decode~  /function/
+** ~bcat-analysis--unterminated-p~  /function/
 :PROPERTIES:
 :KIND: defun
 :LINE: 292
+:SIGNATURE: (bcat-analysis--unterminated-p text)
+:END:
+
+Non-nil when the JSON in TEXT (from its first brace) never closes — an
+answer cut off at the output limit (30.10., AS sentence 2: it ended
+after 41 283 characters inside „grammar“).
+
+** ~bcat-analysis--decode~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 306
 :SIGNATURE: (bcat-analysis--decode json)
 :END:
 
@@ -12802,19 +12813,20 @@ JSON (a string) as an alist with symbol keys and lists for arrays.
 ** ~bcat-analysis-read~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 297
+:LINE: 311
 :SIGNATURE: (bcat-analysis-read response)
 :END:
 
 (OBJECT . PROBLEM) for Claude's RESPONSE: the JSON object as an alist
 (keys as symbols, arrays as lists) and nil, or nil and a short
-description why there is none.  Tolerates a code fence or prose around
-the object, and mends what `bcat-analysis--repair-json' mends.
+description why there is none — an answer cut off at the output limit
+says so.  Tolerates a code fence or prose around the object, and mends
+what `bcat-analysis--repair-json' mends.
 
 ** ~bcat-analysis-parse~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 321
+:LINE: 338
 :SIGNATURE: (bcat-analysis-parse response)
 :END:
 
@@ -12824,7 +12836,7 @@ is none (see `bcat-analysis-read').
 ** ~bcat-analysis-keep-response~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 326
+:LINE: 343
 :SIGNATURE: (bcat-analysis-keep-response file response)
 :END:
 
@@ -12834,7 +12846,7 @@ read, under `bcat-analysis-response-directory'; return its path.
 ** ~bcat-analysis--particle-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 346
+:LINE: 363
 :SIGNATURE: (bcat-analysis--particle-p word)
 :END:
 
@@ -12846,7 +12858,7 @@ member of compound“ — several syllables, so a word all the same.
 ** ~bcat-analysis--field~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 356
+:LINE: 373
 :SIGNATURE: (bcat-analysis--field alist key)
 :END:
 
@@ -12855,7 +12867,7 @@ String value of KEY in ALIST, trimmed; "" when absent.
 ** ~bcat-analysis-gloss-table~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 361
+:LINE: 378
 :SIGNATURE: (bcat-analysis-gloss-table words)
 :END:
 
@@ -12866,7 +12878,7 @@ for no words.
 ** ~bcat-analysis-glossed-line~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 382
+:LINE: 399
 :SIGNATURE: (bcat-analysis-glossed-line wylie words)
 :END:
 
@@ -12881,7 +12893,7 @@ WORDS do not cover its syllables exactly: the text is never altered.
 ** ~bcat-analysis-glosses-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 411
+:LINE: 428
 :SIGNATURE: (bcat-analysis-glosses-p segments)
 :END:
 
@@ -12891,7 +12903,7 @@ the template then shows the glossed verse below the plain one.
 ** ~bcat-analysis--reference-lines~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 420
+:LINE: 437
 :SIGNATURE: (bcat-analysis--reference-lines refs)
 :END:
 
@@ -12900,7 +12912,7 @@ the template then shows the glossed verse below the plain one.
 ** ~bcat-analysis-strip-marks~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 427
+:LINE: 444
 :SIGNATURE: (bcat-analysis-strip-marks text)
 :END:
 
@@ -12909,7 +12921,7 @@ TEXT without org bold marks (the meaning-shift marks of a fetch).
 ** ~bcat-analysis--loose-regexp~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 431
+:LINE: 448
 :SIGNATURE: (bcat-analysis--loose-regexp text)
 :END:
 
@@ -12918,7 +12930,7 @@ A regexp for TEXT that lets any run of whitespace stand for its spaces.
 ** ~bcat-analysis--reference-parts~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 435
+:LINE: 452
 :SIGNATURE: (bcat-analysis--reference-parts segments name)
 :END:
 
@@ -12928,7 +12940,7 @@ order — each with its passages in org bold.
 ** ~bcat-analysis-mark-reference~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 449
+:LINE: 466
 :SIGNATURE: (bcat-analysis-mark-reference text parts)
 :END:
 
@@ -12944,7 +12956,7 @@ of Lindtner's verse 9 dropped his note).
 ** ~bcat-analysis-shift-lines~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 484
+:LINE: 501
 :SIGNATURE: (bcat-analysis-shift-lines seg)
 :END:
 
@@ -12956,7 +12968,7 @@ line with nothing after the translator's name is dropped (29.10., TĀ
 ** ~bcat-analysis-translations-block~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 497
+:LINE: 514
 :SIGNATURE: (bcat-analysis-translations-block num seg)
 :END:
 
@@ -12969,7 +12981,7 @@ line breaks between.
 ** ~bcat-analysis-comparison~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 510
+:LINE: 527
 :SIGNATURE: (bcat-analysis-comparison parsed &optional refs)
 :END:
 
@@ -12980,7 +12992,7 @@ with the marks of its segment parts, the comparison paragraph.
 ** ~bcat-analysis--glossed~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 531
+:LINE: 548
 :SIGNATURE: (bcat-analysis--glossed seg c)
 :END:
 
@@ -12991,7 +13003,7 @@ words do not cover the line.
 ** ~bcat-analysis-context~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 541
+:LINE: 558
 :SIGNATURE: (bcat-analysis-context base parsed &optional refs)
 :END:
 
@@ -13004,7 +13016,7 @@ segment Claude skipped keeps its rump fields.
 ** ~bcat-analysis-sanskrit-tables~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 586
+:LINE: 606
 :SIGNATURE: (bcat-analysis-sanskrit-tables words)
 :END:
 
@@ -13016,7 +13028,7 @@ for no words.
 ** ~bcat-analysis-padapatha-line~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 610
+:LINE: 630
 :SIGNATURE: (bcat-analysis-padapatha-line samhita words &optional plain)
 :END:
 
@@ -13030,7 +13042,7 @@ closes the line set close (30.10.).  nil without words.
 ** ~bcat-analysis--word-entries~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 629
+:LINE: 649
 :SIGNATURE: (bcat-analysis--word-entries entries)
 :END:
 
@@ -13039,7 +13051,7 @@ ENTRIES (alists with word and analysis) as "/word/ — analysis".
 ** ~bcat-analysis-word-analysis~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 636
+:LINE: 656
 :SIGNATURE: (bcat-analysis-word-analysis segments)
 :END:
 
@@ -13051,7 +13063,7 @@ LEMMA; FORM' — "" when no segment has words.
 ** ~bcat-analysis-sanskrit-context~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 655
+:LINE: 675
 :SIGNATURE: (bcat-analysis-sanskrit-context base parsed &optional refs)
 :END:
 
@@ -13064,7 +13076,7 @@ skipped keeps its rump fields.
 ** ~bcat-analysis--num~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 705
+:LINE: 725
 :SIGNATURE: (bcat-analysis--num alist &optional key)
 :END:
 
@@ -13074,7 +13086,7 @@ writes numbers, now and then as strings — or nil.
 ** ~bcat-analysis--num-ranges~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 713
+:LINE: 733
 :SIGNATURE: (bcat-analysis--num-ranges nums)
 :END:
 
@@ -13084,7 +13096,7 @@ NUMS (ascending) for a heading: runs as ranges, the rest by comma —
 ** ~bcat-analysis--assignment~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 726
+:LINE: 746
 :SIGNATURE: (bcat-analysis--assignment tibetan parsed sa-nums)
 :END:
 
@@ -13096,7 +13108,7 @@ with the one before it, the first with the first of SA-NUMS.
 ** ~bcat-analysis--differences~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 741
+:LINE: 761
 :SIGNATURE: (bcat-analysis--differences parsed n)
 :END:
 
@@ -13106,7 +13118,7 @@ for none.
 ** ~bcat-analysis-bilingual-context~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 753
+:LINE: 773
 :SIGNATURE: (bcat-analysis-bilingual-context base parsed)
 :END:
 
@@ -13123,7 +13135,7 @@ without a valid assignment see `bcat-analysis--assignment'.
 ** ~bcat-analysis-partner-context~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 800
+:LINE: 820
 :SIGNATURE: (bcat-analysis-partner-context base parsed sanskrit)
 :END:
 
@@ -13153,20 +13165,23 @@ Where an answer C-c u G could not read is kept, one file per answer
 ** ~bcat-analysis-sanskrit-table-width~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 579
+:LINE: 596
 :TYPE: 'integer
 :GROUP: buddhist-cat
-:DEFAULT: 95
+:DEFAULT: 120
 :END:
 
 Widest org table (characters) for the words of a Sanskrit segment;
 wider segments are split into several tables (not into bands of one
 table: a shared column grid let a long compound widen every column).
+120 (30.10., was 95): in the PDF of AS sentence 3 a table of 115
+characters fits the page, one of 134 runs into the margin; Carsten
+wanted compound and upādāya side by side as in the preview.
 
 ** ~bcat-analysis--particle-labels~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 341
+:LINE: 358
 :DEFAULT: '
 :END:
 
@@ -13285,15 +13300,17 @@ exporting to LaTeX (BACKEND).
 :SIGNATURE: (bcat-export--drop-machine-sections &rest _)
 :END:
 
-Delete the `** Word Analysis' subtree from the current (export)
-buffer: machine data for the zettel highlighting and the padapāṭha
-PDF, which the table and the Forms say for the reader (§5.74, 29.10.).
-For `org-export-before-processing-functions' — the file stays as it is.
+Delete from the current (export) buffer the `** Word Analysis'
+subtree — machine data for the zettel highlighting and the padapāṭha
+PDF, which the table and the Forms say for the reader (§5.74, 29.10.)
+— and `* Handout', the input of handout-synopse.py kept in the AS
+sentence files (Carsten 30.10.: not in the PDF).  For
+`org-export-before-processing-functions' — the file stays as it is.
 
 ** ~bcat-export-pdf~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 236
+:LINE: 238
 :SIGNATURE: (bcat-export-pdf file &optional head)
 :END:
 
@@ -13307,7 +13324,7 @@ stay untouched outside.
 ** ~bcat-export-file~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 267
+:LINE: 269
 :SIGNATURE: (bcat-export-file file)
 :END:
 
@@ -13317,7 +13334,7 @@ reMarkable (`bcat-export-upload').  Returns the PDF path.
 ** ~bcat-export-after-fetch~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 287
+:LINE: 289
 :SIGNATURE: (bcat-export-after-fetch file)
 :END:
 
@@ -13330,7 +13347,7 @@ rmapi failure must not spoil the landed analysis.
 ** ~bcat-export~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 305
+:LINE: 307
 :SIGNATURE: (bcat-export)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -21279,7 +21296,7 @@ editorial bracket like `[He] spoke').
 ** ~tibetan-claude-queue-status~  /function/  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 152
+:LINE: 156
 :SIGNATURE: (tibetan-claude-queue-status)
 :AUTOLOAD: t
 :END:
@@ -21290,7 +21307,7 @@ Keys: :pending :in-flight :total :succeeded :failed :retried.
 ** ~tibetan-claude-queue-show-status~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 163
+:LINE: 167
 :SIGNATURE: (tibetan-claude-queue-show-status)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -21301,7 +21318,7 @@ Echo current Claude queue stats in the minibuffer.
 ** ~tibetan-claude-queue-cancel-pending~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 174
+:LINE: 178
 :SIGNATURE: (tibetan-claude-queue-cancel-pending)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -21314,7 +21331,7 @@ In-flight requests are unaffected and will still run to completion
 ** ~tibetan-claude-queue-reset-stats~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 185
+:LINE: 189
 :SIGNATURE: (tibetan-claude-queue-reset-stats)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -21326,7 +21343,7 @@ Does not touch pending or in-flight jobs.
 ** ~tibetan-claude-queue-submit~  /function (cl)/  ↗
 :PROPERTIES:
 :KIND: cl-defun
-:LINE: 201
+:LINE: 205
 :SIGNATURE: (tibetan-claude-queue-submit thunk &key on-done on-fail label)
 :AUTOLOAD: t
 :END:
@@ -21358,7 +21375,7 @@ are caught and logged so they do not break queue progress.
 ** ~tibetan-claude-queue--maybe-dispatch~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 237
+:LINE: 241
 :SIGNATURE: (tibetan-claude-queue--maybe-dispatch)
 :END:
 
@@ -21367,7 +21384,7 @@ Dispatch jobs from the pending queue up to the concurrency cap.
 ** ~tibetan-claude-queue--start~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 245
+:LINE: 249
 :SIGNATURE: (tibetan-claude-queue--start job)
 :END:
 
@@ -21376,7 +21393,7 @@ Actually run JOB.  Internal.
 ** ~tibetan-claude-queue--handle-finish~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 264
+:LINE: 268
 :SIGNATURE: (tibetan-claude-queue--handle-finish job status)
 :END:
 
@@ -21387,7 +21404,7 @@ job.  Kept robust against repeated calls (idempotent on counters).
 ** ~tibetan-claude-queue--call-fail~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 330
+:LINE: 334
 :SIGNATURE: (tibetan-claude-queue--call-fail job status)
 :END:
 
@@ -21399,7 +21416,7 @@ Invoke JOB's :on-fail callback (if any) with STATUS, swallowing errors.
 :LINE: 77
 :TYPE: 'integer
 :GROUP: buddhist-cat
-:DEFAULT: 16000
+:DEFAULT: 32000
 :END:
 
 Response budget (`max_tokens') of every analysis request to Claude.
@@ -21407,13 +21424,17 @@ Response budget (`max_tokens') of every analysis request to Claude.
 level answer (translation, vocabulary, grammar, particles, concept
 notes over several segments) runs past that and arrives cut off
 (sent-654, the B4 truncation stub); the detailed Sanskrit grammar
-needs even more.  Billing follows the tokens actually produced, not
-this ceiling.  Bound as `gptel-max-tokens' at each request site.
+needs even more.  30.10. (was 16000): AS sentence 2 — 18 dhātus and
+12 āyatanas, each with forms and compounds — was cut off at 16000
+tokens; it needs about 18000.  Not higher: gptel requests without
+streaming, and an answer of 32000 tokens already takes minutes.
+Billing follows the tokens actually produced, not this ceiling.  Bound
+as `gptel-max-tokens' at each request site.
 
 ** ~tibetan-claude-queue-concurrency~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 88
+:LINE: 92
 :TYPE: 'integer
 :GROUP: tibetan-claude-queue
 :DEFAULT: 3
@@ -21427,7 +21448,7 @@ parallel requests and you want batches to finish faster.
 ** ~tibetan-claude-queue-max-retries~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 96
+:LINE: 100
 :TYPE: 'integer
 :GROUP: tibetan-claude-queue
 :DEFAULT: 4
@@ -21440,7 +21461,7 @@ After this many retries the job is considered failed and its
 ** ~tibetan-claude-queue-base-delay~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 103
+:LINE: 107
 :TYPE: 'number
 :GROUP: tibetan-claude-queue
 :DEFAULT: 2.0
@@ -21454,7 +21475,7 @@ capped at `tibetan-claude-queue-max-delay'.
 ** ~tibetan-claude-queue-max-delay~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 111
+:LINE: 115
 :TYPE: 'number
 :GROUP: tibetan-claude-queue
 :DEFAULT: 60.0
@@ -21465,7 +21486,7 @@ Upper bound on the per-retry backoff delay, in seconds.
 ** ~tibetan-claude-queue-verbose~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 116
+:LINE: 120
 :TYPE: 'boolean
 :GROUP: tibetan-claude-queue
 :DEFAULT: t
@@ -21478,7 +21499,7 @@ nil for quieter operation.
 ** ~tibetan-claude-queue--pending~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 127
+:LINE: 131
 :DEFAULT: nil
 :END:
 
@@ -21489,7 +21510,7 @@ Each job is a plist (:thunk FN :attempt N
 ** ~tibetan-claude-queue--in-flight~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 132
+:LINE: 136
 :DEFAULT: 0
 :END:
 
@@ -21498,7 +21519,7 @@ Count of currently in-flight Claude requests.
 ** ~tibetan-claude-queue--total~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 135
+:LINE: 139
 :DEFAULT: 0
 :END:
 
@@ -21507,7 +21528,7 @@ Total jobs ever submitted in this Emacs session.
 ** ~tibetan-claude-queue--succeeded~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 138
+:LINE: 142
 :DEFAULT: 0
 :END:
 
@@ -21516,7 +21537,7 @@ Count of jobs that completed successfully.
 ** ~tibetan-claude-queue--failed~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 141
+:LINE: 145
 :DEFAULT: 0
 :END:
 
@@ -21525,7 +21546,7 @@ Count of jobs that ultimately failed.
 ** ~tibetan-claude-queue--retried~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 144
+:LINE: 148
 :DEFAULT: 0
 :END:
 
