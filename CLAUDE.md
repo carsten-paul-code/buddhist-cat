@@ -12,7 +12,7 @@ NACH VORLAGE — Reading-Klassen, Tibetisch: `#+CAT_TEMPLATE: tibetan' im
 Quellkopf, Gliederung * Text / * Segments / * Sentence, C-c u A = Rumpf
 ohne KI, C-c u G = ein JSON-Abruf je Satz (+ DharmaMitra, + kleiner
 Zuordnungs-Abruf für ergänzte Vergleichsübersetzungen), endet mit C-c u H
-= die Satzdatei als PDF aufs reMarkable; Sanskrit seit 29.10. (Rezitation zuerst); * Text Tibetisch Uchen über Wylie, Sanskrit Rezitation in Devanāgarī + Text als IAST-Padapāṭha; ZWEISPRACHIG seit 30.10.: `#+CAT_TEMPLATE: bilingual' + `#+CAT_PARALLEL:' (AS), C-c u G = Sanskrit-Abruf, dann tibetischer Abruf (Claude ordnet die tibetischen Segmente zu); fremde L1-Abschnitte (`* Handout') überstehen jeden Neubau; ERT 2677.
+= die Satzdatei als PDF aufs reMarkable; Sanskrit seit 29.10. (Rezitation zuerst); * Text Tibetisch Uchen über Wylie, Sanskrit Rezitation in Devanāgarī + Text als IAST-Padapāṭha; ZWEISPRACHIG seit 30.10.: `#+CAT_TEMPLATE: bilingual' + `#+CAT_PARALLEL:' (AS), C-c u G = Sanskrit-Abruf, dann tibetischer Abruf (Claude ordnet die tibetischen Segmente zu); fremde L1-Abschnitte (`* Handout') überstehen jeden Neubau; PAAR seit 30.10.: tibetische Quelle `bilingual-tibetan' + `#+CAT_PARALLEL' zurück → ein C-c u G baut beide Satzdateien (tibetisch mit voller Analyse), Kopf-Links, C-c u J springt; ERT 2689.
 Previous: §5.73: UMBENENNUNG IN
 BUDDHIST CAT — erster Schritt: die Hülle (Hauptdatei/Feature
 buddhist-cat, alter Name lädt weiter, Customize-Gruppe, Menü, Repo,
@@ -4393,6 +4393,53 @@ wir uns als nächstes an und überlegen eine Lösung“.
   (`bcat-analysis-sanskrit-table-width'); in der Vorschau standen sie
   ungeteilt — Carsten fragen, ob breiter.
 ERT 2677.
+
+#### Paar: beide Satzdateien, verlinkt (30.10. nachm.)
+
+Carsten: „Ein gegenseitiges Verlinken in Emacs wäre schön … C-c u G auf
+einem Satz.  Das Dokument weiß, welcher Satz das im Tibetischen, macht
+die Analyse (Files) für beide und ingested die entsprechenden section
+… in das Sanskrit und vice versa.  Mit dem Link kann ich dann aus dem
+Sanskrit auf denselben Satz im Tibetischen springen.“  Entscheidungen:
+„das volle Programm“ für das Tibetische, PDF „nur die zweisprachige“,
+„gleich alles machen“.
+
+- Paar = Sanskrit-Quelle `bilingual' + tibetische `bilingual-tibetan',
+  jede mit `#+CAT_PARALLEL' auf die andere (`bcat-sentence--paired-p',
+  `--pair-templates', `bcat-sentence-partner-file').  Ohne Rückverweis
+  bleibt es beim Verhalten von oben (nur die Sanskrit-Datei).
+- Tibetischer Abruf = volles Programm (`9913364'): Regeln der
+  tibetischen Analyse (`bcat-analysis--tibetan-rules', `3240981') + je
+  Segment `sanskrit' + differences + rendering; Referenzen = die des
+  tibetischen Satzes, von Hand ergänzte der tibetischen Datei,
+  DharmaMitra auf dem Tibetischen.  Bei sehr vielen tibetischen
+  Segmenten (AS Satz 2: 41) nahe an `tibetan-claude-max-tokens' 16000 —
+  dieselbe Grenze wie ein rein tibetischer Satz.
+- Vorlage `bilingual-tibetan.org', Golden `samples/Bilingual-
+  Tibetan.org': Spiegelbild — Uchen/Wylie, Wylie mit Vokabeln,
+  Devanāgarī/IAST, Padapāṭha mit Vokabeln; je tibetisches Segment
+  „** Segment 78 · Skt. 23“, Tabelle, Structure/Note/Concepts, beim
+  ersten Segment einer Gruppe Devanāgarī über Padapāṭha mit Vokabeln +
+  Differences, dann ⟦N⟧-Block (`bcat-analysis-partner-context';
+  Zuordnung/Unterschiede als gemeinsame Helfer `--assignment',
+  `--differences').
+- `d8d92cd' Ablauf: Kopf-Link #+CAT_PARALLEL = Partner-SATZDATEI;
+  C-c u G bereitet beide vor (Status „angelegt · Tib. neu gebaut“),
+  die Landung des tibetischen Abrufs schreibt beide aus denselben
+  Antworten (`--write-analysed', `--write-partner'), C-c u H nur für
+  die Sanskrit-Datei; offen bleibt ein Satz, solange die tibetische
+  Datei unvollständig ist (`--pair-state', auch „align“ dort → full);
+  in der tibetischen Quelle läuft C-c u G über das Sanskrit; C-u-Frage
+  nennt „je zwei DharmaMitra- und zwei Claude-Abrufe“.
+- `a9b4c43' C-c u J (`bcat-parallel-jump', persist/bcat-parallel.el):
+  Satzdatei → Partnerdatei am Segment laut Überschrift; Quelle →
+  Parallelquelle am Gegenstück-Segment (Zuordnung aus den Überschriften
+  der tibetischen Satzdatei), vor C-c u G am Satz.
+- Korpus `21fea58b': kunbtus-1-cat.org = bilingual-tibetan.
+  Gesamtprobelauf an einer Kopie (echte Quellen/Wörterbücher, Fixture-
+  Antworten): beide Dateien, Links, Handout und #+CREATED erhalten,
+  tibetische Altdatei neu gebaut.
+ERT 2689.
 
 #### Offen
 

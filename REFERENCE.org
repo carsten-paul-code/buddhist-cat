@@ -1,9 +1,9 @@
 #+TITLE: Function Reference — buddhist-cat
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-10-30T07:21:15
+#+DATE: 2026-10-30T07:44:20
 #+OPTIONS: toc:2 num:nil
 
-Source tree: ~/Users/cp/buddhist-cat~  ·  91 modules  ·  2012 forms
+Source tree: ~/Users/cp/buddhist-cat~  ·  92 modules  ·  2032 forms
 
 Regenerated automatically by:
 
@@ -62,9 +62,10 @@ python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/buddhist-c
   - [[#doc-prep/tibetan-segment-migrate.el][doc-prep/tibetan-segment-migrate.el]]  (12)
   - [[#doc-prep/tibetan-sentence-structure.el][doc-prep/tibetan-sentence-structure.el]]  (25)
   - [[#doc-prep/tibetan-wylie-ingest.el][doc-prep/tibetan-wylie-ingest.el]]  (26)
-  - [[#persist/bcat-analysis.el][persist/bcat-analysis.el]]  (43)
+  - [[#persist/bcat-analysis.el][persist/bcat-analysis.el]]  (48)
   - [[#persist/bcat-export.el][persist/bcat-export.el]]  (25)
-  - [[#persist/bcat-sentence.el][persist/bcat-sentence.el]]  (57)
+  - [[#persist/bcat-parallel.el][persist/bcat-parallel.el]]  (7)
+  - [[#persist/bcat-sentence.el][persist/bcat-sentence.el]]  (65)
   - [[#persist/bcat-status.el][persist/bcat-status.el]]  (10)
   - [[#persist/bcat-template.el][persist/bcat-template.el]]  (17)
   - [[#persist/tibetan-analysis-claude.el][persist/tibetan-analysis-claude.el]]  (77)
@@ -3474,7 +3475,7 @@ source texts (formerly Tibetan CAT).
 ** ~tibetan-increase-text-scale~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 466
+:LINE: 473
 :SIGNATURE: (tibetan-increase-text-scale)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -3485,7 +3486,7 @@ Increase Tibetan text scale by 0.1.
 ** ~tibetan-decrease-text-scale~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 472
+:LINE: 479
 :SIGNATURE: (tibetan-decrease-text-scale)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -3496,7 +3497,7 @@ Decrease Tibetan text scale by 0.1 (minimum 1.0).
 ** ~tibetan-thesaurus-prefix-map~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 294
+:LINE: 301
 :DEFAULT: (make-sparse-keymap)
 :END:
 
@@ -3512,7 +3513,7 @@ Keymap for thesaurus commands — prefix `C-c u z'.
 ** ~tibetan-cat-context-menu-map~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 304
+:LINE: 307
 :DEFAULT: (let ((map (make-sparse-keymap "Buddhist CAT")))
     (define-key map [segment-info] '(menu-item "Segment Info" tibetan-s
 :END:
@@ -12641,10 +12642,30 @@ One segment of a user prompt: [NUM] and TEXT — Tibetan with its
 WYLIE, or (WYLIE nil) a line as transmitted —, then TRANSLATION when
 given.
 
-** ~bcat-analysis-system-prompt~  /function/
+** ~bcat-analysis--tibetan-rules~  /function/
 :PROPERTIES:
 :KIND: defun
 :LINE: 55
+:SIGNATURE: (bcat-analysis--tibetan-rules lang)
+:END:
+
+The rules for the fields of a Tibetan sentence analysis, from words
+to comparison (glosses in LANG) — one wording for the Tibetan analysis
+and the Tibetan request of a bilingual pair.
+
+** ~bcat-analysis--references-block~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 70
+:SIGNATURE: (bcat-analysis--references-block refs)
+:END:
+
+The reference translations REFS ((NAME . TEXT) …) of a user prompt.
+
+** ~bcat-analysis-system-prompt~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 78
 :SIGNATURE: (bcat-analysis-system-prompt target)
 :END:
 
@@ -12654,7 +12675,7 @@ code TARGET — constant per document, so the prompt cache stays warm.
 ** ~bcat-analysis-user-prompt~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 78
+:LINE: 92
 :SIGNATURE: (bcat-analysis-user-prompt sent-num verse segs refs &optional context)
 :END:
 
@@ -12666,7 +12687,7 @@ translations (DharmaMitra among them), CONTEXT the document's
 ** ~bcat-analysis-align-system-prompt~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 96
+:LINE: 106
 :SIGNATURE: (bcat-analysis-align-system-prompt target &optional source)
 :END:
 
@@ -12678,7 +12699,7 @@ SOURCE the language of the text ("Classical Tibetan" by default,
 ** ~bcat-analysis-align-user-prompt~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 113
+:LINE: 123
 :SIGNATURE: (bcat-analysis-align-user-prompt sent-num verse segs refs &optional context)
 :END:
 
@@ -12690,7 +12711,7 @@ reference translations ((NAME . TEXT) …).
 ** ~bcat-analysis-sanskrit-system-prompt~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 128
+:LINE: 138
 :SIGNATURE: (bcat-analysis-sanskrit-system-prompt target)
 :END:
 
@@ -12703,7 +12724,7 @@ TARGET — constant per document, so the prompt cache stays warm.
 ** ~bcat-analysis-sanskrit-user-prompt~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 163
+:LINE: 173
 :SIGNATURE: (bcat-analysis-sanskrit-user-prompt sent-num verse segs refs &optional context)
 :END:
 
@@ -12715,35 +12736,38 @@ TEXT) …) the reference translations, CONTEXT the document's
 ** ~bcat-analysis-tibetan-system-prompt~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 182
+:LINE: 188
 :SIGNATURE: (bcat-analysis-tibetan-system-prompt target)
 :END:
 
 System prompt of the Tibetan request of a bilingual sentence (§5.74,
 Carsten 30.10.: the class reads and translates the Sanskrit, then reads
-the Tibetan aloud and discusses where it differs) for the target
-language code TARGET: per Tibetan segment the Sanskrit segment it
-translates and its words, the differences per Sanskrit segment — none
-where there is nothing („wenn nichts da ist bitte weg lassen“) —, the
-rendering of the whole sentence.  Constant per document.
+the Tibetan aloud and discusses where it differs; the Tibetan file of
+the pair gets „das volle Programm“) for the target language code
+TARGET: the whole Tibetan analysis (the rules of the Tibetan contract)
+plus, per Tibetan segment, the Sanskrit segment it translates, the
+differences per Sanskrit segment — none where there is nothing („wenn
+nichts da ist bitte weg lassen“) — and the rendering of the sentence.
+Constant per document.
 
 ** ~bcat-analysis-tibetan-user-prompt~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 205
-:SIGNATURE: (bcat-analysis-tibetan-user-prompt sent-num verse sanskrit tibetan &optional context)
+:LINE: 213
+:SIGNATURE: (bcat-analysis-tibetan-user-prompt sent-num verse sanskrit tibetan refs &optional context)
 :END:
 
 User prompt of the Tibetan request for sentence SENT-NUM (VERSE its
 :VERSE: or nil): SANSKRIT ((NUM TEXT TRANSLATION) …) the Sanskrit
 segments as transmitted with the translation of the Sanskrit answer,
-TIBETAN ((NUM TIBETAN WYLIE) …), CONTEXT the #+TIBETAN_CLAUDE_CONTEXT
-lines (the Tibetan source's).
+TIBETAN ((NUM TIBETAN WYLIE) …), REFS ((NAME . TEXT) …) the reference
+translations of the Tibetan, CONTEXT the #+TIBETAN_CLAUDE_CONTEXT lines
+(the Tibetan source's).
 
 ** ~bcat-analysis--json-problem~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 232
+:LINE: 242
 :SIGNATURE: (bcat-analysis--json-problem err start)
 :END:
 
@@ -12753,7 +12777,7 @@ start of the answer (the object began at START).
 ** ~bcat-analysis--repair-json~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 240
+:LINE: 250
 :SIGNATURE: (bcat-analysis--repair-json text)
 :END:
 
@@ -12769,7 +12793,7 @@ comes back unchanged.
 ** ~bcat-analysis--decode~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 282
+:LINE: 292
 :SIGNATURE: (bcat-analysis--decode json)
 :END:
 
@@ -12778,7 +12802,7 @@ JSON (a string) as an alist with symbol keys and lists for arrays.
 ** ~bcat-analysis-read~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 287
+:LINE: 297
 :SIGNATURE: (bcat-analysis-read response)
 :END:
 
@@ -12790,7 +12814,7 @@ the object, and mends what `bcat-analysis--repair-json' mends.
 ** ~bcat-analysis-parse~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 311
+:LINE: 321
 :SIGNATURE: (bcat-analysis-parse response)
 :END:
 
@@ -12800,7 +12824,7 @@ is none (see `bcat-analysis-read').
 ** ~bcat-analysis-keep-response~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 316
+:LINE: 326
 :SIGNATURE: (bcat-analysis-keep-response file response)
 :END:
 
@@ -12810,7 +12834,7 @@ read, under `bcat-analysis-response-directory'; return its path.
 ** ~bcat-analysis--particle-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 336
+:LINE: 346
 :SIGNATURE: (bcat-analysis--particle-p word)
 :END:
 
@@ -12822,7 +12846,7 @@ member of compound“ — several syllables, so a word all the same.
 ** ~bcat-analysis--field~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 346
+:LINE: 356
 :SIGNATURE: (bcat-analysis--field alist key)
 :END:
 
@@ -12831,7 +12855,7 @@ String value of KEY in ALIST, trimmed; "" when absent.
 ** ~bcat-analysis-gloss-table~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 351
+:LINE: 361
 :SIGNATURE: (bcat-analysis-gloss-table words)
 :END:
 
@@ -12842,7 +12866,7 @@ for no words.
 ** ~bcat-analysis-glossed-line~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 372
+:LINE: 382
 :SIGNATURE: (bcat-analysis-glossed-line wylie words)
 :END:
 
@@ -12857,7 +12881,7 @@ WORDS do not cover its syllables exactly: the text is never altered.
 ** ~bcat-analysis-glosses-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 401
+:LINE: 411
 :SIGNATURE: (bcat-analysis-glosses-p segments)
 :END:
 
@@ -12867,7 +12891,7 @@ the template then shows the glossed verse below the plain one.
 ** ~bcat-analysis--reference-lines~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 410
+:LINE: 420
 :SIGNATURE: (bcat-analysis--reference-lines refs)
 :END:
 
@@ -12876,7 +12900,7 @@ the template then shows the glossed verse below the plain one.
 ** ~bcat-analysis-strip-marks~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 417
+:LINE: 427
 :SIGNATURE: (bcat-analysis-strip-marks text)
 :END:
 
@@ -12885,7 +12909,7 @@ TEXT without org bold marks (the meaning-shift marks of a fetch).
 ** ~bcat-analysis--loose-regexp~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 421
+:LINE: 431
 :SIGNATURE: (bcat-analysis--loose-regexp text)
 :END:
 
@@ -12894,7 +12918,7 @@ A regexp for TEXT that lets any run of whitespace stand for its spaces.
 ** ~bcat-analysis--reference-parts~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 425
+:LINE: 435
 :SIGNATURE: (bcat-analysis--reference-parts segments name)
 :END:
 
@@ -12904,7 +12928,7 @@ order — each with its passages in org bold.
 ** ~bcat-analysis-mark-reference~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 439
+:LINE: 449
 :SIGNATURE: (bcat-analysis-mark-reference text parts)
 :END:
 
@@ -12920,7 +12944,7 @@ of Lindtner's verse 9 dropped his note).
 ** ~bcat-analysis-shift-lines~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 474
+:LINE: 484
 :SIGNATURE: (bcat-analysis-shift-lines seg)
 :END:
 
@@ -12932,7 +12956,7 @@ line with nothing after the translator's name is dropped (29.10., TĀ
 ** ~bcat-analysis-translations-block~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 487
+:LINE: 497
 :SIGNATURE: (bcat-analysis-translations-block num seg)
 :END:
 
@@ -12945,7 +12969,7 @@ line breaks between.
 ** ~bcat-analysis-comparison~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 500
+:LINE: 510
 :SIGNATURE: (bcat-analysis-comparison parsed &optional refs)
 :END:
 
@@ -12956,7 +12980,7 @@ with the marks of its segment parts, the comparison paragraph.
 ** ~bcat-analysis--glossed~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 521
+:LINE: 531
 :SIGNATURE: (bcat-analysis--glossed seg c)
 :END:
 
@@ -12967,7 +12991,7 @@ words do not cover the line.
 ** ~bcat-analysis-context~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 531
+:LINE: 541
 :SIGNATURE: (bcat-analysis-context base parsed &optional refs)
 :END:
 
@@ -12980,7 +13004,7 @@ segment Claude skipped keeps its rump fields.
 ** ~bcat-analysis-sanskrit-tables~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 576
+:LINE: 586
 :SIGNATURE: (bcat-analysis-sanskrit-tables words)
 :END:
 
@@ -12992,7 +13016,7 @@ for no words.
 ** ~bcat-analysis-padapatha-line~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 600
+:LINE: 610
 :SIGNATURE: (bcat-analysis-padapatha-line samhita words &optional plain)
 :END:
 
@@ -13006,7 +13030,7 @@ closes the line set close (30.10.).  nil without words.
 ** ~bcat-analysis--word-entries~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 619
+:LINE: 629
 :SIGNATURE: (bcat-analysis--word-entries entries)
 :END:
 
@@ -13015,7 +13039,7 @@ ENTRIES (alists with word and analysis) as "/word/ — analysis".
 ** ~bcat-analysis-word-analysis~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 626
+:LINE: 636
 :SIGNATURE: (bcat-analysis-word-analysis segments)
 :END:
 
@@ -13027,7 +13051,7 @@ LEMMA; FORM' — "" when no segment has words.
 ** ~bcat-analysis-sanskrit-context~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 645
+:LINE: 655
 :SIGNATURE: (bcat-analysis-sanskrit-context base parsed &optional refs)
 :END:
 
@@ -13040,7 +13064,7 @@ skipped keeps its rump fields.
 ** ~bcat-analysis--num~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 695
+:LINE: 705
 :SIGNATURE: (bcat-analysis--num alist &optional key)
 :END:
 
@@ -13050,17 +13074,39 @@ writes numbers, now and then as strings — or nil.
 ** ~bcat-analysis--num-ranges~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 703
+:LINE: 713
 :SIGNATURE: (bcat-analysis--num-ranges nums)
 :END:
 
 NUMS (ascending) for a heading: runs as ranges, the rest by comma —
 "40–44", "77, 79–80"; "" for none.
 
+** ~bcat-analysis--assignment~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 726
+:SIGNATURE: (bcat-analysis--assignment tibetan parsed sa-nums)
+:END:
+
+Alist (TIB-NUM . SA-NUM) for the Tibetan segments TIBETAN (alists
+with num) from the `sanskrit' fields of PARSED (the answer of the
+Tibetan request).  A Tibetan segment without a valid assignment goes
+with the one before it, the first with the first of SA-NUMS.
+
+** ~bcat-analysis--differences~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 741
+:SIGNATURE: (bcat-analysis--differences parsed n)
+:END:
+
+The differences PARSED gives for the Sanskrit segment N, joined; ""
+for none.
+
 ** ~bcat-analysis-bilingual-context~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 716
+:LINE: 753
 :SIGNATURE: (bcat-analysis-bilingual-context base parsed)
 :END:
 
@@ -13071,14 +13117,31 @@ the Tibetan lines with Claude's glosses; per Sanskrit segment the
 Tibetan segments Claude assigned to it — `parallel' for the heading
 (" · Tib. 40–44"), `tibetan-block' Uchen over glossed Wylie — and its
 `differences'; the `rendering'.  AS sentence 2 has 7 Sanskrit and 41
-Tibetan segments (Carsten 30.10.: Claude assigns them).  A Tibetan
-segment without a valid assignment goes with the one before it, the
-first with the first Sanskrit segment.
+Tibetan segments (Carsten 30.10.: Claude assigns them); for segments
+without a valid assignment see `bcat-analysis--assignment'.
+
+** ~bcat-analysis-partner-context~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 800
+:SIGNATURE: (bcat-analysis-partner-context base parsed sanskrit)
+:END:
+
+Template fields of the Tibetan file of a bilingual pair (Carsten
+30.10.: „ein gegenseitiges Verlinken“, „das volle Programm“): BASE (the
+Tibetan analysis, `bcat-analysis-context') completed from PARSED, the
+answer of the Tibetan request, and SANSKRIT, the Sanskrit segments
+after the Sanskrit answer (num devanagari samhita glossed …): per
+Tibetan segment the Sanskrit segment it translates (`parallel',
+" · Skt. 17"); at the first Tibetan segment of each group the
+Sanskrit lines (`sanskrit-block': Devanāgarī over the padapāṭha with
+vocabulary, or the line as transmitted) and the `differences'; the
+Sanskrit for * Text; the `rendering'.
 
 ** ~bcat-analysis-response-directory~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 225
+:LINE: 235
 :TYPE: 'directory
 :GROUP: buddhist-cat
 :DEFAULT: (expand-file-name "bcat-responses" temporary-file-directory)
@@ -13090,7 +13153,7 @@ Where an answer C-c u G could not read is kept, one file per answer
 ** ~bcat-analysis-sanskrit-table-width~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 569
+:LINE: 579
 :TYPE: 'integer
 :GROUP: buddhist-cat
 :DEFAULT: 95
@@ -13103,7 +13166,7 @@ table: a shared column grid let a long compound widen every column).
 ** ~bcat-analysis--particle-labels~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 331
+:LINE: 341
 :DEFAULT: '
 :END:
 
@@ -13386,6 +13449,93 @@ conjunct (29.10.: Arial Unicode MS).
 /(no docstring)/
 
 
+* persist/bcat-parallel.el
+:PROPERTIES:
+:CUSTOM_ID: persist/bcat-parallel.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/persist/bcat-parallel.el
+:END:
+
+** ~bcat-parallel--segment-at-point~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 38
+:SIGNATURE: (bcat-parallel--segment-at-point)
+:END:
+
+In a bilingual sentence file: the counterpart segment named by the
+segment heading point is under, or nil (point under * Text, * Sentence,
+Word Analysis …).
+
+** ~bcat-parallel--source-place~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 49
+:SIGNATURE: (bcat-parallel--source-place)
+:END:
+
+In a cascade source: (SENT-NUM . SEG-NUM) at point — the sentence and,
+when point is in one of its segments, the segment (else nil).
+
+** ~bcat-parallel--assignment~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 62
+:SIGNATURE: (bcat-parallel--assignment sent-num source-file)
+:END:
+
+The assignment of the pair's sentence SENT-NUM as ((TIB . SKT) …), read
+from the headings of its Tibetan sentence file („Segment 78 · Skt. 23“);
+nil before C-c u G.
+
+** ~bcat-parallel--counterpart~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 81
+:SIGNATURE: (bcat-parallel--counterpart seg sent-num source-file)
+:END:
+
+The segment of the other language for the segment SEG of SOURCE-FILE's
+sentence SENT-NUM: for a Sanskrit segment the first Tibetan one that
+translates it, for a Tibetan segment its Sanskrit one; nil when the
+assignment is not known.
+
+** ~bcat-parallel--visit~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 91
+:SIGNATURE: (bcat-parallel--visit file heading-re)
+:END:
+
+Show FILE — in its window when it is visible (as C-c u j) — with point
+on the first heading matching HEADING-RE, or at the top.
+
+** ~bcat-parallel-jump~  /function/  ⚡  ↗
+:PROPERTIES:
+:KIND: defun
+:LINE: 104
+:SIGNATURE: (bcat-parallel-jump)
+:INTERACTIVE: t
+:AUTOLOAD: t
+:END:
+
+C-c u J: to the same place in the other language of a bilingual pair
+(Carsten 30.10.).  In a sentence file: the partner file, at the
+segment the heading at point names (Sanskrit → its first Tibetan
+segment, Tibetan → its Sanskrit one), else at its top.  In a source:
+the other source, at the counterpart segment when the pair's Tibetan
+file knows the assignment (after C-c u G), else at the sentence.
+
+** ~bcat-parallel--segment-heading-re~  /constant/
+:PROPERTIES:
+:KIND: defconst
+:LINE: 33
+:DEFAULT: "^\\*\\* Segment \\([0-9]+\\)\\(?: · \\(Tib\\|Skt\\)\\. \\([0-9]+\\)\\)?"
+:END:
+
+A segment heading of a bilingual sentence file: its number, and the
+first counterpart segment it names.
+
+
 * persist/bcat-sentence.el
 :PROPERTIES:
 :CUSTOM_ID: persist/bcat-sentence.el
@@ -13395,7 +13545,7 @@ conjunct (29.10.: Arial Unicode MS).
 ** ~bcat-sentence--header-value~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 50
+:LINE: 53
 :SIGNATURE: (bcat-sentence--header-value file key)
 :END:
 
@@ -13404,7 +13554,7 @@ The value of FILE's #+KEY: line (in its head), or nil.
 ** ~bcat-sentence-template-name~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 60
+:LINE: 63
 :SIGNATURE: (bcat-sentence-template-name source-file)
 :END:
 
@@ -13417,7 +13567,7 @@ cascade sources and while `bcat-sentence-templates' is on.
 ** ~bcat-sentence--sanskrit-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 71
+:LINE: 74
 :SIGNATURE: (bcat-sentence--sanskrit-p source-file)
 :END:
 
@@ -13428,27 +13578,51 @@ Tibetan translation, 30.10.).
 ** ~bcat-sentence-parallel-source~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 77
+:LINE: 84
 :SIGNATURE: (bcat-sentence-parallel-source source-file)
 :END:
 
-The Tibetan translation of the bilingual SOURCE-FILE — its
-#+CAT_PARALLEL: resolved relative to it — or nil.
+The other language of the bilingual SOURCE-FILE — its #+CAT_PARALLEL:
+resolved relative to it: the Tibetan translation of a Sanskrit source
+(template bilingual), the Sanskrit of a Tibetan one (bilingual-tibetan)
+— or nil.
+
+** ~bcat-sentence--paired-p~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 93
+:SIGNATURE: (bcat-sentence--paired-p source-file)
+:END:
+
+Non-nil when SOURCE-FILE and its #+CAT_PARALLEL source form a pair —
+a bilingual Sanskrit source and a bilingual-tibetan one, each naming the
+other (Carsten 30.10.: one C-c u G builds the files of both).
 
 ** ~bcat-sentence--parallel-segs~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 84
+:LINE: 106
 :SIGNATURE: (bcat-sentence--parallel-segs sent-num source-file)
 :END:
 
-Sentence SENT-NUM of the Tibetan translation of SOURCE-FILE as
+Sentence SENT-NUM of the other language of SOURCE-FILE as
 ((NUM . TEXT) …) — same sentence numbers —, or nil.
+
+** ~bcat-sentence-partner-file~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 112
+:SIGNATURE: (bcat-sentence-partner-file sent-num source-file)
+:END:
+
+The sentence file of SENT-NUM in the other language of the bilingual
+SOURCE-FILE (in the analysis/ folder of its #+CAT_PARALLEL source), or
+nil.
 
 ** ~bcat-sentence-file-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 90
+:LINE: 123
 :SIGNATURE: (bcat-sentence-file-p file)
 :END:
 
@@ -13459,7 +13633,7 @@ anything that is no sentence file (a source carries the line too).
 ** ~bcat-sentence--with-source~  /macro/
 :PROPERTIES:
 :KIND: defmacro
-:LINE: 101
+:LINE: 134
 :SIGNATURE: (bcat-sentence--with-source source-file &rest body)
 :END:
 
@@ -13470,7 +13644,7 @@ Run BODY with the dictionary lookups bound to SOURCE-FILE: its folder
 ** ~bcat-sentence--wylie~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 117
+:LINE: 150
 :SIGNATURE: (bcat-sentence--wylie text)
 :END:
 
@@ -13479,7 +13653,7 @@ TEXT (Tibetan Unicode) as one Wylie line.
 ** ~bcat-sentence--dictionary-rows~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 121
+:LINE: 154
 :SIGNATURE: (bcat-sentence--dictionary-rows text)
 :END:
 
@@ -13490,7 +13664,7 @@ is known — C-c u G replaces it), or nil.
 ** ~bcat-sentence--dictionary-table~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 127
+:LINE: 160
 :SIGNATURE: (bcat-sentence--dictionary-table rows)
 :END:
 
@@ -13499,7 +13673,7 @@ ROWS (`bcat-sentence--dictionary-rows') as an org table; "" for none.
 ** ~bcat-sentence--plain-cell~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 131
+:LINE: 164
 :SIGNATURE: (bcat-sentence--plain-cell cell)
 :END:
 
@@ -13509,7 +13683,7 @@ CELL of a gloss table as plain text: links reduced to their text,
 ** ~bcat-sentence--dictionary-words~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 139
+:LINE: 172
 :SIGNATURE: (bcat-sentence--dictionary-words rows)
 :END:
 
@@ -13520,7 +13694,7 @@ the label row (last).
 ** ~bcat-sentence--tibetan-segment~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 150
+:LINE: 183
 :SIGNATURE: (bcat-sentence--tibetan-segment s)
 :END:
 
@@ -13528,22 +13702,37 @@ Template fields of the Tibetan segment S ((NUM . TEXT)) without AI:
 Uchen (Carsten 29.10.: above the Wylie), Wylie, the glossed line and
 the table from the dictionaries.
 
+** ~bcat-sentence--sanskrit-segment~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 195
+:SIGNATURE: (bcat-sentence--sanskrit-segment s)
+:END:
+
+Template fields of the Sanskrit segment S ((NUM . TEXT)) without AI:
+the line as transmitted, its Devanāgarī, and as padapāṭha the line as
+transmitted too — C-c u G resolves the sandhis.
+
 ** ~bcat-sentence--parallel-fields~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 162
+:LINE: 205
 :SIGNATURE: (bcat-sentence--parallel-fields sent-num source-file)
 :END:
 
-Fields of the Tibetan translation of the bilingual sentence SENT-NUM
-(Carsten 30.10.): a link to it, its segment numbers, its segments
-(`bcat-sentence--tibetan-segment', looked up with the Tibetan source's
-dictionaries); nil when the translation lacks the sentence.
+Fields of the other language of the bilingual sentence SENT-NUM
+(Carsten 30.10.): a link — in a pair to the partner's sentence file
+(„mit dem Link kann ich aus dem Sanskrit auf denselben Satz im
+Tibetischen springen“), else to the other source's sentence —, its
+segment numbers and its segments: the Tibetan ones for a Sanskrit
+source (looked up with the Tibetan source's dictionaries), the Sanskrit
+ones for the Tibetan file of a pair; nil when the other source lacks
+the sentence.
 
 ** ~bcat-sentence--recitation~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 184
+:LINE: 239
 :SIGNATURE: (bcat-sentence--recitation texts)
 :END:
 
@@ -13558,7 +13747,7 @@ without the pāda letters).
 ** ~bcat-sentence--references~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 208
+:LINE: 263
 :SIGNATURE: (bcat-sentence--references sent-num source-file)
 :END:
 
@@ -13569,7 +13758,7 @@ never Carsten's own „Übersetzung …“ rubric (as in the materializer).
 ** ~bcat-sentence--comparison~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 218
+:LINE: 273
 :SIGNATURE: (bcat-sentence--comparison refs)
 :END:
 
@@ -13578,7 +13767,7 @@ REFS ((NAME . BODY) …) as the paragraphs of Translations compared.
 ** ~bcat-sentence-rump-context~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 223
+:LINE: 278
 :SIGNATURE: (bcat-sentence-rump-context sent-num segs source-file
                                             &optional extra-refs keep)
 :END:
@@ -13592,7 +13781,7 @@ existing file (user slots, `created').
 ** ~bcat-sentence-create-file~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 272
+:LINE: 314
 :SIGNATURE: (bcat-sentence-create-file sent-num segs source-file filepath
                                            &optional extra-refs keep)
 :END:
@@ -13604,7 +13793,7 @@ no AI) and return FILEPATH.  EXTRA-REFS and KEEP as in
 ** ~bcat-sentence--render~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 285
+:LINE: 327
 :SIGNATURE: (bcat-sentence--render name context source-file)
 :END:
 
@@ -13615,7 +13804,7 @@ followed by the file's own sections (`own-sections' in CONTEXT, from
 ** ~bcat-sentence--text~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 299
+:LINE: 341
 :SIGNATURE: (bcat-sentence--text file)
 :END:
 
@@ -13624,7 +13813,7 @@ The contents of FILE ("" when missing).
 ** ~bcat-sentence--l1-body~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 305
+:LINE: 347
 :SIGNATURE: (bcat-sentence--l1-body text heading)
 :END:
 
@@ -13634,7 +13823,7 @@ nil when absent or empty.
 ** ~bcat-sentence--own-sections~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 330
+:LINE: 372
 :SIGNATURE: (bcat-sentence--own-sections text)
 :END:
 
@@ -13646,7 +13835,7 @@ verbatim, in order, as one string; nil when there are none.
 ** ~bcat-sentence--keep~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 348
+:LINE: 390
 :SIGNATURE: (bcat-sentence--keep file)
 :END:
 
@@ -13657,7 +13846,7 @@ old layout dropped the AS/MSA * Handout).
 ** ~bcat-sentence--compared~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 363
+:LINE: 405
 :SIGNATURE: (bcat-sentence--compared file)
 :END:
 
@@ -13667,7 +13856,7 @@ as ((NAME . TEXT) …) — every `*NAME:* TEXT' paragraph, in order.
 ** ~bcat-sentence--old-references~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 378
+:LINE: 420
 :SIGNATURE: (bcat-sentence--old-references file)
 :END:
 
@@ -13678,7 +13867,7 @@ slots (DharmaMitra, Discussion).
 ** ~bcat-sentence--extra-references~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 397
+:LINE: 439
 :SIGNATURE: (bcat-sentence--extra-references names refs)
 :END:
 
@@ -13688,7 +13877,7 @@ a machine name (Translation, DharmaMitra) — marks stripped.
 ** ~bcat-sentence--write~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 406
+:LINE: 448
 :SIGNATURE: (bcat-sentence--write file text)
 :END:
 
@@ -13699,7 +13888,7 @@ were read by the caller).
 ** ~bcat-sentence--save-visit~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 427
+:LINE: 469
 :SIGNATURE: (bcat-sentence--save-visit file)
 :END:
 
@@ -13709,7 +13898,7 @@ typing is read (and kept) by a rebuild.
 ** ~bcat-sentence--unaligned~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 454
+:LINE: 496
 :SIGNATURE: (bcat-sentence--unaligned file)
 :END:
 
@@ -13720,21 +13909,21 @@ stripped.
 ** ~bcat-sentence-fetch-state~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 466
+:LINE: 508
 :SIGNATURE: (bcat-sentence-fetch-state file seg-nums)
 :END:
 
 What C-c u G still has to do for the template FILE with SEG-NUMS:
 `full' while a segment has no ⟦N⟧ translation, or — a bilingual file
-with a Tibetan translation — while no segment carries its Tibetan
-(the Tibetan request needs the Sanskrit answer, so both again);
+— while no segment names its counterpart („· Tib. 77“, „· Skt. 22“;
+the Tibetan request needs the Sanskrit answer, so both again);
 `align' when a reference under Translations compared appears in no
 segment (added by hand); nil when the file is complete.
 
 ** ~bcat-sentence--own-translations~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 486
+:LINE: 528
 :SIGNATURE: (bcat-sentence--own-translations text)
 :END:
 
@@ -13744,7 +13933,7 @@ The ⟦N⟧ translations in TEXT: ((N . TRANSLATION) …), without the
 ** ~bcat-sentence--block-lines~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 495
+:LINE: 537
 :SIGNATURE: (bcat-sentence--block-lines block)
 :END:
 
@@ -13753,7 +13942,7 @@ The lines of a translation BLOCK without their org line breaks.
 ** ~bcat-sentence--align-merge~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 500
+:LINE: 542
 :SIGNATURE: (bcat-sentence--align-merge text parsed)
 :END:
 
@@ -13767,7 +13956,7 @@ Everything else stays as it is.
 ** ~bcat-sentence--unreadable~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 559
+:LINE: 601
 :SIGNATURE: (bcat-sentence--unreadable what file response problem)
 :END:
 
@@ -13778,7 +13967,7 @@ on FILE's status line.  Returns nil.
 ** ~bcat-sentence--align-land~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 572
+:LINE: 614
 :SIGNATURE: (bcat-sentence--align-land file response)
 :END:
 
@@ -13788,7 +13977,7 @@ the answer is unreadable.
 ** ~bcat-sentence--align-one~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 585
+:LINE: 627
 :SIGNATURE: (bcat-sentence--align-one file sentence source-file)
 :END:
 
@@ -13798,7 +13987,7 @@ no DharmaMitra, no new analysis.
 ** ~bcat-sentence--references-for~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 610
+:LINE: 652
 :SIGNATURE: (bcat-sentence--references-for file sent-num source-file)
 :END:
 
@@ -13809,7 +13998,7 @@ compared of FILE.
 ** ~bcat-sentence--prepare~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 619
+:LINE: 661
 :SIGNATURE: (bcat-sentence--prepare file sentence source-file)
 :END:
 
@@ -13823,7 +14012,7 @@ sections and references added by hand carried over.  Returns
 ** ~bcat-sentence--dharmamitra~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 642
+:LINE: 684
 :SIGNATURE: (bcat-sentence--dharmamitra file sentence)
 :END:
 
@@ -13833,30 +14022,54 @@ must not stop the analysis).
 ** ~bcat-sentence--prompts~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 658
+:LINE: 700
 :SIGNATURE: (bcat-sentence--prompts sentence source-file refs)
 :END:
 
 (SYSTEM . USER) for SENTENCE of SOURCE-FILE with the references REFS —
 the Sanskrit prompts for a Sanskrit source, the Tibetan ones else.
 
+** ~bcat-sentence--write-analysed~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 720
+:SIGNATURE: (bcat-sentence--write-analysed file sent-num segs source-file build)
+:END:
+
+Write the template FILE of sentence SENT-NUM (SEGS, from SOURCE-FILE)
+from the fields BUILD makes of its rump, and return them.  User slots,
+#+CREATED and the file's own sections are read from FILE NOW (typing
+during a request survives); LAST_ANALYZED is today.
+
 ** ~bcat-sentence--write-fetched~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 678
+:LINE: 734
 :SIGNATURE: (bcat-sentence--write-fetched file sentence source-file refs parsed &optional tibetan)
 :END:
 
 Write the template FILE of SENTENCE built from Claude's answer PARSED
 — and for a bilingual sentence from TIBETAN, the answer of the Tibetan
-request.  User slots and #+CREATED are read from the file NOW (typing
-during the request survives); the references under Translations
+request — and return its fields.  The references under Translations
 compared are REFS as sent, marked from the answer's segment parts.
+
+** ~bcat-sentence--write-partner~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 748
+:SIGNATURE: (bcat-sentence--write-partner sentence source-file tibetan trefs sanskrit)
+:END:
+
+Write the Tibetan file of the bilingual SENTENCE of the paired
+SOURCE-FILE (Carsten 30.10.: „das volle Programm“): the Tibetan analysis
+from TIBETAN, the answer of the Tibetan request (TREFS the references
+sent with it), with the Sanskrit segments SANSKRIT as the Sanskrit file
+has them.  Returns the file.
 
 ** ~bcat-sentence--land~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 702
+:LINE: 764
 :SIGNATURE: (bcat-sentence--land file sentence source-file refs response)
 :END:
 
@@ -13868,42 +14081,69 @@ finishes the file; any other ends here (C-c u H).
 ** ~bcat-sentence--tibetan-prompts~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 718
-:SIGNATURE: (bcat-sentence--tibetan-prompts sentence source-file parsed)
+:LINE: 780
+:SIGNATURE: (bcat-sentence--tibetan-prompts sentence source-file parsed trefs)
 :END:
 
 (SYSTEM . USER) of the Tibetan request for SENTENCE of the bilingual
 SOURCE-FILE: the Sanskrit segments with the translations of the
-Sanskrit answer PARSED, the Tibetan ones with Wylie, the Tibetan
-source's #+TIBETAN_CLAUDE_CONTEXT.
+Sanskrit answer PARSED, the Tibetan ones with Wylie, TREFS the
+reference translations of the Tibetan, the Tibetan source's
+#+TIBETAN_CLAUDE_CONTEXT.
 
 ** ~bcat-sentence--tibetan-land~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 738
-:SIGNATURE: (bcat-sentence--tibetan-land file sentence source-file refs parsed response)
+:LINE: 802
+:SIGNATURE: (bcat-sentence--tibetan-land file sentence source-file refs parsed trefs response)
 :END:
 
 Finish the bilingual FILE with the Tibetan answer RESPONSE (PARSED the
-Sanskrit answer, REFS the references sent with it), then C-c u H; nil
-and FILE as the Sanskrit answer left it when the answer is unreadable.
+Sanskrit answer, REFS and TREFS the references sent with the two
+requests) — in a pair the Tibetan file too —, then C-c u H, for the
+Sanskrit file only (Carsten 30.10.: „nur die zweisprachige“); nil and
+FILE as the Sanskrit answer left it when the answer is unreadable.
 
 ** ~bcat-sentence--tibetan-one~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 751
+:LINE: 820
 :SIGNATURE: (bcat-sentence--tibetan-one file sentence source-file refs parsed)
 :END:
 
 Queue the Tibetan request of the bilingual SENTENCE (Carsten 30.10.)
-once the Sanskrit answer PARSED is in FILE: which Tibetan segments
-translate which Sanskrit one, their words, the differences, the
-rendering.
+once the Sanskrit answer PARSED is in FILE: the whole Tibetan analysis,
+which Tibetan segments translate which Sanskrit one, the differences,
+the rendering.  Its references are those of the Tibetan sentence — in a
+pair with the ones added by hand to the Tibetan file and DharmaMitra on
+the Tibetan.
+
+** ~bcat-sentence--prepare-partner~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 843
+:SIGNATURE: (bcat-sentence--prepare-partner sentence source-file)
+:END:
+
+`bcat-sentence--prepare' for the Tibetan file of SENTENCE of the
+paired SOURCE-FILE; nil when the Tibetan lacks the sentence.
+
+** ~bcat-sentence--pair-state~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 853
+:SIGNATURE: (bcat-sentence--pair-state file sentence source-file)
+:END:
+
+What C-c u G still has to do for SENTENCE of the paired SOURCE-FILE
+(FILE its Sanskrit file): `bcat-sentence-fetch-state' — and `full'
+while the Tibetan file is not complete: both files come from the same
+two requests.
 
 ** ~bcat-sentence--fetch-one~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 765
+:LINE: 865
 :SIGNATURE: (bcat-sentence--fetch-one file sentence source-file)
 :END:
 
@@ -13914,7 +14154,7 @@ request through the queue.
 ** ~bcat-sentence-fetch~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 794
+:LINE: 894
 :SIGNATURE: (bcat-sentence-fetch scope &optional force)
 :END:
 
@@ -13925,12 +14165,15 @@ then Claude).  A filled file is left alone — FORCE (C-u C-c u G)
 analyses it anew, after a question naming the count (29.10., TĀ 1007:
 nothing changed and nothing said so).  More than
 `tibetan-cascade-subtree-confirm-threshold' requests ask first.
-Returns (:sentences N :fired N :complete N :align N).
+In the Tibetan source of a bilingual pair it runs through the Sanskrit
+one: the Tibetan request needs the Sanskrit answer, and both files come
+from the same requests.  Returns (:sentences N :fired N :complete N
+:align N).
 
 ** ~bcat-sentence-templates~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 42
+:LINE: 45
 :TYPE: 'boolean
 :GROUP: buddhist-cat
 :DEFAULT: t
@@ -13944,7 +14187,7 @@ the old pipeline.
 ** ~tibetan-analysis--target-lang~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 39
+:LINE: 42
 :END:
 
 /(no docstring)/
@@ -13952,7 +14195,16 @@ the old pipeline.
 ** ~tibetan-analysis--source-lang~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 40
+:LINE: 43
+:END:
+
+/(no docstring)/
+
+** ~bcat-sentence--pair-templates~  /constant/
+:PROPERTIES:
+:KIND: defconst
+:LINE: 80
+:DEFAULT: '
 :END:
 
 /(no docstring)/
@@ -13960,7 +14212,7 @@ the old pipeline.
 ** ~bcat-sentence--user-slots~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 314
+:LINE: 356
 :DEFAULT: '
 :END:
 
@@ -13969,7 +14221,7 @@ the old pipeline.
 ** ~bcat-sentence--tool-sections~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 320
+:LINE: 362
 :DEFAULT: '
 :END:
 
@@ -13978,7 +14230,7 @@ the old pipeline.
 ** ~tibetan-cascade-subtree-confirm-threshold~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 446
+:LINE: 488
 :END:
 
 /(no docstring)/
@@ -13986,7 +14238,7 @@ the old pipeline.
 ** ~tibetan-dharmamitra-sentence-request-delay~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 447
+:LINE: 489
 :END:
 
 /(no docstring)/
@@ -13994,7 +14246,7 @@ the old pipeline.
 ** ~tibetan-sentence-claude--dm-schedule-count~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 448
+:LINE: 490
 :END:
 
 /(no docstring)/
@@ -14002,7 +14254,7 @@ the old pipeline.
 ** ~bcat-sentence-after-fetch-functions~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 450
+:LINE: 492
 :DEFAULT: nil
 :END:
 
