@@ -217,5 +217,43 @@ for sentence 36, then the Tibetan one with the Tibetan verse IX.16
       (should (string-match-p "^\\* Bhāṣya$" (bcat-sentence-test--text-of
                                               (tibetan-sentence--filepath 64 tfolder tsrc)))))))
 
+(defconst bcat-commentary-test--verse-answer-sa
+  (concat "{\"segments\": [{\"num\": 92, \"words\": [], \"translation\": \"Just as the image of the moon\"},"
+          " {\"num\": 93, \"words\": [], \"translation\": \"so the image of the Buddha\"}],"
+          " \"grammar\": \"g\", \"translation\": \"t\", \"comparison\": \"\","
+          " \"bhasya_hint\": \"The bhāṣya reads the broken pot as the being who is no vessel (/abhājanabhūta/).\"}")
+  "The Sanskrit answer for verse IX.16, with the hint on the bhāṣya.")
+
+(defconst bcat-commentary-test--verse-answer-bo
+  (concat "{\"segments\": [{\"num\": 139, \"sanskrit\": 92, \"words\": [], \"translation\": \"Just as, when\"},"
+          " {\"num\": 140, \"sanskrit\": 92, \"words\": [], \"translation\": \"the moon\"},"
+          " {\"num\": 141, \"sanskrit\": 93, \"words\": [], \"translation\": \"likewise\"},"
+          " {\"num\": 142, \"sanskrit\": 93, \"words\": [], \"translation\": \"the Buddha\"}],"
+          " \"differences\": [], \"grammar\": \"g\", \"translation\": \"t\", \"comparison\": \"\", \"rendering\": \"r\"}")
+  "The Tibetan answer for verse IX.16.")
+
+(defun bcat-commentary-test--verse-answers (kind)
+  (if (equal kind "bcat-tibetan") bcat-commentary-test--verse-answer-bo bcat-commentary-test--verse-answer-sa))
+
+(ert-deftest bcat-verse-bhasya-hint ()
+  "The *Hint:* under the bhāṣya: the Sanskrit request of a verse gets
+its bhāṣya in both languages as context (it helps the analysis of the
+verse too) and returns `bhasya_hint' — what in it matters for reading
+the verse; it stands in both verse files.  A source without verses
+keeps its prompt unchanged."
+  (bcat-commentary-test--with-msa
+    (bcat-sentence-test--with-stubs #'bcat-commentary-test--verse-answers
+      (bcat-sentence-test--fetch-n src 36)
+      (let* ((first (nth (1- (length prompts)) prompts))
+             (sys (car first)) (user (cdr first)))
+        (should (string-match-p "\"bhasya_hint\"" sys))
+        (should (string-match-p (regexp-quote "Bhāṣya on this verse (context):\nSanskrit: atha pañcamaḥ ślokaḥ / anena pañcamena") user))
+        (should (string-match-p (regexp-quote "Tibetan: lnga pa 'dis ni thams cad du song ba") user)))
+      (dolist (f (list (tibetan-sentence--filepath 36 folder src)
+                       (tibetan-sentence--filepath 64 tfolder tsrc)))
+        (should (string-match-p "^\\*Hint:\\* The bhāṣya reads the broken pot"
+                                (bcat-sentence-test--text-of f))))))
+  (should-not (string-match-p "bhasya" (bcat-analysis-sanskrit-system-prompt "en"))))
+
 (provide 'bcat-commentary-test)
 ;;; bcat-commentary-test.el ends here

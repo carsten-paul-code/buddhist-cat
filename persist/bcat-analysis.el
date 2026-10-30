@@ -135,16 +135,18 @@ reference translations ((NAME . TEXT) …)."
    (mapconcat (lambda (r) (format "=== %s ===\n%s" (car r) (string-trim (cdr r)))) refs "\n")
    "\n\nReturn the JSON object now."))
 
-(defun bcat-analysis-sanskrit-system-prompt (target)
+(defun bcat-analysis-sanskrit-system-prompt (target &optional bhasya)
   "The system prompt of the Sanskrit sentence analysis (§5.74, Carsten
 29.10.: his Sanskrit is rudimentary, the class has Sanskrit
 professionals and goes deep into the grammar — roots, gaṇa, stems;
 terminology of the Devavāṇīpraveśikā) for the target language code
-TARGET — constant per document, so the prompt cache stays warm."
+TARGET — constant per document, so the prompt cache stays warm.
+BHASYA: the document is read verse by verse with the bhāṣya below the
+verse (MSA, 30.10.) — the answer has `bhasya_hint' too."
   (let ((lang (bcat-analysis--language target)))
     (format "You are a Sanskritist preparing one sentence or verse of a Sanskrit text for a university reading class of experienced Sanskritists; one participant reads Sanskrit only haltingly, so every form is spelled out. Work segment by segment, then on the whole sentence. Use the grammatical terminology of Goldman & Sutherland Goldman, Devavāṇīpraveśikā: Sanskrit terms, with the English equivalent where it helps. Answer with ONE JSON object and nothing else (no prose, no code fence):
 
-{\"segments\": [{\"num\": <segment number>, \"words\": [{\"word\": \"…\", \"lemma\": \"…\", \"formation\": \"…\", \"parts\": \"…\", \"gloss\": \"…\", \"form\": \"…\"}], \"translation\": \"…\", \"references\": [{\"name\": \"…\", \"text\": \"…\"}], \"shift\": [\"…\"], \"sandhi\": \"…\", \"forms\": [{\"word\": \"…\", \"analysis\": \"…\"}], \"compounds\": [{\"word\": \"…\", \"analysis\": \"…\"}], \"structure\": \"…\", \"note\": \"…\", \"concepts\": \"…\"}], \"grammar\": \"…\", \"translation\": \"…\", \"comparison\": \"…\"}
+{\"segments\": [{\"num\": <segment number>, \"words\": [{\"word\": \"…\", \"lemma\": \"…\", \"formation\": \"…\", \"parts\": \"…\", \"gloss\": \"…\", \"form\": \"…\"}], \"translation\": \"…\", \"references\": [{\"name\": \"…\", \"text\": \"…\"}], \"shift\": [\"…\"], \"sandhi\": \"…\", \"forms\": [{\"word\": \"…\", \"analysis\": \"…\"}], \"compounds\": [{\"word\": \"…\", \"analysis\": \"…\"}], \"structure\": \"…\", \"note\": \"…\", \"concepts\": \"…\"}], \"grammar\": \"…\", \"translation\": \"…\", \"comparison\": \"…\"%s}
 
 Rules:
 - segments: one entry per given segment, same numbers, same order.
@@ -166,19 +168,29 @@ Rules:
 - grammar: an overview of the whole sentence — the clauses and how they are linked, the verbs, subjects, elisions (an understood copula).
 - translation (sentence): your translation of the whole sentence (the segment parts joined).
 - comparison: one to three sentences on the meaning-shifting differences between the translations including yours; \"\" when there are none.
-- JSON escaping: only \\\" and \\\\ — never a backslash before an apostrophe.
+%s- JSON escaping: only \\\" and \\\\ — never a backslash before an apostrophe.
 - Write glosses, notes and explanations in %s. Never mention yourself."
+            (if bhasya ", \"bhasya_hint\": \"…\"" "")
+            (if bhasya
+                "- bhasya_hint: the bhāṣya on this verse is given as context; one to three sentences on what in it matters for reading the verse — how it takes a word or the verse's function, a reading it presupposes, where its Tibetan says something else; Sanskrit and Tibetan words in /italic/; \"\" when nothing.\n"
+              "")
             lang)))
 
-(defun bcat-analysis-sanskrit-user-prompt (sent-num verse segs refs &optional context)
+(defun bcat-analysis-sanskrit-user-prompt (sent-num verse segs refs &optional context bhasya)
   "The user prompt for the Sanskrit sentence SENT-NUM (VERSE its :VERSE:
 or nil): SEGS ((NUM TEXT) …) the segments as transmitted, REFS ((NAME .
 TEXT) …) the reference translations, CONTEXT the document's
-#+TIBETAN_CLAUDE_CONTEXT lines."
+#+TIBETAN_CLAUDE_CONTEXT lines, BHASYA (SANSKRIT . TIBETAN) the bhāṣya
+on the verse — lines as transmitted, the Tibetan in Wylie."
   (concat
    (if context (concat (mapconcat #'identity context "\n") "\n\n") "")
    (format "Sentence %d%s — segments:\n" sent-num (if verse (format " (%s)" verse) ""))
    (mapconcat (lambda (s) (bcat-analysis--segment-entry (nth 0 s) (nth 1 s))) segs "\n")
+   (if bhasya
+       (concat "\n\nBhāṣya on this verse (context):"
+               (if (car bhasya) (concat "\nSanskrit: " (string-join (car bhasya) " ")) "")
+               (if (cdr bhasya) (concat "\nTibetan: " (string-join (cdr bhasya) " ")) ""))
+     "")
    (bcat-analysis--references-block refs)
    "\n\nReturn the JSON object now."))
 
@@ -715,7 +727,8 @@ skipped keeps its rump fields."
        (translation . ,(bcat-analysis--field parsed 'translation))
        (grammar . ,(bcat-analysis--field parsed 'grammar))
        (comparison . ,(bcat-analysis-comparison parsed refs))
-       (word-analysis . ,(bcat-analysis-word-analysis (alist-get 'segments parsed))))
+       (word-analysis . ,(bcat-analysis-word-analysis (alist-get 'segments parsed)))
+       (bhasya-hint . ,(bcat-analysis--field parsed 'bhasya_hint)))
      base)))
 
 ;; ----------------------------------------------------------------------------

@@ -217,6 +217,19 @@ SOURCE-FILE — the bhāṣya around the verse —, in order."
   (cl-loop for s in (bcat-sentence--section-sentences sentence source-file)
            unless (plist-get s :verse) append (plist-get s :segs)))
 
+(defun bcat-sentence--bhasya-texts (sent-num source-file)
+  "The bhāṣya of the verse SENT-NUM of the Sanskrit SOURCE-FILE for the
+prompt: (SANSKRIT . TIBETAN), lines as transmitted, the Tibetan in
+Wylie; nil when there is none."
+  (let* ((own (bcat-sentence--sentence sent-num source-file))
+         (other (bcat-sentence--parallel-sentence sent-num source-file))
+         (skt (and own (bcat-sentence--bhasya-segs own source-file)))
+         (tib (and other (bcat-sentence--bhasya-segs
+                          other (bcat-sentence-parallel-source source-file)))))
+    (when (or skt tib)
+      (cons (mapcar (lambda (s) (string-trim (cdr s))) skt)
+            (mapcar (lambda (s) (bcat-sentence--wylie (cdr s))) tib)))))
+
 (defun bcat-sentence--bhasya-fields (sent-num source-file)
   "Verse mode: the bhāṣya of the verse SENT-NUM of SOURCE-FILE in both
 languages (Carsten 30.10.: „im Vers als zusätzliche Section (unten) mit
@@ -826,12 +839,15 @@ the Sanskrit prompts for a Sanskrit source, the Tibetan ones else."
          (target (or (plist-get meta :target-lang) "en"))
          (segs (plist-get sentence :segs)))
     (if (bcat-sentence--sanskrit-p source-file)
-        (cons (bcat-analysis-sanskrit-system-prompt target)
-              (bcat-analysis-sanskrit-user-prompt
-               (plist-get sentence :sent-num) (plist-get sentence :verse)
-               (mapcar (lambda (s) (list (car s) (cdr s))) segs)
-               refs
-               (plist-get meta :claude-context)))
+        (let ((verse-mode (bcat-sentence--verse-mode-p source-file)))
+          (cons (bcat-analysis-sanskrit-system-prompt target verse-mode)
+                (bcat-analysis-sanskrit-user-prompt
+                 (plist-get sentence :sent-num) (plist-get sentence :verse)
+                 (mapcar (lambda (s) (list (car s) (cdr s))) segs)
+                 refs
+                 (plist-get meta :claude-context)
+                 (and verse-mode (bcat-sentence--bhasya-texts (plist-get sentence :sent-num)
+                                                              source-file)))))
       (cons (bcat-analysis-system-prompt target)
             (bcat-analysis-user-prompt
              (plist-get sentence :sent-num) (plist-get sentence :verse)
@@ -867,20 +883,22 @@ compared are REFS as sent, marked from the answer's segment parts."
                              base parsed refs)))
        (if tibetan (bcat-analysis-bilingual-context context tibetan) context)))))
 
-(defun bcat-sentence--write-partner (sentence source-file tibetan trefs sanskrit)
+(defun bcat-sentence--write-partner (sentence source-file tibetan trefs sanskrit &optional hint)
   "Write the Tibetan file of the bilingual SENTENCE of the paired
 SOURCE-FILE (Carsten 30.10.: „das volle Programm“): the Tibetan analysis
 from TIBETAN, the answer of the Tibetan request (TREFS the references
 sent with it), with the Sanskrit segments SANSKRIT as the Sanskrit file
-has them.  Returns the file."
+has them, HINT the hint on the bhāṣya from the Sanskrit answer.
+Returns the file."
   (let* ((n (plist-get sentence :sent-num))
          (parallel (bcat-sentence-parallel-source source-file))
          (tfile (bcat-sentence-partner-file n source-file)))
     (bcat-sentence--write-analysed
      tfile n (bcat-sentence--parallel-segs n source-file) parallel
      (lambda (base)
-       (bcat-analysis-partner-context (bcat-analysis-context base tibetan trefs)
-                                      tibetan sanskrit)))
+       (cons (cons 'bhasya-hint hint)
+             (bcat-analysis-partner-context (bcat-analysis-context base tibetan trefs)
+                                            tibetan sanskrit))))
     tfile))
 
 (defun bcat-sentence--land (file sentence source-file refs response)
@@ -934,7 +952,8 @@ FILE as the Sanskrit answer left it when the answer is unreadable."
       (let ((context (bcat-sentence--write-fetched file sentence source-file refs parsed tibetan)))
         (when (bcat-sentence--paired-p source-file)
           (bcat-sentence--write-partner sentence source-file tibetan trefs
-                                        (alist-get 'segments context))))
+                                        (alist-get 'segments context)
+                                        (alist-get 'bhasya-hint context))))
       (bcat-status-step file :tibetan "Tibetisch ✓")
       (run-hook-with-args 'bcat-sentence-after-fetch-functions file)
       file)))
