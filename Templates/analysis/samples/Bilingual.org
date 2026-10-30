@@ -31,16 +31,6 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 #+end_verse
 
 #+begin_verse
-kasmāt pañca eva skandhāḥ.
-pañca-ākāra-ātma-vastu-udbhāvanatām upādāya.
-sa-parigraha-deha-ātma-vastu-udbhāvanatām upādāya.
-upabhoga-ātma-vastu-udbhāvanatām upādāya.
-vyavahāra-ātma-vastu-udbhāvanatām upādāya.
-dharma-adharma-abhisaṃskāra-ātma-vastu-udbhāvanatām upādāya.
-tad-āśraya-ātma-vastu-udbhāvanatām upādāya.
-#+end_verse
-
-#+begin_verse
 kasmāt [why] pañca [five] eva [only] skandhāḥ [aggregates].
 pañca-ākāra-ātma-vastu-udbhāvanatām [showing a fivefold self-basis] upādāya [on account of].
 sa-parigraha-deha-ātma-vastu-udbhāvanatām [self-basis: body + possessions] upādāya [on account of].

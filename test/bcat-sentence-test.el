@@ -946,7 +946,11 @@ recitation; the segments have no Tibetan yet (Claude assigns it)."
       (should (string-match-p (regexp-quote "* Text\n#+begin_verse\nकस्मात् पञ्चैव स्कन्धाः।\nkasmāt pañcaiva skandhāḥ.\n") text))
       (should (string-match-p (regexp-quote "#+begin_verse\nཅིའི་ཕྱིར་ཕུང་པོ་རྣམས་ལྔ་ཁོ་ན་ཞེ་ན།\nci'i phyir phung po rnams lnga kho na zhe na/\n") text))
       (should (string-match-p "^\\*\\* Segment 22$" text))
-      (should-not (string-match-p "Recitation\\|· Tib\\.\\|Differences" text)))))
+      (should-not (string-match-p "Recitation\\|· Tib\\.\\|Differences" text))
+      ;; Carsten 30.10.: no IAST block without Devanāgarī — before C-c u G
+      ;; it only repeated the lines under the Devanāgarī.
+      (should (= 1 (with-temp-buffer (insert text)
+                     (how-many "^kasmāt pañcaiva skandhāḥ\\.$" (point-min) (point-max))))))))
 
 (ert-deftest bcat-sentence-create-bilingual-without-tibetan ()
   "A sentence the Tibetan lacks: the Sanskrit alone, no empty Tibetan
