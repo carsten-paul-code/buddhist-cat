@@ -183,11 +183,14 @@ are."
 fallback font the Devanāgarī lost its conjuncts (visible virāmas) and
 the Uchen came out small.  A line in the original script gets its own
 font, larger (as the old handout's Uchen line); after the transcription
-line of each pair a little space.  Roman-only verses stay as they are."
+line of each pair a little space.  Roman-only verses stay as they are.
+30.10.: no page break between a line in the original script and its
+transcription (AS 3, Segment 22: Uchen at the foot of one page, its
+Wylie at the top of the next) — `\\\\*' after the script line."
   (should (equal (concat "\\begin{verse}\n"
-                         "{\\bcattib\\large བརྗོད་དུ། །}\\\\\n"
+                         "{\\bcattib\\large བརྗོད་དུ། །}\\\\*\n"
                          "brjod du/ /\\\\[1ex]\n"
-                         "{\\bcatdeva\\large अत्र ।}\\\\\n"
+                         "{\\bcatdeva\\large अत्र ।}\\\\*\n"
                          "atra /\\\\[1ex]\n"
                          "\\end{verse}\n")
                  (bcat-export--verse-scripts

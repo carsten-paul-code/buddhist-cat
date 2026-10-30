@@ -143,9 +143,10 @@ Latin letters), else nil."
 (defun bcat-export--verse-scripts (latex)
   "LATEX of a verse block with each line in the original script set in
 its own font, larger (\\bcattib / \\bcatdeva, \\large — the old
-handout's Uchen line), and a little space after the transcription line
-that follows it (Carsten 29.10.: Uchen above Wylie, Devanāgarī above
-IAST).  Roman-only lines stay as they are."
+handout's Uchen line), no page break before the transcription line
+that follows it and a little space after that one (Carsten 29.10.:
+Uchen above Wylie, Devanāgarī above IAST).  Roman-only lines stay as
+they are."
   (let ((after-script nil))
     (mapconcat
      (lambda (line)
@@ -159,8 +160,10 @@ IAST).  Roman-only lines stay as they are."
          (cond
           (script
            (setq after-script t)
+           ;; `\\*': no page break before the transcription (30.10.).
            (format "{%s\\large %s}%s"
-                   (if (eq script 'tibetan) "\\bcattib" "\\bcatdeva") body brk))
+                   (if (eq script 'tibetan) "\\bcattib" "\\bcatdeva") body
+                   (if (string-prefix-p "\\\\" brk) (concat "\\\\*" (substring brk 2)) brk)))
           ((and after-script (string-prefix-p "\\\\" brk))
            (setq after-script nil)
            (concat body "\\\\[1ex]"))
