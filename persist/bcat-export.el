@@ -265,6 +265,25 @@ Lines without a gloss (or starting with a command) stay as they are."
                                 "\\&\\\\rightskip=0pt plus 1fil\\\\relax%\n"
                                 out t))))
 
+(defcustom bcat-export-unit-max 50
+  "Longest word+gloss unit (characters) that a glossed verse line keeps
+unbroken; a longer one may break between the words of its gloss —
+30.10., TĀ 1001: one unit of 110 characters ran into the margin."
+  :type 'integer
+  :group 'buddhist-cat)
+
+(defun bcat-export--unit-boxes (unit)
+  "UNIT (\"word [gloss]\") as \\mbox text: whole, or — longer than
+`bcat-export-unit-max' — one box per gloss word, the word with the
+first, the bracket with the last."
+  (let ((open (string-match " \\[" unit)))
+    (if (or (<= (string-width unit) bcat-export-unit-max) (null open))
+        (format "\\mbox{%s}" unit)
+      (let ((words (split-string (substring unit (+ open 2)))))
+        (mapconcat (lambda (w) (format "\\mbox{%s}" w))
+                   (cons (concat (substring unit 0 (+ open 2)) (car words)) (cdr words))
+                   " ")))))
+
 (defun bcat-export--verse-lines (latex)
   "LATEX with each glossed verse line made of \\mbox units (see
 `bcat-export--verse-units')."
@@ -283,7 +302,7 @@ Lines without a gloss (or starting with a command) stay as they are."
            ;; Read the match before `string-trim', which matches too.
            (let ((unit (match-string 0 body)))
              (setq pos (match-end 0))
-             (push (format "\\mbox{%s}" (string-trim unit)) units)))
+             (push (bcat-export--unit-boxes (string-trim unit)) units)))
          (concat (mapconcat #'identity (nreverse units) " ")
                  (replace-regexp-in-string "[ \t]+" "~"
                                            (string-trim-right (substring body pos)))

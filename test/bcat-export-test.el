@@ -247,6 +247,24 @@ comes with the header."
                                             'latex nil)))
   (should (string-match-p (regexp-quote "\\usepackage{adjustbox}") (bcat-export--font-lines))))
 
+(ert-deftest bcat-export-verse-units-long-gloss ()
+  "30.10., TĀ Satz 1001: „śiva-śāsana-āgama-rahasya-ācchādana-dhvaṃsi
+[destroying the concealment of the secret of Śiva's teaching-tradition]“
+is one unit longer than the line and ran into the margin.  A unit
+longer than `bcat-export-unit-max' may break between the words of its
+gloss — never inside a word; the bracket stays with its word and its
+last gloss word.  Shorter units stay whole (29.10.)."
+  (let ((bcat-export-unit-max 50))
+    (should (equal (concat "\\begin{verse}\n"
+                           "\\rightskip=0pt plus 1fil\\relax%\n"
+                           "\\mbox{me [my]} \\mbox{dhvaṃsi [destroying} \\mbox{the} \\mbox{concealment}"
+                           " \\mbox{of} \\mbox{Śiva's} \\mbox{teaching-tradition]}~//\\\\\n"
+                           "\\end{verse}\n")
+                   (bcat-export--verse-units
+                    (concat "\\begin{verse}\n"
+                            "me [my] dhvaṃsi [destroying the concealment of Śiva's teaching-tradition] //\\\\\n"
+                            "\\end{verse}\n"))))))
+
 (ert-deftest bcat-export-verse-scripts-foreign-signs ()
   "30.10., TĀ Satz 1001: in the recitation the pause sign ¦ stands in
 the Devanāgarī line, and Noto Sans Devanagari has no ¦ — an empty box
