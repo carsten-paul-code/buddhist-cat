@@ -1,0 +1,92 @@
+#+begin_comment
+VORLAGE Kommentar — ein Kommentardokument je Vers (Buddhist CAT, §5.74,
+Carsten 30.10.: MSA mit Sthiramati).  Für eine Kommentarquelle mit
+#+CAT_TEMPLATE: commentary und #+CAT_COMMENTS_ON: <Sanskrit-Versquelle>
+(die ihrerseits #+CAT_COMMENTARY trägt).  Ein Dokument je Section der
+Kommentarquelle; eine Section ohne eigene beim Kommentator gehört zur
+vorigen (Sthiramatis IX.2 deckt IX.3).  C-c u G — in einer der Quellen
+oder hier — analysiert Vers und Kommentar und legt beide als PDF aufs
+reMarkable; C-c u K springt zwischen Vers und Kommentar.
+
+Platzhalter und Abschnitte wie in tibetan.org.  Erwartete Ausgabe:
+samples/Commentary.org.
+
+Felder: title source-link verse-links sentence-list segment-list created
+last-analyzed; verse (die tibetischen Verszeilen: uchen wylie)
+verse-note (Link auf die Versdateien); sentences: num glosses
+translation (des Satzes) grammar — segments: num uchen wylie glossed
+gloss-table structure note concepts lemma (welches Pāda das Segment
+zitiert, wie gelesen) translations; translation-all (der ganze
+Kommentar); working-translation my-notes footnotes.
+#+end_comment
+#+TITLE: {{title}}
+#+STARTUP: showall
+#+OPTIONS: toc:nil num:nil title:nil author:nil date:nil
+#+TIBETAN_LAYOUT: cascade
+#+CAT_TEMPLATE: commentary
+#+SOURCE: {{source-link}}
+#+CAT_VERSE: {{verse-links}}
+#+SENTENCES: {{sentence-list}}
+#+SEGMENTS: {{segment-list}}
+#+CREATED: {{created}}
+#+LAST_ANALYZED: {{last-analyzed}}
+
+* Verse
+#+begin_verse
+{{#verse}}
+{{uchen}}
+{{wylie}}
+{{/verse}}
+#+end_verse
+
+{{verse-note}}
+
+{{#sentences}}
+* Sentence {{num}}
+#+begin_verse
+{{#segments}}
+{{uchen}}
+{{wylie}}
+{{/segments}}
+#+end_verse
+{{#glosses}}
+
+#+begin_verse
+{{#segments}}
+{{glossed}}
+{{/segments}}
+#+end_verse
+{{/glosses}}
+
+*Translation:* {{translation}}
+
+{{#segments}}
+** Segment {{num}}
+{{gloss-table}}
+
+*Structure:* {{structure}}
+
+*Note:* {{note}}
+
+*Concepts:* {{concepts}}
+
+*Lemma:* {{lemma}}
+
+{{translations}}
+
+{{/segments}}
+*Grammar:* {{grammar}}
+
+{{/sentences}}
+* Commentary
+** Translation
+{{translation-all}}
+
+* Working Translation
+{{working-translation}}
+
+* My Notes
+{{my-notes}}
+
+* Footnotes
+{{footnotes}}

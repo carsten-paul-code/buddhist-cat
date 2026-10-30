@@ -827,7 +827,8 @@ without a valid assignment see `bcat-analysis--assignment'."
      `((segments . ,segments)
        (tibetan . ,tibetan)
        (tibetan-glosses . ,(bcat-analysis-glosses-p tibetan))
-       (rendering . ,(bcat-analysis--field parsed 'rendering)))
+       (rendering . ,(bcat-analysis--field parsed 'rendering))
+       (assignment . ,assign))
      base)))
 
 (defun bcat-analysis-partner-context (base parsed sanskrit)

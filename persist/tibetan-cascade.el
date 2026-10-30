@@ -669,8 +669,10 @@ SOURCE-FILE when the sentence module is not loaded."
                 (bcat-sentence-template-name source-file)))
       (tibetan-cascade--create-file-legacy sent-num segs source-file filepath))
      ;; Verse mode (MSA, 30.10.): a bhāṣya sentence lives in the file of
-     ;; its verse — created when missing, never overwritten.
-     ((not (eql sent-num (plist-get (bcat-sentence-owner sent-num source-file) :sent-num)))
+     ;; its verse, a commentary sentence in the commentary document of
+     ;; its Section — created when missing, never overwritten.
+     ((or (equal (bcat-sentence-template-name source-file) "commentary")
+          (not (eql sent-num (plist-get (bcat-sentence-owner sent-num source-file) :sent-num))))
       (bcat-sentence-ensure-file sent-num source-file))
      ;; §5.74: languages with a template get the new form
      ;; (whole original / segments / sentence) — no AI, the

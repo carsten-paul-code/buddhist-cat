@@ -337,6 +337,68 @@ verse IX.16 is sentence 64, and only its file exists."
       (should (string-match-p "^#\\+TITLE: Sentence 64 Analysis$" text))
       (should (string-match-p (regexp-quote "#+SOURCE: [[file:../mdo-cat.org::*Sentence 64]") text))
       (should (string-match-p "^#\\+CAT_PARALLEL_SEGMENTS: 92, 93$" text)))))
+;; ----------------------------------------------------------------------------
+;; The commentary document (no AI)
+;; ----------------------------------------------------------------------------
+
+(ert-deftest bcat-commentary-section-and-file ()
+  "One commentary document per Sthiramati Section, beside his source:
+verse IX.16 → comm-IX.16-savbh.org; IX.17, which has no Section of its
+own with him, is covered by IX.16 (Sthiramati's IX.2 covers IX.3)."
+  (bcat-commentary-test--with-msa
+    (should (equal "Section IX.16" (bcat-commentary-section "Section IX.16" src csrc)))
+    (should (equal "Section IX.16" (bcat-commentary-section "Section IX.17" src csrc)))
+    (should (equal "Section IX.15" (bcat-commentary-section "Section IX.15" src csrc)))
+    (should (equal (expand-file-name "comm-IX.16-savbh.org" cfolder)
+                   (bcat-commentary-file "Section IX.16" csrc)))))
+
+(ert-deftest bcat-commentary-create ()
+  "C-c u A in Sthiramati's source (no AI): the commentary document of the
+sentence's Section — the verses it covers (Tibetan) at the top with
+links to the verse files, then Sthiramati sentence by sentence (Uchen
+over Wylie, segments with tables), each lemma marked with the pāda it
+quotes and how he reads it.  A second C-c u A never overwrites it."
+  (bcat-commentary-test--with-msa
+    (let* ((file (bcat-sentence-ensure-file 259 csrc))
+           (text (bcat-sentence-test--text-of file)))
+      (should (file-equal-p (expand-file-name "comm-IX.16-savbh.org" cfolder) file))
+      (should (string-match-p "^#\\+TITLE: Sthiramati zu MSA IX.16, MSA IX.17$" text))
+      (should (string-match-p "^#\\+CAT_TEMPLATE: commentary$" text))
+      (should (string-match-p (regexp-quote "#+CAT_VERSE: [[file:../../Sanskrit/analysis/sent-036-msa.org][MSA IX.16]]") text))
+      (should (string-match-p "^#\\+SENTENCES: 258, 259, 260, 261, 262, 263$" text))
+      (should (string-match-p (regexp-quote "* Verse\n#+begin_verse\nཇི་ལྟར་ཆུ་ཡི་སྣོད་ཆག་ན། །\nji ltar chu yi snod chag na/ /") text))
+      (should (string-match-p (regexp-quote "སྐྱེ་མཆེད་བཅུ་གཉིས། །") text))
+      (should (string-match-p "^\\* Sentence 258$" text))
+      (should (string-match-p "^\\*\\* Segment 627$" text))
+      (should (string-match-p (regexp-quote "*Lemma:* verse, [[file:../../Tibetisch/analysis/sent-064-mdo.org::Segment 139][Tib. 139]] — verbatim") text))
+      (should (string-match-p (regexp-quote "[Tib. 140]] — Sthiramati reads /bzhin/ for /ba/") text))
+      (should (string-match-p (regexp-quote "[Tib. 142]] — Sthiramati reads /ni/ for /kyang/") text))
+      (should (= 4 (with-temp-buffer (insert text) (how-many "^\\*Lemma:\\*" (point-min) (point-max)))))
+      (bcat-sentence-test--set-notes file "Notiz zum Kommentar.")
+      (should (file-equal-p file (bcat-sentence-ensure-file 263 csrc)))
+      (tibetan-cascade--ensure-files csrc (list (list :sent-num 260 :segs '((629 . "x")))))
+      (should (string-match-p "^\\* My Notes\nNotiz zum Kommentar\\.$" (bcat-sentence-test--text-of file)))
+      (should-not (directory-files cfolder nil "\\`sent-")))))
+
+(ert-deftest bcat-commentary-verse-links ()
+  "The verse files link the commentary: in the header, and per segment
+the Sthiramati sentences with the lemmata of its pādas — known once the
+Tibetan request has assigned the pādas (C-c u G)."
+  (bcat-commentary-test--with-msa
+    (should (string-match-p (regexp-quote "#+CAT_COMMENTARY: [[file:../../Sthiramati/analysis/comm-IX.16-savbh.org][Sthiramati zu MSA IX.16, MSA IX.17]]")
+                            (bcat-sentence-test--create-n src 36)))
+    (bcat-sentence-test--with-stubs #'bcat-commentary-test--verse-answers
+      (bcat-sentence-test--fetch-n src 36))
+    (let ((text (bcat-sentence-test--text-of (tibetan-sentence--filepath 36 folder src)))
+          (link (lambda (n) (format "[[file:../../Sthiramati/analysis/comm-IX.16-savbh.org::*Sentence %d][%d]]" n n))))
+      (should (string-match-p (regexp-quote (format "*Sthiramati:* lemmata in %s, %s\n\n⟦92⟧"
+                                                    (funcall link 258) (funcall link 259)))
+                              text))
+      (should (string-match-p (regexp-quote (format "*Sthiramati:* lemmata in %s, %s\n\n⟦93⟧"
+                                                    (funcall link 261) (funcall link 262)))
+                              text)))
+    (should (string-match-p (regexp-quote "*Sthiramati:* lemmata in [[file:../../Sthiramati/analysis/comm-IX.16-savbh.org::*Sentence 258][258]]")
+                            (bcat-sentence-test--text-of (tibetan-sentence--filepath 64 tfolder tsrc))))))
 
 (provide 'bcat-commentary-test)
 ;;; bcat-commentary-test.el ends here

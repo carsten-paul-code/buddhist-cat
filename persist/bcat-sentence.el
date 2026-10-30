@@ -198,9 +198,14 @@ its own), else the sentence itself; nil when there is none."
 (defun bcat-sentence-ensure-file (sent-num source-file)
   "The file that holds sentence SENT-NUM of the template source
 SOURCE-FILE, created (no AI) when missing — in verse mode the file of
-its verse; never overwritten.  nil when SOURCE-FILE has no template or
+its verse, in a commentary source the commentary document of its
+Section; never overwritten.  nil when SOURCE-FILE has no template or
 no such sentence."
-  (when (bcat-sentence-template-name source-file)
+  (cond
+   ((equal (bcat-sentence-template-name source-file) "commentary")
+    (require 'bcat-commentary)
+    (bcat-commentary-ensure-file sent-num source-file))
+   ((bcat-sentence-template-name source-file)
     (let ((owner (bcat-sentence-owner sent-num source-file)))
       (when owner
         (let ((file (tibetan-sentence--filepath (plist-get owner :sent-num)
@@ -209,7 +214,7 @@ no such sentence."
           (unless (file-exists-p file)
             (bcat-sentence-create-file (plist-get owner :sent-num) (plist-get owner :segs)
                                        source-file file))
-          file)))))
+          file))))))
 
 (defun bcat-sentence--bhasya-segs (sentence source-file)
   "The segments of the other sentences of SENTENCE's Section in
@@ -409,6 +414,30 @@ never Carsten's own „Übersetzung …“ rubric (as in the materializer)."
   (mapconcat (lambda (nb) (format "*%s:* %s" (car nb) (string-trim (cdr nb))))
              refs "\n\n"))
 
+(declare-function bcat-commentary-source "bcat-commentary" (source-file))
+(declare-function bcat-commentary-verse-links "bcat-commentary" (sent-num source-file assignment))
+(declare-function bcat-commentary-ensure-file "bcat-commentary" (sent-num commentary-source))
+
+(defun bcat-sentence--commentary-fields (sent-num source-file context &optional assignment)
+  "CONTEXT with the links to the commentary (MSA: Sthiramati, 30.10.)
+for the verse SENT-NUM of SOURCE-FILE — the header link, and per segment
+the commentary sentences with the lemmata of its pādas, once ASSIGNMENT
+\((TIB . SKT) …, from the Tibetan request) is known; CONTEXT itself for
+a source without commentary."
+  (if (not (and (bcat-sentence--verse-mode-p source-file)
+                (progn (require 'bcat-commentary) (bcat-commentary-source source-file))))
+      context
+    (let ((links (bcat-commentary-verse-links sent-num source-file assignment)))
+      (if (null links)
+          context
+        (append
+         `((segments . ,(mapcar (lambda (seg)
+                                  (let ((line (cdr (assq (bcat-analysis--num seg) links))))
+                                    (if line (cons (cons 'commentary line) seg) seg)))
+                                (alist-get 'segments context)))
+           (commentary-link . ,(cdr (assq :link links))))
+         context)))))
+
 (defun bcat-sentence-rump-context (sent-num segs source-file
                                             &optional extra-refs keep)
   "Template fields of the new sentence file SENT-NUM (SEGS = its
@@ -416,7 +445,9 @@ never Carsten's own „Übersetzung …“ rubric (as in the materializer)."
 EXTRA-REFS ((NAME . TEXT) …) are references beyond the reference
 files (pasted by hand); KEEP an alist of fields carried over from an
 existing file (user slots, `created')."
-  (bcat-sentence--with-source source-file
+  (bcat-sentence--commentary-fields
+   sent-num source-file
+   (bcat-sentence--with-source source-file
     (let* ((name (file-name-nondirectory source-file))
            (date (format-time-string "%Y-%m-%d"))
            (template (bcat-sentence-template-name source-file))
@@ -444,7 +475,7 @@ existing file (user slots, `created')."
          (glosses . ,(bcat-analysis-glosses-p segments))
          (comparison . ,(bcat-sentence--comparison
                          (append (bcat-sentence--references sent-num source-file)
-                                 extra-refs))))))))
+                                 extra-refs)))))))))
 
 (defun bcat-sentence-create-file (sent-num segs source-file filepath
                                            &optional extra-refs keep)
@@ -881,15 +912,20 @@ compared are REFS as sent, marked from the answer's segment parts."
                                  #'bcat-analysis-sanskrit-context
                                #'bcat-analysis-context)
                              base parsed refs)))
-       (if tibetan (bcat-analysis-bilingual-context context tibetan) context)))))
+       (if tibetan
+           (let ((both (bcat-analysis-bilingual-context context tibetan)))
+             (bcat-sentence--commentary-fields (plist-get sentence :sent-num) source-file both
+                                               (alist-get 'assignment both)))
+         context)))))
 
-(defun bcat-sentence--write-partner (sentence source-file tibetan trefs sanskrit &optional hint)
+(defun bcat-sentence--write-partner (sentence source-file tibetan trefs sanskrit &optional hint assignment)
   "Write the Tibetan file of the bilingual SENTENCE of the paired
 SOURCE-FILE (Carsten 30.10.: „das volle Programm“): the Tibetan analysis
 from TIBETAN, the answer of the Tibetan request (TREFS the references
 sent with it), with the Sanskrit segments SANSKRIT as the Sanskrit file
-has them, HINT the hint on the bhāṣya from the Sanskrit answer.
-Returns the file."
+has them, HINT the hint on the bhāṣya from the Sanskrit answer,
+ASSIGNMENT the Tibetan segments' Sanskrit ones (for the commentary
+links).  Returns the file."
   (let* ((n (plist-get sentence :sent-num))
          (parallel (bcat-sentence-parallel-source source-file))
          ;; The Tibetan sentence's own number (MSA: 64 for the Sanskrit 36).
@@ -899,8 +935,11 @@ Returns the file."
      tfile (plist-get other :sent-num) (plist-get other :segs) parallel
      (lambda (base)
        (cons (cons 'bhasya-hint hint)
-             (bcat-analysis-partner-context (bcat-analysis-context base tibetan trefs)
-                                            tibetan sanskrit))))
+             (bcat-sentence--commentary-fields
+              (plist-get other :sent-num) parallel
+              (bcat-analysis-partner-context (bcat-analysis-context base tibetan trefs)
+                                             tibetan sanskrit)
+              assignment))))
     tfile))
 
 (defun bcat-sentence--land (file sentence source-file refs response)
@@ -955,7 +994,8 @@ FILE as the Sanskrit answer left it when the answer is unreadable."
         (when (bcat-sentence--paired-p source-file)
           (bcat-sentence--write-partner sentence source-file tibetan trefs
                                         (alist-get 'segments context)
-                                        (alist-get 'bhasya-hint context))))
+                                        (alist-get 'bhasya-hint context)
+                                        (alist-get 'assignment context))))
       (bcat-status-step file :tibetan "Tibetisch ✓")
       (run-hook-with-args 'bcat-sentence-after-fetch-functions file)
       file)))

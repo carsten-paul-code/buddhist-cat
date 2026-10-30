@@ -35,7 +35,9 @@ usw.; im PDF nicht gedruckt) bhasya-p bhasya-sanskrit (num devanagari samhita) b
 uchen wylie) bhasya-sanskrit-p bhasya-tibetan-p bhasya-hint — im
 Versmodus (MSA, :VERSE:) die übrigen Sätze der Section, Carsten 30.10.:
 „im Vers als zusätzliche Section (unten) mit Text und hint“;
-working-translation my-notes footnotes.
+commentary-link (Kopf: das Kommentardokument) commentary (je Segment: die
+Kommentarsätze mit den Lemmata seiner Pādas, „*Sthiramati:* lemmata in
+258, 259“); working-translation my-notes footnotes.
 Grammatische Begriffe nach der Devavāṇīpraveśikā.
 #+end_comment
 #+TITLE: Sentence {{sent-num}} Analysis
@@ -46,6 +48,7 @@ Grammatische Begriffe nach der Devavāṇīpraveśikā.
 #+CAT_TEMPLATE: bilingual
 #+SOURCE: {{source-link}}
 #+CAT_PARALLEL: {{parallel-link}}
+#+CAT_COMMENTARY: {{commentary-link}}
 #+SEGMENTS: {{segment-list}}
 #+CAT_PARALLEL_SEGMENTS: {{parallel-segment-list}}
 #+TIBETAN_HASH: {{hash}}
@@ -114,6 +117,8 @@ Grammatische Begriffe nach der Devavāṇīpraveśikā.
 {{/tibetan-block}}
 
 *Differences:* {{differences}}
+
+{{commentary}}
 
 {{translations}}
 
