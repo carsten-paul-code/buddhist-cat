@@ -500,7 +500,7 @@ reMarkable (the hook runs for the verse file and the commentary)."
           (should (string-match-p (regexp-quote "[92]]) — in his own wording\n\n⟦630⟧") text))
           (should (string-match-p (regexp-quote "[92]]) — Sthiramati reads /bzhin/ for /ba/") text))
           (should (string-match-p "^\\*\\* Translation\nTo show the example: „Just as, when" text))
-          (should-not (bcat-sentence-fetch-state doc '(626 627 628 629 630 631 632 633 634 635))))
+          (should-not (bcat-commentary-incomplete-p "Section IX.16" csrc)))
         (should (member doc done))
         (should (member (tibetan-sentence--filepath 36 folder src) done)))
       (should (string-match-p "lemmata in .*\\]\\[258\\]\\], .*\\]\\[259\\]\\], .*\\]\\[260\\]\\]\n\n⟦92⟧"
@@ -545,6 +545,20 @@ segments (references per segment)."
                                         (string-match-p "ཞེས་བྱ་བ་སྨོས་ཏེ" t)))
                        dm-texts)))))
 
+(ert-deftest bcat-commentary-missing-dharmamitra-no-new-analysis ()
+  "DharmaMitra missing (daily limit) in the Tibetan partner file or in
+the commentary must not make C-c u G analyse the verse or the
+commentary anew — that costs Claude requests; only a missing analysis
+does."
+  (bcat-commentary-test--with-msa
+    (bcat-sentence-test--with-stubs #'bcat-commentary-test--answers
+      (bcat-sentence-test--fetch-n src 36))
+    (bcat-sentence-test--without-dm (bcat-sentence-partner-file 36 src))
+    (bcat-sentence-test--without-dm (expand-file-name "comm-IX.16-savbh.org" cfolder))
+    (should-not (bcat-sentence--pair-state (tibetan-sentence--filepath 36 folder src)
+                                           (bcat-sentence--sentence 36 src) src))
+    (should-not (bcat-commentary-incomplete-p "Section IX.16" csrc))))
+
 (ert-deftest bcat-commentary-fetch-in-parts ()
   "A long commentary goes in parts (IX.8: 72 sentences): at most
 `bcat-commentary-chunk-segments' segments per request, at sentence
@@ -557,8 +571,7 @@ all have."
         (should (equal '("bcat-commentary-1" "bcat-commentary-2" "bcat-commentary-3")
                        (sort (cl-remove-if-not (lambda (k) (string-prefix-p "bcat-commentary" k)) kinds)
                              #'string<)))
-        (should-not (bcat-sentence-fetch-state (expand-file-name "comm-IX.16-savbh.org" cfolder)
-                                               '(626 627 628 629 630 631 632 633 634 635)))))))
+        (should-not (bcat-commentary-incomplete-p "Section IX.16" csrc))))))
 
 (ert-deftest bcat-commentary-fetch-only-what-is-missing ()
   "The verse analysed, the commentary not (or the other way round):

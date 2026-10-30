@@ -545,11 +545,12 @@ segments, cut between sentences."
   "Non-nil while the commentary document of SECTION is missing or not
 fully analysed."
   (let ((doc (bcat-commentary-file section commentary-source)))
+    ;; Only a missing analysis counts — not a missing DharmaMitra (30.10.:
+    ;; its daily limit; that would cost the whole commentary again).
     (or (not (file-exists-p doc))
-        (bcat-sentence-fetch-state
-         doc (cl-loop for s in (bcat-commentary--sentences section commentary-source)
-                      append (mapcar #'car (plist-get s :segs))))
-        nil)))
+        (eq 'full (bcat-sentence-fetch-state
+                   doc (cl-loop for s in (bcat-commentary--sentences section commentary-source)
+                                append (mapcar #'car (plist-get s :segs))))))))
 
 (defvar bcat-commentary--runs (make-hash-table :test #'equal)
   "Commentary document → the plist of its running C-c u G.")

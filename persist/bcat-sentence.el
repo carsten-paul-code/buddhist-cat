@@ -718,6 +718,8 @@ stripped."
 `full' while a segment has no ⟦N⟧ translation, or — a bilingual file
 — while no segment names its counterpart („· Tib. 77“, „· Skt. 22“;
 the Tibetan request needs the Sanskrit answer, so both again);
+`dm' when DharmaMitra is missing (30.10.: analysed while its daily
+limit held — fetched alone and placed by the alignment request);
 `align' when a reference under Translations compared appears in no
 segment (added by hand); nil when the file is complete."
   (let ((text (bcat-sentence--text file)))
@@ -727,6 +729,7 @@ segment (added by hand); nil when the file is complete."
      ((and (string-match-p "^#\\+CAT_PARALLEL_SEGMENTS:[ \t]*[0-9]" text)
            (not (string-match-p "^\\*\\* Segment [0-9]+ · \\(?:Tib\\|Skt\\)\\. " text)))
       'full)
+     ((not (string-match-p "^\\*DharmaMitra:\\* " text)) 'dm)
      ((bcat-sentence--unaligned file) 'align))))
 
 ;; ----------------------------------------------------------------------------
@@ -1095,10 +1098,50 @@ while the Tibetan file is not complete: both files come from the same
 two requests."
   (let* ((n (plist-get sentence :sent-num))
          (tsegs (bcat-sentence--parallel-segs n source-file)))
-    (if (and tsegs (bcat-sentence-fetch-state (bcat-sentence-partner-file n source-file)
-                                              (mapcar #'car tsegs)))
+    ;; The partner's missing DharmaMitra alone is no reason for both
+    ;; Claude requests again (30.10.).
+    (if (and tsegs (memq (bcat-sentence-fetch-state (bcat-sentence-partner-file n source-file)
+                                                    (mapcar #'car tsegs))
+                         '(full align)))
         'full
       (bcat-sentence-fetch-state file (mapcar #'car (plist-get sentence :segs))))))
+
+(defun bcat-sentence--add-compared (file name text)
+  "Add the paragraph *NAME:* TEXT at the end of ** Translations compared
+in FILE (before the next heading)."
+  (let ((content (bcat-sentence--text file)))
+    (with-temp-buffer
+      (insert content)
+      (goto-char (point-min))
+      (when (re-search-forward "^\\*\\* Translations compared\n" nil t)
+        (goto-char (if (re-search-forward "^\\*+ " nil t) (line-beginning-position) (point-max)))
+        (skip-chars-backward " \t\n")
+        (insert (format "\n\n*%s:* %s" name text))
+        (bcat-sentence--save-visit file)
+        (bcat-sentence--write file (buffer-string))))))
+
+(defun bcat-sentence--dm-one (file sentence source-file)
+  "DharmaMitra was missing in the analysed FILE (30.10.: its daily limit):
+fetch it alone (staggered like every sentence-level DharmaMitra call);
+with a translation add it under Translations compared and place it with
+ONE small alignment request — no new analysis; without, the status says
+why and nothing goes to Claude."
+  (let ((delay (* (if (boundp 'tibetan-sentence-claude--dm-schedule-count)
+                      tibetan-sentence-claude--dm-schedule-count 0)
+                  (if (boundp 'tibetan-dharmamitra-sentence-request-delay)
+                      tibetan-dharmamitra-sentence-request-delay 6.5))))
+    (when (boundp 'tibetan-sentence-claude--dm-schedule-count)
+      (cl-incf tibetan-sentence-claude--dm-schedule-count))
+    (bcat-status-step file :dm "DharmaMitra …")
+    (run-at-time
+     delay nil
+     (lambda ()
+       (let ((dm (bcat-sentence--dharmamitra file sentence)))
+         (bcat-status-step file :dm (bcat-sentence--dm-status dm))
+         (when dm
+           (bcat-sentence--add-compared file "DharmaMitra" dm)
+           (bcat-sentence--align-one file sentence source-file)))))
+    'fired))
 
 (defun bcat-sentence--fetch-one (file sentence source-file)
   "Schedule the analysis of SENTENCE into FILE: DharmaMitra first
@@ -1236,6 +1279,7 @@ from the same requests.  Returns (:sentences N :fired N :complete N
               (when (eq 'fired
                         (pcase (cdr c)
                           ('align (bcat-sentence--align-one (funcall file-of (car c)) (car c) src))
+                          ('dm (bcat-sentence--dm-one (funcall file-of (car c)) (car c) src))
                           ('commentary 'fired)
                           (_ (bcat-sentence--fetch-one (funcall file-of (car c)) (car c) src))))
                 (cl-incf fired))

@@ -806,6 +806,63 @@ file is complete afterwards, the hook (C-c u H) runs."
           (should-not (bcat-sentence-fetch-state file '(38 39)))
           (should (equal (list file) done)))))))
 
+(defconst bcat-sentence-test--dm-align-answer
+  (concat "{\"segments\": ["
+          "{\"num\": 38, \"references\": [{\"name\": \"DharmaMitra\", \"text\": \"Inexpressible and invisible,\"}], \"shift\": \"\"},"
+          "{\"num\": 39, \"references\": [{\"name\": \"DharmaMitra\", \"text\": \"unchanging and unconditioned\"}], \"shift\": \"\"}],"
+          " \"comparison\": \"\"}")
+  "Alignment answer placing DharmaMitra's translation.")
+
+(defun bcat-sentence-test--without-dm (file)
+  "Remove every DharmaMitra paragraph and line from FILE."
+  (let ((text (bcat-sentence-test--text-of file)))
+    (with-temp-file file
+      (insert (replace-regexp-in-string "^\\*DharmaMitra:\\*.*\\(?:\n\\|\\'\\)" "" text)))))
+
+(ert-deftest bcat-sentence-fetch-fills-missing-dharmamitra ()
+  "Carsten 30.10.: „C-c u G sollte Dharma Mitra ggf. auch Claude
+abholen, wenn sie leer sind.“  TĀ 1000–1007 were analysed while
+DharmaMitra's daily limit held — complete, but without DharmaMitra, and
+C-c u G called them complete.  Such a file is `dm': C-c u G fetches
+DharmaMitra alone and places it with ONE small alignment request (no
+new analysis); the file is complete afterwards, the hook (C-c u H) runs.
+While the limit holds: no Claude request, the status says why."
+  (bcat-sentence-test--with-source
+    (bcat-sentence-test--create src)
+    (let ((file (tibetan-sentence--filepath 9 folder src)))
+      (bcat-sentence-test--with-stubs bcat-sentence-test--answer
+        (bcat-sentence-test--fetch src))
+      (bcat-sentence-test--without-dm file)
+      (should (eq 'dm (bcat-sentence-fetch-state file '(38 39))))
+      ;; The limit holds: nothing for Claude.
+      (let ((bcat-status-show nil) (bcat-status--entries (make-hash-table :test 'equal)))
+        (bcat-sentence-test--with-stubs bcat-sentence-test--dm-align-answer
+          (cl-letf (((symbol-function 'tibetan-dharmamitra-api-chat-translate) (lambda (&rest _) nil))
+                    ((symbol-function 'tibetan-dharmamitra-api-limit-reached-p) (lambda () t)))
+            (bcat-sentence-test--fetch src))
+          (should (= 0 submits))
+          (should (string-match-p "DharmaMitra: Tageslimit erreicht"
+                                  (with-current-buffer bcat-status-buffer-name (buffer-string))))
+          (kill-buffer bcat-status-buffer-name)))
+      (should (eq 'dm (bcat-sentence-fetch-state file '(38 39))))
+      ;; DharmaMitra answers: one alignment request, no analysis.
+      (let ((dm-calls 0))
+        (bcat-sentence-test--with-stubs bcat-sentence-test--dm-align-answer
+          (cl-letf (((symbol-function 'tibetan-dharmamitra-api-chat-translate)
+                     (lambda (&rest _) (cl-incf dm-calls) "Inexpressible and invisible, unchanging and unconditioned.")))
+            (bcat-sentence-test--fetch src))
+          (should (= 1 dm-calls))
+          (should (equal '("bcat-align") kinds))
+          (should (string-match-p "=== DharmaMitra ===\nInexpressible" (cdr (car prompts))))
+          (let ((text (bcat-sentence-test--file-text src)))
+            (should (string-match-p "^\\*DharmaMitra:\\* Inexpressible and invisible, unchanging" text))
+            (should (string-match-p "^\\*DharmaMitra:\\* Inexpressible and invisible,$" text))
+            (should (< (string-match "^\\*\\* Translations compared" text)
+                       (string-match "^\\*DharmaMitra:\\* Inexpressible and invisible, unchanging" text)
+                       (string-match "^\\* Working Translation" text))))
+          (should-not (bcat-sentence-fetch-state file '(38 39)))
+          (should (equal (list file) done)))))))
+
 ;; ----------------------------------------------------------------------------
 ;; Sanskrit (§5.74, Carsten 29.10.)
 ;; ----------------------------------------------------------------------------
