@@ -291,6 +291,27 @@ file.  Other sections at the end stay in the PDF."
                            "* Eigene Liste\nL\n")
                    (buffer-string)))))
 
+(ert-deftest bcat-export-pdf-broken-link ()
+  "30.10., MSA IX.60: one link without target in Claude's text (\"ni
+[[topic]]\") aborted the whole export — no PDF of the commentary.  A
+link that resolves nowhere is marked in the PDF, the PDF comes."
+  (skip-unless (executable-find "lualatex"))
+  (let* ((dir (make-temp-file "bcat-export-" t))
+         (file (expand-file-name "sent-009-bden.org" dir)))
+    (unwind-protect
+        (progn
+          (copy-file (expand-file-name "../Templates/analysis/samples/Tibetan.org"
+                                       (file-name-directory (locate-library "bcat-export-test")))
+                     file)
+          (with-temp-buffer
+            (insert-file-contents file)
+            (goto-char (point-max))
+            (insert "\n* Working Translation\nni [[topic]] chos\n")
+            (write-region (point-min) (point-max) file nil 0))
+          (should (file-exists-p (bcat-export-pdf file nil))))
+      (let ((buf (get-file-buffer file))) (when buf (kill-buffer buf)))
+      (delete-directory dir t))))
+
 (ert-deftest bcat-export-pdf-smoke ()
   "Real LuaLaTeX run (only where lualatex is installed): the reviewed
 Tibetan sample becomes a PDF and the .tex is cleared away; kept on

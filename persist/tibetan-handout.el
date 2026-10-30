@@ -1271,6 +1271,7 @@ never overwritten (user-error) — a generated one is regenerated."
       out)))
 
 (defvar org-latex-pdf-process)
+(defvar org-export-with-broken-links)
 (declare-function org-latex-export-to-pdf "ox-latex")
 (declare-function bcat-export-remove-tex "bcat-export" (pdf))
 
@@ -1286,7 +1287,8 @@ neither breaks nor is changed.  The .tex goes once the PDF is there
         (with-current-buffer buf
           (let ((org-latex-pdf-process
                  '("%latex -interaction nonstopmode -output-directory %o %f"
-                   "%latex -interaction nonstopmode -output-directory %o %f")))
+                   "%latex -interaction nonstopmode -output-directory %o %f"))
+                (org-export-with-broken-links 'mark))
             (let ((pdf (expand-file-name (org-latex-export-to-pdf)
                                          (file-name-directory org-file))))
               (if (fboundp 'bcat-export-remove-tex) (bcat-export-remove-tex pdf) pdf))))
