@@ -343,9 +343,9 @@ ran off the page."
 (defun bcat-export--missing-characters (log)
   "The characters LuaLaTeX's LOG reports missing, ((CHAR . FONT) …) in
 order, each once — 30.10., TĀ 1001: ¦ came out as a box, and the status
-said „PDF ✓“."
+said „PDF ✓“.  The log quotes the font: in font \"name:Times New Roman:…\"."
   (let ((pos 0) (out '()))
-    (while (string-match "Missing character: There is no \\(.\\) (U\\+[0-9A-F]+) in font \\(?:name:\\)?\\([^:/;!]+\\)" log pos)
+    (while (string-match "Missing character: There is no \\(.\\) (U\\+[0-9A-F]+) in font \"?\\(?:name:\\)?\\([^:/;!\"]+\\)" log pos)
       (let ((hit (cons (match-string 1 log) (string-trim (match-string 2 log)))))
         (setq pos (match-end 0))
         (unless (member hit out) (push hit out))))
@@ -353,10 +353,19 @@ said „PDF ✓“."
 
 (defun bcat-export--missing-text (missing)
   "MISSING ((CHAR . FONT) …) for the status line: „¦ (Noto Sans
-Devanagari)“, the characters of one font together."
+Devanagari)“, the characters of one font together, an invisible one
+by its code („U+009A“)."
   (mapconcat (lambda (font)
                (format "%s (%s)"
-                       (mapconcat #'car (cl-remove-if-not (lambda (m) (equal (cdr m) font)) missing) " ")
+                       (mapconcat (lambda (m)
+                                    ;; An invisible character by its code
+                                    ;; (30.10.: U+009A from a mis-decoded „Ś“).
+                                    (let ((c (string-to-char (car m))))
+                                      (if (memq (get-char-code-property c 'general-category) '(Cc Cf Zs))
+                                          (format "U+%04X" c)
+                                        (car m))))
+                                  (cl-remove-if-not (lambda (m) (equal (cdr m) font)) missing)
+                                  " ")
                        font))
              (delete-dups (mapcar #'cdr missing))
              ", "))

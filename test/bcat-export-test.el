@@ -289,6 +289,16 @@ the status line names the missing characters."
                   (concat "Missing character: There is no ¦ (U+00A6) in font name:Noto Sans Devanagari:mode=harf;script=dev2;language=dflt;!\n"
                           "Missing character: There is no ¦ (U+00A6) in font name:Noto Sans Devanagari:mode=harf;!\n"
                           "Missing character: There is no ⏑ (U+23D1) in font Times New Roman/OT:script=latn;!\n"))))
+  ;; The real log quotes the font (30.10., TĀ 1.1 with Sanderson): the
+  ;; first version read the font as „"name“.  An invisible character
+  ;; (U+009A, from a mis-decoded „Ś“ in a transcript) is named by its
+  ;; code in the status.
+  (let ((real (concat "Missing character: There is no \u009a (U+009A) in font \"name:Times New Roman:mode=node;script=latn;language=dflt;\"!\n"
+                      "Missing character: There is no ¦ (U+00A6) in font \"name:Noto Sans Devanagari:mode=harf;script=dev2;\"!\n")))
+    (should (equal '(("\u009a" . "Times New Roman") ("¦" . "Noto Sans Devanagari"))
+                   (bcat-export--missing-characters real)))
+    (should (equal "U+009A (Times New Roman), ¦ (Noto Sans Devanagari)"
+                   (bcat-export--missing-text (bcat-export--missing-characters real)))))
   (should-not (bcat-export--missing-characters "Output written on x.pdf (7 pages).\n"))
   (bcat-sentence-test--with-source
     (bcat-sentence-test--create src)
