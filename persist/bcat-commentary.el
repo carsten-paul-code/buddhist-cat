@@ -24,6 +24,7 @@
 (require 'bcat-analysis)
 
 (require 'bcat-status)
+(require 'bcat-parallel)
 
 (declare-function tibetan-analysis-make-short-name "tibetan-analysis-persist" (source-file))
 (declare-function tibetan-analysis--read-source-metadata "tibetan-analysis-claude" (source-file))
@@ -778,6 +779,101 @@ status line shows the progress.  Nothing while one runs already."
         (bcat-commentary--status run "DharmaMitra …")
         (run-at-time 0 nil #'bcat-commentary--dharmamitra run sentences)
         doc))))
+
+;; ----------------------------------------------------------------------------
+;; C-c u K: between verse and commentary (Carsten 30.10.: „Links in den
+;; Versen und Kommentaren zu den entsprechenden Stellen“)
+;; ----------------------------------------------------------------------------
+
+(defun bcat-commentary--link-target (link from)
+  "The file and search option of the org LINK „[[file:PATH::OPT][…]]“,
+PATH relative to FROM's folder: (FILE . OPT), OPT nil when absent."
+  (when (and link (string-match "\\[\\[file:\\([^]:]+\\)\\(?:::\\([^]]+\\)\\)?\\]" link))
+    (cons (expand-file-name (match-string 1 link) (file-name-directory from))
+          (match-string 2 link))))
+
+(defun bcat-commentary--block-at-point ()
+  "The `** Segment N' block point is in as (N . TEXT), or nil."
+  (save-excursion
+    (end-of-line)
+    (when (and (re-search-backward "^\\*\\{1,2\\} " nil t)
+               (looking-at "^\\*\\* Segment \\([0-9]+\\)\\b"))
+      (let ((n (string-to-number (match-string 1)))
+            (start (point)))
+        (forward-line 1)
+        (cons n (buffer-substring-no-properties
+                 start (if (re-search-forward "^\\*\\{1,2\\} " nil t) (match-beginning 0) (point-max))))))))
+
+(defun bcat-commentary--visit-lemma (doc seg tibetan)
+  "Show the commentary document DOC at the first segment whose lemma is
+the verse segment SEG (TIBETAN: a Tibetan pāda, else a Sanskrit
+segment), or at its top."
+  (bcat-parallel--visit doc nil)
+  (when (and seg
+             (re-search-forward
+              (if tibetan
+                  (format "^\\*Lemma:\\* verse, .*\\]\\[Tib\\. %d\\]\\]" seg)
+                (format "^\\*Lemma:\\* verse, .*(Skt\\. \\[\\[[^]]*\\]\\[%d\\]\\])" seg))
+              nil t)
+             (re-search-backward "^\\*\\* Segment " nil t))
+    (beginning-of-line)
+    (when (fboundp 'org-reveal) (ignore-errors (org-reveal)))))
+
+(defun bcat-commentary--source-jump (file)
+  "C-c u K in the source FILE: verse ↔ the commentary's Section."
+  (let* ((place (or (bcat-parallel--source-place) (user-error "Kein Satz an Punkt")))
+         (label (plist-get (bcat-sentence--sentence (car place) file) :section-label)))
+    (if (equal (bcat-sentence-template-name file) "commentary")
+        (let* ((lead (bcat-commentary-lead file))
+               (verse (car (and label (bcat-commentary--verses label lead file)))))
+          (unless verse (user-error "Kein Vers zu %s" (or label "dieser Stelle")))
+          (bcat-parallel--visit lead (format "^\\*+ Sentence %d\\b" (plist-get verse :sent-num))))
+      (let* ((lead (if (equal (bcat-sentence-template-name file) "bilingual-tibetan")
+                       (bcat-sentence-parallel-source file)
+                     file))
+             (csrc (and lead (bcat-commentary-source lead)))
+             (section (and csrc label (bcat-commentary-section label lead csrc))))
+        (unless csrc
+          (user-error "%s nennt keinen Kommentar (#+CAT_COMMENTARY)" (file-name-nondirectory file)))
+        (unless section (user-error "Kein Kommentar zu %s" (or label "dieser Stelle")))
+        (bcat-parallel--visit csrc (format "^\\*+ %s$" (regexp-quote section)))))))
+
+;;;###autoload
+(defun bcat-commentary-jump ()
+  "C-c u K: between a verse and its commentary — the counterpart of
+C-c u J (Carsten 30.10.).  In a verse file: the commentary document, at
+the first segment that quotes the segment at point.  In the commentary
+document: from a segment with a lemma to the Tibetan pāda it quotes,
+else to the first verse.  In a source: the other source — from a verse
+to the commentary's Section, from the commentary to its verse."
+  (interactive)
+  (let* ((file (or (buffer-file-name) (user-error "Buffer besucht keine Datei")))
+         (template (bcat-sentence-file-p file)))
+    (cond
+     ((equal template "commentary")
+      (let* ((block (bcat-commentary--block-at-point))
+             (lemma (and block (string-match "^\\*Lemma:\\* verse, \\(\\[\\[[^]]+\\]\\[Tib\\. [0-9]+\\]\\]\\)"
+                                             (cdr block))
+                         (bcat-commentary--link-target (match-string 1 (cdr block)) file)))
+             (verse (bcat-commentary--link-target (bcat-sentence--header-value file "CAT_VERSE") file))
+             (target (or lemma verse (user-error "%s nennt keinen Vers" (file-name-nondirectory file)))))
+        (unless (file-exists-p (car target))
+          (user-error "%s fehlt noch — C-c u G" (file-name-nondirectory (car target))))
+        (bcat-parallel--visit (car target)
+                              (and lemma (cdr lemma) (string-match "Segment \\([0-9]+\\)" (cdr lemma))
+                                   (format "^\\*\\* Segment %s\\b" (match-string 1 (cdr lemma)))))))
+     ((assoc template bcat-sentence--pair-templates)
+      (let* ((doc (car (bcat-commentary--link-target
+                        (bcat-sentence--header-value file "CAT_COMMENTARY") file))))
+        (unless doc
+          (user-error "%s hat keinen Kommentar (#+CAT_COMMENTARY)" (file-name-nondirectory file)))
+        (unless (file-exists-p doc)
+          (user-error "%s fehlt noch — C-c u A oder C-c u G" (file-name-nondirectory doc)))
+        (bcat-commentary--visit-lemma doc (car (bcat-commentary--block-at-point))
+                                      (equal template "bilingual-tibetan"))))
+     ((bcat-sentence-template-name file)
+      (bcat-commentary--source-jump file))
+     (t (user-error "%s ist weder Vers noch Kommentar" (file-name-nondirectory file))))))
 
 (provide 'bcat-commentary)
 ;;; bcat-commentary.el ends here

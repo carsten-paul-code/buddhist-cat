@@ -559,5 +559,48 @@ the verses it covers (`bcat-sentence-fetch')."
               (should (equal "Sthiramati zu MSA IX.16, MSA IX.17" (plist-get scope :label))))
           (kill-buffer))))))
 
+(defun bcat-commentary-test--jump-from (file heading)
+  "Run C-c u K in FILE with point on the line matching HEADING (nil: the
+top); return (FILE . LINE) where it lands."
+  (with-current-buffer (find-file-noselect file)
+    (goto-char (point-min))
+    (when heading (re-search-forward heading))
+    (save-window-excursion
+      (bcat-commentary-jump)
+      (cons (buffer-file-name)
+            (buffer-substring-no-properties (line-beginning-position) (line-end-position))))))
+
+(ert-deftest bcat-commentary-jump ()
+  "C-c u K, Carsten 30.10.: „Links in den Versen und Kommentaren zu den
+entsprechenden Stellen“ — the counterpart of C-c u J between the verse
+and its commentary.  From a verse segment to the first commentary
+segment that quotes it (its *Lemma:* line names it, Sanskrit or
+Tibetan); from a commentary segment with a lemma to the Tibetan pāda it
+quotes; elsewhere in the commentary to the first verse; in a source to
+the other source (verse ↔ the commentary's Section)."
+  (bcat-commentary-test--with-msa
+    (bcat-sentence-test--with-stubs #'bcat-commentary-test--answers
+      (bcat-sentence-test--fetch-n src 36))
+    (let ((doc (expand-file-name "comm-IX.16-savbh.org" cfolder))
+          (skt (tibetan-sentence--filepath 36 folder src))
+          (tib (bcat-sentence-partner-file 36 src)))
+      (unwind-protect
+          (progn
+            (should (equal (cons doc "** Segment 627")
+                           (bcat-commentary-test--jump-from skt "^\\*\\* Segment 92")))
+            (should (equal (cons doc "** Segment 628")
+                           (bcat-commentary-test--jump-from tib "^\\*\\* Segment 140")))
+            (should (equal (cons tib "** Segment 142 · Skt. 93")
+                           (bcat-commentary-test--jump-from doc "^\\*\\* Segment 633")))
+            (should (equal (car (bcat-commentary-test--jump-from doc nil)) skt))
+            (should (equal (cons csrc "** Section IX.16")
+                           (bcat-commentary-test--jump-from src "^\\*\\*\\*\\* Segment 93")))
+            (should (equal (cons csrc "** Section IX.16")
+                           (bcat-commentary-test--jump-from tsrc "^\\*\\*\\* Sentence 64")))
+            (should (equal (cons src "*** Sentence 36")
+                           (bcat-commentary-test--jump-from csrc "^\\*\\*\\* Sentence 259"))))
+        (dolist (f (list doc skt tib src tsrc csrc))
+          (let ((b (get-file-buffer f))) (when b (kill-buffer b))))))))
+
 (provide 'bcat-commentary-test)
 ;;; bcat-commentary-test.el ends here

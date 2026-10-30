@@ -106,6 +106,12 @@
   ;; in der Quelle zur Parallelquelle (Segment, sobald C-c u G die
   ;; Zuordnung kennt, sonst der Satz).
 
+(global-set-key (kbd "C-c u K") 'bcat-commentary-jump)
+  ;; §5.74 (Carsten 30.10.): Vers ↔ Kommentar (MSA mit Sthiramati) — in
+  ;; der Versdatei zum ersten Kommentarsegment, das das Segment an Punkt
+  ;; zitiert; im Kommentardokument vom Lemma zum tibetischen Pāda (sonst
+  ;; zum ersten Vers); in einer Quelle zur anderen Quelle.
+
 (global-set-key (kbd "C-c u G") 'tibetan-fetch)
   ;; §5.60 KI auf Abruf: C-c u A legt nur an/öffnet; C-c u G holt Claude
   ;; + DharmaMitra für den Satz an Punkt bzw. alle Sätze unter der

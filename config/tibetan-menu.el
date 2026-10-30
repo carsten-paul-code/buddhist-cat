@@ -102,6 +102,9 @@
      ["Zum Gegenstück in der anderen Sprache (C-c u J)" bcat-parallel-jump
       :help "Zweisprachiges Paar: vom Satz/Segment an Punkt zur Satzdatei bzw. Quelle der anderen Sprache"
       :active (fboundp 'bcat-parallel-jump)]
+     ["Zwischen Vers und Kommentar (C-c u K)" bcat-commentary-jump
+      :help "Vers ↔ Kommentar: von der Versdatei zum Kommentarsegment, das das Segment an Punkt zitiert; vom Lemma zum Pāda; in einer Quelle zur anderen"
+      :active (fboundp 'bcat-commentary-jump)]
      ["Nächster Satz (C-c u n)" tibetan-analysis-next-sentence
       :help "Analysedatei des nächsten Satzes öffnen"
       :active (fboundp 'tibetan-analysis-next-sentence)]
