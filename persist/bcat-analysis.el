@@ -464,6 +464,16 @@ into separate tables of at most `bcat-analysis-tibetan-table-width'.
                      (cl-loop for r below 3 collect (mapcar (lambda (col) (nth r col)) ch)))))
                  (nreverse chunks) "\n\n"))))
 
+(defun bcat-analysis--bracketed (word gloss)
+  "WORD followed by GLOSS in brackets.  A gloss Claude brackets itself
+loses its brackets, brackets inside become parentheses — „ni [[topic]]“
+is an org link (30.10., MSA IX.60: the commentary's export aborted)."
+  (let ((gl (string-trim gloss)))
+    (when (string-match "\\`\\[\\([^][]*\\)\\]\\'" gl)
+      (setq gl (match-string 1 gl)))
+    (format "%s [%s]" word
+            (replace-regexp-in-string "\\]" ")" (replace-regexp-in-string "\\[" "(" gl)))))
+
 (defun bcat-analysis-glossed-line (wylie words)
   "WYLIE (one verse line, its shad at the end) with each of WORDS
 \(alists with wylie, gloss, function) followed by its gloss in
@@ -489,7 +499,7 @@ WORDS do not cover its syllables exactly: the text is never altered."
                            (show (cond ((bcat-analysis--particle-p w) fn)
                                        ((member gl '("" "?")) "")
                                        (t gl))))
-                      (if (string-empty-p show) wy (format "%s [%s]" wy show))))
+                      (if (string-empty-p show) wy (bcat-analysis--bracketed wy show))))
                   words " ")
        (if (string-empty-p tail) "" (concat " " (string-trim tail)))))))
 
@@ -708,7 +718,7 @@ closes the line set close (30.10.).  nil without words."
       (concat (mapconcat (lambda (w)
                            (let ((wd (bcat-analysis--field w 'word))
                                  (gl (bcat-analysis--field w 'gloss)))
-                             (if (or plain (string-empty-p gl)) wd (format "%s [%s]" wd gl))))
+                             (if (or plain (string-empty-p gl)) wd (bcat-analysis--bracketed wd gl))))
                          words " ")
               (cond ((null close) "")
                     ((string-prefix-p "." close) close)

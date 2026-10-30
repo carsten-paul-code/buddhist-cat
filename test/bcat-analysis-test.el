@@ -348,6 +348,23 @@ nothing."
     (should (equal text (bcat-analysis-mark-reference text nil)))
     (should (equal text (bcat-analysis-mark-reference text '("no *such* part"))))))
 
+(ert-deftest bcat-analysis-glossed-line-never-a-link ()
+  "30.10., MSA IX.60 (Sthiramati 1783): Claude glossed the particle /ni/
+as \"[topic]\" — brackets included — and the verse line read
+„ni [[topic]]“, an org link; the export of the commentary aborted
+(„Unable to resolve link: \"topic\"“) and no PDF came.  A gloss in
+its own brackets loses them; brackets inside a gloss become
+parentheses — in the Tibetan and in the Sanskrit line."
+  (let ((line (bcat-analysis-glossed-line
+               "rang bzhin ni chos/"
+               '(((wylie . "rang bzhin") (gloss . "[nature]") (function . "N"))
+                 ((wylie . "ni") (gloss . "[topic]") (function . "TOP"))
+                 ((wylie . "chos") (gloss . "the [other] two") (function . "N"))))))
+    (should (equal "rang bzhin [nature] ni [topic] chos [the (other) two] /" line))
+    (should-not (string-match-p "\\[\\[\\|\\]\\]" line)))
+  (should (equal "atra [here] /"
+                 (bcat-analysis-padapatha-line "atra /" '(((word . "atra") (gloss . "[here]")))))))
+
 (ert-deftest bcat-analysis-glossed-line ()
   "Carsten 29.10.: translating segment by segment meant scrolling (on
 the reMarkable: turning pages) between the verse and the tables — „die
