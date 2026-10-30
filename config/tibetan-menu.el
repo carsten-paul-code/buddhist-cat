@@ -99,6 +99,9 @@
      ["Zur Quelle springen (C-c u j)" tibetan-analysis-jump-to-source
       :help "Aus dem Analyse-Buffer zum #+SOURCE-Heading der Quelle"
       :active (fboundp 'tibetan-analysis-jump-to-source)]
+     ["Zum Gegenstück in der anderen Sprache (C-c u J)" bcat-parallel-jump
+      :help "Zweisprachiges Paar: vom Satz/Segment an Punkt zur Satzdatei bzw. Quelle der anderen Sprache"
+      :active (fboundp 'bcat-parallel-jump)]
      ["Nächster Satz (C-c u n)" tibetan-analysis-next-sentence
       :help "Analysedatei des nächsten Satzes öffnen"
       :active (fboundp 'tibetan-analysis-next-sentence)]

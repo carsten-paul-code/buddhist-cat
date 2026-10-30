@@ -99,6 +99,13 @@
   ;; Jump from an analysis buffer back to its source heading
   ;; (follows the #+SOURCE link; sent / seg / par files alike).
 
+(global-set-key (kbd "C-c u J") 'bcat-parallel-jump)
+  ;; §5.74 (Carsten 30.10.): zweisprachiges Paar — vom Satz/Segment an
+  ;; Punkt zum Gegenstück in der anderen Sprache: in der Satzdatei zur
+  ;; Partnerdatei (Segment laut Überschrift „· Tib. 40–44“ / „· Skt. 17“),
+  ;; in der Quelle zur Parallelquelle (Segment, sobald C-c u G die
+  ;; Zuordnung kennt, sonst der Satz).
+
 (global-set-key (kbd "C-c u G") 'tibetan-fetch)
   ;; §5.60 KI auf Abruf: C-c u A legt nur an/öffnet; C-c u G holt Claude
   ;; + DharmaMitra für den Satz an Punkt bzw. alle Sätze unter der
