@@ -421,6 +421,29 @@ escaped so the table holds."
     (should (= 3 (length (split-string table "\n")))))
   (should (equal "" (bcat-analysis-gloss-table nil))))
 
+(ert-deftest bcat-analysis-gloss-table-split ()
+  "30.10., Sthiramati's prose: a segment of 23 words gave one table that
+ran far into the margin of the PDF.  The words go into several tables,
+in order, none wider than `bcat-analysis-tibetan-table-width' (each
+column its widest cell + 6); a short segment stays one table."
+  (let* ((words (cl-loop for i from 1 to 23
+                         collect `((wylie . ,(format "rnam par shes %02d" i))
+                                   (gloss . "consciousness")
+                                   (function . "N · ABS"))))
+         (table (bcat-analysis-gloss-table words))
+         (tables (split-string table "\n\n")))
+    ;; 6 + 16 = 22 per column: five columns (111) fit in 130, six (133) do not.
+    (should (= 5 (length tables)))
+    (should (equal '(5 5 5 5 3)
+                   (mapcar (lambda (tb) (1- (length (split-string tb "steinert:")))) tables)))
+    (should (equal (cl-loop for i from 1 to 23 collect (format "rnam par shes %02d" i))
+                   (let ((pos 0) (out '()))
+                     (while (string-match "\\]\\[\\([^]]+\\)\\]\\]" table pos)
+                       (push (match-string 1 table) out)
+                       (setq pos (match-end 0)))
+                     (nreverse out))))
+    (should (= 1 (length (split-string (bcat-analysis-gloss-table (last words 3)) "\n\n"))))))
+
 (ert-deftest bcat-analysis-context-partial-answer ()
   "A segment Claude did not return keeps its rump table; empty fields
 of a returned segment drop their lines; no references → no reference

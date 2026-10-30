@@ -410,26 +410,47 @@ member of compound“ — several syllables, so a word all the same."
   (let ((v (alist-get key alist)))
     (if (stringp v) (string-trim v) "")))
 
+(defcustom bcat-analysis-tibetan-table-width 130
+  "Widest table for the words of a Tibetan segment, counted as the
+characters of each column's widest cell (links by their text) plus 6
+per column for the space between columns; wider segments are split into
+several tables.  30.10., Sthiramati's prose: a segment of 23 words ran
+far into the margin of the PDF.  Measured: an AS table of 6 columns and
+71 characters fills 60 % of the page; it is the number of columns that
+costs room, so each one is charged."
+  :type 'integer
+  :group 'buddhist-cat)
+
 (defun bcat-analysis-gloss-table (words)
   "The three-row table of WORDS (Claude's word list): row 1 Wylie (with
-a Steinert link unless a particle), row 2 gloss, row 3 function.  \"\"
-for no words."
+a Steinert link unless a particle), row 2 gloss, row 3 function — split
+into separate tables of at most `bcat-analysis-tibetan-table-width'.
+\"\" for no words."
   (if (null words)
       ""
-    (let ((r1 '()) (r2 '()) (r3 '()))
+    (let ((chunks '()) (chunk '()) (used 1))
       (dolist (w words)
-        (let ((wy (bcat-analysis--field w 'wylie))
-              (fn (bcat-analysis--field w 'function)))
-          (push (if (bcat-analysis--particle-p w)
-                    (tibetan-gloss-table--cell wy)
-                  (format "[[steinert:%s][%s]]" wy (tibetan-gloss-table--cell wy)))
-                r1)
-          (push (tibetan-gloss-table--cell
-                 (or (tibetan-gloss-table--truncate-cell (bcat-analysis--field w 'gloss)) ""))
-                r2)
-          (push (tibetan-gloss-table--cell fn) r3)))
-      (string-trim-right
-       (tibetan-gloss-table--format-rows (list (nreverse r1) (nreverse r2) (nreverse r3)))))))
+        (let* ((wy (bcat-analysis--field w 'wylie))
+               (fn (bcat-analysis--field w 'function))
+               (gl (tibetan-gloss-table--cell
+                    (or (tibetan-gloss-table--truncate-cell (bcat-analysis--field w 'gloss)) "")))
+               (col (list (if (bcat-analysis--particle-p w)
+                              (tibetan-gloss-table--cell wy)
+                            (format "[[steinert:%s][%s]]" wy (tibetan-gloss-table--cell wy)))
+                          gl
+                          (tibetan-gloss-table--cell fn)))
+               (width (+ 6 (max (string-width wy) (string-width gl) (string-width fn)))))
+          (when (and chunk (> (+ used width) bcat-analysis-tibetan-table-width))
+            (push (nreverse chunk) chunks)
+            (setq chunk nil used 1))
+          (push col chunk)
+          (setq used (+ used width))))
+      (when chunk (push (nreverse chunk) chunks))
+      (mapconcat (lambda (ch)
+                   (string-trim-right
+                    (tibetan-gloss-table--format-rows
+                     (cl-loop for r below 3 collect (mapcar (lambda (col) (nth r col)) ch)))))
+                 (nreverse chunks) "\n\n"))))
 
 (defun bcat-analysis-glossed-line (wylie words)
   "WYLIE (one verse line, its shad at the end) with each of WORDS
