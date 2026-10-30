@@ -327,9 +327,14 @@ it is.  30.10., TĀ 1001: the metre table (19 syllables and the pause)
 ran off the page."
   (if (and (org-export-derived-backend-p backend 'latex)
            (string-match-p "\\\\begin{tabular}" text))
-      (concat "\\begin{adjustbox}{max width=\\linewidth}\n"
-              (string-trim-right text "\n+") "\n"
-              "\\end{adjustbox}\n")
+      ;; The blank line after the table stays (30.10.: cut, the next
+      ;; paragraph ran on beside the box — „Translation:“ in the table).
+      (let ((end (if (string-match "\n*\\'" text) (match-beginning 0) (length text))))
+        (concat "\\begin{adjustbox}{max width=\\linewidth}\n"
+                (substring text 0 end) "\n"
+                "\\end{adjustbox}"
+                (let ((tail (substring text end)))
+                  (if (string-empty-p tail) "\n" tail))))
     text))
 
 (defvar bcat-export--missing nil

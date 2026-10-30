@@ -265,6 +265,21 @@ comes with the header."
                                             'latex nil)))
   (should (string-match-p (regexp-quote "\\usepackage{adjustbox}") (bcat-export--font-lines))))
 
+(ert-deftest bcat-export-table-ends-paragraph ()
+  "30.10., TĀ 1002–1007: since 1f6da5b „⟦683⟧ Translation:“ hung on
+the segment table in the PDF — the table filter cut the blank line
+after the table, and the next paragraph ran on beside the adjustbox.
+The table keeps its blank line: in the LaTeX of a table and a
+paragraph, a blank line stands between them."
+  (should (string-suffix-p "\\end{adjustbox}\n\n"
+                           (bcat-export--table-filter
+                            "\\begin{tabular}{l}\na\\\\\n\\end{tabular}\n\n" 'latex nil)))
+  (require 'ox-latex)
+  (let* ((org-export-filter-table-functions (list #'bcat-export--table-filter))
+         (latex (org-export-string-as "| a | b |\n\n⟦683⟧ *Translation:* Not having heard\n"
+                                      'latex t)))
+    (should (string-match-p "\\\\end{adjustbox}\n\n+⟦683⟧" latex))))
+
 (ert-deftest bcat-export-missing-characters ()
   "30.10.: Satz 1001 showed boxes for ¦ and the status said „PDF ✓“ — a
 missing glyph is only a LaTeX warning.  The export reads the log:
