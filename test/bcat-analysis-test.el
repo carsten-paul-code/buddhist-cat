@@ -348,12 +348,24 @@ nothing."
     (should (equal text (bcat-analysis-mark-reference text nil)))
     (should (equal text (bcat-analysis-mark-reference text '("no *such* part"))))))
 
+(ert-deftest bcat-analysis-no-links-keeps-compound-brackets ()
+  "30.10.: 8646ec1 made every doubled bracket single — and would have
+flattened Claude's bracketing of Sanskrit compounds (TĀ sent-209, AS
+sent-3, TĀ sent-1015), which org never reads as a link.  Only what org
+takes for a link loses its doubled brackets."
+  (dolist (s '("parsed as [[tad-upāsā]-antika]-dūrataḥ."
+               "tatpuruṣa: [[[pañca-ākāra] ātmavastu] udbhāvanatā]-tām."
+               "[[[[kula + akula] + ubhaya]-cchaṭā]-ātmaka] + [hakāra + [ardha + ardha]-rūpa]]"))
+    (should (equal s (bcat-analysis-no-links s))))
+  (should (equal "ni [topic] chos" (bcat-analysis-no-links "ni [[topic]] chos")))
+  (should (equal "see [x][y] here" (bcat-analysis-no-links "see [[x][y]] here"))))
+
 (ert-deftest bcat-analysis-answers-carry-no-links ()
   "Carsten 30.10.: „broken links sollten eigentlich nicht entstehen
 können“.  No text from outside — Claude's answer, DharmaMitra's
 translation — can form an org link in a file: every string of a parsed
-answer loses its doubled brackets (IX.60: „[[topic]]“ aborted the
-export); single brackets stay."
+answer that org would read as a link loses its doubled brackets (IX.60:
+„[[topic]]“ aborted the export); single brackets stay."
   (let* ((parsed (bcat-analysis-parse
                   (concat "{\"segments\": [{\"num\": 1, \"words\": [{\"wylie\": \"ni\", \"gloss\": \"[[topic]]\"}],"
                           " \"note\": \"see [[x][y]] and [the other] two\","
@@ -364,7 +376,7 @@ export); single brackets stay."
     (cl-labels ((walk (x) (cond ((stringp x) (push x strings))
                                 ((consp x) (walk (car x)) (walk (cdr x))))))
       (walk parsed))
-    (should-not (cl-some (lambda (s) (string-match-p "\\[\\[\\|\\]\\]" s)) strings))
+    (should-not (cl-some (lambda (s) (string-match-p org-link-bracket-re s)) strings))
     (should (member "see [x][y] and [the other] two" strings))
     (should (member "[topic]" strings)))
   (should (equal "the [other] two." (bcat-analysis-no-links "the [[other]] two.")))

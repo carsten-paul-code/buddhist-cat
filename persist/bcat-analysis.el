@@ -23,6 +23,7 @@
 (require 'subr-x)
 (require 'json)
 (require 'seq)
+(require 'ol)
 
 (declare-function tibetan-gloss-table--cell "tibetan-gloss-table" (s))
 (declare-function tibetan-gloss-table--truncate-cell "tibetan-gloss-table" (gloss))
@@ -351,11 +352,16 @@ after 41 283 characters inside „grammar“)."
     (or in-string (> depth 0))))
 
 (defun bcat-analysis-no-links (text)
-  "TEXT without doubled square brackets — text from outside (Claude,
-DharmaMitra) never forms an org link in a file.  Carsten 30.10.:
-„broken links sollten eigentlich nicht entstehen können“ (MSA IX.60:
-„ni [[topic]]“ aborted the export of the commentary)."
-  (replace-regexp-in-string "\\]\\]+" "]" (replace-regexp-in-string "\\[\\[+" "[" text)))
+  "TEXT with every org link turned into plain brackets — „[[topic]]“ →
+„[topic]“, „[[x][y]]“ → „[x][y]“: text from outside (Claude,
+DharmaMitra) never forms a link in a file.  Carsten 30.10.: „broken
+links sollten eigentlich nicht entstehen können“ (MSA IX.60: „ni
+[[topic]]“ aborted the export of the commentary).  Only what org reads
+as a link (`org-link-bracket-re'): the bracketing of compounds,
+„[[[pañca-ākāra] ātmavastu] udbhāvanatā]“, stays as it is."
+  (replace-regexp-in-string org-link-bracket-re
+                            (lambda (link) (concat "[" (substring link 2 -2) "]"))
+                            text t t))
 
 (defun bcat-analysis--no-links-in (object)
   "OBJECT (a parsed answer) with `bcat-analysis-no-links' on every string."
