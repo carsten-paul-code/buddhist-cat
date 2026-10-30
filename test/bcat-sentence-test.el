@@ -532,6 +532,21 @@ compared)."
           (should (string-match-p "^\\* My Notes\nAlte Notiz\\.$" text))
           (should (string-match-p "^\\*Eigene 2026:\\* My own rendering of verse nine\\.$" text)))))))
 
+(ert-deftest bcat-sentence-status-dharmamitra-limit ()
+  "30.10., TĀ 1002–1007: „DharmaMitra –“ on every line, the reason
+(DharmaMitra's daily limit) only in *Messages*.  The status line says
+why."
+  (bcat-sentence-test--with-source
+    (let ((bcat-status-show nil)
+          (bcat-status--entries (make-hash-table :test 'equal)))
+      (bcat-sentence-test--with-stubs bcat-sentence-test--answer
+        (cl-letf (((symbol-function 'tibetan-dharmamitra-api-chat-translate) (lambda (&rest _) nil))
+                  ((symbol-function 'tibetan-dharmamitra-api-limit-reached-p) (lambda () t)))
+          (bcat-sentence-test--fetch src)))
+      (should (string-match-p "DharmaMitra: Tageslimit erreicht"
+                              (with-current-buffer bcat-status-buffer-name (buffer-string))))
+      (kill-buffer bcat-status-buffer-name))))
+
 (ert-deftest bcat-sentence-fetch-keeps-own-sections ()
   "30.10.: AS and MSA sentence files carry a `* Handout' section (the
 input of handout-synopse.py, corrected in class, with the SG 2015

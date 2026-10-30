@@ -268,6 +268,30 @@ HTTP call."
     (tibetan-dharmamitra-api-chat-translate "x")
     (should (= tibetan-dharmamitra-api-test--http-call-count 2))))
 
+(ert-deftest tibetan-dharmamitra-api-daily-limit ()
+  "30.10.: after 100 requests DharmaMitra answers every call with
+{\"error\":\"Daily rate limit exceeded.\",\"detail\":\"Per-client limit:
+100/day.\"} — and the tool went on asking, sentence after sentence.  The
+first such answer marks the limit for the day: later calls that day go
+out no more, `tibetan-dharmamitra-api-limit-reached-p' says why."
+  (tibetan-dharmamitra-api-clear-cache)
+  (setq tibetan-dharmamitra-api-test--http-call-count 0)
+  (let ((tibetan-dharmamitra-api--limit-day nil))
+    (cl-letf (((symbol-function 'tibetan-dharmamitra-api--http-post)
+               (lambda (_endpoint _body)
+                 (cl-incf tibetan-dharmamitra-api-test--http-call-count)
+                 "{\"error\":\"Daily rate limit exceeded.\",\"detail\":\"Per-client limit: 100/day.\"}")))
+      (should-not (tibetan-dharmamitra-api-limit-reached-p))
+      (should-not (tibetan-dharmamitra-api-chat-translate "iha"))
+      (should (tibetan-dharmamitra-api-limit-reached-p))
+      (should-not (tibetan-dharmamitra-api-chat-translate "atra"))
+      (should (= 1 tibetan-dharmamitra-api-test--http-call-count))
+      ;; The next day it asks again.
+      (setq tibetan-dharmamitra-api--limit-day "2000-01-01")
+      (should-not (tibetan-dharmamitra-api-limit-reached-p))
+      (tibetan-dharmamitra-api-chat-translate "tatra")
+      (should (= 2 tibetan-dharmamitra-api-test--http-call-count)))))
+
 (ert-deftest tibetan-dharmamitra-api-chat-translate-empty-response-returns-nil ()
   "When the SSE stream is empty / yields no content, return nil
 rather than an empty string masquerading as a translation.

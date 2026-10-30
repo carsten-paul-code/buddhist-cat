@@ -870,6 +870,18 @@ sections and references added by hand carried over.  Returns
          (bcat-sentence--keep file)))
       'rebuilt))))
 
+(declare-function tibetan-dharmamitra-api-limit-reached-p "tibetan-dharmamitra-api" ())
+
+(defun bcat-sentence--dm-status (translation)
+  "The status text of DharmaMitra's TRANSLATION (nil: none) — with the
+reason when its daily limit is reached (30.10.: only „–“, the reason
+in *Messages*)."
+  (cond (translation "DharmaMitra ✓")
+        ((and (fboundp 'tibetan-dharmamitra-api-limit-reached-p)
+              (tibetan-dharmamitra-api-limit-reached-p))
+         "DharmaMitra: Tageslimit erreicht")
+        (t "DharmaMitra –")))
+
 (defun bcat-sentence--dharmamitra (file sentence)
   "DharmaMitra's translation of SENTENCE for FILE, or nil (an outage
 must not stop the analysis); never with an org link in it."
@@ -1087,7 +1099,7 @@ request through the queue."
                                                    source-file))
               (dm (bcat-sentence--dharmamitra file sentence))
               (refs (if dm (append refs (list (cons "DharmaMitra" dm))) refs)))
-         (bcat-status-step file :dm (if dm "DharmaMitra ✓" "DharmaMitra –"))
+         (bcat-status-step file :dm (bcat-sentence--dm-status dm))
          ;; Before the submit: the landing (later, or at once) overwrites it.
          (bcat-status-step file :claude "Claude angefragt")
          (require 'tibetan-translation-discussion)

@@ -298,41 +298,66 @@ without an HTTP call.  Use
                "/chat-translate/v1/chat/completions" body))
          (cached (gethash key tibetan-dharmamitra-api--cache)))
     (or cached
-        (condition-case err
-            (let* ((sse-response
-                    (tibetan-dharmamitra-api--http-post
-                     "/chat-translate/v1/chat/completions" body))
-                   (translation
-                    (and sse-response
-                         (tibetan-dharmamitra-api--parse-sse-stream
-                          sse-response))))
-              (cond
-               ;; Happy path: non-empty translation.
-               ((and translation (not (string-empty-p translation)))
-                (puthash key translation tibetan-dharmamitra-api--cache)
-                translation)
-               ;; HTTP returned nothing — likely rate-limit or server
-               ;; error without a parseable body.  Phase 9 (2026-04-30):
-               ;; log explicitly so silent failures are visible in
-               ;; *Messages* during diagnosis.
-               ((or (null sse-response) (string-empty-p sse-response))
-                (message
-                 "DharmaMitra chat-translate: empty response (input %d chars) — likely rate-limit or server error"
-                 (length (or text "")))
-                nil)
-               ;; SSE stream had no content chunks.  Either format
-               ;; change or an error response masquerading as success.
-               (t
-                (message
-                 "DharmaMitra chat-translate: SSE stream yielded no content (response %d bytes; first 100 chars: %s)"
-                 (length sse-response)
-                 (substring sse-response 0
-                            (min 100 (length sse-response))))
-                nil)))
-          (error
-           (message "DharmaMitra chat-translate failed: %s"
-                    (error-message-string err))
-           nil)))))
+        (and (not (tibetan-dharmamitra-api-limit-reached-p))
+             (condition-case err
+                 (let* ((sse-response
+                         (tibetan-dharmamitra-api--http-post
+                          "/chat-translate/v1/chat/completions" body))
+                        (translation
+                         (and sse-response
+                              (tibetan-dharmamitra-api--parse-sse-stream
+                               sse-response))))
+                   (cond
+                    ;; Happy path: non-empty translation.
+                    ((and translation (not (string-empty-p translation)))
+                     (puthash key translation tibetan-dharmamitra-api--cache)
+                     translation)
+                    ;; HTTP returned nothing — likely rate-limit or server
+                    ;; error without a parseable body.  Phase 9 (2026-04-30):
+                    ;; log explicitly so silent failures are visible in
+                    ;; *Messages* during diagnosis.
+                    ((or (null sse-response) (string-empty-p sse-response))
+                     (message
+                      "DharmaMitra chat-translate: empty response (input %d chars) — likely rate-limit or server error"
+                      (length (or text "")))
+                     nil)
+                    ;; The daily limit (30.10.: „Per-client limit: 100/day“):
+                    ;; no further request today.
+                    ((string-match-p "Daily rate limit exceeded" sse-response)
+                     (setq tibetan-dharmamitra-api--limit-day (format-time-string "%Y-%m-%d"))
+                     (message "DharmaMitra: Tageslimit erreicht (%s) — heute keine weiteren Anfragen"
+                              (if (string-match "Per-client limit: \\([^\"]+\\)" sse-response)
+                                  (match-string 1 sse-response)
+                                "100/day"))
+                     nil)
+                    ;; SSE stream had no content chunks.  Either format
+                    ;; change or an error response masquerading as success.
+                    (t
+                     (message
+                      "DharmaMitra chat-translate: SSE stream yielded no content (response %d bytes; first 100 chars: %s)"
+                      (length sse-response)
+                      (substring sse-response 0
+                                 (min 100 (length sse-response))))
+                     nil)))
+               (error
+                (message "DharmaMitra chat-translate failed: %s"
+                         (error-message-string err))
+                nil))))))
+
+;; ============================================================================
+;; The daily limit
+;; ============================================================================
+
+(defvar tibetan-dharmamitra-api--limit-day nil
+  "The day (YYYY-MM-DD) on which DharmaMitra answered „Daily rate limit
+exceeded“, or nil.")
+
+(defun tibetan-dharmamitra-api-limit-reached-p ()
+  "Non-nil when DharmaMitra's daily limit was reached today — then
+`tibetan-dharmamitra-api-chat-translate' sends nothing more until
+tomorrow.  30.10.: after 100 requests every call came back empty, and
+the tool kept asking."
+  (equal tibetan-dharmamitra-api--limit-day (format-time-string "%Y-%m-%d")))
 
 ;; ============================================================================
 ;; PUBLIC API — primary search

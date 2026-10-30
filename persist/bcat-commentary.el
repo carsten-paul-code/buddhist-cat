@@ -30,6 +30,7 @@
 (declare-function tibetan-analysis--read-source-metadata "tibetan-analysis-claude" (source-file))
 (declare-function tibetan-discussion--submit "tibetan-translation-discussion" (kind file prompts land))
 (defvar tibetan-dharmamitra-sentence-request-delay)
+(declare-function tibetan-dharmamitra-api-limit-reached-p "tibetan-dharmamitra-api" ())
 (declare-function tibetan-sentence--filepath "tibetan-sentence-persist" (sent-num &optional folder source-file))
 
 ;; ----------------------------------------------------------------------------
@@ -756,7 +757,12 @@ get their links and the document goes to the reMarkable (C-c u H)."
 (defun bcat-commentary--dharmamitra (run sentences)
   "DharmaMitra on each of SENTENCES of RUN, one after the other with the
 usual pause; then the Claude requests."
-  (if (null sentences)
+  (if (or (null sentences)
+          ;; The daily limit reached: no more waiting for answers that
+          ;; cannot come (30.10.).
+          (and (fboundp 'tibetan-dharmamitra-api-limit-reached-p)
+               (tibetan-dharmamitra-api-limit-reached-p)
+               (progn (bcat-commentary--status run "DharmaMitra: Tageslimit erreicht") t)))
       (bcat-commentary--submit run (plist-get run :chunk-list))
     (let* ((s (car sentences))
            (tr (bcat-sentence--dharmamitra (plist-get run :doc) s))
