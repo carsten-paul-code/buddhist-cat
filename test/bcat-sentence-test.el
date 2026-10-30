@@ -984,6 +984,28 @@ differences, the rendering; C-c u H runs once, at the end."
       (should (= 1 (length done)))
       (should-not (bcat-sentence-fetch-state (tibetan-sentence--filepath 3 folder src) '(22 23))))))
 
+(ert-deftest bcat-sentence-fetch-bilingual-rebuilds-sanskrit-file ()
+  "A sentence file built from the Sanskrit template whose source then
+switches to bilingual: C-c u G rebuilds it in the bilingual form (as
+an old-layout file — notes kept) and runs both requests; left as it
+was, the Tibetan answer would have had no place in it."
+  (bcat-sentence-test--with-bil-source
+    (with-temp-file src
+      (insert (replace-regexp-in-string "#\\+CAT_TEMPLATE: bilingual" "#+CAT_TEMPLATE: sanskrit"
+                                        bcat-sentence-test--bil-source)))
+    (bcat-sentence-test--create-n src 3)
+    (let ((file (tibetan-sentence--filepath 3 folder src)))
+      (should (equal "sanskrit" (bcat-sentence-file-p file)))
+      (bcat-sentence-test--set-notes file "Meine Notiz.")
+      (with-temp-file src (insert bcat-sentence-test--bil-source))
+      (bcat-sentence-test--with-stubs #'bcat-sentence-test--bil-answers
+        (bcat-sentence-test--fetch-n src 3)
+        (should (equal '("bcat-tibetan" "bcat-analysis") kinds))
+        (should (equal "bilingual" (bcat-sentence-file-p file)))
+        (let ((text (bcat-sentence-test--file-text-n src 3)))
+          (should (string-match-p "^\\*\\* Segment 23 · Tib\\. 78–79$" text))
+          (should (string-match-p "^\\* My Notes\nMeine Notiz\\.$" text)))))))
+
 (ert-deftest bcat-sentence-fetch-bilingual-tibetan-unreadable ()
   "The Tibetan answer unreadable: the file keeps the Sanskrit analysis,
 the answer is kept, no PDF — and C-c u G still has the sentence to do

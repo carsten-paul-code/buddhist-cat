@@ -617,22 +617,25 @@ compared of FILE."
                                              (bcat-sentence--compared file)))))
 
 (defun bcat-sentence--prepare (file sentence source-file)
-  "Make FILE a template file before a fetch: create a missing one, and
-rebuild one still in the old layout (Carsten: „komplett neu bauen“) —
-user slots, #+CREATED and references pasted by hand carried over.
-Returns `created', `rebuilt' or nil (the file was a template file)."
+  "Make FILE a file of its source's template before a fetch: create a
+missing one, and rebuild one still in the old layout (Carsten:
+„komplett neu bauen“) or in another template (30.10.: a Sanskrit file
+whose source became bilingual) — user slots, #+CREATED, the file's own
+sections and references added by hand carried over.  Returns
+`created', `rebuilt' or nil (the file was in its template already)."
   (let ((sent-num (plist-get sentence :sent-num))
         (segs (plist-get sentence :segs)))
     (cond
      ((not (file-exists-p file))
       (tibetan-cascade--create-file sent-num segs source-file)
       'created)
-     ((not (bcat-sentence-file-p file))
+     ((not (equal (bcat-sentence-file-p file) (bcat-sentence-template-name source-file)))
       (bcat-sentence--save-visit file)
       (let ((names (mapcar #'car (bcat-sentence--references sent-num source-file))))
         (bcat-sentence-create-file
          sent-num segs source-file file
-         (bcat-sentence--extra-references names (bcat-sentence--old-references file))
+         (bcat-sentence--extra-references names (append (bcat-sentence--old-references file)
+                                                        (bcat-sentence--compared file)))
          (bcat-sentence--keep file)))
       'rebuilt))))
 
