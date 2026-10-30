@@ -52,6 +52,21 @@ given."
             (format "[%d] %s" num (string-trim text)))
           (if translation (format "\n     Translation: %s" translation) "")))
 
+(defun bcat-analysis--tibetan-rules (lang)
+  "The rules for the fields of a Tibetan sentence analysis, from words
+to comparison (glosses in LANG) — one wording for the Tibetan analysis
+and the Tibetan request of a bilingual pair."
+  (concat (bcat-analysis--words-rule lang) "\n"
+          "- translation (segment): this segment's part of your translation; the parts read in order form the sentence translation. Give key terms with the Tibetan and the established Sanskrit in parentheses, e.g. \"uncompounded ('dus ma byas: asaṃskṛta)\".
+- references (segment): for every reference translation given, the part that corresponds to this segment, quoted verbatim (keep its brackets and Sanskrit; not its notes). Mark with org bold *…* ONLY passages that shift the meaning against the Tibetan or against your reading; stylistic variation is not marked.
+- shift: one line on what the marked passages shift, beginning with the translator name(s): \"Lindtner 1981: active, with the yogin as agent\"; \"\" when nothing is marked.
+- structure: the segment's syntax in one line, org markup — case particles =yis=, converbs ~na~, Tibetan words /italic/: \"rnal 'byor pa =yis= [agent, ERG] · de [object, ABS] · rtogs [V] ~na~ [conditional] → protasis of 41.\"
+- note: only for a grammatical peculiarity or a real ambiguity, one or two sentences; otherwise \"\".
+- concepts: Buddhist technical concepts occurring in THIS segment — the term in *bold*, its Sanskrit, a short encyclopedic note of two or three sentences; \"\" when there is none.
+- grammar: an overview of the whole sentence — verb backbone, clause linkage, agents, elisions.
+- translation (sentence): your translation of the whole sentence (the segment parts joined).
+- comparison: one to three sentences on the meaning-shifting differences between the translations including yours; \"\" when there are none."))
+
 (defun bcat-analysis-system-prompt (target)
   "The system prompt of the sentence analysis for the target language
 code TARGET — constant per document, so the prompt cache stays warm."
@@ -63,17 +78,8 @@ code TARGET — constant per document, so the prompt cache stays warm."
 Rules:
 - segments: one entry per given segment, same numbers, same order.
 %s
-- translation (segment): this segment's part of your translation; the parts read in order form the sentence translation. Give key terms with the Tibetan and the established Sanskrit in parentheses, e.g. \"uncompounded ('dus ma byas: asaṃskṛta)\".
-- references (segment): for every reference translation given, the part that corresponds to this segment, quoted verbatim (keep its brackets and Sanskrit; not its notes). Mark with org bold *…* ONLY passages that shift the meaning against the Tibetan or against your reading; stylistic variation is not marked.
-- shift: one line on what the marked passages shift, beginning with the translator name(s): \"Lindtner 1981: active, with the yogin as agent\"; \"\" when nothing is marked.
-- structure: the segment's syntax in one line, org markup — case particles =yis=, converbs ~na~, Tibetan words /italic/: \"rnal 'byor pa =yis= [agent, ERG] · de [object, ABS] · rtogs [V] ~na~ [conditional] → protasis of 41.\"
-- note: only for a grammatical peculiarity or a real ambiguity, one or two sentences; otherwise \"\".
-- concepts: Buddhist technical concepts occurring in THIS segment — the term in *bold*, its Sanskrit, a short encyclopedic note of two or three sentences; \"\" when there is none.
-- grammar: an overview of the whole sentence — verb backbone, clause linkage, agents, elisions.
-- translation (sentence): your translation of the whole sentence (the segment parts joined).
-- comparison: one to three sentences on the meaning-shifting differences between the translations including yours; \"\" when there are none.
 - Write glosses, notes and explanations in %s. Never mention yourself."
-            (bcat-analysis--words-rule lang) lang)))
+            (bcat-analysis--tibetan-rules lang) lang)))
 
 (defun bcat-analysis-user-prompt (sent-num verse segs refs &optional context)
   "The user prompt for sentence SENT-NUM (VERSE its :VERSE: or nil):
