@@ -4537,6 +4537,13 @@ Zeilennummern in Übersetzungen.  Erfolgreiche Antworten werden nicht
 aufbewahrt, gptel protokolliert nicht — Befund nur aus dem Dokument.
 ERT 2717.
 
+PDF-Namen (`77754fc', Carsten: „möglichst sprechend benannt … z.B.
+...IX.60.pdf und zusätzlich im Handouts Ordner“): reMarkable-Dokument =
+Vers (:VERSE: „MSA IX.60“, „SDA 16“), sonst „Satz N“; Kopie nach
+<Quellordner>/handouts/<Kurzname>-<Versnummer>.pdf (msa-IX.60,
+savbh-IX.60, bden-16; ohne Vers <kurz>-satz-N), nicht in den
+Werkordner (dort die Synopse msa-IX.60.pdf).  ERT 2720.
+
 #### Offen
 
 - MSA: IX.60 erneut (Tibetisch fehlt; Kommentar mit den neuen Lemmata
