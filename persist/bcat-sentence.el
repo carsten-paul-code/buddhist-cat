@@ -490,14 +490,29 @@ no AI) and return FILEPATH.  EXTRA-REFS and KEEP as in
     source-file))
   filepath)
 
+(defun bcat-sentence--template-sections (name source-file)
+  "Regexps of the L1 headings template NAME (cascade for SOURCE-FILE)
+writes, a placeholder matching anything (`* Sentence {{num}}')."
+  (let ((text (bcat-template-read name source-file)) (pos 0) (out '()))
+    (while (string-match "^\\* \\(.*\\)$" text pos)
+      (let ((title (string-trim (match-string 1 text))))
+        (setq pos (match-end 0))
+        (push (concat "\\`" (mapconcat #'regexp-quote (split-string title "{{[^}]*}}") ".*") "\\'")
+              out)))
+    out))
+
 (defun bcat-sentence--render (name context source-file)
   "The template NAME rendered with CONTEXT (cascade for SOURCE-FILE),
 followed by the file's own sections (`own-sections' in CONTEXT, from
-`bcat-sentence--keep') unchanged — the template does not know them."
-  (let ((text (bcat-template-render-named name context source-file))
-        (own (alist-get 'own-sections context)))
+`bcat-sentence--keep') unchanged — the template does not know them.  A
+section the template writes itself (* Bhāṣya, a commentary's * Sentence
+258) is no own section."
+  (let* ((text (bcat-template-render-named name context source-file))
+         (tool (bcat-sentence--template-sections name source-file))
+         (own (cl-remove-if (lambda (s) (cl-some (lambda (re) (string-match-p re (car s))) tool))
+                            (alist-get 'own-sections context))))
     (if own
-        (concat (string-trim-right text) "\n\n" own "\n")
+        (concat (string-trim-right text) "\n\n" (mapconcat #'cdr own "\n\n") "\n")
       text)))
 
 ;; ----------------------------------------------------------------------------
@@ -539,7 +554,8 @@ user slots belongs to someone and is kept (`bcat-sentence--own-sections').")
   "The L1 sections of TEXT that the tool does not write and that are no
 user slot — added by hand or for another script (AS and MSA, 26.10.:
 * Handout, the input of handout-synopse.py, corrected in class) —
-verbatim, in order, as one string; nil when there are none."
+verbatim, in order, as ((TITLE . TEXT) …); nil when there are none.
+`bcat-sentence--render' leaves out those its template writes."
   (let ((starts '()) (pos 0))
     (while (string-match "^\\* \\(.*\\)$" text pos)
       (push (cons (match-beginning 0) (string-trim (match-string 1 text))) starts)
@@ -549,9 +565,10 @@ verbatim, in order, as one string; nil when there are none."
                         for (beg . title) = (car rest)
                         unless (or (member title bcat-sentence--tool-sections)
                                    (rassoc title bcat-sentence--user-slots))
-                        collect (string-trim-right
-                                 (substring text beg (if (cdr rest) (car (cadr rest)) (length text)))))))
-      (and own (mapconcat #'identity own "\n\n")))))
+                        collect (cons title
+                                      (string-trim-right
+                                       (substring text beg (if (cdr rest) (car (cadr rest)) (length text))))))))
+      own)))
 
 (defun bcat-sentence--keep (file)
   "Fields of FILE that a rebuild carries over: the user slots, the

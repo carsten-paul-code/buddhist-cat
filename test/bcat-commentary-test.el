@@ -176,6 +176,19 @@ the Tibetan verse file too.  A verse without bhāṣya has no section."
     (should (string-match-p "^\\* Bhāṣya$" (bcat-sentence-test--create-n tsrc 64)))
     (should-not (string-match-p "Bhāṣya" (bcat-sentence-test--create-n src 38)))))
 
+(ert-deftest bcat-verse-bhasya-section-once ()
+  "The rebuild (C-c u G) keeps a file's own L1 sections (`* Handout'),
+but * Bhāṣya is the template's: written anew, never carried over as
+the file's own — else every landing appends it once more."
+  (bcat-commentary-test--with-msa
+    (bcat-sentence-test--create-n src 36)
+    (bcat-sentence-test--with-stubs #'bcat-commentary-test--verse-answers
+      (bcat-sentence-test--fetch-n src 36))
+    (dolist (file (list (tibetan-sentence--filepath 36 folder src)
+                        (bcat-sentence-partner-file 36 src)))
+      (should (= 1 (cl-count "* Bhāṣya" (split-string (bcat-sentence-test--text-of file) "\n")
+                             :test #'equal))))))
+
 (ert-deftest bcat-verse-bhasya-sentence-opens-verse-file ()
   "A bhāṣya sentence has no file of its own: creating it (C-c u A, the
 batch) gives the verse file of its Section — and never overwrites one
