@@ -4551,6 +4551,18 @@ gelöscht), `bcat-export-remove-tex' nach jedem erfolgreichen LaTeX-Lauf
 (auch altes Handout/Diskussionspapier), `bcat-export-keep-tex' zum
 Debuggen.  LEHRE: Stubs nie auf echte Pfade zeigen lassen.  ERT 2721.
 
+Zweiter Lauf IX.60 (C-u C-c u G, 13:31): Vers ✓ (msa-IX.60.pdf), vom
+Kommentar kein PDF — „Unable to resolve link: "topic"“: Claude glossierte
+/ni/ als „[topic]“, die Textzeile machte „ni [[topic]]“ daraus.  Der
+Fehler stand nur in *Messages* (Statuszeile: „Sthiramati: ✓ · PDF ✓“ —
+das PDF des Verses).  Behoben: `f120e34' Glossen in Klammern ohne
+Doppelklammern; `8646ec1' KEIN Text von außen (jeder String jeder
+Claude-Antwort, DharmaMitra) kann einen Org-Link bilden — Carsten:
+„broken links sollten eigentlich nicht entstehen können“ (daher
+`1a2db9e' Markieren beim Export wieder zurückgenommen, `90ac847');
+`5060921' der Kommentar hat eine eigene Statuszeile unter dem Vers;
+`bbeeddb' Kommentar-PDF in den Handouts-Ordner der Verse.  ERT 2725.
+
 #### Offen
 
 - MSA: IX.60 erneut (Tibetisch fehlt; Kommentar mit den neuen Lemmata
