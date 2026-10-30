@@ -554,9 +554,9 @@ fully analysed."
   "Commentary document → the plist of its running C-c u G.")
 
 (defun bcat-commentary--status (run text)
-  "Show TEXT for the commentary RUN on the status line of its verse."
-  (bcat-status-step (plist-get run :status-file) :commentary
-                    (concat (bcat-commentary--author (plist-get run :source)) ": " text)))
+  "Show TEXT for the commentary RUN on its own status line (below its
+verse, `bcat-commentary-fetch'), where its PDF and upload write too."
+  (bcat-status-step (plist-get run :doc) :commentary text))
 
 (defun bcat-commentary--merged (run)
   "The answers of RUN that have landed as one: their segments and
@@ -774,8 +774,9 @@ usual pause; then the Claude requests."
 document (created when missing), DharmaMitra per sentence, then Claude
 — the whole commentary at once, in parts when long; each part lands as
 it comes, and when all have, the verse files get their links and the
-document goes to the reMarkable.  STATUS-FILE: the verse file whose
-status line shows the progress.  Nothing while one runs already."
+document goes to the reMarkable.  STATUS-FILE: the verse file below
+whose status line the commentary gets its own (progress, PDF, upload).
+Nothing while one runs already."
   (let ((doc (bcat-commentary-file section commentary-source)))
     (unless (gethash doc bcat-commentary--runs)
       (unless (file-exists-p doc)
@@ -788,6 +789,10 @@ status line shows the progress.  Nothing while one runs already."
                         :chunks (length (bcat-commentary--chunks sentences))
                         :answers nil :failed nil :dm nil :refs nil)))
         (puthash doc run bcat-commentary--runs)
+        (when status-file
+          (bcat-status-add doc (or (bcat-sentence--header-value doc "TITLE")
+                                   (file-name-base doc))
+                           status-file))
         (bcat-commentary--status run "DharmaMitra …")
         (run-at-time 0 nil #'bcat-commentary--dharmamitra run sentences)
         doc))))

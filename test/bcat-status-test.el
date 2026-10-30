@@ -62,5 +62,24 @@ line in the newest block."
       (should (string-match-p "C-c u G · Satz 9 · [0-9:]+\n  Satz 9  Claude ✓\n\nC-c u H · Satz 9 · [0-9:]+\n  Satz 9  PDF ✓\n?\\'"
                               text)))))
 
+(ert-deftest bcat-status-add-line ()
+  "A file that joins a run (the commentary of a verse, 30.10.) gets a
+line of its own right below the line it belongs to; its steps go
+there, the lines after it keep theirs."
+  (bcat-status-test--fresh
+    (bcat-status-begin "C-c u G" "§60"
+                       '(("/a/sent-128.org" . "Satz 128") ("/a/sent-129.org" . "Satz 129")))
+    (bcat-status-add "/a/comm-IX.60.org" "Sthiramati zu MSA IX.60" "/a/sent-128.org")
+    (bcat-status-step "/a/sent-129.org" :claude "Claude ✓")
+    (bcat-status-step "/a/comm-IX.60.org" :pdf "PDF: Fehler — link")
+    (bcat-status-step "/a/sent-128.org" :dm "DharmaMitra ✓")
+    (should (string-match-p (concat "^  Satz 128  DharmaMitra ✓\n"
+                                    "  Sthiramati zu MSA IX.60  PDF: Fehler — link\n"
+                                    "  Satz 129  Claude ✓$")
+                            (bcat-status-test--text)))
+    ;; Without the line it belongs to: nothing.
+    (bcat-status-add "/a/comm-x.org" "X" "/a/other.org")
+    (should-not (string-match-p "  X" (bcat-status-test--text)))))
+
 (provide 'bcat-status-test)
 ;;; bcat-status-test.el ends here

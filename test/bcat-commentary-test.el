@@ -506,6 +506,26 @@ reMarkable (the hook runs for the verse file and the commentary)."
       (should (string-match-p "lemmata in .*\\]\\[258\\]\\], .*\\]\\[259\\]\\], .*\\]\\[260\\]\\]\n\n⟦92⟧"
                               (bcat-sentence-test--text-of (tibetan-sentence--filepath 36 folder src)))))))
 
+(ert-deftest bcat-commentary-status-line ()
+  "30.10., IX.60: the commentary's PDF failed and the status said
+„Sthiramati: ✓“ — the error stood only in *Messages*.  The commentary
+has a line of its own below its verse: its DharmaMitra and Claude
+steps, and the PDF and upload of its document (or their error)."
+  (bcat-commentary-test--with-msa
+    (let ((bcat-status--entries (make-hash-table :test 'equal))
+          (bcat-status-show nil))
+      (when (get-buffer bcat-status-buffer-name) (kill-buffer bcat-status-buffer-name))
+      (bcat-sentence-test--with-stubs #'bcat-commentary-test--answers
+        (bcat-sentence-test--fetch-n src 36))
+      (let ((doc (expand-file-name "comm-IX.16-savbh.org" cfolder)))
+        (bcat-status-step doc :pdf "PDF: Fehler — Unable to resolve link")
+        (let ((text (with-current-buffer bcat-status-buffer-name (buffer-string))))
+          (should (string-match-p
+                   "^  Satz 36  .*\n  Sthiramati zu MSA IX.16, MSA IX.17  .*✓ · PDF: Fehler — Unable to resolve link$"
+                   text))
+          (should-not (string-match-p "Satz 36 .*Sthiramati" text))))
+      (kill-buffer bcat-status-buffer-name))))
+
 (ert-deftest bcat-commentary-fetch-in-parts ()
   "A long commentary goes in parts (IX.8: 72 sentences): at most
 `bcat-commentary-chunk-segments' segments per request, at sentence

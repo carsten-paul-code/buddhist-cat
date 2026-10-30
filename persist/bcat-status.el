@@ -71,6 +71,26 @@
       (when win
         (with-selected-window win (goto-char (point-max)) (recenter -1))))))
 
+(defun bcat-status-add (file label after)
+  "Give FILE a line LABEL right below the line of AFTER in the newest
+block — a file that joins the run (30.10.: the commentary of the verse
+AFTER, whose PDF error was nowhere to be seen).  Nothing when AFTER has
+no line."
+  (when-let ((e (gethash (expand-file-name after) bcat-status--entries)))
+    (let ((buf (marker-buffer (nth 0 e))))
+      (when (buffer-live-p buf)
+        (with-current-buffer buf
+          (let ((inhibit-read-only t))
+            (save-excursion
+              (goto-char (nth 0 e))
+              (end-of-line)
+              ;; Inserted at the end of AFTER's line: the markers of
+              ;; the lines below lie after it and move along.
+              (insert "\n" (bcat-status--line label nil))
+              (puthash (expand-file-name file)
+                       (list (copy-marker (line-beginning-position)) label nil)
+                       bcat-status--entries))))))))
+
 (defun bcat-status-step (file key text)
   "Write step KEY (one of `bcat-status--order') of FILE's line as TEXT;
 a later TEXT for the same step replaces the earlier one.  Nothing for a
