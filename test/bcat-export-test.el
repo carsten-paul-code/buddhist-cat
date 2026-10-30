@@ -41,11 +41,50 @@ source."
       (should (equal "bDen pa gnyis la 'jug pa" (plist-get info :work)))
       (should (equal 9 (plist-get info :sent-num)))
       (should (equal "SDA 9" (plist-get info :verse)))
-      (should (equal "Satz 9" (plist-get info :label))))))
+      (should (equal "SDA 9" (plist-get info :label))))))
+
+(ert-deftest bcat-export-speaking-names ()
+  "Carsten 30.10.: „dass die PDFs möglichst sprechend benannt sind z.B.
+...IX.60.pdf und zusätzlich im Handouts Ordner gespeichert sind“.  The
+document on the reMarkable is named after the verse (SDA 9, MSA
+IX.60), without one „Satz N“; the copy in the source's handouts/ is
+<short>-<verse number> (bden-9.pdf, msa-IX.60.pdf), without a verse
+<short>-satz-N — beside the old handouts (<short>-par-60 …)."
+  (bcat-sentence-test--with-source
+    (bcat-sentence-test--create src)
+    (let ((info (bcat-export-info (tibetan-sentence--filepath 9 folder src))))
+      (should (equal "SDA 9" (plist-get info :label)))
+      (should (equal (expand-file-name "handouts/bden-9.pdf" dir) (plist-get info :handout))))
+    (with-temp-file src
+      (insert (replace-regexp-in-string ":VERSE: SDA 9\n" "" bcat-sentence-test--source)))
+    (let ((info (bcat-export-info (tibetan-sentence--filepath 9 folder src))))
+      (should (equal "Satz 9" (plist-get info :label)))
+      (should (equal (expand-file-name "handouts/bden-satz-9.pdf" dir) (plist-get info :handout))))))
+
+(ert-deftest bcat-export-file-copies-to-handouts ()
+  "C-c u H (and so C-c u G) puts the PDF also into the handouts folder
+under its speaking name — each export anew, the latest wins; the PDF
+beside the sentence file stays."
+  (bcat-sentence-test--with-source
+    (bcat-sentence-test--create src)
+    (let* ((file (tibetan-sentence--filepath 9 folder src))
+           (pdf (concat (file-name-sans-extension file) ".pdf"))
+           (copy (expand-file-name "handouts/bden-9.pdf" dir))
+           (content "PDF 1"))
+      (cl-letf (((symbol-function 'bcat-export-pdf)
+                 (lambda (&rest _) (with-temp-file pdf (insert content)) pdf)))
+        (let ((bcat-export-upload nil))
+          (bcat-export-file file)
+          (should (file-exists-p pdf))
+          (should (equal "PDF 1" (with-temp-buffer (insert-file-contents copy) (buffer-string))))
+          (setq content "PDF 2")
+          (bcat-export-file file)
+          (should (equal "PDF 2" (with-temp-buffer (insert-file-contents copy) (buffer-string)))))))))
 
 (ert-deftest bcat-export-after-fetch-uploads ()
   "C-c u G ends with C-c u H: after the analysis has landed, the file is
-exported and uploaded once — folder = the work, document „Satz N“.
+exported and uploaded once — folder = the work, document named after
+the verse („SDA 9“).
 Switched off (`bcat-export-auto' nil): nothing."
   (bcat-sentence-test--with-source
     (bcat-sentence-test--create src)
@@ -62,7 +101,7 @@ Switched off (`bcat-export-auto' nil): nothing."
             (add-hook 'bcat-sentence-after-fetch-functions #'bcat-export-after-fetch)
             (bcat-sentence-test--fetch src)))
         (should (equal (list (tibetan-sentence--filepath 9 folder src)) exported))
-        (should (equal '(("/tmp/x.pdf" "bDen pa gnyis la 'jug pa" "Satz 9")) uploaded))
+        (should (equal '(("/tmp/x.pdf" "bDen pa gnyis la 'jug pa" "SDA 9")) uploaded))
         (setq exported nil uploaded nil)
         (let ((bcat-export-auto nil))
           (bcat-export-after-fetch (tibetan-sentence--filepath 9 folder src)))

@@ -560,11 +560,22 @@ folder of the work the verses belong to, named after the document."
       (should (equal "Mahāyānasūtrālaṃkāra IX mit Bhāṣya" (plist-get info :work)))
       (should (equal "Sthiramati zu MSA IX.16, MSA IX.17" (plist-get info :label)))
       (should (equal "Sthiramati" (plist-get info :folder)))
+      (should (equal (expand-file-name "Sthiramati/handouts/savbh-IX.16.pdf" dir)
+                     (plist-get info :handout)))
       (should-not (plist-get info :sent-num))
       (should (string-match-p
                (regexp-quote "{\\small Sthiramati · \\textit{Mahāyānasūtrālaṃkāra IX mit Bhāṣya} · MSA IX.16, MSA IX.17}")
                (bcat-export-head-lines (plist-get info :folder) (plist-get info :work)
                                        (plist-get info :sent-num) (plist-get info :verse)))))))
+
+(ert-deftest bcat-commentary-verse-export-names ()
+  "The verse's PDF: „MSA IX.16“ on the reMarkable, msa-IX.16.pdf in the
+handouts of the Sanskrit source (Carsten 30.10.: „...IX.60.pdf“)."
+  (bcat-commentary-test--with-msa
+    (let ((info (bcat-export-info (bcat-sentence-ensure-file 36 src))))
+      (should (equal "MSA IX.16" (plist-get info :label)))
+      (should (equal (expand-file-name "Sanskrit/handouts/msa-IX.16.pdf" dir)
+                     (plist-get info :handout))))))
 
 (ert-deftest bcat-commentary-document-commands ()
   "C-c u G and C-c u H in the commentary document itself: it counts as

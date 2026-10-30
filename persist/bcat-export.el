@@ -21,12 +21,14 @@
 (require 'subr-x)
 (require 'bcat-sentence)
 (require 'bcat-status)
+(require 'ucs-normalize)
 
 (declare-function tibetan-sentence--source-file-from-analysis "tibetan-sentence-persist" (analysis-file))
 (declare-function tibetan-sentence--sent-id-from-filename "tibetan-sentence-persist" (filename))
 (declare-function tibetan-sentence--filepath "tibetan-sentence-persist" (sent-num &optional folder source-file))
 (declare-function tibetan-cascade--collect-sentences "tibetan-cascade" ())
 (declare-function bcat-commentary-lead "bcat-commentary" (commentary-source))
+(declare-function tibetan-analysis-make-short-name "tibetan-analysis-persist" (source-file))
 (declare-function tibetan-cascade--scope-at-point "tibetan-cascade" ())
 (declare-function tibetan-discussion-paper--upload "tibetan-discussion-paper" (pdf title label &optional done))
 (declare-function tibetan-discussion-paper--temp-source-p "tibetan-discussion-paper" (file))
@@ -88,6 +90,18 @@ without SENT-NUM (a commentary document) no „Satz“."
   (let ((title (and file (bcat-sentence--header-value file "TITLE"))))
     (and title (string-trim (car (split-string title " — "))))))
 
+(defun bcat-export--handout (source name)
+  "Where the PDF named NAME goes beside SOURCE: <its folder>/handouts/
+NAME.pdf (Carsten 30.10.: „zusätzlich im Handouts Ordner“), ASCII like
+the old handouts there (msa-par-60.pdf): diacritics dropped, anything
+else but letters, digits and dots a hyphen; nil without SOURCE."
+  (when source
+    (let ((ascii (replace-regexp-in-string
+                  "[^A-Za-z0-9.]+" "-"
+                  (replace-regexp-in-string "[^[:ascii:]]" "" (ucs-normalize-NFD-string name)))))
+      (expand-file-name (concat (string-trim ascii "-+" "-+") ".pdf")
+                        (expand-file-name "handouts" (file-name-directory source))))))
+
 (defun bcat-export--commentary-info (file)
   "`bcat-export-info' for the commentary document FILE: the folder of
 the commentary source, the work of the verses it comments on (beside
@@ -107,12 +121,20 @@ the document."
           :work (or (bcat-export--title lead) (and lead (file-name-base lead)) (file-name-base file))
           :sent-num nil
           :verse (and verses (string-join verses ", "))
-          :label (or (bcat-sentence--header-value file "TITLE") (file-name-base file)))))
+          :label (or (bcat-sentence--header-value file "TITLE") (file-name-base file))
+          :handout (let* ((link (bcat-sentence--header-value file "SOURCE"))
+                          (section (and link (string-match "::\\*\\(?:Section \\)?\\([^]]+\\)\\]" link)
+                                        (match-string 1 link))))
+                     (and src section
+                          (bcat-export--handout
+                           src (concat (tibetan-analysis-make-short-name src) "-" section)))))))
 
 (defun bcat-export-info (file)
   "What the PDF of the sentence FILE is labelled with: (:source :folder
-:work :sent-num :verse :label) — folder and work title from the source
-\(its #+TITLE before „ — “), the verse from its :VERSE:.  A commentary
+:work :sent-num :verse :label :handout) — folder and work title from the
+source \(its #+TITLE before „ — “), the verse from its :VERSE:; LABEL
+the name on the reMarkable (the verse, else „Satz N“), HANDOUT the copy
+in the source's handouts/ (`bcat-export--handout').  A commentary
 document: `bcat-export--commentary-info'."
   (if (equal (bcat-sentence-file-p file) "commentary")
       (bcat-export--commentary-info file)
@@ -139,7 +161,12 @@ document: `bcat-export--commentary-info'."
           :work (or title (and src (file-name-base src)) (file-name-base file))
           :sent-num n
           :verse verse
-          :label (format "Satz %d" n))))
+          :label (or verse (format "Satz %d" n))
+          :handout (and src
+                        (bcat-export--handout
+                         src (concat (tibetan-analysis-make-short-name src) "-"
+                                     (if verse (car (last (split-string verse)))
+                                       (format "satz-%d" n))))))))
 
 ;; ----------------------------------------------------------------------------
 ;; Export and upload
@@ -307,6 +334,13 @@ reMarkable (`bcat-export-upload').  Returns the PDF path."
          (pdf (bcat-export-pdf file (bcat-export-head-lines
                                      (plist-get info :folder) (plist-get info :work)
                                      (plist-get info :sent-num) (plist-get info :verse)))))
+    (let ((copy (plist-get info :handout)))
+      (when (and copy (file-exists-p pdf))
+        (condition-case err
+            (progn (make-directory (file-name-directory copy) t)
+                   (copy-file pdf copy t))
+          (error (message "PDF nicht in handouts/ kopiert (%s): %s"
+                          (file-name-nondirectory copy) (error-message-string err))))))
     (bcat-status-step file :pdf "PDF ✓")
     (if bcat-export-upload
         (progn
