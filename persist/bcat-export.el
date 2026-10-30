@@ -189,9 +189,11 @@ conjunct (29.10.: Arial Unicode MS)."
   :group 'buddhist-cat)
 
 (defun bcat-export--font-lines ()
-  "#+LATEX_HEADER lines defining \\bcattib and \\bcatdeva."
+  "#+LATEX_HEADER lines defining \\bcattib and \\bcatdeva, and loading
+adjustbox (`bcat-export--table-filter')."
   (concat
    "#+LATEX_HEADER: \\usepackage{fontspec}\n"
+   "#+LATEX_HEADER: \\usepackage{adjustbox}\n"
    (format "#+LATEX_HEADER: \\newfontfamily\\bcattib{%s}[Script=Tibetan,Renderer=HarfBuzz]\n"
            bcat-export-tibetan-font)
    (format "#+LATEX_HEADER: \\newfontfamily\\bcatdeva{%s}[Script=Devanagari,Renderer=HarfBuzz]\n"
@@ -297,6 +299,18 @@ exporting to LaTeX (BACKEND)."
       (bcat-export--verse-scripts (bcat-export--verse-units text))
     text))
 
+(defun bcat-export--table-filter (text backend _info)
+  "`org-export-filter-table-functions' entry: a LaTeX tabular no wider
+than the line — scaled down when wider (adjustbox, max width), else as
+it is.  30.10., TĀ 1001: the metre table (19 syllables and the pause)
+ran off the page."
+  (if (and (org-export-derived-backend-p backend 'latex)
+           (string-match-p "\\\\begin{tabular}" text))
+      (concat "\\begin{adjustbox}{max width=\\linewidth}\n"
+              (string-trim-right text "\n+") "\n"
+              "\\end{adjustbox}\n")
+    text))
+
 (defun bcat-export--drop-machine-sections (&rest _)
   "Delete from the current (export) buffer the `** Word Analysis'
 subtree — machine data for the zettel highlighting and the padapāṭha
@@ -334,8 +348,8 @@ old handout, discussion paper)."
 HEAD (lines from `bcat-export-head-lines') goes into the export copy,
 never into the file.  LuaLaTeX, two runs (longtable), tables flush
 left at natural width, glossed verse lines broken only between word
-units — bound here, Carsten's own export settings (centring, tabularx)
-stay untouched outside."
+units, tables no wider than the line — bound here, Carsten's own export
+settings (centring, tabularx) stay untouched outside."
   (require 'ox-latex)
   (let* ((visited (get-file-buffer file))
          (buf (or visited (find-file-noselect file)))
@@ -351,7 +365,8 @@ stay untouched outside."
                    "%latex -interaction nonstopmode -output-directory %o %f"))
                 (org-latex-tables-centered nil)
                 (org-export-filter-table-functions
-                 (remq 'org-latex-auto-tabularx org-export-filter-table-functions))
+                 (append (remq 'org-latex-auto-tabularx org-export-filter-table-functions)
+                         (list #'bcat-export--table-filter)))
                 (org-export-filter-verse-block-functions
                  (cons #'bcat-export--verse-filter org-export-filter-verse-block-functions))
                 (org-export-before-processing-functions

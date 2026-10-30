@@ -235,6 +235,18 @@ are."
   (let ((plain "\\begin{verse}\nbrjod du med pa/ /\\\\\n\\end{verse}\n"))
     (should (equal plain (bcat-export--verse-units plain)))))
 
+(ert-deftest bcat-export-tables-fit ()
+  "30.10., TĀ Satz 1001: the metre table (19 syllables and the pause)
+ran off the page.  A table wider than the line is scaled down to it
+\(adjustbox, max width) — narrower ones keep their size; the package
+comes with the header."
+  (should (equal (concat "\\begin{adjustbox}{max width=\\linewidth}\n"
+                         "\\begin{tabular}{ll}\na & b\\\\\n\\end{tabular}\n"
+                         "\\end{adjustbox}\n")
+                 (bcat-export--table-filter "\\begin{tabular}{ll}\na & b\\\\\n\\end{tabular}\n"
+                                            'latex nil)))
+  (should (string-match-p (regexp-quote "\\usepackage{adjustbox}") (bcat-export--font-lines))))
+
 (ert-deftest bcat-export-verse-scripts-foreign-signs ()
   "30.10., TĀ Satz 1001: in the recitation the pause sign ¦ stands in
 the Devanāgarī line, and Noto Sans Devanagari has no ¦ — an empty box
