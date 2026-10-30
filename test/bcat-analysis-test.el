@@ -309,6 +309,25 @@ an array before `]' or `,'."
       (should (equal "n" (alist-get 'note seg)))
       (should (equal '("a" "b") (alist-get 'words seg))))))
 
+(ert-deftest bcat-analysis-parse-repairs-missing-key ()
+  "30.10., MSA IX.60 (Tibetan answer of sent-128, „JSON-Fehler bei
+Zeichen 6210“): one reference came without its key —
+{\"name\": \"DharmaMitra\", \"*The first is the support for the second.*\"}.
+A string where a key belongs that is followed by `}' or `,' is a value
+without key; in our answers the only bare text is a reference's, so it
+becomes \"text\"."
+  (let ((parsed (bcat-analysis-parse
+                 (concat "{\"segments\": [{\"num\": 462, \"references\": ["
+                         "{\"name\": \"Radich 2007\", \"text\": \"the first is the basis\"},\n"
+                         "        {\"name\": \"DharmaMitra\", \"*The first is the support for the second.*\"}\n"
+                         "      ], \"shift\": \"DharmaMitra: \\\"the second\\\"\"}], \"grammar\": \"g\"}"))))
+    (should parsed)
+    (let ((seg (car (alist-get 'segments parsed))))
+      (should (equal '("the first is the basis" "*The first is the support for the second.*")
+                     (mapcar (lambda (r) (alist-get 'text r)) (alist-get 'references seg))))
+      (should (equal "DharmaMitra: \"the second\"" (alist-get 'shift seg))))
+    (should (equal "g" (alist-get 'grammar parsed)))))
+
 (ert-deftest bcat-analysis-mark-reference ()
   "The sentence-level paragraph of a reference is OUR text, note
 included; its bold marks come from Claude's segment parts, in order: a

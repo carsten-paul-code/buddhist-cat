@@ -274,13 +274,17 @@ element of an array before `]' or `,' plus the start of a value
 \(Eimer's \"Um die Hemmnisse, nämlich die \"Befleckungen\", …\" in
 Lindtner's note; 30.10., bDen 16: [TERM + auxiliary, \\\"come to
 realize\"] in a structure line — a quote before `]' in an object's
-value); a backslash before a character JSON does not escape is dropped
-\(29.10.: a backslash before the apostrophe of the genitive particle in
-a structure line).  Valid JSON comes back unchanged."
+value); a string where a key belongs, followed by `}' or `,' plus a
+key, is a value without key and gets \"text\" (30.10., MSA IX.60: a
+DharmaMitra reference {\"name\": \"DharmaMitra\", \"*The first …*\"} —
+the only bare text in our answers is a reference's); a backslash
+before a character JSON does not escape is dropped (29.10.: a backslash
+before the apostrophe of the genitive particle in a structure line).
+Valid JSON comes back unchanged."
   (with-temp-buffer
     (insert text)
     (goto-char (point-min))
-    (let ((in-string nil) (key nil) (expect-key nil) (stack '())
+    (let ((in-string nil) (key nil) (expect-key nil) (stack '()) (start nil)
           (value "[ \t\n\r]*\\(?:[\"{[]\\|-?[0-9]\\|true\\_>\\|false\\_>\\|null\\_>\\)"))
       (while (not (eobp))
         (let ((c (char-after)))
@@ -288,7 +292,8 @@ a structure line).  Valid JSON comes back unchanged."
            ((not in-string)
             (pcase c
               (?\" (setq in-string t
-                         key (and expect-key (eq (car stack) ?{))))
+                         key (and expect-key (eq (car stack) ?{))
+                         start (point-marker)))
               ((or ?{ ?\[) (push c stack) (setq expect-key (eq c ?{)))
               ((or ?} ?\]) (pop stack) (setq expect-key nil))
               (?, (setq expect-key (eq (car stack) ?{)))
@@ -301,18 +306,25 @@ a structure line).  Valid JSON comes back unchanged."
               ;; of the genitive 'i): drop the backslash, keep the char.
               (delete-char 1)))
            ((eq c ?\")
-            (if (save-excursion
-                  (forward-char 1)
-                  (skip-chars-forward " \t\n\r")
-                  (cond ((eobp))
-                        (key (eq (char-after) ?:))
-                        ((eq (char-after) ?,)
-                         (forward-char 1)
-                         (looking-at (if (eq (car stack) ?{) "[ \t\n\r]*\"" value)))
-                        ((eq (car stack) ?{) (eq (char-after) ?}))
-                        ((eq (car stack) ?\[) (eq (char-after) ?\]))))
-                (setq in-string nil expect-key nil)
-              (insert "\\"))
+            (let* ((after (lambda (as-key)
+                            (forward-char 1)
+                            (skip-chars-forward " \t\n\r")
+                            (cond ((eobp))
+                                  (as-key (eq (char-after) ?:))
+                                  ((eq (char-after) ?,)
+                                   (forward-char 1)
+                                   (looking-at (if (eq (car stack) ?{) "[ \t\n\r]*\"" value)))
+                                  ((eq (car stack) ?{) (eq (char-after) ?}))
+                                  ((eq (car stack) ?\[) (eq (char-after) ?\])))))
+                   (close (save-excursion (funcall after key)))
+                   ;; A value where a key belongs: as if it were one.
+                   (orphan (and key (not close)
+                                (save-excursion (funcall after nil)))))
+              (cond (orphan
+                     (save-excursion (goto-char start) (insert "\"text\": "))
+                     (setq in-string nil expect-key nil))
+                    (close (setq in-string nil expect-key nil))
+                    (t (insert "\\"))))
             (forward-char 1))
            ((< c 32)
             (delete-char 1)
