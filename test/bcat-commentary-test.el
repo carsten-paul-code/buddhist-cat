@@ -475,7 +475,7 @@ Tibetan request has assigned the pādas (C-c u G)."
 (ert-deftest bcat-commentary-fetch-with-verse ()
   "Carsten 30.10.: „bei C-c u G immer beide analysiert und auf das
 Remarkable gepusht“.  C-c u G on the verse IX.16: the verse pair (two
-requests) and the commentary — DharmaMitra per Sthiramati sentence, then
+requests) and the commentary — DharmaMitra once for the whole part, then
 ONE request for the whole commentary with the verse; the document gets
 the full analysis, Claude's lemmata (630 too), the running translation;
 the verse files link the lemma sentences; both documents go to the
@@ -491,7 +491,7 @@ reMarkable (the hook runs for the verse file and the commentary)."
         (should (string-match-p "\"sentences\"" sys))
         (should (string-match-p (regexp-quote "[139] ji ltar chu yi snod chag na/ /") user))
         (should (string-match-p (regexp-quote "Sentence 258\n[626] Tibetan: དཔེ་བསྟན་པའི་ཕྱིར།") user))
-        (should (string-match-p (regexp-quote "=== DharmaMitra ===\n[258] Inexpressible") user))
+        (should (string-match-p (regexp-quote "=== DharmaMitra ===\nInexpressible") user))
         (should-not (string-match-p "Thurman" user)))
       (let ((doc (expand-file-name "comm-IX.16-savbh.org" cfolder)))
         (let ((text (bcat-sentence-test--text-of doc)))
@@ -525,6 +525,25 @@ steps, and the PDF and upload of its document (or their error)."
                    text))
           (should-not (string-match-p "Satz 36 .*Sthiramati" text))))
       (kill-buffer bcat-status-buffer-name))))
+
+(ert-deftest bcat-commentary-dharmamitra-once-per-part ()
+  "Carsten 30.10.: „Prinzipiell wäre es gut, wenn wir Dharma Mitra nur
+1x abholen und dann entsprechend auf die Segmente aufteilen.“  One
+commentary run took a DharmaMitra request per Sthiramati sentence (IX.60:
+14, twice) and DharmaMitra's daily limit (100) was gone.  Now one request
+per part — the whole part's Tibetan — and Claude splits it onto the
+segments (references per segment)."
+  (bcat-commentary-test--with-msa
+    (let ((dm-texts '()))
+      (bcat-sentence-test--with-stubs #'bcat-commentary-test--answers
+        (cl-letf (((symbol-function 'tibetan-dharmamitra-api-chat-translate)
+                   (lambda (text &rest _) (push text dm-texts) "Inexpressible and invisible")))
+          (bcat-sentence-test--fetch-n src 36)))
+      ;; Two for the verse pair (Sanskrit, Tibetan), one for the commentary.
+      (should (= 3 (length dm-texts)))
+      (should (cl-some (lambda (t) (and (string-match-p "དཔེ་བསྟན་པའི་ཕྱིར" t)
+                                        (string-match-p "ཞེས་བྱ་བ་སྨོས་ཏེ" t)))
+                       dm-texts)))))
 
 (ert-deftest bcat-commentary-fetch-in-parts ()
   "A long commentary goes in parts (IX.8: 72 sentences): at most

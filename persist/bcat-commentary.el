@@ -743,10 +743,8 @@ get their links and the document goes to the reMarkable (C-c u H)."
                                         (mapcar (lambda (g) (list (car g) (cdr g) (bcat-sentence--wylie (cdr g))))
                                                 (plist-get s :segs))))
                                 chunk))
-             (texts (delq nil (mapcar (lambda (s) (let ((tr (cdr (assq (plist-get s :sent-num) dm))))
-                                                    (and tr (format "[%d] %s" (plist-get s :sent-num) tr))))
-                                      chunk)))
-             (refs (and texts (list (cons "DharmaMitra" (string-join texts "\n"))))))
+             (tr (cdr (assq k dm)))
+             (refs (and tr (list (cons "DharmaMitra" tr)))))
         (tibetan-discussion--submit
          (format "bcat-commentary-%d" k) doc
          (lambda ()
@@ -754,30 +752,35 @@ get their links and the document goes to the reMarkable (C-c u H)."
                  (bcat-commentary-user-prompt verse sentences refs (plist-get meta :claude-context))))
          (lambda (_f response) (bcat-commentary--land doc k response)))))))
 
-(defun bcat-commentary--dharmamitra (run sentences)
-  "DharmaMitra on each of SENTENCES of RUN, one after the other with the
-usual pause; then the Claude requests."
-  (if (or (null sentences)
+(defun bcat-commentary--dharmamitra (run chunks k)
+  "DharmaMitra once on each of CHUNKS (the parts of RUN, the K-th first)
+— the whole part's Tibetan, one request (Carsten 30.10.: „Dharma Mitra
+nur 1x abholen und dann entsprechend auf die Segmente aufteilen“; per
+sentence one run of IX.60 took 14 of the 100 a day) — one after the
+other with the usual pause; then the Claude requests, which split it
+onto the segments."
+  (if (or (null chunks)
           ;; The daily limit reached: no more waiting for answers that
           ;; cannot come (30.10.).
           (and (fboundp 'tibetan-dharmamitra-api-limit-reached-p)
                (tibetan-dharmamitra-api-limit-reached-p)
                (progn (bcat-commentary--status run "DharmaMitra: Tageslimit erreicht") t)))
       (bcat-commentary--submit run (plist-get run :chunk-list))
-    (let* ((s (car sentences))
-           (tr (bcat-sentence--dharmamitra (plist-get run :doc) s))
-           (total (length (plist-get run :chunk-list-sentences))))
+    (let* ((chunk (car chunks))
+           (part (list :sent-num (plist-get (car chunk) :sent-num)
+                       :segs (cl-mapcan (lambda (s) (copy-sequence (plist-get s :segs))) chunk)))
+           (tr (bcat-sentence--dharmamitra (plist-get run :doc) part)))
       (when tr
-        (setq run (plist-put run :dm (cons (cons (plist-get s :sent-num) tr) (plist-get run :dm))))
+        (setq run (plist-put run :dm (cons (cons k tr) (plist-get run :dm))))
         (puthash (plist-get run :doc) run bcat-commentary--runs))
-      (bcat-commentary--status run (format "DharmaMitra %d/%d" (- total (length (cdr sentences))) total))
+      (bcat-commentary--status run (format "DharmaMitra %d/%d" k (plist-get run :chunks)))
       (run-at-time (if (boundp 'tibetan-dharmamitra-sentence-request-delay)
                        tibetan-dharmamitra-sentence-request-delay 6.5)
-                   nil #'bcat-commentary--dharmamitra run (cdr sentences)))))
+                   nil #'bcat-commentary--dharmamitra run (cdr chunks) (1+ k)))))
 
 (defun bcat-commentary-fetch (section commentary-source &optional status-file)
   "C-c u G for the commentary of SECTION of COMMENTARY-SOURCE: the
-document (created when missing), DharmaMitra per sentence, then Claude
+document (created when missing), DharmaMitra once per part, then Claude
 — the whole commentary at once, in parts when long; each part lands as
 it comes, and when all have, the verse files get their links and the
 document goes to the reMarkable.  STATUS-FILE: the verse file below
@@ -791,7 +794,6 @@ Nothing while one runs already."
              (run (list :doc doc :section section :source commentary-source
                         :status-file status-file
                         :chunk-list (bcat-commentary--chunks sentences)
-                        :chunk-list-sentences sentences
                         :chunks (length (bcat-commentary--chunks sentences))
                         :answers nil :failed nil :dm nil :refs nil)))
         (puthash doc run bcat-commentary--runs)
@@ -800,7 +802,7 @@ Nothing while one runs already."
                                    (file-name-base doc))
                            status-file))
         (bcat-commentary--status run "DharmaMitra …")
-        (run-at-time 0 nil #'bcat-commentary--dharmamitra run sentences)
+        (run-at-time 0 nil #'bcat-commentary--dharmamitra run (plist-get run :chunk-list) 1)
         doc))))
 
 ;; ----------------------------------------------------------------------------
