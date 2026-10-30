@@ -262,21 +262,31 @@ start of the answer (the object began at START)."
 (defun bcat-analysis--repair-json (text)
   "TEXT with the defects seen in Claude's JSON mended: a raw control
 character inside a string is escaped; so is a quote inside a string
-that cannot end it — one not followed by `:', `]', `}' or `,' plus the
-start of a value (Eimer's \"Um die Hemmnisse, nämlich die
-\"Befleckungen\", …\" in Lindtner's note); a backslash before a
-character JSON does not escape is dropped (29.10.: a backslash before
-the apostrophe of the genitive particle in a structure line).  Valid JSON
-comes back unchanged."
+that cannot end it where the string stands — a key ends before `:', a
+value in an object before `}' or `,' plus the start of a key, an
+element of an array before `]' or `,' plus the start of a value
+\(Eimer's \"Um die Hemmnisse, nämlich die \"Befleckungen\", …\" in
+Lindtner's note; 30.10., bDen 16: [TERM + auxiliary, \\\"come to
+realize\"] in a structure line — a quote before `]' in an object's
+value); a backslash before a character JSON does not escape is dropped
+\(29.10.: a backslash before the apostrophe of the genitive particle in
+a structure line).  Valid JSON comes back unchanged."
   (with-temp-buffer
     (insert text)
     (goto-char (point-min))
-    (let ((in-string nil))
+    (let ((in-string nil) (key nil) (expect-key nil) (stack '())
+          (value "[ \t\n\r]*\\(?:[\"{[]\\|-?[0-9]\\|true\\_>\\|false\\_>\\|null\\_>\\)"))
       (while (not (eobp))
         (let ((c (char-after)))
           (cond
            ((not in-string)
-            (when (eq c ?\") (setq in-string t))
+            (pcase c
+              (?\" (setq in-string t
+                         key (and expect-key (eq (car stack) ?{))))
+              ((or ?{ ?\[) (push c stack) (setq expect-key (eq c ?{)))
+              ((or ?} ?\]) (pop stack) (setq expect-key nil))
+              (?, (setq expect-key (eq (car stack) ?{)))
+              (?: (setq expect-key nil)))
             (forward-char 1))
            ((eq c ?\\)
             (if (memq (char-after (1+ (point))) '(?\" ?\\ ?/ ?b ?f ?n ?r ?t ?u))
@@ -287,8 +297,15 @@ comes back unchanged."
            ((eq c ?\")
             (if (save-excursion
                   (forward-char 1)
-                  (looking-at "[ \t\n\r]*\\(?:[]:}]\\|\\'\\|,[ \t\n\r]*\\(?:[\"{[]\\|-?[0-9]\\|true\\_>\\|false\\_>\\|null\\_>\\)\\)"))
-                (setq in-string nil)
+                  (skip-chars-forward " \t\n\r")
+                  (cond ((eobp))
+                        (key (eq (char-after) ?:))
+                        ((eq (char-after) ?,)
+                         (forward-char 1)
+                         (looking-at (if (eq (car stack) ?{) "[ \t\n\r]*\"" value)))
+                        ((eq (car stack) ?{) (eq (char-after) ?}))
+                        ((eq (car stack) ?\[) (eq (char-after) ?\]))))
+                (setq in-string nil expect-key nil)
               (insert "\\"))
             (forward-char 1))
            ((< c 32)

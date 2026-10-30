@@ -286,6 +286,29 @@ character JSON does not escape is dropped; valid escapes stay."
     (should (equal "/shes bya/ ='i= [GEN] · \"x\" a\nb"
                    (alist-get 'structure (car (alist-get 'segments parsed)))))))
 
+(ert-deftest bcat-analysis-parse-repairs-quote-before-bracket ()
+  "30.10., bDen 16 (kept answer, „JSON-Fehler bei Zeichen 988“): in the
+structure line Claude escaped the opening quote of a gloss but not the
+closing one, and a bracket followed — =\\='gyur= [TERM + auxiliary,
+\\\"come to realize\"].  A quote before `]' ended the string, though the
+string is a value in an object, where `]' cannot close anything.
+Whether a quote can end a string depends on where the string stands: a
+key before `:', a value in an object before `}' or `,', an element of
+an array before `]' or `,'."
+  (let ((parsed (bcat-analysis-parse
+                 (concat "{\"segments\": [{\"num\": 66, "
+                         "\"shift\": \"Apple 2019: \"from them\" (plural) — singular.\", "
+                         "\"structure\": \"/rtogs par/ ='gyur= [TERM + auxiliary → future, "
+                         "\\\"come to realize\"] → main clause of 16ab\",\n"
+                         "\"note\": \"n\", \"words\": [\"a\", \"b\"]}]}"))))
+    (should parsed)
+    (let ((seg (car (alist-get 'segments parsed))))
+      (should (equal "/rtogs par/ ='gyur= [TERM + auxiliary → future, \"come to realize\"] → main clause of 16ab"
+                     (alist-get 'structure seg)))
+      (should (equal "Apple 2019: \"from them\" (plural) — singular." (alist-get 'shift seg)))
+      (should (equal "n" (alist-get 'note seg)))
+      (should (equal '("a" "b") (alist-get 'words seg))))))
+
 (ert-deftest bcat-analysis-mark-reference ()
   "The sentence-level paragraph of a reference is OUR text, note
 included; its bold marks come from Claude's segment parts, in order: a
