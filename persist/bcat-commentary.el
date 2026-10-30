@@ -500,9 +500,9 @@ each segment, the grammar of each sentence.  Constant per document."
 
 Rules:
 - segments: one entry per given segment, same numbers, same order.
-- lemma: when the segment quotes the verse — the commentator's lemma, also in his own wording or word order or only in part — the number of the verse line it quotes; 0 when it quotes none.  A quotation of the prose commentary (bhāṣya) is no lemma.
+- lemma: when the segment quotes the verse — the commentator's lemma, also in his own wording or word order or only in part — the number in square brackets of the verse line it quotes (e.g. 459 for [459]); 0 when it quotes none.  A quotation of the prose commentary (bhāṣya) is no lemma.
 %s
-- In translations, give a quoted verse line in quotation marks.
+- In translations, give a quoted verse line in quotation marks — never a verse line's number (that belongs in lemma).
 - sentences: one entry per given sentence; grammar: its syntax in one or two sentences — clauses and their linkage, the quotation markers (zhes bya ba …).
 - JSON escaping: only \\\" and \\\\ — never a backslash before an apostrophe.
 - Write glosses, notes and explanations in %s. Never mention yourself."
@@ -566,6 +566,19 @@ sentences in the order of the parts."
     `((segments . ,(cl-mapcan (lambda (a) (copy-sequence (alist-get 'segments a))) answers))
       (sentences . ,(cl-mapcan (lambda (a) (copy-sequence (alist-get 'sentences a))) answers)))))
 
+(defun bcat-commentary--lemma-pada (value padas)
+  "The pāda of PADAS ((NUM . WYLIE) …) that Claude's `lemma' VALUE names:
+its number (459), its place in the verse (2 → the second pāda) or a
+text naming either („[460]“, „line 2“); nil for 0 or nothing.  30.10.,
+IX.60: Claude named every quotation in the translations („verse line 2
+[460]“), and none of them came through the field."
+  (let ((n (cond ((integerp value) value)
+                 ((and (stringp value) (string-match "[0-9]+" value))
+                  (string-to-number (match-string 0 value))))))
+    (cond ((null n) nil)
+          ((assq n padas) n)
+          ((<= 1 n (length padas)) (car (nth (1- n) padas))))))
+
 (defun bcat-commentary--lemmata (section commentary-source parsed)
   "The lemmata of SECTION: Claude's from PARSED where it names a verse
 line, else the tool's — with the readings where the segment gives the
@@ -577,9 +590,8 @@ line's wording (else `free')."
                          append (mapcar (lambda (g) (cons (car g) (bcat-sentence--wylie (cdr g))))
                                         (plist-get s :segs))))
          (claude (delq nil (mapcar (lambda (c)
-                                     (let ((pada (bcat-analysis--num c 'lemma)))
-                                       (and pada (assq pada padas)
-                                            (cons (bcat-analysis--num c) pada))))
+                                     (let ((pada (bcat-commentary--lemma-pada (alist-get 'lemma c) padas)))
+                                       (and pada (cons (bcat-analysis--num c) pada))))
                                    (alist-get 'segments parsed)))))
     (append
      (mapcar (lambda (c)

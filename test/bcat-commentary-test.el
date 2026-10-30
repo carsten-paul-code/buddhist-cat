@@ -306,6 +306,29 @@ uses the pāda's words (630) is no lemma; neither is an introduction."
     (462 . "dang po gnyis pa'i rten yin no/ /"))
   "The Tibetan pādas of MSA IX.60.")
 
+(ert-deftest bcat-commentary-claude-lemma-forms ()
+  "30.10., first real run (MSA IX.60): Claude named all five quotations —
+in the translations („As for \"the nature and …\" (verse line 2 [460])“)
+— but no lemma line came of it beyond the tool's two.  The `lemma'
+field is read as the pāda's number (459), as the line's place in the
+verse (2 → the second pāda) or as text naming either („[460]“); the
+prompt asks for the number in brackets and keeps line numbers out of
+the translations."
+  (bcat-commentary-test--with-msa
+    (let ((l (bcat-commentary--lemmata
+              "Section IX.16" csrc
+              '((segments ((num . 630) (lemma . 2))
+                          ((num . 631) (lemma . "[141]"))
+                          ((num . 629) (lemma . "line 3"))
+                          ((num . 626) (lemma . 0)))))))
+      (should (equal 140 (cadr (assq 630 l))))
+      (should (equal 141 (cadr (assq 631 l))))
+      (should (equal 141 (cadr (assq 629 l))))
+      (should-not (assq 626 l))))
+  (let ((sys (bcat-commentary-system-prompt "en")))
+    (should (string-match-p "number in square brackets" sys))
+    (should (string-match-p "never a verse line's number" sys))))
+
 (ert-deftest bcat-commentary-lemmata-marked ()
   "MSA IX.60: Sthiramati quotes in his own wording and word order, often
 only part of a pāda — what stands before his quote marker („… zhes bya
