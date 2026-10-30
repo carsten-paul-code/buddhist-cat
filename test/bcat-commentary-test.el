@@ -16,6 +16,7 @@
 (require 'cl-lib)
 (require 'bcat-sentence-test)
 (require 'bcat-commentary)
+(require 'bcat-export)
 
 (defconst bcat-commentary-test--sanskrit
   (concat "#+TITLE: Mahāyānasūtrālaṃkāra IX mit Bhāṣya — CAT-Quelle (Sanskrit)\n"
@@ -412,6 +413,36 @@ Tibetan request has assigned the pādas (C-c u G)."
                               text)))
     (should (string-match-p (regexp-quote "*Sthiramati:* lemmata in [[file:../../Sthiramati/analysis/comm-IX.16-savbh.org::*Sentence 258][258]]")
                             (bcat-sentence-test--text-of (tibetan-sentence--filepath 64 tfolder tsrc))))))
+
+(ert-deftest bcat-commentary-export-info ()
+  "The commentary's PDF goes to the reMarkable beside the verse's: in the
+folder of the work the verses belong to, named after the document."
+  (bcat-commentary-test--with-msa
+    (let ((info (bcat-export-info (bcat-sentence-ensure-file 259 csrc))))
+      (should (equal "Mahāyānasūtrālaṃkāra IX mit Bhāṣya" (plist-get info :work)))
+      (should (equal "Sthiramati zu MSA IX.16, MSA IX.17" (plist-get info :label)))
+      (should (equal "Sthiramati" (plist-get info :folder)))
+      (should-not (plist-get info :sent-num))
+      (should (string-match-p
+               (regexp-quote "{\\small Sthiramati · \\textit{Mahāyānasūtrālaṃkāra IX mit Bhāṣya} · MSA IX.16, MSA IX.17}")
+               (bcat-export-head-lines (plist-get info :folder) (plist-get info :work)
+                                       (plist-get info :sent-num) (plist-get info :verse)))))))
+
+(ert-deftest bcat-commentary-document-commands ()
+  "C-c u G and C-c u H in the commentary document itself: it counts as
+a sentence file of the template `commentary', and its scope is the
+commentary source with the document's sentences — C-c u G goes on to
+the verses it covers (`bcat-sentence-fetch')."
+  (bcat-commentary-test--with-msa
+    (let ((doc (bcat-sentence-ensure-file 259 csrc)))
+      (should (equal "commentary" (bcat-sentence-file-p doc)))
+      (with-current-buffer (find-file-noselect doc)
+        (unwind-protect
+            (let ((scope (tibetan-cascade--scope-at-point)))
+              (should (file-equal-p csrc (plist-get scope :source)))
+              (should (equal '(258 259 260 261 262 263) (plist-get scope :sent-nums)))
+              (should (equal "Sthiramati zu MSA IX.16, MSA IX.17" (plist-get scope :label))))
+          (kill-buffer))))))
 
 (provide 'bcat-commentary-test)
 ;;; bcat-commentary-test.el ends here

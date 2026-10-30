@@ -260,10 +260,11 @@ Uchen over Wylie; nil when the verse has none."
           (bhasya-tibetan-p . ,(and tib t)))))))
 
 (defun bcat-sentence-file-p (file)
-  "The template the sentence FILE (sent-NNN…) was built from (its
-#+CAT_TEMPLATE:), or nil for a file in the old layout — and for
-anything that is no sentence file (a source carries the line too)."
-  (when (and file (string-match-p "\\`sent-[0-9]" (file-name-nondirectory file)))
+  "The template the sentence FILE (sent-NNN…, or a commentary document
+comm-…) was built from (its #+CAT_TEMPLATE:), or nil for a file in the
+old layout — and for anything that is no sentence file (a source
+carries the line too)."
+  (when (and file (string-match-p "\\`\\(?:sent-[0-9]\\|comm-\\)" (file-name-nondirectory file)))
     (bcat-sentence--header-value file "CAT_TEMPLATE")))
 
 ;; ----------------------------------------------------------------------------

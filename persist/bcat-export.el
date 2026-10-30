@@ -26,6 +26,7 @@
 (declare-function tibetan-sentence--sent-id-from-filename "tibetan-sentence-persist" (filename))
 (declare-function tibetan-sentence--filepath "tibetan-sentence-persist" (sent-num &optional folder source-file))
 (declare-function tibetan-cascade--collect-sentences "tibetan-cascade" ())
+(declare-function bcat-commentary-lead "bcat-commentary" (commentary-source))
 (declare-function tibetan-cascade--scope-at-point "tibetan-cascade" ())
 (declare-function tibetan-discussion-paper--upload "tibetan-discussion-paper" (pdf title label &optional done))
 (declare-function tibetan-discussion-paper--temp-source-p "tibetan-discussion-paper" (file))
@@ -70,28 +71,61 @@ document „Satz N“); nil only writes the PDF next to the file."
 
 (defun bcat-export-head-lines (folder work sent-num verse)
   "The #+LATEX_HEADER lines of the running head: FOLDER · WORK
-\(italic) · Satz SENT-NUM · VERSE (left), the page number (right)."
+\(italic) · Satz SENT-NUM · VERSE (left), the page number (right);
+without SENT-NUM (a commentary document) no „Satz“."
   (concat
    "#+LATEX_HEADER: \\usepackage{fancyhdr}\\pagestyle{fancy}\\fancyhf{}\\renewcommand{\\headrulewidth}{0.4pt}\n"
    (format "#+LATEX_HEADER: \\fancyhead[L]{\\small %s}\\fancyhead[R]{\\small\\thepage}\n"
            (mapconcat #'identity
                       (delq nil (list (bcat-export--latex-escape folder)
                                       (format "\\textit{%s}" (bcat-export--latex-escape work))
-                                      (format "Satz %d" sent-num)
+                                      (and sent-num (format "Satz %d" sent-num))
                                       (and verse (bcat-export--latex-escape verse))))
                       " · "))))
+
+(defun bcat-export--title (file)
+  "FILE's #+TITLE up to „ — “, or nil."
+  (let ((title (and file (bcat-sentence--header-value file "TITLE"))))
+    (and title (string-trim (car (split-string title " — "))))))
+
+(defun bcat-export--commentary-info (file)
+  "`bcat-export-info' for the commentary document FILE: the folder of
+the commentary source, the work of the verses it comments on (beside
+their PDFs on the reMarkable), the verses from #+CAT_VERSE, named after
+the document."
+  (let* ((src (tibetan-sentence--source-file-from-analysis file))
+         (lead (and src (bcat-commentary-lead src)))
+         (verse-line (bcat-sentence--header-value file "CAT_VERSE"))
+         (verses (let ((pos 0) (out '()))
+                   (while (and verse-line (string-match "\\]\\[\\([^]]+\\)\\]\\]" verse-line pos))
+                     (push (match-string 1 verse-line) out)
+                     (setq pos (match-end 0)))
+                   (nreverse out))))
+    (list :source src
+          :folder (and src (file-name-nondirectory
+                            (directory-file-name (file-name-directory src))))
+          :work (or (bcat-export--title lead) (and lead (file-name-base lead)) (file-name-base file))
+          :sent-num nil
+          :verse (and verses (string-join verses ", "))
+          :label (or (bcat-sentence--header-value file "TITLE") (file-name-base file)))))
 
 (defun bcat-export-info (file)
   "What the PDF of the sentence FILE is labelled with: (:source :folder
 :work :sent-num :verse :label) — folder and work title from the source
-\(its #+TITLE before „ — “), the verse from its :VERSE:."
+\(its #+TITLE before „ — “), the verse from its :VERSE:.  A commentary
+document: `bcat-export--commentary-info'."
+  (if (equal (bcat-sentence-file-p file) "commentary")
+      (bcat-export--commentary-info file)
+    (bcat-export--sentence-info file)))
+
+(defun bcat-export--sentence-info (file)
+  "`bcat-export-info' for the sentence FILE."
   (let* ((src (tibetan-sentence--source-file-from-analysis file))
          (n (tibetan-sentence--sent-id-from-filename file))
          (text (if (and src (file-readable-p src))
                    (with-temp-buffer (insert-file-contents src) (buffer-string))
                    ""))
-         (title (and (string-match "^#\\+TITLE:[ \t]*\\(.+\\)$" text)
-                     (string-trim (car (split-string (match-string 1 text) " — ")))))
+         (title (and src (file-readable-p src) (bcat-export--title src)))
          (verse (and src
                      (plist-get (cl-find n (with-temp-buffer
                                              (insert text)

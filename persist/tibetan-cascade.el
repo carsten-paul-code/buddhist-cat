@@ -64,6 +64,7 @@
 (declare-function bcat-sentence-template-name "bcat-sentence" (source-file))
 (declare-function bcat-sentence-create-file "bcat-sentence" (sent-num segs source-file filepath))
 (declare-function bcat-sentence-file-p "bcat-sentence" (file))
+(declare-function bcat-sentence--header-value "bcat-sentence" (file key))
 (declare-function bcat-sentence-fetch "bcat-sentence" (scope &optional force))
 
 ;; The §184-handout gloss tables (Masterarbeit three-view plan,
@@ -2455,18 +2456,33 @@ cascade SOURCE the scope follows the org outline like C-c u A
 \(§5.59 A1): Segment → its sentence, Sentence → it, any higher
 heading → every sentence below (a Section with `:LOPEZ_SECTION:'
 labels as \"§N\"), before the first heading → the document.  In a
-`sent-NNN' analysis buffer: that sentence."
+`sent-NNN' analysis buffer: that sentence; in a commentary document
+\(`comm-…', §5.74): the commentary source with its #+SENTENCES."
   (let ((file (buffer-file-name)))
     (unless file
       (user-error "Puffer ohne Datei — braucht eine Kaskaden-Quelle"))
-    (if (string-match-p "\\`sent-[0-9]" (file-name-nondirectory file))
-        (let ((n (tibetan-sentence--sent-id-from-filename file))
-              (src (tibetan-sentence--source-file-from-analysis file)))
-          (unless (and n src)
-            (user-error "Satz/Quelle von %s nicht bestimmbar"
-                        (file-name-nondirectory file)))
-          (list :source src :sent-nums (list n)
-                :label (format "Satz %d" n)))
+    (cond
+     ((string-match-p "\\`sent-[0-9]" (file-name-nondirectory file))
+      (let ((n (tibetan-sentence--sent-id-from-filename file))
+            (src (tibetan-sentence--source-file-from-analysis file)))
+        (unless (and n src)
+          (user-error "Satz/Quelle von %s nicht bestimmbar"
+                      (file-name-nondirectory file)))
+        (list :source src :sent-nums (list n)
+              :label (format "Satz %d" n))))
+     ((and (fboundp 'bcat-sentence-file-p)
+           (equal (bcat-sentence-file-p file) "commentary"))
+      (let ((src (tibetan-sentence--source-file-from-analysis file))
+            (nums (mapcar #'string-to-number
+                          (split-string (or (bcat-sentence--header-value file "SENTENCES") "")
+                                        "[ ,]+" t))))
+        (unless (and src nums)
+          (user-error "Quelle/Sätze von %s nicht bestimmbar"
+                      (file-name-nondirectory file)))
+        (list :source src :sent-nums nums
+              :label (or (bcat-sentence--header-value file "TITLE")
+                         (file-name-base file)))))
+     (t
       (unless (tibetan-analysis--cascade-p file)
         (user-error "%s ist kein Kaskaden-Dokument (#+TIBETAN_LAYOUT: cascade)"
                     (file-name-nondirectory file)))
@@ -2490,7 +2506,7 @@ labels as \"§N\"), before the first heading → the document.  In a
                                ((car sub) (string-remove-prefix
                                            "Section " (car sub)))
                                (t "gesamt"))
-                  :lopez lopez)))))))
+                  :lopez lopez))))))))
 
 ;; (Called by C-c u A since §5.60 WITHOUT any fire; the fetch lives
 ;; in `tibetan-cascade-fetch' / C-c u G.)
