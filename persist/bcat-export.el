@@ -37,6 +37,8 @@
 (declare-function org-end-of-subtree "org" (&optional invisible-ok to-heading element))
 (declare-function org-export-derived-backend-p "ox" (backend &rest backends))
 (defvar org-latex-compiler)
+(defvar org-latex-remove-logfiles)
+(defvar org-latex-logfiles-extensions)
 (defvar org-latex-pdf-process)
 (defvar org-latex-tables-centered)
 (defvar org-export-filter-table-functions)
@@ -330,6 +332,30 @@ ran off the page."
               "\\end{adjustbox}\n")
     text))
 
+(defvar bcat-export--missing nil
+  "The missing characters of the last `bcat-export-pdf', ((CHAR . FONT) …).")
+
+(defun bcat-export--missing-characters (log)
+  "The characters LuaLaTeX's LOG reports missing, ((CHAR . FONT) …) in
+order, each once — 30.10., TĀ 1001: ¦ came out as a box, and the status
+said „PDF ✓“."
+  (let ((pos 0) (out '()))
+    (while (string-match "Missing character: There is no \\(.\\) (U\\+[0-9A-F]+) in font \\(?:name:\\)?\\([^:/;!]+\\)" log pos)
+      (let ((hit (cons (match-string 1 log) (string-trim (match-string 2 log)))))
+        (setq pos (match-end 0))
+        (unless (member hit out) (push hit out))))
+    (nreverse out)))
+
+(defun bcat-export--missing-text (missing)
+  "MISSING ((CHAR . FONT) …) for the status line: „¦ (Noto Sans
+Devanagari)“, the characters of one font together."
+  (mapconcat (lambda (font)
+               (format "%s (%s)"
+                       (mapconcat #'car (cl-remove-if-not (lambda (m) (equal (cdr m) font)) missing) " ")
+                       font))
+             (delete-dups (mapcar #'cdr missing))
+             ", "))
+
 (defun bcat-export--drop-machine-sections (&rest _)
   "Delete from the current (export) buffer the `** Word Analysis'
 subtree — machine data for the zettel highlighting and the padapāṭha
@@ -368,31 +394,49 @@ HEAD (lines from `bcat-export-head-lines') goes into the export copy,
 never into the file.  LuaLaTeX, two runs (longtable), tables flush
 left at natural width, glossed verse lines broken only between word
 units, tables no wider than the line — bound here, Carsten's own export
-settings (centring, tabularx) stay untouched outside."
+settings (centring, tabularx) stay untouched outside.  The characters
+LuaLaTeX could not set land in `bcat-export--missing'."
   (require 'ox-latex)
+  (setq bcat-export--missing nil)
   (let* ((visited (get-file-buffer file))
          (buf (or visited (find-file-noselect file)))
+         (remove-logs org-latex-remove-logfiles)
          (insert-head (lambda (&rest _)
                         (goto-char (point-min))
                         (insert (bcat-export--font-lines) (or head "")))))
     (unwind-protect
         (with-current-buffer buf
           (when (buffer-modified-p) (save-buffer))
-          (let ((org-latex-compiler "lualatex")
-                (org-latex-pdf-process
-                 '("%latex -interaction nonstopmode -output-directory %o %f"
-                   "%latex -interaction nonstopmode -output-directory %o %f"))
-                (org-latex-tables-centered nil)
-                (org-export-filter-table-functions
-                 (append (remq 'org-latex-auto-tabularx org-export-filter-table-functions)
-                         (list #'bcat-export--table-filter)))
-                (org-export-filter-verse-block-functions
-                 (cons #'bcat-export--verse-filter org-export-filter-verse-block-functions))
-                (org-export-before-processing-functions
-                 (append (list insert-head #'bcat-export--drop-machine-sections)
-                         org-export-before-processing-functions)))
-            (bcat-export-remove-tex
-             (expand-file-name (org-latex-export-to-pdf) (file-name-directory file)))))
+          (let* ((pdf (let ((org-latex-compiler "lualatex")
+                            (org-latex-pdf-process
+                             '("%latex -interaction nonstopmode -output-directory %o %f"
+                               "%latex -interaction nonstopmode -output-directory %o %f"))
+                            (org-latex-tables-centered nil)
+                            ;; The log is read first (missing characters),
+                            ;; then cleared as org would.
+                            (org-latex-remove-logfiles nil)
+                            (org-export-filter-table-functions
+                             (append (remq 'org-latex-auto-tabularx org-export-filter-table-functions)
+                                     (list #'bcat-export--table-filter)))
+                            (org-export-filter-verse-block-functions
+                             (cons #'bcat-export--verse-filter org-export-filter-verse-block-functions))
+                            (org-export-before-processing-functions
+                             (append (list insert-head #'bcat-export--drop-machine-sections)
+                                     org-export-before-processing-functions)))
+                        (expand-file-name (org-latex-export-to-pdf) (file-name-directory file))))
+                 (base (file-name-sans-extension pdf))
+                 (log (concat base ".log")))
+            (when (file-readable-p log)
+              (setq bcat-export--missing
+                    (bcat-export--missing-characters
+                     (with-temp-buffer (insert-file-contents log) (buffer-string)))))
+            (when remove-logs
+              (dolist (f (directory-files (file-name-directory pdf) t
+                                          (concat "\\`" (regexp-quote (file-name-nondirectory base))
+                                                  "\\(?:\\.[0-9]+\\)?\\."
+                                                  (regexp-opt org-latex-logfiles-extensions) "\\'")))
+                (delete-file f)))
+            (bcat-export-remove-tex pdf)))
       (unless visited (kill-buffer buf)))))
 
 (defun bcat-export-file (file)
@@ -414,7 +458,10 @@ reMarkable (`bcat-export-upload').  Returns the PDF path."
                    (setq pdf target))
           (error (message "PDF nicht nach handouts/ verschoben (%s): %s"
                           (file-name-nondirectory target) (error-message-string err))))))
-    (bcat-status-step file :pdf "PDF ✓")
+    (bcat-status-step file :pdf (if bcat-export--missing
+                                    (concat "PDF ✓ · fehlende Zeichen: "
+                                            (bcat-export--missing-text bcat-export--missing))
+                                  "PDF ✓"))
     (if bcat-export-upload
         (progn
           (require 'tibetan-discussion-paper)

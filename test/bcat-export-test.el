@@ -235,18 +235,6 @@ are."
   (let ((plain "\\begin{verse}\nbrjod du med pa/ /\\\\\n\\end{verse}\n"))
     (should (equal plain (bcat-export--verse-units plain)))))
 
-(ert-deftest bcat-export-tables-fit ()
-  "30.10., TĀ Satz 1001: the metre table (19 syllables and the pause)
-ran off the page.  A table wider than the line is scaled down to it
-\(adjustbox, max width) — narrower ones keep their size; the package
-comes with the header."
-  (should (equal (concat "\\begin{adjustbox}{max width=\\linewidth}\n"
-                         "\\begin{tabular}{ll}\na & b\\\\\n\\end{tabular}\n"
-                         "\\end{adjustbox}\n")
-                 (bcat-export--table-filter "\\begin{tabular}{ll}\na & b\\\\\n\\end{tabular}\n"
-                                            'latex nil)))
-  (should (string-match-p (regexp-quote "\\usepackage{adjustbox}") (bcat-export--font-lines))))
-
 (ert-deftest bcat-export-verse-units-long-gloss ()
   "30.10., TĀ Satz 1001: „śiva-śāsana-āgama-rahasya-ācchādana-dhvaṃsi
 [destroying the concealment of the secret of Śiva's teaching-tradition]“
@@ -264,6 +252,45 @@ last gloss word.  Shorter units stay whole (29.10.)."
                     (concat "\\begin{verse}\n"
                             "me [my] dhvaṃsi [destroying the concealment of Śiva's teaching-tradition] //\\\\\n"
                             "\\end{verse}\n"))))))
+
+(ert-deftest bcat-export-tables-fit ()
+  "30.10., TĀ Satz 1001: the metre table (19 syllables and the pause)
+ran off the page.  A table wider than the line is scaled down to it
+\(adjustbox, max width) — narrower ones keep their size; the package
+comes with the header."
+  (should (equal (concat "\\begin{adjustbox}{max width=\\linewidth}\n"
+                         "\\begin{tabular}{ll}\na & b\\\\\n\\end{tabular}\n"
+                         "\\end{adjustbox}\n")
+                 (bcat-export--table-filter "\\begin{tabular}{ll}\na & b\\\\\n\\end{tabular}\n"
+                                            'latex nil)))
+  (should (string-match-p (regexp-quote "\\usepackage{adjustbox}") (bcat-export--font-lines))))
+
+(ert-deftest bcat-export-missing-characters ()
+  "30.10.: Satz 1001 showed boxes for ¦ and the status said „PDF ✓“ — a
+missing glyph is only a LaTeX warning.  The export reads the log:
+the status line names the missing characters."
+  (should (equal '(("¦" . "Noto Sans Devanagari") ("⏑" . "Times New Roman"))
+                 (bcat-export--missing-characters
+                  (concat "Missing character: There is no ¦ (U+00A6) in font name:Noto Sans Devanagari:mode=harf;script=dev2;language=dflt;!\n"
+                          "Missing character: There is no ¦ (U+00A6) in font name:Noto Sans Devanagari:mode=harf;!\n"
+                          "Missing character: There is no ⏑ (U+23D1) in font Times New Roman/OT:script=latn;!\n"))))
+  (should-not (bcat-export--missing-characters "Output written on x.pdf (7 pages).\n"))
+  (bcat-sentence-test--with-source
+    (bcat-sentence-test--create src)
+    (let* ((file (tibetan-sentence--filepath 9 folder src))
+           (pdf (concat (file-name-sans-extension file) ".pdf")))
+      (cl-letf (((symbol-function 'bcat-export-pdf)
+                 (lambda (&rest _)
+                   (setq bcat-export--missing '(("¦" . "Noto Sans Devanagari")))
+                   (with-temp-file pdf (insert "PDF")) pdf)))
+        (let ((bcat-export-upload nil)
+              (bcat-status-show nil)
+              (bcat-status--entries (make-hash-table :test 'equal)))
+          (bcat-status-begin "C-c u H" "Satz 9" (list (cons file "SDA 9")))
+          (bcat-export-file file)
+          (should (string-match-p "^  SDA 9  PDF ✓ · fehlende Zeichen: ¦ (Noto Sans Devanagari)$"
+                                  (with-current-buffer bcat-status-buffer-name (buffer-string))))
+          (kill-buffer bcat-status-buffer-name))))))
 
 (ert-deftest bcat-export-verse-scripts-foreign-signs ()
   "30.10., TĀ Satz 1001: in the recitation the pause sign ¦ stands in
