@@ -239,6 +239,21 @@ without a parsable object with segments is nil."
     (should-not (bcat-analysis-parse "{\"segments\": [1, 2"))
     (should-not (bcat-analysis-parse nil))))
 
+(ert-deftest bcat-analysis-read-reports-truncation ()
+  "30.10., AS sentence 2: the answer ended after 41 283 characters in the
+middle of „grammar“ — Claude had reached the output limit.  C-c u G
+reported „JSON-Fehler bei Zeichen 40932“, which says nothing about the
+cause.  An answer whose object never closes is reported as cut off at
+the token limit; a complete but broken one keeps its JSON error."
+  (let ((cut (concat "{\"segments\": [{\"num\": 15, \"words\": []},"
+                     " {\"num\": 16, \"words\": [{\"word\": \"pañca\"}]}],"
+                     " \"grammar\": \"Sentence 2 is a complete catechetical unit {sic} with")))
+    (should-not (car (bcat-analysis-read cut)))
+    (should (string-match-p "abgeschnitten" (cdr (bcat-analysis-read cut))))
+    (should (string-match-p "tibetan-claude-max-tokens" (cdr (bcat-analysis-read cut)))))
+  (should (string-match-p "JSON-Fehler"
+                          (cdr (bcat-analysis-read "{\"segments\": [1 2], \"grammar\": \"g\"}")))))
+
 (ert-deftest bcat-analysis-parse-repairs-copied-text ()
   "The prompt asks for the reference translations verbatim inside JSON
 strings — Lindtner's verse 9 with its note (a paragraph break; Eimer

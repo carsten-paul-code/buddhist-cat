@@ -289,6 +289,20 @@ comes back unchanged."
            (t (forward-char 1))))))
     (buffer-string)))
 
+(defun bcat-analysis--unterminated-p (text)
+  "Non-nil when the JSON in TEXT (from its first brace) never closes — an
+answer cut off at the output limit (30.10., AS sentence 2: it ended
+after 41 283 characters inside „grammar“)."
+  (let ((depth 0) (in-string nil) (escape nil))
+    (dolist (c (string-to-list text))
+      (cond (escape (setq escape nil))
+            ((and in-string (eq c ?\\)) (setq escape t))
+            ((eq c ?\") (setq in-string (not in-string)))
+            (in-string)
+            ((memq c '(?{ ?\[)) (cl-incf depth))
+            ((memq c '(?} ?\])) (cl-decf depth))))
+    (or in-string (> depth 0))))
+
 (defun bcat-analysis--decode (json)
   "JSON (a string) as an alist with symbol keys and lists for arrays."
   (json-parse-string json :object-type 'alist :array-type 'list
@@ -297,8 +311,9 @@ comes back unchanged."
 (defun bcat-analysis-read (response)
   "(OBJECT . PROBLEM) for Claude's RESPONSE: the JSON object as an alist
 \(keys as symbols, arrays as lists) and nil, or nil and a short
-description why there is none.  Tolerates a code fence or prose around
-the object, and mends what `bcat-analysis--repair-json' mends."
+description why there is none — an answer cut off at the output limit
+says so.  Tolerates a code fence or prose around the object, and mends
+what `bcat-analysis--repair-json' mends."
   (if (not (and (stringp response) (string-match "{" response)))
       (cons nil "kein JSON-Objekt")
     (let* ((start (match-beginning 0))
@@ -316,6 +331,8 @@ the object, and mends what `bcat-analysis--repair-json' mends."
           (cond
            ((and (consp obj) (assq 'segments obj)) (cons obj nil))
            ((or obj (null (cdr strict))) (cons nil "JSON ohne segments"))
+           ((bcat-analysis--unterminated-p (substring response start))
+            (cons nil "abgeschnitten — Grenze `tibetan-claude-max-tokens' erreicht"))
            (t (cons nil (bcat-analysis--json-problem (cdr strict) start)))))))))
 
 (defun bcat-analysis-parse (response)
