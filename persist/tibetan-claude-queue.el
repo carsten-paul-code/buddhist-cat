@@ -74,14 +74,18 @@
   :group 'buddhist-cat
   :prefix "tibetan-claude-queue-")
 
-(defcustom tibetan-claude-max-tokens 16000
+(defcustom tibetan-claude-max-tokens 32000
   "Response budget (`max_tokens') of every analysis request to Claude.
 §5.61 (2026-10-12): unset, gptel-anthropic sends 4096 — a sentence-
 level answer (translation, vocabulary, grammar, particles, concept
 notes over several segments) runs past that and arrives cut off
 \(sent-654, the B4 truncation stub); the detailed Sanskrit grammar
-needs even more.  Billing follows the tokens actually produced, not
-this ceiling.  Bound as `gptel-max-tokens' at each request site."
+needs even more.  30.10. (was 16000): AS sentence 2 — 18 dhātus and
+12 āyatanas, each with forms and compounds — was cut off at 16000
+tokens; it needs about 18000.  Not higher: gptel requests without
+streaming, and an answer of 32000 tokens already takes minutes.
+Billing follows the tokens actually produced, not this ceiling.  Bound
+as `gptel-max-tokens' at each request site."
   :type 'integer
   :group 'buddhist-cat)
 

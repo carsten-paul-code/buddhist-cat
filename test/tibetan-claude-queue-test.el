@@ -372,5 +372,16 @@ Used to make backoff retries deterministic in tests."
                '(:status "HTTP/2 500 Internal Server Error")))
   (should-not (tibetan-analysis--claude-status-rate-limited-p nil)))
 
+(ert-deftest tibetan-claude-max-tokens-fits-long-sentences ()
+  "30.10., AS sentence 2 (18 dhātus, 12 āyatanas, each with forms and
+compounds): the Sanskrit answer was cut off at 16000 tokens after
+41 283 characters; complete it needs about 18000, the full Tibetan
+analysis of its 41 segments about 12000.  The budget leaves room for
+that — and stays where a request without streaming ends within minutes
+\(gptel sends none; a dropped connection would be retried and billed
+again)."
+  (should (>= (default-value 'tibetan-claude-max-tokens) 32000))
+  (should (<= (default-value 'tibetan-claude-max-tokens) 32000)))
+
 (provide 'tibetan-claude-queue-test)
 ;;; tibetan-claude-queue-test.el ends here
