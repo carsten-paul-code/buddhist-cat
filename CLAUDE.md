@@ -12,7 +12,7 @@ NACH VORLAGE — Reading-Klassen, Tibetisch: `#+CAT_TEMPLATE: tibetan' im
 Quellkopf, Gliederung * Text / * Segments / * Sentence, C-c u A = Rumpf
 ohne KI, C-c u G = ein JSON-Abruf je Satz (+ DharmaMitra, + kleiner
 Zuordnungs-Abruf für ergänzte Vergleichsübersetzungen), endet mit C-c u H
-= die Satzdatei als PDF aufs reMarkable; Sanskrit seit 29.10. (Rezitation zuerst); * Text Tibetisch Uchen über Wylie, Sanskrit Rezitation in Devanāgarī + Text als IAST-Padapāṭha; ERT 2659.
+= die Satzdatei als PDF aufs reMarkable; Sanskrit seit 29.10. (Rezitation zuerst); * Text Tibetisch Uchen über Wylie, Sanskrit Rezitation in Devanāgarī + Text als IAST-Padapāṭha; ZWEISPRACHIG seit 30.10.: `#+CAT_TEMPLATE: bilingual' + `#+CAT_PARALLEL:' (AS), C-c u G = Sanskrit-Abruf, dann tibetischer Abruf (Claude ordnet die tibetischen Segmente zu); fremde L1-Abschnitte (`* Handout') überstehen jeden Neubau; ERT 2677.
 Previous: §5.73: UMBENENNUNG IN
 BUDDHIST CAT — erster Schritt: die Hülle (Hauptdatei/Feature
 buddhist-cat, alter Name lädt weiter, Customize-Gruppe, Menü, Repo,
@@ -4320,9 +4320,85 @@ aufheben, dann rendert C-c u G fertige Sätze ohne Abruf neu.
 LEHRE: `make compile' VOR dem Commit separat prüfen — in 3c erschienen
 Warnungen erst nach der Commit-Kette (es war ein veraltetes .elc).
 
+#### Zweisprachig (30.10.)
+
+Carsten: zweisprachige Dokumente wie die einsprachigen, abwechselnd;
+Referenz Abhidharmasamuccaya, danach MSA mit Kommentar.  Lesen am Mac
+(reMarkable nur zweiter Bildschirm).  Ablauf im Unterricht: Sanskrit
+laut lesen, zerlegen, übersetzen → Tibetisch laut lesen, auf
+Unterschiede eingehen → Referenzübersetzungen vergleichen →
+Übersetzungsvorschlag; auf Satz/Vers- oder Segmentebene.  Rezitation
+„kann wegfallen“.  Zielform an AS Satz 3 gezeigt und freigegeben
+(„sieht gut aus“); Entscheidungen: Tibetisch im Segment nur als Uchen
+über Wylie mit Vokabeln (keine eigene Tabelle) — „ich versuche es
+erstmal so“; *Differences:* nur, wo es welche gibt; die Zuordnung der
+tibetischen Segmente macht Claude (AskUserQuestion) — im AS kommen auf
+ein Sanskrit-Segment meist mehrere tibetische (42 von 49 Sätzen; Satz
+2: 7 gegen 41), zusammenhängend, gleiche Reihenfolge.  MSA: „schauen
+wir uns als nächstes an und überlegen eine Lösung“.
+
+- Quelle: `#+CAT_TEMPLATE: bilingual' + `#+CAT_PARALLEL: <tibetische
+  Quelle>' (relativ, gleiche Satznummern); `bcat-sentence-parallel-
+  source', `--parallel-segs', `--header-value'.  `--sanskrit-p' gilt
+  für sanskrit UND bilingual.
+- Vorlage `Templates/analysis/bilingual.org', Golden
+  `samples/Bilingual.org' (AS 3; Fixtures `bcat-analysis-sent-003-
+  asam.json' / `-kunbtus.json').  * Text: Devanāgarī/IAST,
+  Padapāṭha, mit Vokabeln, Uchen/Wylie, Wylie mit Vokabeln,
+  *Translation:* · je Sanskrit-Segment „** Segment 17 · Tib. 40–44“
+  ({{parallel}}), Sanskrit-Tabellen … Concepts, {{tibetan-block}}
+  (Uchen über glossiertem Wylie der zugeordneten Segmente),
+  *Differences:*, ⟦N⟧-Block · * Sentence: Grammar, Tibetan rendering
+  ({{rendering}}), Translations compared.  Kopf: #+CAT_PARALLEL,
+  #+CAT_PARALLEL_SEGMENTS.
+- Rumpf (`bcat-sentence--parallel-fields'): das Tibetische mit den
+  Wörterbüchern und der Quellsprache der TIBETISCHEN Quelle
+  (`--with-source' auf die Parallele).  Fehlt der Satz dort: nur
+  Sanskrit.
+- C-c u G: Sanskrit-Abruf wie bisher („bcat-analysis“, + DharmaMitra);
+  seine Landung schreibt und stellt den tibetischen Abruf
+  („bcat-tibetan“, `bcat-analysis-tibetan-system-prompt' /
+  `-user-prompt': je tibetisches Segment `sanskrit' (nie fallend, über
+  zwei → zum ersten) + words (`bcat-analysis--words-rule', dieselbe
+  Regel wie Tibetisch), differences je Sanskrit-Segment nur in der
+  Sache, rendering; im User-Prompt Claudes Sanskrit-Übersetzung je
+  Segment und der Kontext der tibetischen Quelle).  Dessen Landung
+  (`--tibetan-land' → `--write-fetched' mit beiden Antworten,
+  `bcat-analysis-bilingual-context': ungültige Zuordnung → wie das
+  vorige Segment) schreibt die Datei und erst dann C-c u H.
+  Unlesbar → Datei mit Sanskrit bleibt, Antwort aufbewahrt, Satz
+  bleibt `full' (keine „· Tib.“-Überschrift trotz
+  #+CAT_PARALLEL_SEGMENTS) — beide Abrufe noch einmal.  Status:
+  Schritt :tibetan.
+- Neubau auch bei Vorlagenwechsel der Quelle (`df1ae9b'), mit den von
+  Hand ergänzten Referenzen unter Translations compared.
+- BUG vorneweg (`71aa71f'): der Neubau aus dem alten Layout warf jeden
+  unbekannten L1-Abschnitt weg — AS (7) und MSA Kap. IX (Sanskrit-9: 5,
+  Sthiramati-9: 26) tragen `* Handout' (Eingabe für
+  handout-synopse.py einer anderen Sitzung, 26.10.; seit 29.10. mit
+  „SG 2015 (Japanese, English draft)“, dort abgelegt „weil C-c u G
+  [Provided Translations] neu baut“).  Seit AS/MSA-9 auf sanskrit
+  standen, hätte C-c u G sie gelöscht (noch nicht passiert).  Jetzt
+  `bcat-sentence--tool-sections' (Vorlagen- + Alt-Layout-Abschnitte) —
+  alles andere außer den Nutzerfächern bleibt wörtlich am Ende
+  (`--own-sections', `--render').
+- Kleine Fixes dabei: `9996bde' PDF `\\*' nach der Originalzeile (kein
+  Seitenumbruch zwischen Uchen/Devanāgarī und Umschrift); `8c9d5ab'
+  „.“ als Daṇḍa (AS-Edition) in der Devanāgarī; `910f78b' Padapāṭha
+  schließt mit dem Punkt (angerückt).  `2754d22' Prompt-Helfer,
+  Prompts byte-identisch.
+- Korpus `5fdb6eef': asam-1-cat.org auf bilingual.  Erster C-c u G auf
+  einen AS-Satz baut die alte Datei neu (Handout bleibt).
+- Sanskrit-Tabellen werden wie bisher ab 95 Zeichen geteilt
+  (`bcat-analysis-sanskrit-table-width'); in der Vorschau standen sie
+  ungeteilt — Carsten fragen, ob breiter.
+ERT 2677.
+
 #### Offen
 
-- Sanskrit-Vorlage (mit Metrum im `* Text'), dann zweisprachig.
+- MSA zweisprachig mit Kommentar (Sthiramati) — Lösung mit Carsten
+  besprechen; `* Handout' (:BO:-Zuordnung der anderen Sitzung) könnte
+  Vorlage der Zuordnung sein.
 - Erst danach fliegen altes Handout, Synopse, Diskussionspapier und
   der alte Satzdatei-Pfad raus — Sanskrit-Quellen brauchen sie noch.
   `tibetan-discussion--submit' und der rmapi-Upload ziehen dann in
