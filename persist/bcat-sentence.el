@@ -872,7 +872,7 @@ sections and references added by hand carried over.  Returns
 
 (defun bcat-sentence--dharmamitra (file sentence)
   "DharmaMitra's translation of SENTENCE for FILE, or nil (an outage
-must not stop the analysis)."
+must not stop the analysis); never with an org link in it."
   (condition-case err
       (progn
         (require 'tibetan-dharmamitra-api)
@@ -881,7 +881,7 @@ must not stop the analysis)."
                  (mapconcat #'cdr (plist-get sentence :segs) "")
                  :target-lang (tibetan-dharmamitra-translation--target-lang file)
                  :input-encoding (tibetan-dharmamitra-translation--input-encoding file))))
-        (and (stringp tr) (not (string-blank-p tr)) (string-trim tr))))
+        (and (stringp tr) (not (string-blank-p tr)) (bcat-analysis-no-links (string-trim tr)))))
     (error (message "DharmaMitra (Satz %s): %s" (plist-get sentence :sent-num)
                     (error-message-string err))
            nil)))

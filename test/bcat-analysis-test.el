@@ -348,6 +348,34 @@ nothing."
     (should (equal text (bcat-analysis-mark-reference text nil)))
     (should (equal text (bcat-analysis-mark-reference text '("no *such* part"))))))
 
+(ert-deftest bcat-analysis-answers-carry-no-links ()
+  "Carsten 30.10.: „broken links sollten eigentlich nicht entstehen
+können“.  No text from outside — Claude's answer, DharmaMitra's
+translation — can form an org link in a file: every string of a parsed
+answer loses its doubled brackets (IX.60: „[[topic]]“ aborted the
+export); single brackets stay."
+  (let* ((parsed (bcat-analysis-parse
+                  (concat "{\"segments\": [{\"num\": 1, \"words\": [{\"wylie\": \"ni\", \"gloss\": \"[[topic]]\"}],"
+                          " \"note\": \"see [[x][y]] and [the other] two\","
+                          " \"references\": [{\"name\": \"M\", \"text\": \"the [[other]] two.]]\"}]}],"
+                          " \"grammar\": \"[[g]]\"}")))
+         (strings '()))
+    (should parsed)
+    (cl-labels ((walk (x) (cond ((stringp x) (push x strings))
+                                ((consp x) (walk (car x)) (walk (cdr x))))))
+      (walk parsed))
+    (should-not (cl-some (lambda (s) (string-match-p "\\[\\[\\|\\]\\]" s)) strings))
+    (should (member "see [x][y] and [the other] two" strings))
+    (should (member "[topic]" strings)))
+  (should (equal "the [other] two." (bcat-analysis-no-links "the [[other]] two.")))
+  (cl-letf (((symbol-function 'tibetan-dharmamitra-api-chat-translate)
+             (lambda (&rest _) "The first [[body]] is the support."))
+            ((symbol-function 'tibetan-dharmamitra-translation--target-lang) (lambda (&rest _) "english"))
+            ((symbol-function 'tibetan-dharmamitra-translation--input-encoding) (lambda (&rest _) "auto")))
+    (should (equal "The first [body] is the support."
+                   (bcat-sentence--dharmamitra "/nonexistent/sent-001.org"
+                                               '(:sent-num 1 :segs ((1 . "x"))))))))
+
 (ert-deftest bcat-analysis-glossed-line-never-a-link ()
   "30.10., MSA IX.60 (Sthiramati 1783): Claude glossed the particle /ni/
 as \"[topic]\" — brackets included — and the verse line read

@@ -350,10 +350,27 @@ after 41 283 characters inside „grammar“)."
             ((memq c '(?} ?\])) (cl-decf depth))))
     (or in-string (> depth 0))))
 
+(defun bcat-analysis-no-links (text)
+  "TEXT without doubled square brackets — text from outside (Claude,
+DharmaMitra) never forms an org link in a file.  Carsten 30.10.:
+„broken links sollten eigentlich nicht entstehen können“ (MSA IX.60:
+„ni [[topic]]“ aborted the export of the commentary)."
+  (replace-regexp-in-string "\\]\\]+" "]" (replace-regexp-in-string "\\[\\[+" "[" text)))
+
+(defun bcat-analysis--no-links-in (object)
+  "OBJECT (a parsed answer) with `bcat-analysis-no-links' on every string."
+  (cond ((stringp object) (bcat-analysis-no-links object))
+        ((proper-list-p object) (mapcar #'bcat-analysis--no-links-in object))
+        ((consp object) (cons (bcat-analysis--no-links-in (car object))
+                              (bcat-analysis--no-links-in (cdr object))))
+        (t object)))
+
 (defun bcat-analysis--decode (json)
-  "JSON (a string) as an alist with symbol keys and lists for arrays."
-  (json-parse-string json :object-type 'alist :array-type 'list
-                     :null-object nil :false-object nil))
+  "JSON (a string) as an alist with symbol keys and lists for arrays, its
+strings unable to form org links (`bcat-analysis-no-links')."
+  (bcat-analysis--no-links-in
+   (json-parse-string json :object-type 'alist :array-type 'list
+                      :null-object nil :false-object nil)))
 
 (defun bcat-analysis-read (response)
   "(OBJECT . PROBLEM) for Claude's RESPONSE: the JSON object as an alist
