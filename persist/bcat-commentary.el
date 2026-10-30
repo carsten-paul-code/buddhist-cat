@@ -23,7 +23,12 @@
 (require 'bcat-template)
 (require 'bcat-analysis)
 
+(require 'bcat-status)
+
 (declare-function tibetan-analysis-make-short-name "tibetan-analysis-persist" (source-file))
+(declare-function tibetan-analysis--read-source-metadata "tibetan-analysis-claude" (source-file))
+(declare-function tibetan-discussion--submit "tibetan-translation-discussion" (kind file prompts land))
+(defvar tibetan-dharmamitra-sentence-request-delay)
 (declare-function tibetan-sentence--filepath "tibetan-sentence-persist" (sent-num &optional folder source-file))
 
 ;; ----------------------------------------------------------------------------
@@ -470,6 +475,309 @@ exists (Claude's after C-c u G), else from the tool."
                                 (and text (cons seg text))))
                             (mapcar #'car (plist-get (bcat-sentence--sentence sent-num source-file)
                                                      :segs)))))))))
+
+;; ----------------------------------------------------------------------------
+;; C-c u G: the commentary analysed (Carsten 30.10.: „das volle Programm“)
+;; ----------------------------------------------------------------------------
+
+(defcustom bcat-commentary-chunk-segments 30
+  "Most segments of the commentary in one Claude request.  A longer
+commentary (MSA IX.8: 72 sentences) goes in parts, cut at sentence
+boundaries — the whole Tibetan analysis of 30 prose segments stays well
+within `tibetan-claude-max-tokens'."
+  :type 'integer
+  :group 'buddhist-cat)
+
+(defun bcat-commentary-system-prompt (target)
+  "The system prompt of the commentary request for the target language
+code TARGET — the segment rules of the Tibetan analysis, the lemma of
+each segment, the grammar of each sentence.  Constant per document."
+  (let ((lang (bcat-analysis--language target)))
+    (format "You prepare a passage of a Tibetan commentary on a verse for a university reading class that reads the verse first, then the commentary, sentence by sentence. Work segment by segment. Answer with ONE JSON object and nothing else (no prose, no code fence):
+
+{\"segments\": [{\"num\": <segment number>, \"lemma\": <verse line number or 0>, \"words\": [{\"wylie\": \"…\", \"gloss\": \"…\", \"function\": \"…\"}], \"translation\": \"…\", \"references\": [{\"name\": \"…\", \"text\": \"…\"}], \"shift\": \"…\", \"structure\": \"…\", \"note\": \"…\", \"concepts\": \"…\"}], \"sentences\": [{\"num\": <sentence number>, \"grammar\": \"…\"}]}
+
+Rules:
+- segments: one entry per given segment, same numbers, same order.
+- lemma: when the segment quotes the verse — the commentator's lemma, also in his own wording or word order or only in part — the number of the verse line it quotes; 0 when it quotes none.  A quotation of the prose commentary (bhāṣya) is no lemma.
+%s
+- In translations, give a quoted verse line in quotation marks.
+- sentences: one entry per given sentence; grammar: its syntax in one or two sentences — clauses and their linkage, the quotation markers (zhes bya ba …).
+- JSON escaping: only \\\" and \\\\ — never a backslash before an apostrophe.
+- Write glosses, notes and explanations in %s. Never mention yourself."
+            (bcat-analysis--tibetan-segment-rules lang) lang)))
+
+(defun bcat-commentary-user-prompt (verse sentences refs &optional context)
+  "The user prompt of a commentary request: VERSE ((NUM . WYLIE) …) the
+Tibetan verse lines, SENTENCES ((NUM (SEG TIBETAN WYLIE) …) …) the
+commentary, REFS ((NAME . TEXT) …), CONTEXT the source's
+#+TIBETAN_CLAUDE_CONTEXT lines."
+  (concat
+   (if context (concat (mapconcat #'identity context "\n") "\n\n") "")
+   "The verse (Tibetan, by line):\n"
+   (mapconcat (lambda (l) (format "[%d] %s" (car l) (cdr l))) verse "\n")
+   "\n\nThe commentary — sentences and segments:\n"
+   (mapconcat (lambda (s)
+                (concat (format "Sentence %d\n" (car s))
+                        (mapconcat (lambda (g) (bcat-analysis--segment-entry (nth 0 g) (nth 1 g) (nth 2 g)))
+                                   (cdr s) "\n")))
+              sentences "\n")
+   (bcat-analysis--references-block refs)
+   "\n\nReturn the JSON object now."))
+
+(defun bcat-commentary--chunks (sentences)
+  "SENTENCES (plists) in parts of at most `bcat-commentary-chunk-segments'
+segments, cut between sentences."
+  (let ((chunks '()) (chunk '()) (n 0))
+    (dolist (s sentences)
+      (let ((k (length (plist-get s :segs))))
+        (when (and chunk (> (+ n k) bcat-commentary-chunk-segments))
+          (push (nreverse chunk) chunks)
+          (setq chunk nil n 0))
+        (push s chunk)
+        (setq n (+ n k))))
+    (when chunk (push (nreverse chunk) chunks))
+    (nreverse chunks)))
+
+(defun bcat-commentary-incomplete-p (section commentary-source)
+  "Non-nil while the commentary document of SECTION is missing or not
+fully analysed."
+  (let ((doc (bcat-commentary-file section commentary-source)))
+    (or (not (file-exists-p doc))
+        (bcat-sentence-fetch-state
+         doc (cl-loop for s in (bcat-commentary--sentences section commentary-source)
+                      append (mapcar #'car (plist-get s :segs))))
+        nil)))
+
+(defvar bcat-commentary--runs (make-hash-table :test #'equal)
+  "Commentary document → the plist of its running C-c u G.")
+
+(defun bcat-commentary--status (run text)
+  "Show TEXT for the commentary RUN on the status line of its verse."
+  (bcat-status-step (plist-get run :status-file) :commentary
+                    (concat (bcat-commentary--author (plist-get run :source)) ": " text)))
+
+(defun bcat-commentary--merged (run)
+  "The answers of RUN that have landed as one: their segments and
+sentences in the order of the parts."
+  (let ((answers (mapcar #'cdr (sort (copy-sequence (plist-get run :answers))
+                                     (lambda (a b) (< (car a) (car b)))))))
+    `((segments . ,(cl-mapcan (lambda (a) (copy-sequence (alist-get 'segments a))) answers))
+      (sentences . ,(cl-mapcan (lambda (a) (copy-sequence (alist-get 'sentences a))) answers)))))
+
+(defun bcat-commentary--lemmata (section commentary-source parsed)
+  "The lemmata of SECTION: Claude's from PARSED where it names a verse
+line, else the tool's — with the readings where the segment gives the
+line's wording (else `free')."
+  (let* ((own (bcat-commentary-lemmata-for section commentary-source))
+         (lead (bcat-commentary-lead commentary-source))
+         (padas (bcat-commentary--padas (bcat-commentary--verses section lead commentary-source) lead))
+         (wylie (cl-loop for s in (bcat-commentary--sentences section commentary-source)
+                         append (mapcar (lambda (g) (cons (car g) (bcat-sentence--wylie (cdr g))))
+                                        (plist-get s :segs))))
+         (claude (delq nil (mapcar (lambda (c)
+                                     (let ((pada (bcat-analysis--num c 'lemma)))
+                                       (and pada (assq pada padas)
+                                            (cons (bcat-analysis--num c) pada))))
+                                   (alist-get 'segments parsed)))))
+    (append
+     (mapcar (lambda (c)
+               (let* ((seg (car c)) (pada (cdr c))
+                      (mine (cdr (assq seg own))))
+                 (cons seg
+                       (cond ((eql pada (car mine)) mine)
+                             (t (let ((strict (bcat-commentary-lemma (cdr (assq seg wylie))
+                                                                     (list (assq pada padas)))))
+                                  (if strict strict (cons pada 'free))))))))
+             claude)
+     (cl-remove-if (lambda (l) (assq (car l) claude)) own))))
+
+(defun bcat-commentary--context (base parsed refs)
+  "BASE (`bcat-commentary-rump-context') completed from PARSED: per
+sentence its segments as in the Tibetan analysis, its translation (the
+segment parts) and grammar; the whole translation."
+  (let* ((by-num (mapcar (lambda (s) (cons (bcat-analysis--num s) s)) (alist-get 'sentences parsed)))
+         (part (lambda (seg) (let ((c (cl-find (alist-get 'num seg) (alist-get 'segments parsed)
+                                               :key #'bcat-analysis--num)))
+                               (and c (bcat-analysis--field c 'translation)))))
+         (sentences
+          (mapcar (lambda (sent)
+                    (let* ((segs (alist-get 'segments
+                                            (bcat-analysis-context `((segments . ,(alist-get 'segments sent)))
+                                                                   parsed refs)))
+                           (parts (delq nil (mapcar (lambda (g) (let ((p (funcall part g)))
+                                                                  (and p (not (string-empty-p p)) p)))
+                                                    segs))))
+                      (append `((segments . ,segs)
+                                (glosses . ,(bcat-analysis-glosses-p segs))
+                                (translation . ,(string-join parts " "))
+                                (grammar . ,(bcat-analysis--field
+                                             (cdr (assoc (alist-get 'num sent) by-num)) 'grammar)))
+                              sent)))
+                  (alist-get 'sentences base))))
+    (append `((sentences . ,sentences)
+              (translation-all . ,(mapconcat (lambda (s) (alist-get 'translation s))
+                                             (cl-remove-if (lambda (s) (string-empty-p (alist-get 'translation s)))
+                                                           sentences)
+                                             " ")))
+            base)))
+
+(defun bcat-commentary--write (run)
+  "Write the commentary document of RUN from the answers landed so far."
+  (let* ((doc (plist-get run :doc))
+         (section (plist-get run :section))
+         (source (plist-get run :source))
+         (parsed (bcat-commentary--merged run)))
+    (bcat-sentence--save-visit doc)
+    (let ((base (bcat-commentary-rump-context
+                 section source
+                 (cons (cons 'last-analyzed (format-time-string "%Y-%m-%d")) (bcat-sentence--keep doc))
+                 (bcat-commentary--lemmata section source parsed))))
+      (bcat-sentence--write doc (bcat-sentence--render "commentary"
+                                                       (bcat-commentary--context base parsed (plist-get run :refs))
+                                                       source)))))
+
+(defun bcat-commentary--verse-assignment (verse-num lead)
+  "The Tibetan pādas' Sanskrit segments of the verse VERSE-NUM of LEAD,
+((TIB . SKT) …), as its Tibetan file says („Segment 140 · Skt. 92“)."
+  (let ((text (bcat-sentence--text (bcat-sentence-partner-file verse-num lead))) (pos 0) (out '()))
+    (while (string-match "^\\*\\* Segment \\([0-9]+\\) · Skt\\. \\([0-9]+\\)" text pos)
+      (push (cons (string-to-number (match-string 1 text)) (string-to-number (match-string 2 text))) out)
+      (setq pos (match-end 0)))
+    (nreverse out)))
+
+(defun bcat-commentary--patch-links (file sent-num source-file assignment)
+  "Bring the commentary lines of the analysed verse FILE (sentence
+SENT-NUM of SOURCE-FILE) up to date — before each segment's ⟦N⟧
+translation; a file not yet analysed is left alone."
+  (let ((text (bcat-sentence--text file)))
+    (when (string-match-p "^⟦[0-9]+⟧ " text)
+      (let* ((links (bcat-commentary-verse-links sent-num source-file assignment))
+             (name (regexp-quote (bcat-commentary--author (bcat-commentary-source source-file)))))
+        (with-temp-buffer
+          (insert text)
+          (goto-char (point-min))
+          (while (re-search-forward (format "^\\*%s:\\* lemmata in .*\n\n" name) nil t)
+            (replace-match ""))
+          (dolist (l links)
+            (when (integerp (car l))
+              (goto-char (point-min))
+              (when (re-search-forward (format "^⟦%d⟧ " (car l)) nil t)
+                (beginning-of-line)
+                (insert (cdr l) "\n\n"))))
+          (unless (equal (buffer-string) text)
+            (bcat-sentence--save-visit file)
+            (bcat-sentence--write file (buffer-string))))))))
+
+(defun bcat-commentary--finish (run)
+  "All parts of RUN landed: status; when none failed, the verse files
+get their links and the document goes to the reMarkable (C-c u H)."
+  (let ((failed (plist-get run :failed)))
+    (if failed
+        (bcat-commentary--status run (format "%d von %d Teil(en) nicht lesbar — erneut C-c u G"
+                                             (length failed) (plist-get run :chunks)))
+      (bcat-commentary--status run "✓")
+      (let* ((source (plist-get run :source))
+             (lead (bcat-commentary-lead source))
+             (parallel (bcat-sentence-parallel-source lead)))
+        (dolist (v (bcat-commentary--verses (plist-get run :section) lead source))
+          (let* ((n (plist-get v :sent-num))
+                 (assignment (bcat-commentary--verse-assignment n lead))
+                 (other (bcat-sentence--parallel-sentence n lead)))
+            (bcat-commentary--patch-links
+             (tibetan-sentence--filepath n (bcat-sentence--analysis-folder lead) lead) n lead assignment)
+            (when other
+              (bcat-commentary--patch-links (bcat-sentence-partner-file n lead)
+                                            (plist-get other :sent-num) parallel assignment)))))
+      (run-hook-with-args 'bcat-sentence-after-fetch-functions (plist-get run :doc)))))
+
+(defun bcat-commentary--land (doc k response)
+  "Part K of the commentary of DOC answered with RESPONSE."
+  (let ((run (gethash doc bcat-commentary--runs)))
+    (when run
+      (let* ((read (bcat-analysis-read response)))
+        (if (car read)
+            (setq run (plist-put run :answers (cons (cons k (car read)) (plist-get run :answers))))
+          (let ((path (bcat-analysis-keep-response doc response)))
+            (message "C-c u G: Kommentar %s, Teil %d nicht lesbar (%s) — Antwort: %s"
+                     (file-name-nondirectory doc) k (cdr read) path))
+          (setq run (plist-put run :failed (cons k (plist-get run :failed)))))
+        (puthash doc run bcat-commentary--runs)
+        (when (car read) (bcat-commentary--write run))
+        (let ((done (+ (length (plist-get run :answers)) (length (plist-get run :failed)))))
+          (if (< done (plist-get run :chunks))
+              (bcat-commentary--status run (format "%d/%d Teile" done (plist-get run :chunks)))
+            (remhash doc bcat-commentary--runs)
+            (bcat-commentary--finish run)))))))
+
+(defun bcat-commentary--submit (run chunks)
+  "Send the commentary of RUN in CHUNKS, one Claude request each."
+  (require 'tibetan-translation-discussion)
+  (let* ((source (plist-get run :source))
+         (doc (plist-get run :doc))
+         (meta (ignore-errors (tibetan-analysis--read-source-metadata source)))
+         (lead (bcat-commentary-lead source))
+         (verse (bcat-commentary--padas (bcat-commentary--verses (plist-get run :section) lead source) lead))
+         (dm (plist-get run :dm))
+         (k 0))
+    (bcat-commentary--status run (format "angefragt (%d Teil%s)" (length chunks)
+                                         (if (= 1 (length chunks)) "" "e")))
+    (dolist (chunk chunks)
+      (let* ((k (cl-incf k))
+             (sentences (mapcar (lambda (s)
+                                  (cons (plist-get s :sent-num)
+                                        (mapcar (lambda (g) (list (car g) (cdr g) (bcat-sentence--wylie (cdr g))))
+                                                (plist-get s :segs))))
+                                chunk))
+             (texts (delq nil (mapcar (lambda (s) (let ((tr (cdr (assq (plist-get s :sent-num) dm))))
+                                                    (and tr (format "[%d] %s" (plist-get s :sent-num) tr))))
+                                      chunk)))
+             (refs (and texts (list (cons "DharmaMitra" (string-join texts "\n"))))))
+        (tibetan-discussion--submit
+         (format "bcat-commentary-%d" k) doc
+         (lambda ()
+           (cons (bcat-commentary-system-prompt (or (plist-get meta :target-lang) "en"))
+                 (bcat-commentary-user-prompt verse sentences refs (plist-get meta :claude-context))))
+         (lambda (_f response) (bcat-commentary--land doc k response)))))))
+
+(defun bcat-commentary--dharmamitra (run sentences)
+  "DharmaMitra on each of SENTENCES of RUN, one after the other with the
+usual pause; then the Claude requests."
+  (if (null sentences)
+      (bcat-commentary--submit run (plist-get run :chunk-list))
+    (let* ((s (car sentences))
+           (tr (bcat-sentence--dharmamitra (plist-get run :doc) s))
+           (total (length (plist-get run :chunk-list-sentences))))
+      (when tr
+        (setq run (plist-put run :dm (cons (cons (plist-get s :sent-num) tr) (plist-get run :dm))))
+        (puthash (plist-get run :doc) run bcat-commentary--runs))
+      (bcat-commentary--status run (format "DharmaMitra %d/%d" (- total (length (cdr sentences))) total))
+      (run-at-time (if (boundp 'tibetan-dharmamitra-sentence-request-delay)
+                       tibetan-dharmamitra-sentence-request-delay 6.5)
+                   nil #'bcat-commentary--dharmamitra run (cdr sentences)))))
+
+(defun bcat-commentary-fetch (section commentary-source &optional status-file)
+  "C-c u G for the commentary of SECTION of COMMENTARY-SOURCE: the
+document (created when missing), DharmaMitra per sentence, then Claude
+— the whole commentary at once, in parts when long; each part lands as
+it comes, and when all have, the verse files get their links and the
+document goes to the reMarkable.  STATUS-FILE: the verse file whose
+status line shows the progress.  Nothing while one runs already."
+  (let ((doc (bcat-commentary-file section commentary-source)))
+    (unless (gethash doc bcat-commentary--runs)
+      (unless (file-exists-p doc)
+        (bcat-commentary-create section commentary-source))
+      (let* ((sentences (bcat-commentary--sentences section commentary-source))
+             (run (list :doc doc :section section :source commentary-source
+                        :status-file status-file
+                        :chunk-list (bcat-commentary--chunks sentences)
+                        :chunk-list-sentences sentences
+                        :chunks (length (bcat-commentary--chunks sentences))
+                        :answers nil :failed nil :dm nil :refs nil)))
+        (puthash doc run bcat-commentary--runs)
+        (bcat-commentary--status run "DharmaMitra …")
+        (run-at-time 0 nil #'bcat-commentary--dharmamitra run sentences)
+        doc))))
 
 (provide 'bcat-commentary)
 ;;; bcat-commentary.el ends here

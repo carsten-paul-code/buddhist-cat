@@ -29,7 +29,7 @@
 (defconst bcat-status-buffer-name "*Buddhist CAT*"
   "The status buffer.")
 
-(defconst bcat-status--order '(:file :state :dm :claude :tibetan :align :pdf :upload)
+(defconst bcat-status--order '(:file :state :dm :claude :tibetan :commentary :align :pdf :upload)
   "The steps of a sentence line, in the order they are shown.")
 
 (defvar bcat-status--entries (make-hash-table :test 'equal)

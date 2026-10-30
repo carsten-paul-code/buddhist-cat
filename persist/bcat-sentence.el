@@ -416,6 +416,11 @@ never Carsten's own „Übersetzung …“ rubric (as in the materializer)."
              refs "\n\n"))
 
 (declare-function bcat-commentary-source "bcat-commentary" (source-file))
+(declare-function bcat-commentary-lead "bcat-commentary" (commentary-source))
+(declare-function bcat-commentary--verses "bcat-commentary" (section lead commentary-source))
+(declare-function bcat-commentary-section "bcat-commentary" (label lead commentary-source))
+(declare-function bcat-commentary-incomplete-p "bcat-commentary" (section commentary-source))
+(declare-function bcat-commentary-fetch "bcat-commentary" (section commentary-source &optional status-file))
 (declare-function bcat-commentary-verse-links "bcat-commentary" (sent-num source-file assignment))
 (declare-function bcat-commentary-ensure-file "bcat-commentary" (sent-num commentary-source))
 
@@ -1106,9 +1111,23 @@ one: the Tibetan request needs the Sanskrit answer, and both files come
 from the same requests.  Returns (:sentences N :fired N :complete N
 :align N)."
   (let* ((given (plist-get scope :source))
+         ;; A commentary (MSA, 30.10.): the verses its Sections cover.
+         (from-commentary (and (equal (bcat-sentence-template-name given) "commentary")
+                               (progn (require 'bcat-commentary) (bcat-commentary-lead given))))
+         (scope (if from-commentary
+                    (list :source from-commentary :label (plist-get scope :label)
+                          :sent-nums (delete-dups
+                                      (cl-loop for n in (plist-get scope :sent-nums)
+                                               for sec = (plist-get (bcat-sentence--sentence n given) :section-label)
+                                               append (and sec (mapcar (lambda (v) (plist-get v :sent-num))
+                                                                       (bcat-commentary--verses sec from-commentary given))))))
+                  scope))
+         (given (plist-get scope :source))
          (redirect (and (equal (bcat-sentence-template-name given) "bilingual-tibetan")
                         (bcat-sentence--paired-p given)))
          (src (if redirect (bcat-sentence-parallel-source given) given))
+         (commentary (and (bcat-sentence--verse-mode-p src)
+                          (progn (require 'bcat-commentary) (bcat-commentary-source src))))
          (pair (bcat-sentence--paired-p src))
          (label (plist-get scope :label))
          ;; From the Tibetan source: its sentence → its verse (verse
@@ -1144,12 +1163,19 @@ from the same requests.  Returns (:sentences N :fired N :complete N
                                            ('created "Tib. angelegt") ('rebuilt "Tib. neu gebaut")))))))
           (when done
             (bcat-status-step (funcall file-of s) :file (string-join done " · ")))))
-      (let* ((states (mapcar (lambda (s)
-                               (cons s (cond
-                                        (force 'full)
-                                        (pair (bcat-sentence--pair-state (funcall file-of s) s src))
-                                        (t (bcat-sentence-fetch-state
-                                            (funcall file-of s) (mapcar #'car (plist-get s :segs)))))))
+      (let* ((section-of (lambda (s) (and commentary
+                                          (bcat-commentary-section (plist-get s :section-label)
+                                                                   src commentary))))
+             (states (mapcar (lambda (s)
+                               (cons s (or (cond
+                                            (force 'full)
+                                            (pair (bcat-sentence--pair-state (funcall file-of s) s src))
+                                            (t (bcat-sentence-fetch-state
+                                                (funcall file-of s) (mapcar #'car (plist-get s :segs)))))
+                                           ;; The verse done, its commentary not.
+                                           (let ((sec (funcall section-of s)))
+                                             (and sec (bcat-commentary-incomplete-p sec commentary)
+                                                  'commentary)))))
                              sentences))
              (todo (cl-remove-if-not #'cdr states))
              (align (cl-count-if (lambda (c) (eq (cdr c) 'align)) states))
@@ -1174,12 +1200,21 @@ from the same requests.  Returns (:sentences N :fired N :complete N
                 ((not go)
                  (bcat-status-step (funcall file-of (car c)) :state "Abruf abgelehnt"))))
         (when go
-          (dolist (c todo)
-            (when (eq 'fired
-                      (if (eq (cdr c) 'align)
-                          (bcat-sentence--align-one (funcall file-of (car c)) (car c) src)
-                        (bcat-sentence--fetch-one (funcall file-of (car c)) (car c) src)))
-              (cl-incf fired))))
+          (let ((sections '()))
+            (dolist (c todo)
+              (when (eq 'fired
+                        (pcase (cdr c)
+                          ('align (bcat-sentence--align-one (funcall file-of (car c)) (car c) src))
+                          ('commentary 'fired)
+                          (_ (bcat-sentence--fetch-one (funcall file-of (car c)) (car c) src))))
+                (cl-incf fired))
+              ;; The commentary with the verse (Carsten 30.10.: „immer
+              ;; beide“) — once per Section of the commentary.
+              (let ((sec (funcall section-of (car c))))
+                (when (and sec (not (member sec sections))
+                           (or force (bcat-commentary-incomplete-p sec commentary)))
+                  (push sec sections)
+                  (bcat-commentary-fetch sec commentary (funcall file-of (car c))))))))
         (if (null todo)
             (message "%s: vollständig — nichts abgerufen (neu abrufen: C-u C-c u G)" label)
           (message "%s: %d Satz/Sätze — %d abgerufen (davon %d Zuordnung neuer Vergleichsübersetzungen), %d vollständig%s"

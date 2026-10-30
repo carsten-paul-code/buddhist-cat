@@ -233,14 +233,17 @@ for sentence 36, then the Tibetan one with the Tibetan verse IX.16
                                               (tibetan-sentence--filepath 64 tfolder tsrc)))))))
 
 (defconst bcat-commentary-test--verse-answer-sa
-  (concat "{\"segments\": [{\"num\": 92, \"words\": [], \"translation\": \"Just as the image of the moon\"},"
+  (concat "{\"segments\": [{\"num\": 92, \"words\": [], \"translation\": \"Just as the image of the moon\","
+          " \"references\": [{\"name\": \"Thurman 2004\", \"text\": \"Just as the reflection of the moon\"},"
+          " {\"name\": \"DharmaMitra\", \"text\": \"Inexpressible\"}]},"
           " {\"num\": 93, \"words\": [], \"translation\": \"so the image of the Buddha\"}],"
           " \"grammar\": \"g\", \"translation\": \"t\", \"comparison\": \"\","
           " \"bhasya_hint\": \"The bhāṣya reads the broken pot as the being who is no vessel (/abhājanabhūta/).\"}")
   "The Sanskrit answer for verse IX.16, with the hint on the bhāṣya.")
 
 (defconst bcat-commentary-test--verse-answer-bo
-  (concat "{\"segments\": [{\"num\": 139, \"sanskrit\": 92, \"words\": [], \"translation\": \"Just as, when\"},"
+  (concat "{\"segments\": [{\"num\": 139, \"sanskrit\": 92, \"words\": [], \"translation\": \"Just as, when\","
+          " \"references\": [{\"name\": \"DharmaMitra\", \"text\": \"Inexpressible\"}]},"
           " {\"num\": 140, \"sanskrit\": 92, \"words\": [], \"translation\": \"the moon\"},"
           " {\"num\": 141, \"sanskrit\": 93, \"words\": [], \"translation\": \"likewise\"},"
           " {\"num\": 142, \"sanskrit\": 93, \"words\": [], \"translation\": \"the Buddha\"}],"
@@ -413,6 +416,118 @@ Tibetan request has assigned the pādas (C-c u G)."
                               text)))
     (should (string-match-p (regexp-quote "*Sthiramati:* lemmata in [[file:../../Sthiramati/analysis/comm-IX.16-savbh.org::*Sentence 258][258]]")
                             (bcat-sentence-test--text-of (tibetan-sentence--filepath 64 tfolder tsrc))))))
+
+;; ----------------------------------------------------------------------------
+;; C-c u G: the commentary analysed with the verse
+;; ----------------------------------------------------------------------------
+
+(defun bcat-commentary-test--segment (num lemma translation)
+  (format "{\"num\": %d, \"lemma\": %d, \"words\": [], \"translation\": %S, \"references\": [], \"shift\": \"\", \"structure\": \"\", \"note\": \"\", \"concepts\": \"\"}"
+          num lemma translation))
+
+(defconst bcat-commentary-test--answer-16
+  (concat "{\"segments\": ["
+          (mapconcat #'identity
+                     (list (bcat-commentary-test--segment 626 0 "To show the example:")
+                           (bcat-commentary-test--segment 627 139 "„Just as, when a vessel of water is broken,")
+                           (bcat-commentary-test--segment 628 140 "the reflection of the moon does not appear“ —")
+                           (bcat-commentary-test--segment 629 0 "so he says;")
+                           (bcat-commentary-test--segment 630 140 "for example, in a vessel without water …")
+                           (bcat-commentary-test--segment 631 0 "To show the meaning:")
+                           (bcat-commentary-test--segment 632 141 "„likewise to bad beings")
+                           (bcat-commentary-test--segment 633 142 "the form of the Buddha does not appear“ —")
+                           (bcat-commentary-test--segment 634 0 "so he says;")
+                           (bcat-commentary-test--segment 635 0 "in the same way, beings whose mental continuum …"))
+                     ", ")
+          "], \"sentences\": [{\"num\": 258, \"grammar\": \"/dpe bstan pa'i phyir/ introduces the lemma.\"},"
+          " {\"num\": 260, \"grammar\": \"/zhes bya ba smos te/ closes the quotation.\"}]}")
+  "Claude's answer for Sthiramati on IX.16 (segments 626–635); it takes
+630 as a lemma of 140 too (the tool does not).")
+
+(defun bcat-commentary-test--answers (kind)
+  (cond ((equal kind "bcat-tibetan") bcat-commentary-test--verse-answer-bo)
+        ((string-prefix-p "bcat-commentary" kind) bcat-commentary-test--answer-16)
+        (t bcat-commentary-test--verse-answer-sa)))
+
+(ert-deftest bcat-commentary-fetch-with-verse ()
+  "Carsten 30.10.: „bei C-c u G immer beide analysiert und auf das
+Remarkable gepusht“.  C-c u G on the verse IX.16: the verse pair (two
+requests) and the commentary — DharmaMitra per Sthiramati sentence, then
+ONE request for the whole commentary with the verse; the document gets
+the full analysis, Claude's lemmata (630 too), the running translation;
+the verse files link the lemma sentences; both documents go to the
+reMarkable (the hook runs for the verse file and the commentary)."
+  (bcat-commentary-test--with-msa
+    (bcat-sentence-test--with-stubs #'bcat-commentary-test--answers
+      (bcat-sentence-test--fetch-n src 36)
+      (should (equal 1 (cl-count "bcat-commentary-1" kinds :test #'equal)))
+      (should (= 3 (length kinds)))
+      (let* ((pr (nth (cl-position "bcat-commentary-1" kinds :test #'equal) prompts))
+             (sys (car pr)) (user (cdr pr)))
+        (should (string-match-p "\"lemma\"" sys))
+        (should (string-match-p "\"sentences\"" sys))
+        (should (string-match-p (regexp-quote "[139] ji ltar chu yi snod chag na/ /") user))
+        (should (string-match-p (regexp-quote "Sentence 258\n[626] Tibetan: དཔེ་བསྟན་པའི་ཕྱིར།") user))
+        (should (string-match-p (regexp-quote "=== DharmaMitra ===\n[258] Inexpressible") user))
+        (should-not (string-match-p "Thurman" user)))
+      (let ((doc (expand-file-name "comm-IX.16-savbh.org" cfolder)))
+        (let ((text (bcat-sentence-test--text-of doc)))
+          (should (string-match-p "^⟦627⟧ \\*Translation:\\* „Just as, when a vessel of water is broken," text))
+          (should (string-match-p "^\\*Grammar:\\* /dpe bstan pa'i phyir/ introduces the lemma\\.$" text))
+          (should (string-match-p (regexp-quote "[92]]) — in his own wording\n\n⟦630⟧") text))
+          (should (string-match-p (regexp-quote "[92]]) — Sthiramati reads /bzhin/ for /ba/") text))
+          (should (string-match-p "^\\*\\* Translation\nTo show the example: „Just as, when" text))
+          (should-not (bcat-sentence-fetch-state doc '(626 627 628 629 630 631 632 633 634 635))))
+        (should (member doc done))
+        (should (member (tibetan-sentence--filepath 36 folder src) done)))
+      (should (string-match-p "lemmata in .*\\]\\[258\\]\\], .*\\]\\[259\\]\\], .*\\]\\[260\\]\\]\n\n⟦92⟧"
+                              (bcat-sentence-test--text-of (tibetan-sentence--filepath 36 folder src)))))))
+
+(ert-deftest bcat-commentary-fetch-in-parts ()
+  "A long commentary goes in parts (IX.8: 72 sentences): at most
+`bcat-commentary-chunk-segments' segments per request, at sentence
+boundaries; each part lands as it comes, the document is complete when
+all have."
+  (bcat-commentary-test--with-msa
+    (let ((bcat-commentary-chunk-segments 4))
+      (bcat-sentence-test--with-stubs #'bcat-commentary-test--answers
+        (bcat-sentence-test--fetch-n src 36)
+        (should (equal '("bcat-commentary-1" "bcat-commentary-2" "bcat-commentary-3")
+                       (sort (cl-remove-if-not (lambda (k) (string-prefix-p "bcat-commentary" k)) kinds)
+                             #'string<)))
+        (should-not (bcat-sentence-fetch-state (expand-file-name "comm-IX.16-savbh.org" cfolder)
+                                               '(626 627 628 629 630 631 632 633 634 635)))))))
+
+(ert-deftest bcat-commentary-fetch-only-what-is-missing ()
+  "The verse analysed, the commentary not (or the other way round):
+C-c u G does only what is missing.  From Sthiramati's source it goes to
+the verses his Section covers (IX.16 and IX.17)."
+  (bcat-commentary-test--with-msa
+    (bcat-sentence-test--with-stubs #'bcat-commentary-test--answers
+      (bcat-sentence-test--fetch-n src 36))
+    (delete-file (expand-file-name "comm-IX.16-savbh.org" cfolder))
+    (bcat-sentence-test--with-stubs #'bcat-commentary-test--answers
+      (bcat-sentence-test--fetch-n src 36)
+      (should (equal '("bcat-commentary-1") kinds)))
+    (bcat-sentence-test--with-stubs #'bcat-commentary-test--answers
+      (bcat-sentence-test--fetch-n csrc 259)
+      (should (equal '("bcat-analysis" "bcat-tibetan") (delete-dups (sort (copy-sequence kinds) #'string<))))
+      (should (file-exists-p (tibetan-sentence--filepath 38 folder src))))))
+
+(ert-deftest bcat-commentary-fetch-unreadable-part ()
+  "A part of the commentary unreadable: the document keeps what landed,
+the answer is kept, no PDF of the commentary, and the commentary stays
+to do."
+  (bcat-commentary-test--with-msa
+    (bcat-sentence-test--with-stubs (lambda (kind)
+                                      (if (string-prefix-p "bcat-commentary" kind)
+                                          "{\"segments\": [{\"num\": 626, \"translation\": \"cut off"
+                                        (bcat-commentary-test--answers kind)))
+      (bcat-sentence-test--fetch-n src 36)
+      (let ((doc (expand-file-name "comm-IX.16-savbh.org" cfolder)))
+        (should-not (member doc done))
+        (should (bcat-sentence-fetch-state doc '(626 627)))
+        (should (directory-files bcat-analysis-response-directory nil "\\`comm-IX"))))))
 
 (ert-deftest bcat-commentary-export-info ()
   "The commentary's PDF goes to the reMarkable beside the verse's: in the
