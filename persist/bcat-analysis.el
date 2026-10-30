@@ -36,6 +36,22 @@
   "The language name for the target code TARGET (\"de\" → German)."
   (if (equal target "de") "German" "English"))
 
+(defun bcat-analysis--words-rule (lang)
+  "The rule for the words of a Tibetan segment (glosses in LANG) — one
+wording for the Tibetan analysis and the Tibetan request of a bilingual
+sentence."
+  (format "- words: the segment's words in order, together covering every syllable of its Wylie exactly once. A lexical compound or fixed verb phrase is one word (\"brjod du med pa\"); case and converb particles are words of their own. wylie: exactly as in the given Wylie. gloss: the meaning in THIS context, at most 25 characters, in %s. function: part of speech and syntactic function, compact — \"N · agent\", \"ADJ · predicate\", \"V pf. ('pong ba) · main verb\", \"DEM · object\", \"NEG + V pf. (byed pa)\"; a case or converb particle gets only its label: ERG, GEN, ABS, TERM, LOC, ABL, COM, DAT, or \"CONV · cond.\" etc."
+          lang))
+
+(defun bcat-analysis--segment-entry (num text &optional wylie translation)
+  "One segment of a user prompt: [NUM] and TEXT — Tibetan with its
+WYLIE, or (WYLIE nil) a line as transmitted —, then TRANSLATION when
+given."
+  (concat (if wylie
+              (format "[%d] Tibetan: %s\n     Wylie: %s" num (string-trim text) wylie)
+            (format "[%d] %s" num (string-trim text)))
+          (if translation (format "\n     Translation: %s" translation) "")))
+
 (defun bcat-analysis-system-prompt (target)
   "The system prompt of the sentence analysis for the target language
 code TARGET — constant per document, so the prompt cache stays warm."
@@ -46,7 +62,7 @@ code TARGET — constant per document, so the prompt cache stays warm."
 
 Rules:
 - segments: one entry per given segment, same numbers, same order.
-- words: the segment's words in order, together covering every syllable of its Wylie exactly once. A lexical compound or fixed verb phrase is one word (\"brjod du med pa\"); case and converb particles are words of their own. wylie: exactly as in the given Wylie. gloss: the meaning in THIS context, at most 25 characters, in %s. function: part of speech and syntactic function, compact — \"N · agent\", \"ADJ · predicate\", \"V pf. ('pong ba) · main verb\", \"DEM · object\", \"NEG + V pf. (byed pa)\"; a case or converb particle gets only its label: ERG, GEN, ABS, TERM, LOC, ABL, COM, DAT, or \"CONV · cond.\" etc.
+%s
 - translation (segment): this segment's part of your translation; the parts read in order form the sentence translation. Give key terms with the Tibetan and the established Sanskrit in parentheses, e.g. \"uncompounded ('dus ma byas: asaṃskṛta)\".
 - references (segment): for every reference translation given, the part that corresponds to this segment, quoted verbatim (keep its brackets and Sanskrit; not its notes). Mark with org bold *…* ONLY passages that shift the meaning against the Tibetan or against your reading; stylistic variation is not marked.
 - shift: one line on what the marked passages shift, beginning with the translator name(s): \"Lindtner 1981: active, with the yogin as agent\"; \"\" when nothing is marked.
@@ -57,7 +73,7 @@ Rules:
 - translation (sentence): your translation of the whole sentence (the segment parts joined).
 - comparison: one to three sentences on the meaning-shifting differences between the translations including yours; \"\" when there are none.
 - Write glosses, notes and explanations in %s. Never mention yourself."
-            lang lang)))
+            (bcat-analysis--words-rule lang) lang)))
 
 (defun bcat-analysis-user-prompt (sent-num verse segs refs &optional context)
   "The user prompt for sentence SENT-NUM (VERSE its :VERSE: or nil):
@@ -68,9 +84,7 @@ translations (DharmaMitra among them), CONTEXT the document's
    (if context (concat (mapconcat #'identity context "\n") "\n\n") "")
    (format "Sentence %d%s — segments:\n" sent-num
            (if verse (format " (%s)" verse) ""))
-   (mapconcat (lambda (s)
-                (format "[%d] Tibetan: %s\n     Wylie: %s"
-                        (nth 0 s) (string-trim (nth 1 s)) (nth 2 s)))
+   (mapconcat (lambda (s) (bcat-analysis--segment-entry (nth 0 s) (nth 1 s) (nth 2 s)))
               segs "\n")
    "\n\nReference translations:\n"
    (if refs
@@ -105,11 +119,7 @@ reference translations ((NAME . TEXT) …)."
    (if context (concat (mapconcat #'identity context "\n") "\n\n") "")
    (format "Sentence %d%s — segments:\n" sent-num (if verse (format " (%s)" verse) ""))
    (mapconcat (lambda (s)
-                (if (nth 2 s)
-                    (format "[%d] Tibetan: %s\n     Wylie: %s\n     Translation: %s"
-                            (nth 0 s) (string-trim (nth 1 s)) (nth 2 s) (or (nth 3 s) ""))
-                  (format "[%d] %s\n     Translation: %s"
-                          (nth 0 s) (string-trim (nth 1 s)) (or (nth 3 s) ""))))
+                (bcat-analysis--segment-entry (nth 0 s) (nth 1 s) (nth 2 s) (or (nth 3 s) "")))
               segs "\n")
    "\n\nReference translations to align:\n"
    (mapconcat (lambda (r) (format "=== %s ===\n%s" (car r) (string-trim (cdr r)))) refs "\n")
@@ -158,7 +168,7 @@ TEXT) …) the reference translations, CONTEXT the document's
   (concat
    (if context (concat (mapconcat #'identity context "\n") "\n\n") "")
    (format "Sentence %d%s — segments:\n" sent-num (if verse (format " (%s)" verse) ""))
-   (mapconcat (lambda (s) (format "[%d] %s" (nth 0 s) (string-trim (nth 1 s)))) segs "\n")
+   (mapconcat (lambda (s) (bcat-analysis--segment-entry (nth 0 s) (nth 1 s))) segs "\n")
    "\n\nReference translations:\n"
    (if refs
        (mapconcat (lambda (r) (format "=== %s ===\n%s" (car r) (string-trim (cdr r))))
@@ -466,6 +476,16 @@ with the marks of its segment parts, the comparison paragraph."
               (unless (string-empty-p c) (list c)))))
      "\n\n")))
 
+(defun bcat-analysis--glossed (seg c)
+  "The glossed Wylie line of the Tibetan segment SEG (rump fields) with
+the words of C, Claude's object for it — whatever the rump had when the
+words do not cover the line."
+  (let* ((wy (alist-get 'wylie seg))
+         (g (and wy (bcat-analysis-glossed-line wy (alist-get 'words c)))))
+    (if (or (null g) (equal g wy))
+        (or (alist-get 'glossed seg) wy)
+      g)))
+
 (defun bcat-analysis-context (base parsed &optional refs)
   "Template fields of a fetched sentence: BASE (the rump fields —
 header, segments with num and wylie, user sections) completed from
@@ -483,14 +503,7 @@ segment Claude skipped keeps its rump fields."
                (if (null c)
                    seg
                  (append
-                  `((glossed . ,(let* ((wy (alist-get 'wylie seg))
-                                       (g (and wy (bcat-analysis-glossed-line
-                                                   wy (alist-get 'words c)))))
-                                  ;; Words that do not cover the line:
-                                  ;; whatever the rump had.
-                                  (if (or (null g) (equal g wy))
-                                      (or (alist-get 'glossed seg) wy)
-                                    g)))
+                  `((glossed . ,(bcat-analysis--glossed seg c))
                     (gloss-table . ,(bcat-analysis-gloss-table (alist-get 'words c)))
                     (translations . ,(bcat-analysis-translations-block
                                       (if (stringp num) (string-to-number num) num) c))
