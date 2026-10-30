@@ -321,11 +321,14 @@ Templates/analysis/ shapes the new file instead of the tool's."
 
 (defmacro bcat-sentence-test--with-stubs (answer &rest body)
   "Run BODY with DharmaMitra returning a fixed translation, every timer
-run at once, and the Claude submit landing ANSWER immediately.  Binds
-PROMPTS (the (SYSTEM . USER) pairs sent), SUBMITS, DONE (files the
-after-fetch hook saw) and COMPANIONS (old companion hook calls)."
+run at once, and the Claude submit landing ANSWER immediately — a
+string, or a function of the request's kind returning one.  Binds
+PROMPTS (the (SYSTEM . USER) pairs sent, latest first), SUBMITS, KINDS
+\(latest first), DONE (files the after-fetch hook saw) and COMPANIONS
+\(old companion hook calls)."
   (declare (indent 1))
-  `(let ((prompts '()) (submits 0) (done '()) (companions 0)
+  `(let ((prompts '()) (submits 0) (done '()) (companions 0) (kinds '())
+         (answer-of ,answer)
          (bcat-sentence-after-fetch-functions nil)
          (tibetan-cascade-after-fetch-functions nil)
          (tibetan-cascade-fetch-done-functions nil))
@@ -339,11 +342,13 @@ after-fetch hook saw) and COMPANIONS (old companion hook calls)."
                ((symbol-function 'run-at-time)
                 (lambda (_time _repeat fn &rest args) (apply fn args) nil))
                ((symbol-function 'tibetan-discussion--submit)
-                (lambda (_kind file thunk land)
+                (lambda (kind file thunk land)
                   (cl-incf submits)
+                  (push kind kinds)
                   (push (funcall thunk) prompts)
-                  (funcall land file ,answer)
+                  (funcall land file (if (functionp answer-of) (funcall answer-of kind) answer-of))
                   t)))
+       (ignore kinds)
        ,@body)))
 
 (defun bcat-sentence-test--fetch (src)
@@ -817,6 +822,185 @@ as transmitted with their translation — no Tibetan, no Wylie."
           (should-not (string-match-p "Wylie\\|Tibetan" user)))
         (should (string-match-p "^\\*Silburn 1998:\\* Although my speech is incapable here\\.$"
                                 (bcat-sentence-test--file-text-n src 1007)))))))
+
+;; ----------------------------------------------------------------------------
+;; Bilingual — Sanskrit with the Tibetan translation (§5.74, Carsten 30.10.)
+;; ----------------------------------------------------------------------------
+
+(defconst bcat-sentence-test--bil-source
+  (concat "#+TITLE: Abhidharmasamuccaya — CAT-Quelle (Sanskrit)\n"
+          "#+TIBETAN_LAYOUT: cascade\n"
+          "#+CAT_TEMPLATE: bilingual\n"
+          "#+CAT_PARALLEL: ../Tibetisch/kunbtus-cat.org\n"
+          "#+SOURCE_LANG: sa\n"
+          "#+TIBETAN_TARGET_LANG: en\n"
+          "#+TIBETAN_SENTENCE_REFS: refs.org\n"
+          "#+TIBETAN_CLAUDE_CONTEXT: Asaṅga, Abhidharmasamuccaya (Sanskrit).\n\n"
+          "* Sanskrit Text\n** Section skandha\n"
+          "*** Sentence 3\n"
+          "**** Segment 22\nkasmāt pañcaiva skandhāḥ.\n"
+          "**** Segment 23\npañcākārātmavastūdbhāvanatām upādāya.\n\n"
+          "*** Sentence 4\n"
+          "**** Segment 34\nkasmād aṣṭādaśaiva dhātavaḥ.\n")
+  "A bilingual source: AS sentence 3 (two segments) in Sanskrit, and a
+sentence 4 that the Tibetan lacks.")
+
+(defconst bcat-sentence-test--bil-tibetan
+  (concat "#+TITLE: Chos mngon pa kun las btus pa — CAT-Quelle\n"
+          "#+TIBETAN_LAYOUT: cascade\n"
+          "#+CAT_TEMPLATE: tibetan\n"
+          "#+TIBETAN_TARGET_LANG: en\n"
+          "#+TIBETAN_CLAUDE_CONTEXT: Asaṅga, chos mngon pa kun las btus pa (Toh 4049).\n\n"
+          "* Tibetan Text\n** Section skandha\n"
+          "*** Sentence 3\n"
+          "**** Segment 77\nཅིའི་ཕྱིར་ཕུང་པོ་རྣམས་ལྔ་ཁོ་ན་ཞེ་ན།\n"
+          "**** Segment 78\nབདག་གི་གཞི་རྣམ་པ་ལྔ་བརྗོད་པའི་ཕྱིར་ཏེ།\n"
+          "**** Segment 79\nབདག་གི་གཞི་ལུས་ཡོངས་སུ་གཟུང་བ་དང་བཅས་པ་བརྗོད་པ་དང་།\n")
+  "Its Tibetan translation: sentence 3 in three segments (77 for 22,
+78–79 for 23).")
+
+(defmacro bcat-sentence-test--with-bil-source (&rest body)
+  "Temp bilingual pair: SRC (Sanskrit/asam-cat.org, refs.org beside it)
+and its Tibetan (Tibetisch/kunbtus-cat.org) in DIR; FOLDER = SRC's
+analysis/.  No dictionary (nil rows)."
+  (declare (indent 0))
+  `(let* ((dir (make-temp-file "bcat-bil-" t))
+          (src (expand-file-name "Sanskrit/asam-cat.org" dir))
+          (folder (file-name-as-directory (expand-file-name "Sanskrit/analysis" dir)))
+          (bcat-sentence-templates t)
+          (bcat-analysis-response-directory (expand-file-name "responses" dir))
+          (bcat-template-directory
+           (expand-file-name "../Templates/analysis"
+                             (file-name-directory (locate-library "bcat-sentence-test")))))
+     (unwind-protect
+         (progn
+           (make-directory (expand-file-name "Sanskrit" dir) t)
+           (make-directory (expand-file-name "Tibetisch" dir) t)
+           (with-temp-file src (insert bcat-sentence-test--bil-source))
+           (with-temp-file (expand-file-name "Sanskrit/refs.org" dir)
+             (insert "#+TITLE: Rahula/Boin-Webb\n\n** Sentence 3\n*** Rahula/Boin-Webb 2001\n"
+                     "Why are there only five aggregates? Because of the five methods.\n"))
+           (with-temp-file (expand-file-name "Tibetisch/kunbtus-cat.org" dir)
+             (insert bcat-sentence-test--bil-tibetan))
+           (cl-letf (((symbol-function 'tibetan-gloss-table--unit-rows) (lambda (&rest _) nil)))
+             ,@body))
+       (dolist (b (buffer-list))
+         (when (and (buffer-file-name b)
+                    (string-prefix-p (file-truename dir)
+                                     (file-truename (buffer-file-name b))))
+           (with-current-buffer b (set-buffer-modified-p nil))
+           (kill-buffer b)))
+       (delete-directory dir t))))
+
+(defconst bcat-sentence-test--bil-answer-sa
+  (concat
+   "{\"segments\": ["
+   "{\"num\": 22, \"words\": [{\"word\": \"kasmāt\", \"lemma\": \"kim\", \"formation\": \"—\", \"parts\": \"\", \"gloss\": \"why\", \"form\": \"pron. abl. sg.\"},"
+   " {\"word\": \"pañca\", \"lemma\": \"pañcan\", \"formation\": \"—\", \"parts\": \"\", \"gloss\": \"five\", \"form\": \"num.\"},"
+   " {\"word\": \"eva\", \"lemma\": \"eva\", \"formation\": \"—\", \"parts\": \"\", \"gloss\": \"only\", \"form\": \"ind.\"},"
+   " {\"word\": \"skandhāḥ\", \"lemma\": \"skandha\", \"formation\": \"—\", \"parts\": \"\", \"gloss\": \"aggregates\", \"form\": \"m. nom. pl.\"}],"
+   " \"translation\": \"Why are there just five aggregates? —\","
+   " \"references\": [{\"name\": \"Rahula/Boin-Webb 2001\", \"text\": \"Why are there only five aggregates?\"},"
+   "                  {\"name\": \"DharmaMitra\", \"text\": \"Inexpressible and invisible,\"}],"
+   " \"shift\": [], \"sandhi\": \"pañca + eva → pañcaiva\", \"forms\": [], \"compounds\": [],"
+   " \"structure\": \"\", \"note\": \"\", \"concepts\": \"\"},"
+   "{\"num\": 23, \"words\": [{\"word\": \"pañca-ākāra-ātma-vastu-udbhāvanatām\", \"lemma\": \"x\", \"formation\": \"x\", \"parts\": \"x\", \"gloss\": \"fivefold self-basis\", \"form\": \"f. acc. sg.\"},"
+   " {\"word\": \"upādāya\", \"lemma\": \"upa-ā-√dā\", \"formation\": \"upa-ā-√dā-ya\", \"parts\": \"x\", \"gloss\": \"on account of\", \"form\": \"ger.\"}],"
+   " \"translation\": \"On account of their bringing to light the basis of self in five modes.\","
+   " \"references\": [{\"name\": \"Rahula/Boin-Webb 2001\", \"text\": \"Because of the five methods.\"},"
+   "                  {\"name\": \"DharmaMitra\", \"text\": \"Unchanging and unconditioned—\"}],"
+   " \"shift\": [], \"sandhi\": \"\", \"forms\": [], \"compounds\": [],"
+   " \"structure\": \"\", \"note\": \"\", \"concepts\": \"\"}],"
+   " \"grammar\": \"Question and answer.\","
+   " \"translation\": \"Why are there just five aggregates? — On account of their bringing to light the basis of self in five modes.\","
+   " \"comparison\": \"\"}")
+  "The Sanskrit answer for the test sentence 3.")
+
+(defconst bcat-sentence-test--bil-answer-bo
+  (concat
+   "{\"segments\": ["
+   "{\"num\": 77, \"sanskrit\": 22, \"words\": [{\"wylie\": \"ci'i phyir\", \"gloss\": \"why\", \"function\": \"INT\"},"
+   " {\"wylie\": \"phung po\", \"gloss\": \"aggregate\", \"function\": \"N\"}, {\"wylie\": \"rnams\", \"gloss\": \"plural\", \"function\": \"PL\"},"
+   " {\"wylie\": \"lnga\", \"gloss\": \"five\", \"function\": \"NUM\"}, {\"wylie\": \"kho na\", \"gloss\": \"only\", \"function\": \"ADV\"},"
+   " {\"wylie\": \"zhe na\", \"gloss\": \"if one asks\", \"function\": \"QUOT\"}]},"
+   "{\"num\": 78, \"sanskrit\": 23, \"words\": []},"
+   "{\"num\": 79, \"sanskrit\": 23, \"words\": []}],"
+   " \"differences\": [{\"sanskrit\": 23, \"text\": \"/udbhāvanatā/ is rendered /brjod pa/ („stating“).\"}],"
+   " \"rendering\": \"The Tibetan states the self-basis rather than bringing it to light.\"}")
+  "The Tibetan answer for the test sentence 3: 77 with 22, 78–79 with 23.")
+
+(defun bcat-sentence-test--bil-answers (kind)
+  "The canned answer for the request KIND."
+  (if (equal kind "bcat-tibetan") bcat-sentence-test--bil-answer-bo bcat-sentence-test--bil-answer-sa))
+
+(ert-deftest bcat-sentence-create-bilingual ()
+  "C-c u A (no AI) on a bilingual source: the bilingual template — the
+Sanskrit as Devanāgarī over IAST, the Tibetan of the same sentence from
+#+CAT_PARALLEL as Uchen over Wylie, a link to it in the header; no
+recitation; the segments have no Tibetan yet (Claude assigns it)."
+  (bcat-sentence-test--with-bil-source
+    (let ((text (bcat-sentence-test--create-n src 3)))
+      (should (string-match-p "^#\\+CAT_TEMPLATE: bilingual$" text))
+      (should (string-match-p (regexp-quote "#+CAT_PARALLEL: [[file:../../Tibetisch/kunbtus-cat.org::*Sentence 3][kunbtus-cat.org / Sentence 3]]") text))
+      (should (string-match-p "^#\\+CAT_PARALLEL_SEGMENTS: 77, 78, 79$" text))
+      (should (string-match-p (regexp-quote "* Text\n#+begin_verse\nकस्मात् पञ्चैव स्कन्धाः।\nkasmāt pañcaiva skandhāḥ.\n") text))
+      (should (string-match-p (regexp-quote "#+begin_verse\nཅིའི་ཕྱིར་ཕུང་པོ་རྣམས་ལྔ་ཁོ་ན་ཞེ་ན།\nci'i phyir phung po rnams lnga kho na zhe na/\n") text))
+      (should (string-match-p "^\\*\\* Segment 22$" text))
+      (should-not (string-match-p "Recitation\\|· Tib\\.\\|Differences" text)))))
+
+(ert-deftest bcat-sentence-create-bilingual-without-tibetan ()
+  "A sentence the Tibetan lacks: the Sanskrit alone, no empty Tibetan
+block, no parallel link."
+  (bcat-sentence-test--with-bil-source
+    (let ((text (bcat-sentence-test--create-n src 4)))
+      (should (string-match-p "kasmād aṣṭādaśaiva dhātavaḥ\\." text))
+      (should-not (string-match-p "CAT_PARALLEL\\|[ༀ-࿿]" text))
+      (should-not (string-match-p "#\\+begin_verse\n#\\+end_verse" text)))))
+
+(ert-deftest bcat-sentence-fetch-bilingual ()
+  "C-c u G on a bilingual sentence: first the Sanskrit request (as for a
+Sanskrit source), then — with its answer — the Tibetan request: the
+Sanskrit lines with the translations of the Sanskrit answer, the
+Tibetan with Wylie, the Tibetan source's context.  The file gets each
+Sanskrit segment's Tibetan (heading, Uchen over glossed Wylie), the
+differences, the rendering; C-c u H runs once, at the end."
+  (bcat-sentence-test--with-bil-source
+    (bcat-sentence-test--create-n src 3)
+    (bcat-sentence-test--with-stubs #'bcat-sentence-test--bil-answers
+      (bcat-sentence-test--fetch-n src 3)
+      (should (equal '("bcat-tibetan" "bcat-analysis") kinds))
+      (should (string-match-p "Devavāṇīpraveśikā" (car (nth 1 prompts))))
+      (let ((sys (car (car prompts))) (user (cdr (car prompts))))
+        (should (string-match-p "never decrease" sys))
+        (should (string-match-p (regexp-quote "Asaṅga, chos mngon pa kun las btus pa (Toh 4049).\n\nSentence 3 — Sanskrit segments:\n[22] kasmāt pañcaiva skandhāḥ.\n     Translation: Why are there just five aggregates? —\n") user))
+        (should (string-match-p (regexp-quote "Tibetan segments:\n[77] Tibetan: ཅིའི་ཕྱིར་ཕུང་པོ་རྣམས་ལྔ་ཁོ་ན་ཞེ་ན།\n     Wylie: ci'i phyir phung po rnams lnga kho na zhe na/\n") user)))
+      (let ((text (bcat-sentence-test--file-text-n src 3)))
+        (should (string-match-p "^\\*\\* Segment 22 · Tib\\. 77$" text))
+        (should (string-match-p "^\\*\\* Segment 23 · Tib\\. 78–79$" text))
+        (should (string-match-p (regexp-quote "ཅིའི་ཕྱིར་ཕུང་པོ་རྣམས་ལྔ་ཁོ་ན་ཞེ་ན།\nci'i phyir [why] phung po [aggregate] rnams [plural] lnga [five] kho na [only] zhe na [if one asks] /\n#+end_verse") text))
+        (should (string-match-p (regexp-quote "*Differences:* /udbhāvanatā/ is rendered /brjod pa/ („stating“).\n\n⟦23⟧ *Translation:* On account of") text))
+        (should (string-match-p "^\\*\\* Tibetan rendering\nThe Tibetan states the self-basis" text))
+        (should (string-match-p "^⟦22⟧ \\*Translation:\\* Why are there just five aggregates" text)))
+      (should (= 1 (length done)))
+      (should-not (bcat-sentence-fetch-state (tibetan-sentence--filepath 3 folder src) '(22 23))))))
+
+(ert-deftest bcat-sentence-fetch-bilingual-tibetan-unreadable ()
+  "The Tibetan answer unreadable: the file keeps the Sanskrit analysis,
+the answer is kept, no PDF — and C-c u G still has the sentence to do
+\(both requests again: the Tibetan one needs the Sanskrit answer)."
+  (bcat-sentence-test--with-bil-source
+    (bcat-sentence-test--create-n src 3)
+    (bcat-sentence-test--with-stubs (lambda (kind)
+                                      (if (equal kind "bcat-tibetan")
+                                          "Sorry, no JSON."
+                                        bcat-sentence-test--bil-answer-sa))
+      (bcat-sentence-test--fetch-n src 3)
+      (let ((text (bcat-sentence-test--file-text-n src 3)))
+        (should (string-match-p "^⟦22⟧ \\*Translation:\\* Why are there just five" text))
+        (should-not (string-match-p "· Tib\\." text)))
+      (should (null done))
+      (should (directory-files bcat-analysis-response-directory nil "\\`sent-003"))
+      (should (eq 'full (bcat-sentence-fetch-state (tibetan-sentence--filepath 3 folder src) '(22 23)))))))
 
 (provide 'bcat-sentence-test)
 ;;; bcat-sentence-test.el ends here
