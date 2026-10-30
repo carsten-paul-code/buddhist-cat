@@ -4563,6 +4563,19 @@ Claude-Antwort, DharmaMitra) kann einen Org-Link bilden — Carsten:
 `5060921' der Kommentar hat eine eigene Statuszeile unter dem Vers;
 `bbeeddb' Kommentar-PDF in den Handouts-Ordner der Verse.  ERT 2725.
 
+TĀ Satz 1001 (30.10. nachm.): Kästchen statt ¦ in den Devanāgarī-
+Zeilen der Rezitation (Noto Sans Devanagari hat kein U+00A6) →
+`56db0db' fremde Zeichen in Schriftzeilen in der Grundschrift;
+Metrum-Tabelle (20 Spalten) lief aus der Seite → `1f6da5b' jede
+Tabelle höchstens zeilenbreit (adjustbox max width); Glosseneinheit von
+110 Zeichen über den Rand → `52619d8' Einheiten > `bcat-export-unit-max'
+(50) brechen zwischen Glossenwörtern; „PDF ✓“ trotz fehlender Zeichen
+→ `0e022a0' Log wird gelesen, Status „PDF ✓ · fehlende Zeichen: ¦
+(Noto Sans Devanagari)“.  Prüfweg: Kopie exportieren mit
+`bcat-export-keep-tex' / `org-latex-remove-logfiles' nil, Log nach
+„Missing character“ greppen; in Carstens Emacs `undo-tree-auto-save-
+history' nil binden (sonst Verlaufsdateien für Scratch-Kopien).  ERT 2730.
+
 #### Offen
 
 - MSA: IX.60 erneut (Tibetisch fehlt; Kommentar mit den neuen Lemmata
