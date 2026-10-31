@@ -208,9 +208,10 @@ the assignment of the other language from the segment headings."
 (defun bcat-relayout-file (file)
   "Set the template sentence FILE anew from its template, without a
 fetch (`bcat-relayout-context'): user slots, the file's own sections,
-#+CREATED and #+LAST_ANALYZED stay.  Returns FILE, or nil (with a
-message) when its source has another template now — C-c u G rebuilds
-it."
+#+CREATED and #+LAST_ANALYZED stay; the answer kept at the fetch
+\(`bcat-sentence--answers') fills what the file does not show.
+Returns FILE, or nil (with a message) when its source has another
+template now — C-c u G rebuilds it."
   (let* ((source (tibetan-sentence--source-file-from-analysis file))
          (template (bcat-sentence-file-p file))
          (sent-num (tibetan-sentence--sent-id-from-filename file)))
@@ -225,8 +226,16 @@ it."
      (t
       (bcat-sentence--save-visit file)
       (let* ((text (bcat-sentence--text file))
-             (segs (plist-get (bcat-sentence--sentence sent-num source) :segs))
+             (sentence (bcat-sentence--sentence sent-num source))
+             (segs (plist-get sentence :segs))
              (base (bcat-sentence-rump-context sent-num segs source nil (bcat-sentence--keep file)))
+             ;; The answer kept at the fetch fills what the file does
+             ;; not show; what it shows wins (a hand correction stays).
+             (record (bcat-sentence--answers file))
+             (base (if (plist-get record :parsed)
+                       (bcat-sentence--fetched-context base sentence source (plist-get record :refs)
+                                                       (plist-get record :parsed) (plist-get record :tibetan))
+                     base))
              (context (bcat-relayout-context base text template))
              (assignment (alist-get 'assignment context))
              (context (if assignment

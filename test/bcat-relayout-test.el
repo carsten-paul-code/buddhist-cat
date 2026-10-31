@@ -137,6 +137,58 @@ order — My Notes, a section of its own (* Handout), #+CREATED and
         ;; Still analysed: the ⟦N⟧ translations under * Segments.
         (should-not (eq 'full (bcat-sentence-fetch-state file '(38 39))))))))
 
+(ert-deftest bcat-relayout-answers-kept ()
+  "C-c u G keeps Claude's answer beside the file (Carsten 31.10.: „ab
+jetzt: Antwort aufbewahrt“ — a later change of the template needs no
+new fetch): analysis/.answers/<file>.eld, Lisp data read back exactly —
+the answer and the references sent; for a bilingual sentence the
+Tibetan answer and its references too."
+  (bcat-sentence-test--with-source
+    (bcat-sentence-test--create src)
+    (bcat-sentence-test--with-stubs bcat-sentence-test--answer
+      (bcat-sentence-test--fetch src))
+    (let* ((file (tibetan-sentence--filepath 9 folder src))
+           (record (bcat-sentence--answers file)))
+      (should (file-exists-p (expand-file-name ".answers/sent-009-bden.eld" folder)))
+      (should (equal (bcat-analysis-parse bcat-sentence-test--answer) (plist-get record :parsed)))
+      (should (assoc "Lindtner 1981" (plist-get record :refs)))))
+  (bcat-sentence-test--with-bil-source
+    (bcat-sentence-test--create-n src 3)
+    (bcat-sentence-test--with-stubs #'bcat-sentence-test--bil-answers
+      (bcat-sentence-test--fetch-n src 3))
+    (let ((record (bcat-sentence--answers (tibetan-sentence--filepath 3 folder src))))
+      (should (assq 'segments (plist-get record :parsed)))
+      (should (assq 'rendering (plist-get record :tibetan)))
+      (should (listp (plist-get record :trefs))))))
+
+(ert-deftest bcat-relayout-fills-from-answers ()
+  "Setting anew with a kept answer: what the file shows wins — a hand
+correction stays —, the answer fills what the file does not show (here
+a class template that brings back the glossed verse lines)."
+  (bcat-sentence-test--with-source
+    (bcat-sentence-test--create src)
+    (bcat-sentence-test--with-stubs bcat-sentence-test--answer
+      (bcat-sentence-test--fetch src))
+    (let ((file (tibetan-sentence--filepath 9 folder src)))
+      ;; A hand correction in the file.
+      (with-temp-file file
+        (insert (replace-regexp-in-string "^\\*Structure:\\* no finite verb$"
+                                          "*Structure:* corrected by hand"
+                                          (bcat-sentence-test--text-of file) t t)))
+      ;; The class's own template (the cascade): the glossed lines under * Text.
+      (make-directory (expand-file-name "Templates/analysis" dir) t)
+      (with-temp-file (expand-file-name "Templates/analysis/tibetan.org" dir)
+        (insert (replace-regexp-in-string
+                 "^\\* Text\n" "* Text\n{{#segments}}\nGLOSSED {{glossed}}\n{{/segments}}\n"
+                 (with-temp-buffer
+                   (insert-file-contents (expand-file-name "tibetan.org" bcat-template-directory))
+                   (buffer-string))
+                 t t)))
+      (bcat-relayout-file file)
+      (let ((text (bcat-sentence-test--text-of file)))
+        (should (string-match-p "^\\*Structure:\\* corrected by hand$" text))
+        (should (string-match-p "^GLOSSED brjod du med pa \\[indescribable\\]" text))))))
+
 (ert-deftest bcat-relayout-key-and-menu ()
   "C-c u L sets anew; the menu offers it next to the jumps."
   (require 'tibetan-keybindings)

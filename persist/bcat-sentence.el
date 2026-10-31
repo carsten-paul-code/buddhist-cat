@@ -988,6 +988,57 @@ during a request survives); LAST_ANALYZED is today."
      file (bcat-sentence--render (bcat-sentence-template-name source-file) context source-file))
     context))
 
+(defun bcat-sentence--fetched-context (base sentence source-file refs parsed &optional tibetan)
+  "The fields of SENTENCE of SOURCE-FILE from its rump BASE and Claude's
+answer PARSED — for a bilingual sentence also TIBETAN, the answer of the
+Tibetan request; REFS the references sent with the request."
+  (let ((context (funcall (if (bcat-sentence--sanskrit-p source-file)
+                              #'bcat-analysis-sanskrit-context
+                            #'bcat-analysis-context)
+                          base parsed refs)))
+    (if tibetan
+        (let ((both (bcat-analysis-bilingual-context context tibetan)))
+          (bcat-sentence--commentary-fields (plist-get sentence :sent-num) source-file both
+                                            (alist-get 'assignment both)))
+      context)))
+
+(defun bcat-sentence--answers-file (file)
+  "Where the answers for the sentence FILE are kept: .answers/ beside it."
+  (expand-file-name (concat ".answers/" (file-name-base file) ".eld")
+                    (file-name-directory file)))
+
+(defun bcat-sentence--keep-answers (file record)
+  "Keep RECORD — (:parsed P :refs R [:tibetan T :trefs TR]), the answers
+FILE was built from and the references sent — beside FILE as Lisp data
+\(Carsten 31.10.: a later change of the template should need no new
+fetch; C-c u L fills from it what the file does not show).  Never
+signals: keeping is no reason to lose a landing."
+  (condition-case err
+      (let ((path (bcat-sentence--answers-file file)))
+        (make-directory (file-name-directory path) t)
+        (let ((coding-system-for-write 'utf-8-unix)
+              (print-length nil) (print-level nil)
+              (print-escape-nonascii nil) (print-escape-multibyte nil))
+          (with-temp-file path
+            (insert ";; -*- mode: lisp-data; coding: utf-8 -*-\n"
+                    ";; Buddhist CAT: Claude's answer for " (file-name-nondirectory file)
+                    " (" (format-time-string "%Y-%m-%d") ") — read by C-c u L.\n")
+            (prin1 record (current-buffer))
+            (insert "\n"))))
+    (error (message "Antwort für %s nicht aufbewahrt: %s"
+                    (file-name-nondirectory file) (error-message-string err)))))
+
+(defun bcat-sentence--answers (file)
+  "The answers kept for the sentence FILE (`bcat-sentence--keep-answers'),
+or nil."
+  (let ((path (bcat-sentence--answers-file file)))
+    (when (file-readable-p path)
+      (ignore-errors
+        (with-temp-buffer
+          (insert-file-contents path)
+          (goto-char (point-min))
+          (read (current-buffer)))))))
+
 (defun bcat-sentence--write-fetched (file sentence source-file refs parsed &optional tibetan)
   "Write the template FILE of SENTENCE built from Claude's answer PARSED
 — and for a bilingual sentence from TIBETAN, the answer of the Tibetan
@@ -996,15 +1047,7 @@ compared are REFS as sent, marked from the answer's segment parts."
   (bcat-sentence--write-analysed
    file (plist-get sentence :sent-num) (plist-get sentence :segs) source-file
    (lambda (base)
-     (let ((context (funcall (if (bcat-sentence--sanskrit-p source-file)
-                                 #'bcat-analysis-sanskrit-context
-                               #'bcat-analysis-context)
-                             base parsed refs)))
-       (if tibetan
-           (let ((both (bcat-analysis-bilingual-context context tibetan)))
-             (bcat-sentence--commentary-fields (plist-get sentence :sent-num) source-file both
-                                               (alist-get 'assignment both)))
-         context)))))
+     (bcat-sentence--fetched-context base sentence source-file refs parsed tibetan))))
 
 (defun bcat-sentence--write-partner (sentence source-file tibetan trefs sanskrit &optional hint assignment)
   "Write the Tibetan file of the bilingual SENTENCE of the paired
@@ -1040,6 +1083,7 @@ finishes the file; any other ends here (C-c u H)."
     (if (not parsed)
         (bcat-sentence--unreadable "Antwort" file response (cdr read))
       (bcat-sentence--write-fetched file sentence source-file refs parsed)
+      (bcat-sentence--keep-answers file (list :parsed parsed :refs refs))
       (bcat-status-step file :claude "Claude ✓")
       (if (bcat-sentence--parallel-segs (plist-get sentence :sent-num) source-file)
           (bcat-sentence--tibetan-one file sentence source-file refs parsed)
@@ -1079,6 +1123,7 @@ FILE as the Sanskrit answer left it when the answer is unreadable."
     (if (not tibetan)
         (bcat-sentence--unreadable "Tibetisch" file response (cdr read))
       (let ((context (bcat-sentence--write-fetched file sentence source-file refs parsed tibetan)))
+        (bcat-sentence--keep-answers file (list :parsed parsed :refs refs :tibetan tibetan :trefs trefs))
         (when (bcat-sentence--paired-p source-file)
           (bcat-sentence--write-partner sentence source-file tibetan trefs
                                         (alist-get 'segments context)
