@@ -158,6 +158,31 @@ translator without marks as \"Dyczkowski 2023: []\" and the file showed
                   '((shift . "Lindtner 1981: active, with the yogin as agent")))))
   (should-not (bcat-analysis-shift-lines '((shift . "")))))
 
+(ert-deftest bcat-analysis-sanskrit-tables-wrap-long-cell ()
+  "31.10., TĀ Satz 1008: the parts of „vakṣyamāṇa-ṣaḍardha-śāstra-artha-
+garbhīkāreṇa“ (160 characters) made a one-column table wider than the
+page; split by columns there was nothing to split, and the PDF shrank
+the table to an unreadable size (1f6da5b).  A cell wider than the table
+width breaks at its „·“ into further lines of the table — nothing cut,
+no line wider than `bcat-analysis-sanskrit-table-width'."
+  (let* ((parts "√vac (2) speak · -ṣyamāṇa fut. pass. part. · ṣaḍ six · ardha half · śāstra treatise · artha meaning · garbhī- womb/containing · √kṛ (8) make · -a action noun")
+         (table (bcat-analysis-sanskrit-tables
+                 `(((word . "vakṣyamāṇa-ṣaḍardha-śāstra-artha-garbhīkāreṇa")
+                    (formation . "√vac · ṣaḍ-ardha · śāstra · artha · garbhī-√kṛ-a")
+                    (parts . ,parts)
+                    (gloss . "by incorporating the meaning of the Ṣaḍardhaśāstra to be expounded")
+                    (form . "m. inst. sg.")))))
+         (lines (split-string table "\n" t)))
+    (should (cl-every (lambda (l) (<= (string-width l) bcat-analysis-sanskrit-table-width)) lines))
+    (should (= 1 (length (split-string table "\n\n"))))
+    (should (= 6 (length lines)))
+    ;; Nothing lost: the parts, read across their lines, are the cell.
+    (should (equal parts
+                   (replace-regexp-in-string
+                    " *\n *" " "
+                    (mapconcat (lambda (l) (string-trim (string-trim l "|" "|")))
+                               (seq-subseq lines 2 4) "\n"))))))
+
 (ert-deftest bcat-analysis-sanskrit-tables ()
   "The word table of a Sanskrit segment (word / formation / parts /
 gloss / form) is split into separate tables, none wider than

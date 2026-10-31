@@ -704,16 +704,47 @@ wanted compound and upādāya side by side as in the preview."
   :type 'integer
   :group 'buddhist-cat)
 
+(defun bcat-analysis--wrap-cell (text max)
+  "TEXT as lines of at most MAX characters, broken after a „ ·“ — the
+parts of a long compound (31.10., TĀ 1008: 160 characters in one cell);
+a piece longer than MAX stays whole."
+  (if (<= (string-width text) max)
+      (list text)
+    (let ((lines '()) (line nil))
+      (dolist (piece (split-string text " · "))
+        (let ((cand (if line (concat line " · " piece) piece)))
+          (if (and line (> (string-width cand) max))
+              (progn (push (concat line " ·") lines) (setq line piece))
+            (setq line cand))))
+      (nreverse (cons line lines)))))
+
+(defun bcat-analysis-wrap-rows (rows max)
+  "ROWS (lists of cells) with every cell wider than MAX broken at its „·“
+\(`bcat-analysis--wrap-cell') into further rows — the other cells of
+such a row empty there.  Shared by the Sanskrit tables and the export
+of tables written before (31.10.)."
+  (cl-loop for row in rows
+           append (let ((cells (mapcar (lambda (c) (bcat-analysis--wrap-cell c max)) row)))
+                    (cl-loop for i below (apply #'max (mapcar #'length cells))
+                             collect (mapcar (lambda (c) (or (nth i c) "")) cells)))))
+
 (defun bcat-analysis-sanskrit-tables (words)
   "The tables of a Sanskrit segment's WORDS (Claude's padapāṭha: word,
 formation, parts, gloss, form — five rows), split into separate tables
-of at most `bcat-analysis-sanskrit-table-width'; nothing is cut.  \"\"
-for no words."
-  (let* ((cols (mapcar (lambda (w)
+of at most `bcat-analysis-sanskrit-table-width'; nothing is cut.  A cell
+wider than that breaks into further lines of the table at its „·“
+\(`bcat-analysis-wrap-rows') — split by columns a one-word table could
+not get narrower, and the PDF shrank it to an unreadable size (31.10.).
+\"\" for no words."
+  (let* ((max (- bcat-analysis-sanskrit-table-width 4))
+         (cols (mapcar (lambda (w)
                          (mapcar (lambda (k) (tibetan-gloss-table--cell (bcat-analysis--field w k)))
                                  '(word formation parts gloss form)))
                        words))
-         (width (lambda (col) (+ 3 (apply #'max (mapcar #'string-width col)))))
+         (width (lambda (col)
+                  (+ 3 (apply #'max (mapcar #'string-width
+                                            (cl-mapcan (lambda (c) (bcat-analysis--wrap-cell c max))
+                                                       (copy-sequence col)))))))
          (chunks '()) (chunk '()) (used 1))
     (dolist (col cols)
       (let ((w (funcall width col)))
@@ -725,7 +756,9 @@ for no words."
     (when chunk (push (nreverse chunk) chunks))
     (mapconcat (lambda (ch)
                  (tibetan-gloss-table--format-rows
-                  (cl-loop for r below 5 collect (mapcar (lambda (col) (nth r col)) ch))))
+                  (bcat-analysis-wrap-rows
+                   (cl-loop for r below 5 collect (mapcar (lambda (col) (nth r col)) ch))
+                   max)))
                (nreverse chunks) "\n\n")))
 
 (defun bcat-analysis-padapatha-line (samhita words &optional plain)
