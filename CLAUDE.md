@@ -4620,8 +4620,46 @@ sind“): `c7bd53d' PDF — Wörter in Textfarbe, blau (bcatgloss 1F4E9E,
 defcustom/defface den alten Wert — von Hand setzen (face-spec-set).
 ERT 2746.
 
+NEUE REIHENFOLGE DER SATZDATEI (31.10. abends, Carsten an TĀ 1006, „die
+Anpassungen sind aber generisch“): `78a26ed' Tabellen: Wort- und
+Glossenzeile schwarz (je Band; Glosse = vorletzte Zeile, wie
+`bcat-sentence--dictionary-words'), Wortbildung/Teile/Form blau.
+`984d377' alle vier Vorlagen: * Recitation (ohne Metrumsbeschreibung) /
+* Text (Tibetisch Uchen, zweisprachig Devanāgarī über IAST; dann je
+Segment „⟦N⟧“ + Tabellen; Translation; zweite Sprache) / * Sentence
+(Grammar, Concepts je ⟦N⟧, Translations compared) / * Tibetan bzw.
+* Sanskrit (zweisprachig: je Segment „⟦N⟧ · Tib. …“ Zeilen mit Vokabeln
++ Differences, Tibetan rendering; vor der Zuordnung der ganze Text) /
+* Segments (der Rest je Segment: ⟦N⟧-Übersetzungsblöcke, Sandhi, Forms,
+Compounds, Structure, Note; Word Analysis) / * Commentary (Kommentar-
+Links „⟦N⟧ *Sthiramati:* …“, ** Bhāṣya mit Hint) / * Further Reading
+(Lectures).  Alles, was den Text nach „^⟦N⟧ “ absucht (fetch-state,
+--unaligned, --own-translations, --align-merge), liest nur noch
+`bcat-sentence--segments-part'; `bcat-commentary--patch-links' schreibt
+unter * Commentary.  `ad89035' ⟦N⟧ auf eigener Zeile (sonst stand sie
+im PDF neben der Tabelle).  `af8848d' Abruf: `translation_de' (bzw.
+`_en' bei Zielsprache de) → *Deutsch:*/*English:* unter der
+Übersetzung; Vergleich nennt je Unterschied die Lesarten in der zweiten
+Sprache (auch der Abgleich-Abruf) — erst nach C-u C-c u G.  `c6cf502'
+C-c u L (`bcat-relayout', persist/bcat-relayout.el): Satzdatei OHNE
+Abruf neu setzen — liest die Felder aus der Datei zurück (alte und neue
+Ordnung; Spezifikation: test/fixtures/old-layout-*.org eingelesen =
+neue Musterdateien), Datei gewinnt (Handkorrekturen bleiben).
+`e0d024f' Antworten aufbewahrt: analysis/.answers/<Satzdatei>.eld
+(Lisp-Daten), C-c u L füllt daraus, was die Datei nicht zeigt.
+Umgebaut am 31.10. (Sicherung im Scratchpad, Absatzvergleich ohne
+unerwartete Verluste): TĀ 001, 1000–1008; AS 002/1002 (+ kunbtus);
+MSA 128–134 (+ mdo 183–191); bDen 9–20.  TĀ-PDFs lokal neu, NICHT auf
+dem reMarkable.  ERT 2759.
+
 #### Offen
 
+- Kommentardokument (comm-…, Vorlage commentary) noch in alter Ordnung;
+  dieselbe Reihenfolge je Satz steht aus (Carsten: „Hier habe ich noch
+  keine generische Idee“ zu Kommentar vs. Weiterführendem — Vorschlag
+  * Commentary vor * Further Reading umgesetzt).
+- C-c u K/J von einer ⟦N⟧-Zeile unter * Commentary/* Tibetan aus: noch
+  nicht über die Marke, nur über `** Segment N'.
 - MSA: IX.60 erneut (Tibetisch fehlt; Kommentar mit den neuen Lemmata
   nur über C-u); danach aus der Antwort ein
   Golden für commentary.org (die Entwürfe samples/Bilingual-Verse.org und
