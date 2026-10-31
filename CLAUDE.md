@@ -4590,6 +4590,12 @@ WS26-27/Tantraloka/sanderson-ta1.py; im PDF, nicht im Prompt);
 `8ee11a0' Log-Parser kannte die Anführungszeichen um den Schriftnamen
 nicht.  ERT 2738.
 
+31.10.: `6d2e117' Handouts immer im handouts-Ordner auf der obersten
+Ebene des Textes (Carsten: „auch für Tib. V“) — Ordner direkt unter
+WS…/SS… (`bcat-export--text-folder'), #+CAT_HANDOUTS: überschreibt;
+bestehende PDFs von AS/MSA dorthin verschoben, alte MSA-Synopsen
+msa-IX.60/61 in den Papierkorb.  ERT 2739.
+
 #### Offen
 
 - MSA: IX.60 erneut (Tibetisch fehlt; Kommentar mit den neuen Lemmata
