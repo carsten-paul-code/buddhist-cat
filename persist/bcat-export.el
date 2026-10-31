@@ -377,11 +377,19 @@ ran off the page."
       ;; paragraph ran on beside the box — „Translation:“ in the table).
       (let ((end (if (string-match "\n*\\'" text) (match-beginning 0) (length text))))
         (concat "\\begin{adjustbox}{max width=\\linewidth}\n"
-                (bcat-export--detail-rows (substring text 0 end)) "\n"
+                (bcat-export--detail-rows (bcat-export--table-scripts (substring text 0 end))) "\n"
                 "\\end{adjustbox}"
                 (let ((tail (substring text end)))
                   (if (string-empty-p tail) "\n" tail))))
     text))
+
+(defun bcat-export--table-scripts (tabular)
+  "TABULAR with each Tibetan run in the Tibetan font, larger — the Uchen
+row of a Tibetan table (Carsten 31.10. abends, Tibetisch V); the main
+font has no Tibetan."
+  (replace-regexp-in-string "[\u0F00-\u0FFF]+"
+                            (lambda (run) (format "{\\bcattib\\large %s}" run))
+                            tabular t t))
 
 (defun bcat-export--metre-row-p (row)
   "Non-nil when the LaTeX table ROW holds only metre signs (– ⏑ ¦)."
@@ -390,11 +398,12 @@ ran off the page."
 (defun bcat-export--detail-rows (tabular)
   "TABULAR (LaTeX) with the cells of the rows that explain the words —
 formation, parts, form — in \\bcatg: in each band of the table (rows
-between \\hline) every row but the first (the words) and the one next
-to last (the gloss).  Carsten 31.10.: words black, the rest blue; the
-same evening, TĀ 1006: the gloss black too — „dann sehe ich gleich was
-wichtig ist“.  A metre table (its second row only – and ⏑) stays as it
-is."
+between \\hline) every row but the first (the words), the second when
+the first is Uchen (its Wylie) and the one next to last (the gloss).
+Carsten 31.10.: words black, the rest blue; the same evening, TĀ 1006:
+the gloss black too — „dann sehe ich gleich was wichtig ist“;
+Tibetisch V: Uchen and Wylie black.  A metre table (its second row only
+– and ⏑) stays as it is."
   (let* ((lines (split-string tabular "\n"))
          (row-p (lambda (l) (string-match-p "\\\\\\\\[ \t]*\\'" l)))
          (rows (cl-remove-if-not row-p lines)))
@@ -405,9 +414,10 @@ is."
         (dolist (l (append lines (list "\\hline")))
           (cond ((funcall row-p l) (push l band))
                 ((string-match-p "\\`[ \t]*\\\\hline" l)
-                 (let* ((b (nreverse band)) (n (length b)))
+                 (let* ((b (nreverse band)) (n (length b))
+                        (uchen (and b (string-match-p "[\u0F00-\u0FFF]" (car b)))))
                    (cl-loop for r in b for i from 0
-                            unless (or (= i 0) (= i (- n 2)))
+                            unless (or (= i 0) (and uchen (= i 1)) (= i (- n 2)))
                             do (push r blue)))
                  (setq band '()))))
         (mapconcat

@@ -94,6 +94,18 @@ paragraph) — the mark gets a line of its own.  Files written before
     (should (string-match-p "^⟦38⟧\n\n| " sample))
     (should (equal sample (bcat-relayout-test--render "tibetan" (bcat-analysis-test--base) glued)))))
 
+(ert-deftest bcat-relayout-adds-uchen ()
+  "Tables of a Tibetan file written before 31.10. abends (Wylie, gloss,
+function) get the Uchen row when set anew — from the segment's Uchen;
+a table that has it keeps it."
+  (let* ((old "* Text\n⟦38⟧\n\n| [[steinert:brjod du med pa][brjod du med pa]] | [[steinert:bltar med pa][bltar med pa]] |\n| indescribable | invisible |\n| ADJ | ADJ |\n\n*Translation:* t\n")
+         (ctx (bcat-relayout-context
+               '((segments ((num . 38) (uchen . "བརྗོད་དུ་མེད་པ་བལྟར་མེད་པ། །"))))
+               old "tibetan"))
+         (table (alist-get 'gloss-table (car (alist-get 'segments ctx)))))
+    (should (string-match-p "\\`| བརྗོད་དུ་མེད་པ +| བལྟར་མེད་པ +|\n| \\[\\[steinert:brjod" table))
+    (should (equal table (bcat-analysis-uchen-table table "བརྗོད་དུ་མེད་པ་བལྟར་མེད་པ། །")))))
+
 (ert-deftest bcat-relayout-second-translation ()
   "The translation in the second language (*Deutsch:* under * Text)
 is read back and stays."
@@ -138,7 +150,8 @@ order — My Notes, a section of its own (* Handout), #+CREATED and
             (kill-buffer))))
       (let ((text (bcat-sentence-test--text-of file)))
         (should-not fired)
-        (should (string-match-p (regexp-quote "#+end_verse\n\n⟦38⟧\n\n| [[steinert:brjod du med pa][brjod du med pa]] |\n| indescribable |") text))
+        ;; The old table gets its Uchen row (31.10. abends, Tibetisch V).
+        (should (string-match-p "#\\+end_verse\n\n⟦38⟧\n\n| བརྗོད་དུ་མེད་པ +|\n| \\[\\[steinert:brjod du med pa\\]\\[brjod du med pa\\]\\] |\n| indescribable +|" text))
         (should (string-match-p (regexp-quote "** Concepts\n⟦39⟧ *'dus ma byas* (asaṃskṛta)\n") text))
         (should (string-match-p (regexp-quote "* Segments\n** Segment 38\n⟦38⟧ *Translation:* Indescribable and invisible,\n\n*Structure:* no finite verb\n") text))
         (should (string-match-p "^#\\+LAST_ANALYZED: 2026-10-20$" text))

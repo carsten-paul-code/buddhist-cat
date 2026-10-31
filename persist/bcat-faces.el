@@ -77,14 +77,21 @@ table's second row holds only – ⏑ ¦."
 (defun bcat-faces--detail-row-matcher (limit)
   "Font-lock matcher: the next table row before LIMIT that explains the
 words — group 0 the row: in its band (rows between hlines) neither the
-first (the words) nor the one next to last (the gloss); none of a metre
-table."
+first (the words), nor the second when the first is Uchen (its Wylie),
+nor the one next to last (the gloss); none of a metre table."
   (let ((found nil))
     (while (and (not found) (re-search-forward "^[ \t]*|[^-\n].*$" limit t))
       (let* ((beg (match-beginning 0)) (end (match-end 0))
              (band (bcat-faces--band beg))
-             (i (cl-position beg band)))
+             (i (cl-position beg band))
+             ;; A Tibetan table: Uchen first, its Wylie black too.
+             (uchen (and band (save-excursion
+                                (goto-char (car band))
+                                (string-match-p "[\u0F00-\u0FFF]"
+                                                (buffer-substring-no-properties
+                                                 (point) (line-end-position)))))))
         (when (and i (/= i 0) (/= i (- (length band) 2))
+                   (not (and uchen (= i 1)))
                    (not (bcat-faces--metre-table-p beg)))
           (set-match-data (list beg end))
           (setq found t))))

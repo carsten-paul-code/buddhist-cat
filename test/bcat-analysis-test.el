@@ -144,6 +144,49 @@ segment as transmitted, the references."
     (should (string-match-p (regexp-quote "[685] atra madvāgaśaktāpi yanniyantraṇamullaset /\n[686] tatpārameśvaraṃ") user))
     (should (string-match-p "=== Dyczkowski 2023 ===\nAlthough my speech" user))))
 
+(ert-deftest bcat-analysis-uchen-words ()
+  "Carsten 31.10. abends, Tibetisch V: the Uchen of each word above its
+Wylie in the tables — from the segment's Uchen, syllable by syllable
+against Claude's Wylie (bDen 9–20: 216 words, all found).  A word that
+does not match gets nil, the next ones still theirs."
+  (should (equal '("དེ" "ལས" "བརྒྱུད་པའི" "མན་ངག" "གིས")
+                 (bcat-analysis-uchen-words "དེ་ལས་བརྒྱུད་པའི་མན་ངག་གིས། །"
+                                            '("de" "las" "brgyud pa'i" "man ngag" "gis"))))
+  ;; A word spelled otherwise („lXX“): the next word is found further on
+  ;; and the syllables skipped are the odd word's.
+  (should (equal '("དེ" "ལས" "བརྒྱུད་པའི")
+                 (bcat-analysis-uchen-words "དེ་ལས་བརྒྱུད་པའི། །" '("de" "lXX" "brgyud pa'i"))))
+  (should (equal '("དེ" nil) (bcat-analysis-uchen-words "དེ་ལས། །" '("de" "foo"))))
+  (should (equal '(nil) (bcat-analysis-uchen-words nil '("de")))))
+
+(ert-deftest bcat-analysis-gloss-table-uchen ()
+  "With the segment's Uchen the table has four rows: Uchen, Wylie (the
+dictionary link), gloss, function; without, three as before."
+  (let ((words '(((wylie . "de") (gloss . "that") (function . "DEM"))
+                 ((wylie . "las") (gloss . "from") (function . "ABL")))))
+    (should (equal '(("དེ" "ལས") ("[[steinert:de][de]]" "las") ("that" "from") ("DEM" "ABL"))
+                   (mapcar (lambda (row) (mapcar #'string-trim (butlast (cdr (split-string row "|")))))
+                           (split-string (bcat-analysis-gloss-table words "དེ་ལས། །") "\n"))))
+    (should (= 3 (length (split-string (bcat-analysis-gloss-table words) "\n"))))))
+
+(ert-deftest bcat-analysis-uchen-table-bands ()
+  "An older table in bands (SDA 11: the fifth word under an hline, the
+rest of its band empty) gets the Uchen row too: its columns read band
+after band, the empty padding dropped, set again."
+  (let* ((old (concat "| [[steinert:mu stegs][mu stegs]] | kyis |\n"
+                      "| tirthika | ERG-by |\n"
+                      "| N | ERG |\n"
+                      "|----------+------|\n"
+                      "| [[steinert:kyang][kyang]] |   |\n"
+                      "| even | |\n"
+                      "| CONJ | |"))
+         (new (bcat-analysis-uchen-table old "མུ་སྟེགས་ཀྱིས་ཀྱང་། །"))
+         (rows (mapcar (lambda (l) (mapcar #'string-trim (butlast (cdr (split-string l "|")))))
+                       (cl-remove-if (lambda (l) (string-match-p "\\`|-" l)) (split-string new "\n")))))
+    (should (equal '("མུ་སྟེགས" "ཀྱིས" "ཀྱང") (car rows)))
+    (should (equal '("[[steinert:mu stegs][mu stegs]]" "kyis" "[[steinert:kyang][kyang]]") (nth 1 rows)))
+    (should (equal '("N" "ERG" "CONJ") (nth 3 rows)))))
+
 (ert-deftest bcat-analysis-second-language ()
   "Carsten 31.10. abends, TĀ 1006: „Darunter hätte ich dann gerne die
 Übersetzung in deutsch, damit ich mich leichter in die Konzepte rein

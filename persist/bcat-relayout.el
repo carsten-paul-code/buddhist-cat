@@ -198,7 +198,14 @@ the assignment of the other language from the segment headings."
          (read (bcat-relayout--segments text block-field))
          (assignment (bcat-relayout--assignment text))
          (segments (mapcar (lambda (seg)
-                             (append (gethash (bcat-analysis--num seg) read) seg))
+                             (let ((fields (gethash (bcat-analysis--num seg) read))
+                                   (uchen (alist-get 'uchen seg)))
+                               ;; Tables written before 31.10. abends get
+                               ;; the Uchen row (Tibetisch V).
+                               (when (and uchen (alist-get 'gloss-table fields))
+                                 (setf (alist-get 'gloss-table fields)
+                                       (bcat-analysis-uchen-table (alist-get 'gloss-table fields) uchen)))
+                               (append fields seg)))
                            (alist-get 'segments base))))
     (append `((segments . ,segments))
             (and assignment `((assignment . ,assignment)))

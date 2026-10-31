@@ -71,6 +71,15 @@ and ⏑).  A table in bands (hline between): each band on its own."
                      "| NUM   |")
                    (bcat-faces-test--matches #'bcat-faces--detail-row-matcher 0)))))
 
+(ert-deftest bcat-faces-tibetan-table ()
+  "A Tibetan table (Uchen, Wylie, gloss, function — Carsten 31.10.:
+Uchen and Wylie black): only the function row is blue."
+  (with-temp-buffer
+    (insert "* Text\n⟦66⟧\n\n| དེ        | ལས   |\n| de        | las  |\n| that/them | from |\n| DEM       | ABL  |\n")
+    (org-mode)
+    (should (equal '("| DEM       | ABL  |")
+                   (bcat-faces-test--matches #'bcat-faces--detail-row-matcher 0)))))
+
 (ert-deftest bcat-faces-only-in-sentence-files ()
   "Switched on in a sentence file of a template (sent-…, comm-… with
 #+CAT_TEMPLATE:), not in other org files."

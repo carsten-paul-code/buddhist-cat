@@ -430,6 +430,23 @@ cut by \\hline."
          (out (bcat-export--table-filter metre 'latex nil)))
     (should-not (string-match-p "bcatg" out))))
 
+(ert-deftest bcat-export-tibetan-tables ()
+  "Carsten 31.10. abends, Tibetisch V: the tables carry the Uchen of
+each word above the Wylie, both black — only the function row blue.
+The Uchen is set in the Tibetan font (the main font has none)."
+  (let ((out (bcat-export--table-filter
+              (concat "\\begin{tabular}{ll}\n"
+                      "དེ & བརྒྱུད་པའི\\\\\n"
+                      "\\href{steinert:de}{de} & brgyud pa'i\\\\\n"
+                      "that & transmitted\\\\\n"
+                      "DEM & V pf.\\\\\n"
+                      "\\end{tabular}\n\n")
+              'latex nil)))
+    (should (string-match-p (regexp-quote "\n{\\bcattib\\large དེ} & {\\bcattib\\large བརྒྱུད་པའི}\\\\\n") out))
+    (should (string-match-p (regexp-quote "\n\\href{steinert:de}{de} & brgyud pa'i\\\\\n") out))
+    (should (string-match-p (regexp-quote "\nthat & transmitted\\\\\n") out))
+    (should (string-match-p (regexp-quote "\n\\bcatg{DEM} & \\bcatg{V pf.}\\\\\n") out))))
+
 (ert-deftest bcat-export-verse-scripts-foreign-signs ()
   "30.10., TĀ Satz 1001: in the recitation the pause sign ¦ stands in
 the Devanāgarī line, and Noto Sans Devanagari has no ¦ — an empty box

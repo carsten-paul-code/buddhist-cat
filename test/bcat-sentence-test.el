@@ -130,10 +130,12 @@ more; with a table no plain Wylie under the Uchen)."
                  (regexp-quote (concat "* Text\n#+begin_verse\n"
                                        "བརྗོད་དུ་མེད་པ་བལྟར་མེད་པ། །\n"
                                        "འགྱུར་བ་མེད་པ་འདུས་མ་བྱས། །\n"
-                                       "#+end_verse\n\n⟦38⟧\n\n| [[steinert:brjod du med pa]"))
+                                       "#+end_verse\n\n⟦38⟧\n\n| བརྗོད་དུ་མེད་པ"))
                  text))
+        ;; 31.10. abends, Tibetisch V: the Uchen above the Wylie.
+        (should (string-match-p "^| བརྗོད་དུ་མེད་པ +| བལྟར་མེད་པ +|\n| \\[\\[steinert:brjod du med pa\\]" text))
         (should (string-match-p (regexp-quote "| inexpressible; ineffable | invisible") text))
-        (should (string-match-p (regexp-quote "\n\n⟦39⟧\n\n| [[steinert:'gyur ba med pa]") text))
+        (should (string-match-p (regexp-quote "\n\n⟦39⟧\n\n| འགྱུར་བ་མེད་པ") text))
         (should-not (string-match-p "\\[inexpressible" text))
         (should (string-match-p "\n\n\\* Sentence\n" text))))))
 

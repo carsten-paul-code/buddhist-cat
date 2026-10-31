@@ -19,24 +19,28 @@
 
 ⟦38⟧
 
+| བརྗོད་དུ་མེད་པ      | བལྟར་མེད་པ        |
 | [[steinert:brjod du med pa][brjod du med pa]] | [[steinert:bltar med pa][bltar med pa]]    |
 | indescribable   | invisible       |
 | ADJ · predicate | ADJ · predicate |
 
 ⟦39⟧
 
+| འགྱུར་བ་མེད་པ      | འདུས                   | མ་བྱས                  |
 | [[steinert:'gyur ba med pa]['gyur ba med pa]] | [[steinert:'dus]['dus]]                  | [[steinert:ma byas][ma byas]]               |
 | immutable       | assembled, compounded | not made              |
 | ADJ · predicate | V pf. ('du ba)        | NEG + V pf. (byed pa) |
 
 ⟦40⟧
 
+| རྣལ་འབྱོར་པ      | ཡིས  | དེ            | རྟོགས      | ན            |
 | [[steinert:rnal 'byor pa][rnal 'byor pa]] | yis | [[steinert:de][de]]           | [[steinert:rtogs][rtogs]]    | na           |
 | yogin         | by  | that         | realizes | if           |
 | N · agent     | ERG | DEM · object | V tr.    | CONV · cond. |
 
 ⟦41⟧
 
+| ཉོན་མོངས     | ཤེས་བྱའི           | སྒྲིབ་པ        | སྤངས                          |
 | [[steinert:nyon mongs][nyon mongs]] | [[steinert:shes bya'i][shes bya'i]]      | [[steinert:sgrib pa][sgrib pa]]    | [[steinert:spangs][spangs]]                       |
 | affliction | of the knowable | obstruction | abandoned                    |
 | N          | N + GEN         | N · object  | V pf. ('pong ba) · main verb |

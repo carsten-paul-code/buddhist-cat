@@ -24,6 +24,7 @@
 (require 'json)
 (require 'seq)
 (require 'ol)
+(require 'tibetan-wylie nil t)
 
 (declare-function tibetan-gloss-table--cell "tibetan-gloss-table" (s))
 (declare-function tibetan-gloss-table--truncate-cell "tibetan-gloss-table" (gloss))
@@ -488,35 +489,139 @@ costs room, so each one is charged."
   :type 'integer
   :group 'buddhist-cat)
 
-(defun bcat-analysis-gloss-table (words)
-  "The three-row table of WORDS (Claude's word list): row 1 Wylie (with
-a Steinert link unless a particle), row 2 gloss, row 3 function — split
+(defun bcat-analysis--uchen-syllables (uchen)
+  "The syllables of the Tibetan UCHEN — tsheg, shad and spaces dropped."
+  (split-string (replace-regexp-in-string "[།༎༏༑༔ \t\n]+" "་" (or uchen "")) "་" t))
+
+(defun bcat-analysis--wylie-key (wylie)
+  "WYLIE as compared with the Wylie of Uchen syllables: no spaces or
+shad, lower case."
+  (downcase (replace-regexp-in-string "[ /]+" "" (or wylie ""))))
+
+(defun bcat-analysis-uchen-words (uchen wylies)
+  "The Uchen of each of WYLIES — the words of a segment in order, as in
+its table — from the segment's UCHEN; nil for a word whose syllables do
+not match (the next words still get theirs).  Carsten 31.10. abends,
+Tibetisch V: the Uchen above the Wylie in the tables.  The tool has no
+Wylie → Uchen conversion, but Uchen → Wylie per syllable: the words
+take the syllables whose Wylie they spell (bDen 9–20: 216 of 216)."
+  (let* ((syls (bcat-analysis--uchen-syllables uchen))
+         (keys (and (fboundp 'tibetan-to-wylie-fixed)
+                    (mapcar (lambda (syl) (bcat-analysis--wylie-key (tibetan-to-wylie-fixed syl))) syls)))
+         (i 0) (out '())
+         (spell (lambda (target from)
+                  ;; The end of the syllables from FROM that spell
+                  ;; TARGET, or nil.
+                  (let ((acc "") (j from))
+                    (while (and (< j (length keys)) (< (length acc) (length target)))
+                      (setq acc (concat acc (nth j keys)) j (1+ j)))
+                    (and (not (string-empty-p target)) (equal acc target) j)))))
+    (dolist (w wylies (nreverse out))
+      (let* ((target (bcat-analysis--wylie-key w))
+             ;; Here, or — after a word spelled otherwise — a few
+             ;; syllables on; the skipped ones are that word's.
+             (start (cl-loop for j from i to (min (length keys) (+ i 4))
+                             when (funcall spell target j) return j))
+             (end (and start (funcall spell target start))))
+        (if (null end)
+            (push nil out)
+          (when (and (> start i) out (null (car out)))
+            (setcar out (string-join (cl-subseq syls i start) "་")))
+          (push (string-join (cl-subseq syls start end) "་") out)
+          (setq i end))))))
+
+(defun bcat-analysis--uchen-row (uchen wylies)
+  "The Uchen row for the words WYLIES of the segment UCHEN — \"\" where
+a word is not found —, or nil when none is (then no row at all)."
+  (let ((row (bcat-analysis-uchen-words uchen wylies)))
+    (when (cl-some #'identity row)
+      (mapcar (lambda (u) (or u "")) row))))
+
+(defun bcat-analysis-plain-cell (cell)
+  "CELL of a gloss table as plain text: links reduced to their text,
+`\\vert' back to a bar."
+  (replace-regexp-in-string
+   "\\\\vert\\(?:{}\\)?" "|"
+   (replace-regexp-in-string "\\[\\[[^]]*\\]\\[\\([^]]*\\)\\]\\]" "\\1" (or cell "") t)
+   t t))
+
+(defun bcat-analysis--table-columns (table)
+  "The columns of the org TABLE — each a list of its cells, top to
+bottom — in reading order: bands (rows between hlines, the older form of
+a wide table) one after the other, their empty padding dropped."
+  (let ((bands '()) (band '()))
+    (dolist (line (append (split-string table "\n" t) '("|-")))
+      (if (string-match-p "\\`[ \t]*|-" line)
+          (progn (when band (push (nreverse band) bands)) (setq band nil))
+        (push (mapcar #'string-trim (butlast (cdr (split-string line "|")))) band)))
+    (cl-loop for b in (nreverse bands)
+             append (cl-loop for j below (length (car b))
+                             for col = (mapcar (lambda (row) (or (nth j row) "")) b)
+                             unless (cl-every #'string-empty-p col) collect col))))
+
+(defun bcat-analysis-uchen-table (tables uchen)
+  "TABLES — the org tables of a Tibetan segment, blank lines between —
+with the Uchen of UCHEN as their first row, when they have none yet
+\(tables written before 31.10. abends; C-c u L).  Each table is set
+anew from its columns (an older one in bands as well); tables already
+in Uchen stay as they are."
+  (let ((parts (split-string (or tables "") "\n[ \t]*\n" t)))
+    (if (or (null parts) (null uchen)
+            (string-match-p "[\u0F00-\u0FFF]" (car (split-string (car parts) "\n"))))
+        tables
+      (let* ((columns (mapcar #'bcat-analysis--table-columns parts))
+             (uchens (bcat-analysis--uchen-row
+                      uchen (mapcar (lambda (col) (bcat-analysis-plain-cell (car col)))
+                                    (apply #'append columns)))))
+        (if (null uchens)
+            tables
+          (mapconcat (lambda (cols)
+                       (let ((cols (cl-mapcar #'cons uchens cols)))
+                         (setq uchens (nthcdr (length cols) uchens))
+                         (string-trim-right
+                          (tibetan-gloss-table--format-rows
+                           (cl-loop for r below (length (car cols))
+                                    collect (mapcar (lambda (col) (nth r col)) cols))))))
+                     columns "\n\n"))))))
+
+(defun bcat-analysis-gloss-table (words &optional uchen)
+  "The table of WORDS (Claude's word list): row 1 Wylie (with a
+Steinert link unless a particle), row 2 gloss, row 3 function — split
 into separate tables of at most `bcat-analysis-tibetan-table-width'.
-\"\" for no words."
+With UCHEN, the segment's Tibetan, the word in Uchen above its Wylie
+\(Carsten 31.10. abends, Tibetisch V: Uchen and Wylie black, the
+function blue).  \"\" for no words."
   (if (null words)
       ""
-    (let ((chunks '()) (chunk '()) (used 1))
-      (dolist (w words)
-        (let* ((wy (bcat-analysis--field w 'wylie))
-               (fn (bcat-analysis--field w 'function))
-               (gl (tibetan-gloss-table--cell
-                    (or (tibetan-gloss-table--truncate-cell (bcat-analysis--field w 'gloss)) "")))
-               (col (list (if (bcat-analysis--particle-p w)
-                              (tibetan-gloss-table--cell wy)
-                            (format "[[steinert:%s][%s]]" wy (tibetan-gloss-table--cell wy)))
-                          gl
-                          (tibetan-gloss-table--cell fn)))
-               (width (+ 6 (max (string-width wy) (string-width gl) (string-width fn)))))
-          (when (and chunk (> (+ used width) bcat-analysis-tibetan-table-width))
-            (push (nreverse chunk) chunks)
-            (setq chunk nil used 1))
-          (push col chunk)
-          (setq used (+ used width))))
+    (let* ((uchens (and uchen (bcat-analysis--uchen-row
+                               uchen (mapcar (lambda (w) (bcat-analysis--field w 'wylie)) words))))
+           (nrows (if uchens 4 3))
+           (chunks '()) (chunk '()) (used 1))
+      (cl-loop
+       for w in words
+       for u = (pop uchens)
+       do (let* ((wy (bcat-analysis--field w 'wylie))
+                 (fn (bcat-analysis--field w 'function))
+                 (gl (tibetan-gloss-table--cell
+                      (or (tibetan-gloss-table--truncate-cell (bcat-analysis--field w 'gloss)) "")))
+                 (col (append (and (= nrows 4) (list (or u "")))
+                              (list (if (bcat-analysis--particle-p w)
+                                        (tibetan-gloss-table--cell wy)
+                                      (format "[[steinert:%s][%s]]" wy (tibetan-gloss-table--cell wy)))
+                                    gl
+                                    (tibetan-gloss-table--cell fn))))
+                 (width (+ 6 (max (string-width wy) (string-width gl) (string-width fn)
+                                  (string-width (or u ""))))))
+            (when (and chunk (> (+ used width) bcat-analysis-tibetan-table-width))
+              (push (nreverse chunk) chunks)
+              (setq chunk nil used 1))
+            (push col chunk)
+            (setq used (+ used width))))
       (when chunk (push (nreverse chunk) chunks))
       (mapconcat (lambda (ch)
                    (string-trim-right
                     (tibetan-gloss-table--format-rows
-                     (cl-loop for r below 3 collect (mapcar (lambda (col) (nth r col)) ch)))))
+                     (cl-loop for r below nrows collect (mapcar (lambda (col) (nth r col)) ch)))))
                  (nreverse chunks) "\n\n"))))
 
 (defun bcat-analysis--bracketed (word gloss)
@@ -715,7 +820,8 @@ segment Claude skipped keeps its rump fields."
                    seg
                  (append
                   `((glossed . ,(bcat-analysis--glossed seg c))
-                    (gloss-table . ,(bcat-analysis-gloss-table (alist-get 'words c)))
+                    (gloss-table . ,(bcat-analysis-gloss-table (alist-get 'words c)
+                                                               (alist-get 'uchen seg)))
                     (translations . ,(bcat-analysis-translations-block
                                       (if (stringp num) (string-to-number num) num) c))
                     (structure . ,(bcat-analysis--field c 'structure))

@@ -15,7 +15,8 @@
       (uchen . "བརྗོད་དུ་མེད་པ་བལྟར་མེད་པ། །")
       (wylie . "brjod du med pa bltar med pa/ /")
       (glossed . "brjod du med pa [indescribable] bltar med pa [invisible] / /")
-      (gloss-table . "| [[steinert:brjod du med pa][brjod du med pa]] | [[steinert:bltar med pa][bltar med pa]]    |
+      (gloss-table . "| བརྗོད་དུ་མེད་པ      | བལྟར་མེད་པ        |
+| [[steinert:brjod du med pa][brjod du med pa]] | [[steinert:bltar med pa][bltar med pa]]    |
 | indescribable   | invisible       |
 | ADJ · predicate | ADJ · predicate |")
       (translations . "⟦38⟧ *Translation:* Indescribable (brjod du med pa: avācya) and invisible (bltar med pa: adraṣṭavya), \\\\
@@ -28,7 +29,8 @@
       (uchen . "འགྱུར་བ་མེད་པ་འདུས་མ་བྱས། །")
       (wylie . "'gyur ba med pa 'dus ma byas/ /")
       (glossed . "'gyur ba med pa [immutable] 'dus [assembled, compounded] ma byas [not made] / /")
-      (gloss-table . "| [[steinert:'gyur ba med pa]['gyur ba med pa]] | [[steinert:'dus]['dus]]                  | [[steinert:ma byas][ma byas]]               |
+      (gloss-table . "| འགྱུར་བ་མེད་པ      | འདུས                   | མ་བྱས                  |
+| [[steinert:'gyur ba med pa]['gyur ba med pa]] | [[steinert:'dus]['dus]]                  | [[steinert:ma byas][ma byas]]               |
 | immutable       | assembled, compounded | not made              |
 | ADJ · predicate | V pf. ('du ba)        | NEG + V pf. (byed pa) |")
       (translations . "⟦39⟧ *Translation:* immutable ('gyur ba med pa: avikāra) and uncompounded ('dus ma byas: asaṃskṛta) \\\\
@@ -41,7 +43,8 @@
       (uchen . "རྣལ་འབྱོར་པ་ཡིས་དེ་རྟོགས་ན། །")
       (wylie . "rnal 'byor pa yis de rtogs na/ /")
       (glossed . "rnal 'byor pa [yogin] yis [ERG] de [that] rtogs [realizes] na [CONV · cond.] / /")
-      (gloss-table . "| [[steinert:rnal 'byor pa][rnal 'byor pa]] | yis | [[steinert:de][de]]           | [[steinert:rtogs][rtogs]]    | na           |
+      (gloss-table . "| རྣལ་འབྱོར་པ      | ཡིས  | དེ            | རྟོགས      | ན            |
+| [[steinert:rnal 'byor pa][rnal 'byor pa]] | yis | [[steinert:de][de]]           | [[steinert:rtogs][rtogs]]    | na           |
 | yogin         | by  | that         | realizes | if           |
 | N · agent     | ERG | DEM · object | V tr.    | CONV · cond. |")
       (translations . "⟦40⟧ *Translation:* if a yogin (rnal 'byor pa: yogin) realizes that, \\\\
@@ -55,7 +58,8 @@
       (uchen . "ཉོན་མོངས་ཤེས་བྱའི་སྒྲིབ་པ་སྤངས། །")
       (wylie . "nyon mongs shes bya'i sgrib pa spangs/ /")
       (glossed . "nyon mongs [affliction] shes bya'i [of the knowable] sgrib pa [obstruction] spangs [abandoned] / /")
-      (gloss-table . "| [[steinert:nyon mongs][nyon mongs]] | [[steinert:shes bya'i][shes bya'i]]      | [[steinert:sgrib pa][sgrib pa]]    | [[steinert:spangs][spangs]]                       |
+      (gloss-table . "| ཉོན་མོངས     | ཤེས་བྱའི           | སྒྲིབ་པ        | སྤངས                          |
+| [[steinert:nyon mongs][nyon mongs]] | [[steinert:shes bya'i][shes bya'i]]      | [[steinert:sgrib pa][sgrib pa]]    | [[steinert:spangs][spangs]]                       |
 | affliction | of the knowable | obstruction | abandoned                    |
 | N          | N + GEN         | N · object  | V pf. ('pong ba) · main verb |")
       (translations . "⟦41⟧ *Translation:* the obstructions of affliction (nyon mongs: kleśa) and of the knowable (śes bya'i sgrib pa: jñeyāvaraṇa) are abandoned. \\\\

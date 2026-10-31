@@ -301,36 +301,31 @@ is known — C-c u G replaces it), or nil."
   "ROWS (`bcat-sentence--dictionary-rows') as an org table; \"\" for none."
   (if rows (string-trim-right (tibetan-gloss-table--format-rows rows)) ""))
 
-(defun bcat-sentence--plain-cell (cell)
-  "CELL of a gloss table as plain text: links reduced to their text,
-`\\vert' back to a bar."
-  (replace-regexp-in-string
-   "\\\\vert\\(?:{}\\)?" "|"
-   (replace-regexp-in-string "\\[\\[[^]]*\\]\\[\\([^]]*\\)\\]\\]" "\\1" (or cell "") t)
-   t t))
-
 (defun bcat-sentence--dictionary-words (rows)
   "ROWS as word alists (wylie, gloss, function) for
 `bcat-analysis-glossed-line': row 1, the gloss row (next to last) and
 the label row (last)."
   (when (cdr rows)
     (cl-mapcar (lambda (w g l)
-                 `((wylie . ,(bcat-sentence--plain-cell w))
-                   (gloss . ,(bcat-sentence--plain-cell g))
-                   (function . ,(bcat-sentence--plain-cell l))))
+                 `((wylie . ,(bcat-analysis-plain-cell w))
+                   (gloss . ,(bcat-analysis-plain-cell g))
+                   (function . ,(bcat-analysis-plain-cell l))))
                (car rows) (nth (- (length rows) 2) rows) (car (last rows)))))
 
 (defun bcat-sentence--tibetan-segment (s)
   "Template fields of the Tibetan segment S ((NUM . TEXT)) without AI:
 Uchen (Carsten 29.10.: above the Wylie), Wylie, the glossed line and
-the table from the dictionaries."
-  (let ((wylie (bcat-sentence--wylie (cdr s)))
-        (rows (bcat-sentence--dictionary-rows (cdr s))))
+the table from the dictionaries — its first row the Uchen of each word
+\(31.10. abends, Tibetisch V)."
+  (let* ((wylie (bcat-sentence--wylie (cdr s)))
+         (rows (bcat-sentence--dictionary-rows (cdr s)))
+         (uchens (and rows (bcat-analysis--uchen-row
+                            (cdr s) (mapcar #'bcat-analysis-plain-cell (car rows))))))
     `((num . ,(car s))
       (uchen . ,(string-trim (cdr s)))
       (wylie . ,wylie)
       (glossed . ,(bcat-analysis-glossed-line wylie (bcat-sentence--dictionary-words rows)))
-      (gloss-table . ,(bcat-sentence--dictionary-table rows)))))
+      (gloss-table . ,(bcat-sentence--dictionary-table (if uchens (cons uchens rows) rows))))))
 
 (defun bcat-sentence--sanskrit-segment (s)
   "Template fields of the Sanskrit segment S ((NUM . TEXT)) without AI:
