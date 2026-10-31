@@ -112,6 +112,12 @@
   ;; zitiert; im Kommentardokument vom Lemma zum tibetischen Pāda (sonst
   ;; zum ersten Vers); in einer Quelle zur anderen Quelle.
 
+(global-set-key (kbd "C-c u L") 'bcat-relayout)
+  ;; §5.74 (Carsten 31.10. abends, TĀ 1006: „Ohne Abruf umbauen“): die
+  ;; Satzdatei an Punkt (im Paar beide) bzw. jeden Satz unter der
+  ;; Überschrift aus ihrer Vorlage neu setzen — ohne Abruf, nach einer
+  ;; Änderung der Vorlage; Notizen und eigene Abschnitte bleiben.
+
 (global-set-key (kbd "C-c u G") 'tibetan-fetch)
   ;; §5.60 KI auf Abruf: C-c u A legt nur an/öffnet; C-c u G holt Claude
   ;; + DharmaMitra für den Satz an Punkt bzw. alle Sätze unter der

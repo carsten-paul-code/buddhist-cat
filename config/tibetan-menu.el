@@ -105,6 +105,9 @@
      ["Zwischen Vers und Kommentar (C-c u K)" bcat-commentary-jump
       :help "Vers ↔ Kommentar: von der Versdatei zum Kommentarsegment, das das Segment an Punkt zitiert; vom Lemma zum Pāda; in einer Quelle zur anderen"
       :active (fboundp 'bcat-commentary-jump)]
+     ["Neu setzen ohne Abruf (C-c u L)" bcat-relayout
+      :help "Die Satzdatei an Punkt bzw. die Sätze unter der Überschrift aus ihrer Vorlage neu setzen — ohne Abruf, nach einer Änderung der Vorlage"
+      :active (fboundp 'bcat-relayout)]
      ["Nächster Satz (C-c u n)" tibetan-analysis-next-sentence
       :help "Analysedatei des nächsten Satzes öffnen"
       :active (fboundp 'tibetan-analysis-next-sentence)]
