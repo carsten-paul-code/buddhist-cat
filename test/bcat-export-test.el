@@ -61,6 +61,34 @@ IX.60), without one „Satz N“; the copy in the source's handouts/ is
       (should (equal "Satz 9" (plist-get info :label)))
       (should (equal (expand-file-name "handouts/bden-satz-9.pdf" dir) (plist-get info :handout))))))
 
+(ert-deftest bcat-export-handouts-at-text-level ()
+  "Carsten 31.10. (AS Satz 1002, the PDF in Sanskrit/handouts/): „Das
+Muster sollte … immer gleich sein … Handouts kommen in den handouts
+Ordner auf der obersten Ebene des Textes.“  The text's folder is the one
+right below the semester (WS26-27/, SS26/) — the source's own folder
+for TĀ and Tibetisch V, the one above for AS and MSA with their language
+folders; without a semester the source's folder.  #+CAT_HANDOUTS:
+names the handouts folder itself (relative to the source)."
+  (dolist (c '(("/x/WS26-27/Abhidharmasamuccaya/Sanskrit/asam-1-cat.org" . "/x/WS26-27/Abhidharmasamuccaya/")
+               ("/x/WS26-27/Mahayanasutralamkara/Sthiramati-9/savbh-9-cat.org" . "/x/WS26-27/Mahayanasutralamkara/")
+               ("/x/WS26-27/Tantraloka/tantraloka-1.org" . "/x/WS26-27/Tantraloka/")
+               ("/x/WS26-27/Tibetisch V/bden-gnyis-cat.org" . "/x/WS26-27/Tibetisch V/")
+               ("/x/SS26/Tibetisch IV/work in progress/Milarepa-prepared.org" . "/x/SS26/Tibetisch IV/")
+               ("/tmp/bcat-x/src.org" . "/tmp/bcat-x/")))
+    (should (equal (cdr c) (bcat-export--text-folder (car c)))))
+  (let* ((dir (make-temp-file "bcat-handouts-" t))
+         (src (expand-file-name "WS26-27/Werk/Sanskrit/src.org" dir)))
+    (unwind-protect
+        (progn
+          (make-directory (file-name-directory src) t)
+          (with-temp-file src (insert "#+TITLE: W\n"))
+          (should (equal (expand-file-name "WS26-27/Werk/handouts/src-1.1.pdf" dir)
+                         (bcat-export--handout src "src-1.1")))
+          (with-temp-file src (insert "#+TITLE: W\n#+CAT_HANDOUTS: ../../Andere/handouts\n"))
+          (should (equal (expand-file-name "WS26-27/Andere/handouts/src-1.1.pdf" dir)
+                         (bcat-export--handout src "src-1.1"))))
+      (delete-directory dir t))))
+
 (ert-deftest bcat-export-file-moves-only-its-own-pdf ()
   "30.10.: the first version moved whatever path the export returned —
 a test stub's /tmp/x.pdf existed on Carsten's machine and was moved

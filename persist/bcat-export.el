@@ -92,24 +92,52 @@ without SENT-NUM (a commentary document) no „Satz“."
   (let ((title (and file (bcat-sentence--header-value file "TITLE"))))
     (and title (string-trim (car (split-string title " — "))))))
 
+(defcustom bcat-export-semester-regexp "\\`\\(?:WS\\|SS\\)[0-9]"
+  "Folder names of semesters (WS26-27, SS26): a text's folder is the one
+right below (`bcat-export--text-folder')."
+  :type 'regexp
+  :group 'buddhist-cat)
+
+(defun bcat-export--text-folder (source)
+  "The top folder of SOURCE's text: the one right below a semester folder
+\(`bcat-export-semester-regexp') — Tantraloka/, Tibetisch V/, and for AS
+and MSA with their language folders Abhidharmasamuccaya/,
+Mahayanasutralamkara/; without a semester SOURCE's own folder."
+  (let* ((own (file-name-directory (expand-file-name source)))
+         (dir own)
+         (found nil))
+    (while (and dir (not found))
+      (let ((parent (file-name-directory (directory-file-name dir))))
+        (cond ((string-match-p bcat-export-semester-regexp
+                               (file-name-nondirectory (directory-file-name parent)))
+               (setq found dir))
+              ((equal parent dir) (setq dir nil))
+              (t (setq dir parent)))))
+    (or found own)))
+
 (defun bcat-export--handout (source name)
-  "Where the PDF named NAME goes beside SOURCE: <its folder>/handouts/
-NAME.pdf (Carsten 30.10.: „zusätzlich im Handouts Ordner“), ASCII like
-the old handouts there (msa-par-60.pdf): diacritics dropped, anything
-else but letters, digits and dots a hyphen; nil without SOURCE."
+  "Where the PDF named NAME of SOURCE goes: NAME.pdf in the handouts
+folder at the top of the text (`bcat-export--text-folder'; Carsten
+31.10.: „Handouts kommen in den handouts Ordner auf der obersten Ebene
+des Textes“), or in the folder SOURCE names with #+CAT_HANDOUTS:.  The
+name ASCII like the old handouts (msa-par-60.pdf): diacritics dropped,
+anything else but letters, digits and dots a hyphen; nil without SOURCE."
   (when source
     (let ((ascii (replace-regexp-in-string
                   "[^A-Za-z0-9.]+" "-"
-                  (replace-regexp-in-string "[^[:ascii:]]" "" (ucs-normalize-NFD-string name)))))
+                  (replace-regexp-in-string "[^[:ascii:]]" "" (ucs-normalize-NFD-string name))))
+          (own (and (file-readable-p source) (bcat-sentence--header-value source "CAT_HANDOUTS"))))
       (expand-file-name (concat (string-trim ascii "-+" "-+") ".pdf")
-                        (expand-file-name "handouts" (file-name-directory source))))))
+                        (if own
+                            (expand-file-name own (file-name-directory source))
+                          (expand-file-name "handouts" (bcat-export--text-folder source)))))))
 
 (defun bcat-export--commentary-info (file)
   "`bcat-export-info' for the commentary document FILE: the folder of
 the commentary source, the work of the verses it comments on (beside
 their PDFs on the reMarkable), the verses from #+CAT_VERSE, named after
 the document; on disk beside the verses' PDFs too (savbh-IX.60.pdf in
-the handouts of the Sanskrit source)."
+the handouts folder of the text)."
   (let* ((src (tibetan-sentence--source-file-from-analysis file))
          (lead (and src (bcat-commentary-lead src)))
          (verse-line (bcat-sentence--header-value file "CAT_VERSE"))
