@@ -15,9 +15,7 @@ Felder: sent-num source-link segment-list hash created last-analyzed;
 recitation (das Original zeilenweise in Devanāgarī, darunter IAST,
 bei Versen mit den Pausen —
 Carsten 29.10.: „das Devanagari im Recitationsverse (also de facto im
-Original) und den Text dann im reinen IAST mit sandhi Auflösung“); seit 31.10.
-steht der reine Padapāṭha nur noch im Rumpf vor C-c u G — danach nur die
-Zeile mit Vokabeln (Carsten: „den reinen Textblock in … IAST nicht mehr“)
+Original) und den Text dann im reinen IAST mit sandhi Auflösung“)
 metre (Metrum, Pausenregel, Zeichenerklärung — nur bei Versen; ein
 nicht erkannter Vers hat hier den Hinweis) scansion (Silbentabelle bzw.
 Silbenfolge je Zeile, IAST);
@@ -62,14 +60,13 @@ Goldman 1999).
 
 {{/recitation}}
 * Text
-{{^glosses}}
 #+begin_verse
 {{#segments}}
 {{padapatha}}
 {{/segments}}
 #+end_verse
-{{/glosses}}
 {{#glosses}}
+
 #+begin_verse
 {{#segments}}
 {{glossed}}

@@ -32,6 +32,11 @@ tatpārameśvaraṃ śrīman|mahānandavijṛmbhitam // 7
 
 * Text
 #+begin_verse
+atra mad-vāk aśaktā api yat niyantraṇam ullaset /
+tat pārameśvaram śrīmat-mahā-ānanda-vijṛmbhitam // 7
+#+end_verse
+
+#+begin_verse
 atra [here] mad-vāk [my speech] aśaktā [incapable] api [although] yat [whatever] niyantraṇam [control] ullaset [may shine forth] /
 tat [that] pārameśvaram [the Supreme Lord's] śrīmat-mahā-ānanda-vijṛmbhitam [unfolding of glorious great bliss] //
 #+end_verse

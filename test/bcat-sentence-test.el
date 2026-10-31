@@ -905,8 +905,7 @@ with vocabulary under * Text, tables, Forms per segment — and the hook
       (let ((text (bcat-sentence-test--file-text-n src 1007)))
         (should (string-match-p "^\\* Recitation\nŚloka (Anuṣṭubh)" text))
         (should (string-match-p (regexp-quote "atra [here] mad-vāk [my speech] aśaktā [incapable]") text))
-        ;; 31.10.: under * Text only the glossed padapāṭha (no plain block).
-        (should (string-match-p (regexp-quote "* Text\n#+begin_verse\natra [here] mad-vāk [my speech]") text))
+        (should (string-match-p (regexp-quote "* Text\n#+begin_verse\natra mad-vāk aśaktā api yat niyantraṇam ullaset /\n") text))
         (should (string-match-p (regexp-quote "| atra | mad-vāk ") text))
         (should (string-match-p "^\\*Forms:\\*\n- /mad-vāk/ — vāc- f\\." text))
         (should (string-match-p "^⟦685⟧ \\*Translation:\\* Although my speech" text))
