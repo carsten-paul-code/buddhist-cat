@@ -218,12 +218,30 @@ conjunct (29.10.: Arial Unicode MS)."
   :type 'string
   :group 'buddhist-cat)
 
+(defcustom bcat-export-word-color "1F4E9E"
+  "Colour (HTML hex) of the words in the line with the vocabulary and in
+the word row of the tables — Carsten 31.10.: on the reMarkable Paper Pro
+the words of a segment were hard to keep apart from their glosses."
+  :type 'string
+  :group 'buddhist-cat)
+
+(defcustom bcat-export-gloss-color "6E6E6E"
+  "Colour (HTML hex) of the glosses in brackets in the line with the
+vocabulary (`bcat-export-word-color')."
+  :type 'string
+  :group 'buddhist-cat)
+
 (defun bcat-export--font-lines ()
-  "#+LATEX_HEADER lines defining \\bcattib and \\bcatdeva, and loading
-adjustbox (`bcat-export--table-filter')."
+  "#+LATEX_HEADER lines defining \\bcattib and \\bcatdeva, the colours
+\\bcatw (word) and \\bcatg (gloss), and loading adjustbox
+\(`bcat-export--table-filter')."
   (concat
    "#+LATEX_HEADER: \\usepackage{fontspec}\n"
    "#+LATEX_HEADER: \\usepackage{adjustbox}\n"
+   "#+LATEX_HEADER: \\usepackage{xcolor}\n"
+   (format "#+LATEX_HEADER: \\definecolor{bcatword}{HTML}{%s}\\definecolor{bcatgloss}{HTML}{%s}\n"
+           bcat-export-word-color bcat-export-gloss-color)
+   "#+LATEX_HEADER: \\newcommand{\\bcatw}[1]{\\textcolor{bcatword}{#1}}\\newcommand{\\bcatg}[1]{\\textcolor{bcatgloss}{#1}}\n"
    (format "#+LATEX_HEADER: \\newfontfamily\\bcattib{%s}[Script=Tibetan,Renderer=HarfBuzz]\n"
            bcat-export-tibetan-font)
    (format "#+LATEX_HEADER: \\newfontfamily\\bcatdeva{%s}[Script=Devanagari,Renderer=HarfBuzz]\n"
@@ -307,12 +325,15 @@ unbroken; a longer one may break between the words of its gloss —
 `bcat-export-unit-max' — one box per gloss word, the word with the
 first, the bracket with the last."
   (let ((open (string-match " \\[" unit)))
-    (if (or (<= (string-width unit) bcat-export-unit-max) (null open))
-        (format "\\mbox{%s}" unit)
+    (cond
+     ((null open) (format "\\mbox{%s}" unit))
+     ;; The word in \\bcatw, its gloss in \\bcatg (Carsten 31.10.).
+     ((<= (string-width unit) bcat-export-unit-max)
+      (format "\\mbox{\\bcatw{%s} \\bcatg{%s}}" (substring unit 0 open) (substring unit (1+ open))))
+     (t
       (let ((words (split-string (substring unit (+ open 2)))))
-        (mapconcat (lambda (w) (format "\\mbox{%s}" w))
-                   (cons (concat (substring unit 0 (+ open 2)) (car words)) (cdr words))
-                   " ")))))
+        (concat (format "\\mbox{\\bcatw{%s} \\bcatg{[%s}}" (substring unit 0 open) (car words))
+                (mapconcat (lambda (w) (format " \\mbox{\\bcatg{%s}}" w)) (cdr words) "")))))))
 
 (defun bcat-export--verse-lines (latex)
   "LATEX with each glossed verse line made of \\mbox units (see
@@ -359,11 +380,24 @@ ran off the page."
       ;; paragraph ran on beside the box — „Translation:“ in the table).
       (let ((end (if (string-match "\n*\\'" text) (match-beginning 0) (length text))))
         (concat "\\begin{adjustbox}{max width=\\linewidth}\n"
-                (substring text 0 end) "\n"
+                (bcat-export--word-row (substring text 0 end)) "\n"
                 "\\end{adjustbox}"
                 (let ((tail (substring text end)))
                   (if (string-empty-p tail) "\n" tail))))
     text))
+
+(defun bcat-export--word-row (tabular)
+  "TABULAR (LaTeX) with each cell of its first row — the words — in
+\\bcatw (Carsten 31.10.: the words of a segment at a glance)."
+  (if (string-match "\\\\begin{tabular}{[^}\n]*}\n\\(?:\\\\[a-z]*rule\n\\|\\\\hline\n\\)*\\(.*?\\)\\(\\\\\\\\.*\\)$" tabular)
+      (let* ((beg (match-beginning 1)) (end (match-end 1))
+             ;; Positions first: `split-string' clobbers the match data.
+             (cells (split-string (substring tabular beg end) "[ \t]+&[ \t]+")))
+        (concat (substring tabular 0 beg)
+                (mapconcat (lambda (c) (if (string-blank-p c) c (format "\\bcatw{%s}" (string-trim c))))
+                           cells " & ")
+                (substring tabular end)))
+    tabular))
 
 (defvar bcat-export--missing nil
   "The missing characters of the last `bcat-export-pdf', ((CHAR . FONT) …).")

@@ -275,8 +275,8 @@ than stretch three spaces).  Plain lines and plain verses stay as they
 are."
   (should (equal (concat "\\begin{verse}\n"
                          "\\rightskip=0pt plus 1fil\\relax%\n"
-                         "\\mbox{rnal 'byor pa [yogin]} \\mbox{yis [ERG]} "
-                         "\\mbox{na [CONV · cond.]}~/~/\\\\\n"
+                         "\\mbox{\\bcatw{rnal 'byor pa} \\bcatg{[yogin]}} \\mbox{\\bcatw{yis} \\bcatg{[ERG]}} "
+                         "\\mbox{\\bcatw{na} \\bcatg{[CONV · cond.]}}~/~/\\\\\n"
                          "brjod du med pa/ /\\\\\n"
                          "\\end{verse}\n")
                  (bcat-export--verse-units
@@ -297,8 +297,8 @@ last gloss word.  Shorter units stay whole (29.10.)."
   (let ((bcat-export-unit-max 50))
     (should (equal (concat "\\begin{verse}\n"
                            "\\rightskip=0pt plus 1fil\\relax%\n"
-                           "\\mbox{me [my]} \\mbox{dhvaṃsi [destroying} \\mbox{the} \\mbox{concealment}"
-                           " \\mbox{of} \\mbox{Śiva's} \\mbox{teaching-tradition]}~//\\\\\n"
+                           "\\mbox{\\bcatw{me} \\bcatg{[my]}} \\mbox{\\bcatw{dhvaṃsi} \\bcatg{[destroying}} \\mbox{\\bcatg{the}} \\mbox{\\bcatg{concealment}}"
+                           " \\mbox{\\bcatg{of}} \\mbox{\\bcatg{Śiva's}} \\mbox{\\bcatg{teaching-tradition]}}~//\\\\\n"
                            "\\end{verse}\n")
                    (bcat-export--verse-units
                     (concat "\\begin{verse}\n"
@@ -311,7 +311,7 @@ ran off the page.  A table wider than the line is scaled down to it
 \(adjustbox, max width) — narrower ones keep their size; the package
 comes with the header."
   (should (equal (concat "\\begin{adjustbox}{max width=\\linewidth}\n"
-                         "\\begin{tabular}{ll}\na & b\\\\\n\\end{tabular}\n"
+                         "\\begin{tabular}{ll}\n\\bcatw{a} & \\bcatw{b}\\\\\n\\end{tabular}\n"
                          "\\end{adjustbox}\n")
                  (bcat-export--table-filter "\\begin{tabular}{ll}\na & b\\\\\n\\end{tabular}\n"
                                             'latex nil)))
@@ -368,6 +368,27 @@ the status line names the missing characters."
           (should (string-match-p "^  SDA 9  PDF ✓ · fehlende Zeichen: ¦ (Noto Sans Devanagari)$"
                                   (with-current-buffer bcat-status-buffer-name (buffer-string))))
           (kill-buffer bcat-status-buffer-name))))))
+
+(ert-deftest bcat-export-colours ()
+  "Carsten 31.10.: reading the segment on the reMarkable (Paper Pro,
+colour) „fällt es mir schwer … die einzelnen Wörter im Überblick zu
+halten“ — colour, word against gloss: in the line with the vocabulary
+the word in \bcatw (blue), its gloss in \bcatg (grey); in every table
+the row of the words in \bcatw.  The colours are defined in the
+header."
+  (let ((head (bcat-export--font-lines)))
+    (should (string-match-p (regexp-quote "\\usepackage{xcolor}") head))
+    (should (string-match-p (regexp-quote "\\definecolor{bcatword}{HTML}{1F4E9E}") head))
+    (should (string-match-p (regexp-quote "\\newcommand{\\bcatw}[1]{\\textcolor{bcatword}{#1}}") head))
+    (should (string-match-p (regexp-quote "\\newcommand{\\bcatg}[1]{\\textcolor{bcatgloss}{#1}}") head)))
+  (let ((out (bcat-export--table-filter
+              (concat "\\begin{tabular}{ll}\n"
+                      "iha & \\href{steinert:x}{khalu}\\\\\n"
+                      "here & indeed\\\\\n"
+                      "\\end{tabular}\n\n")
+              'latex nil)))
+    (should (string-match-p (regexp-quote "\\bcatw{iha} & \\bcatw{\\href{steinert:x}{khalu}}\\\\\n") out))
+    (should (string-match-p (regexp-quote "\nhere & indeed\\\\\n") out))))
 
 (ert-deftest bcat-export-verse-scripts-foreign-signs ()
   "30.10., TĀ Satz 1001: in the recitation the pause sign ¦ stands in
@@ -468,7 +489,7 @@ carries the running head."
             (should-not (string-match-p "\\\\begin{center}" tex))
             (should-not (string-match-p "\\\\begin{tabularx}" tex))
             (should (string-match-p "Satz 9 · SDA 9" tex))
-            (should (string-match-p (regexp-quote "\\mbox{brjod du med pa [indescribable]}") tex))
+            (should (string-match-p (regexp-quote "\\mbox{\\bcatw{brjod du med pa} \\bcatg{[indescribable]}}") tex))
             (should (string-match-p (regexp-quote "\\newfontfamily\\bcattib{Noto Serif Tibetan}") tex))
             (should (string-match-p (regexp-quote "{\\bcattib\\large བརྗོད་དུ་མེད་པ་བལྟར་མེད་པ། །}") tex))))
       (let ((buf (get-file-buffer file))) (when buf (kill-buffer buf)))
