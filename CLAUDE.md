@@ -4600,7 +4600,14 @@ msa-IX.60/61 in den Papierkorb.  ERT 2739.  TĀ 1008: `49c0665'/`6a0ed46'
 ältere Dateien, in der Exportkopie (statt winzig verkleinert);
 `6fd4bfb' Prosa-Rezitation in Sinnabschnitten: Feld `recitation' im
 Sanskrit-Prompt (nur Vorlage sanskrit), geprüft gegen den Text,
-Kopfzeile „Prosa — …“.  ERT 2742.
+Kopfzeile „Prosa — …“.  ERT 2742.  Lesbarkeit auf dem reMarkable (Paper Pro,
+Farbe; Carsten: „schwer … die einzelnen Wörter im Überblick zu
+halten“): `c08bbc7' unter * Text Uchen/Devanāgarī ohne reine
+Transliteration, sobald es die Vokabelzeile gibt (reines Sanskrit
+behält den Padapāṭha — `1e24292' nahm 48934ce zurück); `673e39e' PDF:
+Wort blau (\bcatw), Glosse grau (\bcatg), Wortzeile jeder Tabelle blau;
+`4327f1c' dieselben Farben in Emacs (persist/bcat-faces.el,
+`bcat-faces-mode' über org-mode-hook in sent-/comm-Dateien).  ERT 2746.
 
 #### Offen
 
