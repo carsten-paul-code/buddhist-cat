@@ -182,9 +182,10 @@ including the dropped Note of segment 39 and Concepts of segment 40."
   "The tool's Sanskrit skeleton (Templates/analysis/sanskrit.org) filled
 with TĀ sentence 1007 reproduces the sample Carsten reviewed
 \(Templates/analysis/samples/Sanskrit.org, 29.10.2026) character for
-character: Recitation first, Text with the saṃhitā and the glossed
-padapāṭha, per segment the tables, translations, Sandhi, Forms,
-Compounds — the Note of segment 686 dropped."
+character: Recitation first, Text with the glossed padapāṭha only
+\(Carsten 31.10.: the plain IAST block is not needed beside it), per
+segment the tables, translations, Sandhi, Forms, Compounds — the Note
+of segment 686 dropped."
   (let ((bcat-template-directory
          (expand-file-name "Templates/analysis" bcat-template-test--root))
         (expected (with-temp-buffer
