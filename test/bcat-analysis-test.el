@@ -144,6 +144,45 @@ segment as transmitted, the references."
     (should (string-match-p (regexp-quote "[685] atra madvāgaśaktāpi yanniyantraṇamullaset /\n[686] tatpārameśvaraṃ") user))
     (should (string-match-p "=== Dyczkowski 2023 ===\nAlthough my speech" user))))
 
+(ert-deftest bcat-analysis-second-language ()
+  "Carsten 31.10. abends, TĀ 1006: „Darunter hätte ich dann gerne die
+Übersetzung in deutsch, damit ich mich leichter in die Konzepte rein
+denken kann (wenn ich in deutsch übersetze, dann entspr. in Englisch)“
+and on the references: „Bei der Unterscheidung auch was das auf Deutsch
+heißen würde“.  Every analysis prompt asks for the sentence translation
+in the other language (translation_de for English, translation_en for
+German) and, in the comparison, the differences in that language too;
+the field lands under the translation as *Deutsch:* / *English:*."
+  (dolist (sys (list (bcat-analysis-sanskrit-system-prompt "en")
+                     (bcat-analysis-system-prompt "en")
+                     (bcat-analysis-tibetan-system-prompt "en")))
+    (should (string-match-p "\"translation_de\"" sys))
+    (should (string-match-p "translation_de: the sentence translation once more in German" sys))
+    (should (string-match-p "what each reading would be in German" sys)))
+  (dolist (sys (list (bcat-analysis-sanskrit-system-prompt "de")
+                     (bcat-analysis-system-prompt "de")))
+    (should (string-match-p "\"translation_en\"" sys))
+    (should-not (string-match-p "translation_de" sys))
+    (should (string-match-p "what each reading would be in English" sys)))
+  ;; The small request for a reference added by hand compares too.
+  (should (string-match-p "what each reading would be in German" (bcat-analysis-align-system-prompt "en")))
+  (let ((ctx (bcat-analysis-sanskrit-context
+              (bcat-analysis-test--base-1007)
+              (bcat-analysis-parse
+               (replace-regexp-in-string
+                "\"comparison\":" "\"translation_de\": \"Obwohl meine Rede hier unfähig ist …\", \"comparison\":"
+                (bcat-analysis-test--answer-1007) t t))
+              bcat-analysis-test--refs-1007))
+        (bcat-template-directory (expand-file-name "Templates/analysis" bcat-analysis-test--root)))
+    (should (equal "Deutsch" (alist-get 'second-label ctx)))
+    (should (string-match-p
+             (regexp-quote "glorious great bliss (mahānanda).\n\n*Deutsch:* Obwohl meine Rede hier unfähig ist …\n\n* Sentence\n")
+             (bcat-template-render-named "sanskrit" ctx))))
+  (let ((ctx (bcat-analysis-context (bcat-analysis-test--base)
+                                    '((segments) (translation . "t") (translation_en . "In English.")))))
+    (should (equal '("English" . "In English.")
+                   (cons (alist-get 'second-label ctx) (alist-get 'second-translation ctx))))))
+
 (ert-deftest bcat-analysis-shift-lines-skip-empty ()
   "29.10., TĀ 1007 (first real Sanskrit answer): Claude listed the
 translator without marks as \"Dyczkowski 2023: []\" and the file showed
@@ -768,7 +807,7 @@ with Wylie, the reference translations of the Tibetan."
                    "\"note\"" "\"concepts\"" "\"differences\"" "\"text\"" "\"grammar\""
                    "\"comparison\"" "\"rendering\""))
       (should (string-match-p (regexp-quote key) sys)))
-    (should (string-match-p (regexp-quote (bcat-analysis--tibetan-rules "German")) sys))
+    (should (string-match-p (regexp-quote (bcat-analysis--tibetan-rules "German" "de")) sys))
     (should (string-match-p "never decrease" sys))
     (should (string-match-p "goes with the first" sys))
     (should (string-match-p "No entry where the Tibetan renders the Sanskrit faithfully" sys))

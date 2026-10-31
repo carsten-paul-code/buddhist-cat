@@ -65,14 +65,36 @@ Tibetan request of a bilingual pair and the commentary."
 - note: only for a grammatical peculiarity or a real ambiguity, one or two sentences; otherwise \"\".
 - concepts: Buddhist technical concepts occurring in THIS segment — the term in *bold*, its Sanskrit, a short encyclopedic note of two or three sentences; \"\" when there is none."))
 
-(defun bcat-analysis--tibetan-rules (lang)
+(defun bcat-analysis--second-language (target)
+  "The second language of an analysis in TARGET: (KEY . NAME) — the
+field `translation_de' and German for an English one, `translation_en'
+and English for a German one."
+  (if (equal target "de") '("translation_en" . "English") '("translation_de" . "German")))
+
+(defun bcat-analysis--second-schema (target)
+  "The schema entry of the translation in the second language of TARGET."
+  (format ", \"%s\": \"…\"" (car (bcat-analysis--second-language target))))
+
+(defun bcat-analysis--sentence-rules (target)
+  "The rules for the sentence translation, the one in the second language
+and the comparison of an analysis in TARGET (Carsten 31.10. abends, TĀ
+1006: „die Übersetzung in deutsch, damit ich mich leichter in die
+Konzepte rein denken kann (wenn ich in deutsch übersetze, dann entspr.
+in Englisch)“; on the references „auch was das auf Deutsch heißen
+würde“)."
+  (let ((second (bcat-analysis--second-language target)))
+    (format "- translation (sentence): your translation of the whole sentence (the segment parts joined).
+- %s: the sentence translation once more in %s — close to the original, the key terms with the original in parentheses; the class thinks the concepts through in this language too.
+- comparison: one to three sentences on the meaning-shifting differences between the translations including yours, for each difference what each reading would be in %s (in quotation marks); \"\" when there are none."
+            (car second) (cdr second) (cdr second))))
+
+(defun bcat-analysis--tibetan-rules (lang &optional target)
   "The rules for the fields of a Tibetan sentence analysis, from words
-to comparison (glosses in LANG) — one wording for the Tibetan analysis
-and the Tibetan request of a bilingual pair."
+to comparison (glosses in LANG, the analysis in TARGET) — one wording
+for the Tibetan analysis and the Tibetan request of a bilingual pair."
   (concat (bcat-analysis--tibetan-segment-rules lang) "\n"
-          "- grammar: an overview of the whole sentence — verb backbone, clause linkage, agents, elisions.
-- translation (sentence): your translation of the whole sentence (the segment parts joined).
-- comparison: one to three sentences on the meaning-shifting differences between the translations including yours; \"\" when there are none."))
+          "- grammar: an overview of the whole sentence — verb backbone, clause linkage, agents, elisions.\n"
+          (bcat-analysis--sentence-rules target)))
 
 (defun bcat-analysis--references-block (refs)
   "The reference translations REFS ((NAME . TEXT) …) of a user prompt."
@@ -88,13 +110,14 @@ code TARGET — constant per document, so the prompt cache stays warm."
   (let ((lang (bcat-analysis--language target)))
     (format "You are a philologist preparing one sentence or verse of a Classical Tibetan Buddhist text for a university reading class. Work segment by segment, then on the whole sentence. Answer with ONE JSON object and nothing else (no prose, no code fence):
 
-{\"segments\": [{\"num\": <segment number>, \"words\": [{\"wylie\": \"…\", \"gloss\": \"…\", \"function\": \"…\"}], \"translation\": \"…\", \"references\": [{\"name\": \"…\", \"text\": \"…\"}], \"shift\": \"…\", \"structure\": \"…\", \"note\": \"…\", \"concepts\": \"…\"}], \"grammar\": \"…\", \"translation\": \"…\", \"comparison\": \"…\"}
+{\"segments\": [{\"num\": <segment number>, \"words\": [{\"wylie\": \"…\", \"gloss\": \"…\", \"function\": \"…\"}], \"translation\": \"…\", \"references\": [{\"name\": \"…\", \"text\": \"…\"}], \"shift\": \"…\", \"structure\": \"…\", \"note\": \"…\", \"concepts\": \"…\"}], \"grammar\": \"…\", \"translation\": \"…\"%s, \"comparison\": \"…\"}
 
 Rules:
 - segments: one entry per given segment, same numbers, same order.
 %s
 - Write glosses, notes and explanations in %s. Never mention yourself."
-            (bcat-analysis--tibetan-rules lang) lang)))
+            (bcat-analysis--second-schema target)
+            (bcat-analysis--tibetan-rules lang target) lang)))
 
 (defun bcat-analysis-user-prompt (sent-num verse segs refs &optional context)
   "The user prompt for sentence SENT-NUM (VERSE its :VERSE: or nil):
@@ -123,9 +146,9 @@ SOURCE the language of the text (\"Classical Tibetan\" by default,
 Rules:
 - segments: one entry per given segment; references: for every given reference translation the part that corresponds to this segment, quoted verbatim (not its notes). Mark with org bold *…* ONLY passages that shift the meaning against the original or against the given translation of the segment; stylistic variation is not marked.
 - shift: one line on what the marked passages shift, beginning with the translator name; \"\" when nothing is marked.
-- comparison: one or two sentences on the meaning-shifting differences of the new translation(s); \"\" when there are none.
+- comparison: one or two sentences on the meaning-shifting differences of the new translation(s), for each difference what each reading would be in %s (in quotation marks); \"\" when there are none.
 - Write in %s. Never mention yourself."
-            (or source "Classical Tibetan") lang)))
+            (or source "Classical Tibetan") (cdr (bcat-analysis--second-language target)) lang)))
 
 (defun bcat-analysis-align-user-prompt (sent-num verse segs refs &optional context)
   "User prompt of the alignment request: SEGS ((NUM TEXT WYLIE
@@ -155,7 +178,7 @@ answer gives `recitation', the text in sense units (31.10., TĀ 1008)."
   (let ((lang (bcat-analysis--language target)))
     (format "You are a Sanskritist preparing one sentence or verse of a Sanskrit text for a university reading class of experienced Sanskritists; one participant reads Sanskrit only haltingly, so every form is spelled out. Work segment by segment, then on the whole sentence. Use the grammatical terminology of Goldman & Sutherland Goldman, Devavāṇīpraveśikā: Sanskrit terms, with the English equivalent where it helps. Answer with ONE JSON object and nothing else (no prose, no code fence):
 
-{\"segments\": [{\"num\": <segment number>, \"words\": [{\"word\": \"…\", \"lemma\": \"…\", \"formation\": \"…\", \"parts\": \"…\", \"gloss\": \"…\", \"form\": \"…\"}], \"translation\": \"…\", \"references\": [{\"name\": \"…\", \"text\": \"…\"}], \"shift\": [\"…\"], \"sandhi\": \"…\", \"forms\": [{\"word\": \"…\", \"analysis\": \"…\"}], \"compounds\": [{\"word\": \"…\", \"analysis\": \"…\"}], \"structure\": \"…\", \"note\": \"…\", \"concepts\": \"…\"}], \"grammar\": \"…\", \"translation\": \"…\", \"comparison\": \"…\"%s}
+{\"segments\": [{\"num\": <segment number>, \"words\": [{\"word\": \"…\", \"lemma\": \"…\", \"formation\": \"…\", \"parts\": \"…\", \"gloss\": \"…\", \"form\": \"…\"}], \"translation\": \"…\", \"references\": [{\"name\": \"…\", \"text\": \"…\"}], \"shift\": [\"…\"], \"sandhi\": \"…\", \"forms\": [{\"word\": \"…\", \"analysis\": \"…\"}], \"compounds\": [{\"word\": \"…\", \"analysis\": \"…\"}], \"structure\": \"…\", \"note\": \"…\", \"concepts\": \"…\"}], \"grammar\": \"…\", \"translation\": \"…\"%s, \"comparison\": \"…\"%s}
 
 Rules:
 - segments: one entry per given segment, same numbers, same order.
@@ -175,12 +198,13 @@ Rules:
 - note: only for a grammatical peculiarity or a real ambiguity, one or two sentences; otherwise \"\".
 - concepts: technical concepts (Buddhist, Śaiva, philosophical) occurring in THIS segment — the term in *bold*, a short encyclopedic note of two or three sentences; \"\" when there is none.
 - grammar: an overview of the whole sentence — the clauses and how they are linked, the verbs, subjects, elisions (an understood copula).
-- translation (sentence): your translation of the whole sentence (the segment parts joined).
-- comparison: one to three sentences on the meaning-shifting differences between the translations including yours; \"\" when there are none.
+%s
 %s- JSON escaping: only \\\" and \\\\ — never a backslash before an apostrophe.
 - Write glosses, notes and explanations in %s. Never mention yourself."
+            (bcat-analysis--second-schema target)
             (concat (if bhasya ", \"bhasya_hint\": \"…\"" "")
                     (if recitation ", \"recitation\": [\"…\"]" ""))
+            (bcat-analysis--sentence-rules target)
             (concat
              (if bhasya
                  "- bhasya_hint: the bhāṣya on this verse is given as context; one to three sentences on what in it matters for reading the verse — how it takes a word or the verse's function, a reading it presupposes, where its Tibetan says something else; Sanskrit and Tibetan words in /italic/; \"\" when nothing.\n"
@@ -224,7 +248,7 @@ Constant per document."
   (let ((lang (bcat-analysis--language target)))
     (format "You prepare the Tibetan translation of one sentence of a Sanskrit Buddhist text for a university reading class that reads and translates the Sanskrit first, then reads the Tibetan aloud, analyses it and discusses where it differs from the Sanskrit. Work segment by segment, then on the whole sentence. Answer with ONE JSON object and nothing else (no prose, no code fence):
 
-{\"segments\": [{\"num\": <Tibetan segment number>, \"sanskrit\": <Sanskrit segment number>, \"words\": [{\"wylie\": \"…\", \"gloss\": \"…\", \"function\": \"…\"}], \"translation\": \"…\", \"references\": [{\"name\": \"…\", \"text\": \"…\"}], \"shift\": \"…\", \"structure\": \"…\", \"note\": \"…\", \"concepts\": \"…\"}], \"differences\": [{\"sanskrit\": <Sanskrit segment number>, \"text\": \"…\"}], \"grammar\": \"…\", \"translation\": \"…\", \"comparison\": \"…\", \"rendering\": \"…\"}
+{\"segments\": [{\"num\": <Tibetan segment number>, \"sanskrit\": <Sanskrit segment number>, \"words\": [{\"wylie\": \"…\", \"gloss\": \"…\", \"function\": \"…\"}], \"translation\": \"…\", \"references\": [{\"name\": \"…\", \"text\": \"…\"}], \"shift\": \"…\", \"structure\": \"…\", \"note\": \"…\", \"concepts\": \"…\"}], \"differences\": [{\"sanskrit\": <Sanskrit segment number>, \"text\": \"…\"}], \"grammar\": \"…\", \"translation\": \"…\"%s, \"comparison\": \"…\", \"rendering\": \"…\"}
 
 Rules:
 - segments: one entry per given Tibetan segment, same numbers, same order.
@@ -234,7 +258,8 @@ Rules:
 - rendering: the Tibetan translation of the whole sentence in two to five sentences — how it reproduces the structure, how it renders the key terms, where it shifts the sense; Sanskrit and Tibetan words in /italic/.
 - JSON escaping: only \\\" and \\\\ — never a backslash before an apostrophe.
 - Write glosses, notes and explanations in %s. Never mention yourself."
-            (bcat-analysis--tibetan-rules lang) lang)))
+            (bcat-analysis--second-schema target)
+            (bcat-analysis--tibetan-rules lang target) lang)))
 
 (defun bcat-analysis-tibetan-user-prompt (sent-num verse sanskrit tibetan refs &optional context)
   "User prompt of the Tibetan request for sentence SENT-NUM (VERSE its
@@ -653,6 +678,15 @@ with the marks of its segment parts, the comparison paragraph."
               (unless (string-empty-p c) (list c)))))
      "\n\n")))
 
+(defun bcat-analysis--second-translation (parsed)
+  "The fields of the translation in the second language PARSED gives —
+`second-translation' and its label `second-label' (*Deutsch:*,
+*English:*) — or nil."
+  (cl-loop for (key . label) in '((translation_de . "Deutsch") (translation_en . "English"))
+           for text = (bcat-analysis--field parsed key)
+           unless (string-empty-p text)
+           return `((second-translation . ,text) (second-label . ,label))))
+
 (defun bcat-analysis--glossed (seg c)
   "The glossed Wylie line of the Tibetan segment SEG (rump fields) with
 the words of C, Claude's object for it — whatever the rump had when the
@@ -690,6 +724,7 @@ segment Claude skipped keeps its rump fields."
                   seg))))
            (alist-get 'segments base))))
     (append
+     (bcat-analysis--second-translation parsed)
      `((segments . ,segments)
        (glosses . ,(bcat-analysis-glosses-p segments))
        (translation . ,(bcat-analysis--field parsed 'translation))
@@ -873,6 +908,7 @@ skipped keeps its rump fields."
            (alist-get 'segments base))))
     (append
      (bcat-analysis--prose-recitation base parsed)
+     (bcat-analysis--second-translation parsed)
      `((segments . ,segments)
        (glosses . ,(and (cl-some (lambda (s) (alist-get 'glossed s)) segments) t))
        (translation . ,(bcat-analysis--field parsed 'translation))
