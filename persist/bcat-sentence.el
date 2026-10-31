@@ -429,20 +429,30 @@ never Carsten's own „Übersetzung …“ rubric (as in the materializer)."
 for the verse SENT-NUM of SOURCE-FILE — the header link, and per segment
 the commentary sentences with the lemmata of its pādas, once ASSIGNMENT
 \((TIB . SKT) …, from the Tibetan request) is known; CONTEXT itself for
-a source without commentary."
-  (if (not (and (bcat-sentence--verse-mode-p source-file)
-                (progn (require 'bcat-commentary) (bcat-commentary-source source-file))))
-      context
-    (let ((links (bcat-commentary-verse-links sent-num source-file assignment)))
-      (if (null links)
-          context
-        (append
-         `((segments . ,(mapcar (lambda (seg)
-                                  (let ((line (cdr (assq (bcat-analysis--num seg) links))))
-                                    (if line (cons (cons 'commentary line) seg) seg)))
-                                (alist-get 'segments context)))
-           (commentary-link . ,(cdr (assq :link links))))
-         context)))))
+a source without commentary.  `commentary-p': the * Commentary section
+has something — a segment's links or the bhāṣya (31.10.: „Kommentare,
+wie Sthiramati im MSA, die unbedingt mit rein müssen“)."
+  (let ((context
+         (if (not (and (bcat-sentence--verse-mode-p source-file)
+                       (progn (require 'bcat-commentary) (bcat-commentary-source source-file))))
+             context
+           (let ((links (bcat-commentary-verse-links sent-num source-file assignment)))
+             (if (null links)
+                 context
+               (append
+                `((segments . ,(mapcar (lambda (seg)
+                                         (let ((line (cdr (assq (bcat-analysis--num seg) links))))
+                                           (if line (cons (cons 'commentary line) seg) seg)))
+                                       (alist-get 'segments context)))
+                  (commentary-link . ,(cdr (assq :link links))))
+                context))))))
+    (cons (cons 'commentary-p
+                (and (or (alist-get 'bhasya-p context)
+                         (cl-some (lambda (seg) (let ((c (alist-get 'commentary seg)))
+                                                  (and (stringp c) (not (string-blank-p c)))))
+                                  (alist-get 'segments context)))
+                     t))
+          context)))
 
 (declare-function tibetan-cascade--ref-bodies "tibetan-cascade" (refs-file heading-re))
 
@@ -567,6 +577,11 @@ nil when absent or empty."
 
 (defconst bcat-sentence--tool-sections
   '("Recitation" "Text" "Segments" "Sentence"
+    ;; Since 31.10. (the order read → translate → grammar → concepts →
+    ;; references → the rest → commentary → further reading), and the
+    ;; L1 sections they replace — an old file's * Bhāṣya or * Lectures
+    ;; must not survive a rebuild as its own section.
+    "Tibetan" "Sanskrit" "Commentary" "Further Reading" "Bhāṣya" "Lectures"
     "Translation" "Reading" "Provided Translations" "Tibetan Text" "Tibetan Analysis"
     "Sanskrit Text" "Sanskrit Analysis" "Combined Analysis" "Auto-Analysis"
     "Reference Translations" "DharmaMitra Translation (Tibetan)"
@@ -701,11 +716,23 @@ typing is read (and kept) by a rebuild."
   "Abnormal hook run with the sentence FILE after C-c u G has written
 it (§5.74) — C-c u H (PDF + reMarkable) hangs here.")
 
+(defun bcat-sentence--segments-part (text)
+  "The `* Segments' section of the sentence file TEXT, up to the next L1
+heading — there stand the ⟦N⟧ translations with the references per
+segment; since 31.10. ⟦N⟧ also labels the tables under * Text, the
+concepts, the other language and the commentary links, and * Sentence
+comes before * Segments.  TEXT itself when it has no such section (a
+commentary document: its segments under `* Sentence N')."
+  (if (string-match "^\\* Segments\n" text)
+      (let ((start (match-end 0)))
+        (substring text start (if (string-match "^\\* " text start) (match-beginning 0) (length text))))
+    text))
+
 (defun bcat-sentence--unaligned (file)
   "References under Translations compared of FILE that no segment shows
 yet (added by hand after the analysis): ((NAME . TEXT) …), marks
 stripped."
-  (let ((segments (car (split-string (bcat-sentence--text file) "^\\* Sentence$"))))
+  (let ((segments (bcat-sentence--segments-part (bcat-sentence--text file))))
     (delq nil (mapcar (lambda (r)
                         (unless (or (equal (car r) "Translation")
                                     (string-match-p (format "^\\*%s:\\* " (regexp-quote (car r)))
@@ -722,9 +749,10 @@ the Tibetan request needs the Sanskrit answer, so both again);
 limit held — fetched alone and placed by the alignment request);
 `align' when a reference under Translations compared appears in no
 segment (added by hand); nil when the file is complete."
-  (let ((text (bcat-sentence--text file)))
+  (let* ((text (bcat-sentence--text file))
+         (segments (bcat-sentence--segments-part text)))
     (cond
-     ((cl-some (lambda (n) (not (string-match-p (format "^⟦%d⟧ " n) text))) seg-nums)
+     ((cl-some (lambda (n) (not (string-match-p (format "^⟦%d⟧ " n) segments))) seg-nums)
       'full)
      ((and (string-match-p "^#\\+CAT_PARALLEL_SEGMENTS:[ \t]*[0-9]" text)
            (not (string-match-p "^\\*\\* Segment [0-9]+ · \\(?:Tib\\|Skt\\)\\. " text)))
@@ -762,7 +790,8 @@ Everything else stays as it is."
     (dolist (seg (alist-get 'segments parsed))
       (let ((num (alist-get 'num seg)))
         (goto-char (point-min))
-        (when (re-search-forward (format "^⟦%s⟧ " num) nil t)
+        (when (and (re-search-forward "^\\* Segments$" nil t)
+                   (re-search-forward (format "^⟦%s⟧ " num) nil t))
           (let* ((start (line-beginning-position))
                  (end (if (re-search-forward "\n[ \t]*\n" nil t) (match-beginning 0) (point-max)))
                  (lines (bcat-sentence--block-lines (buffer-substring start end)))
@@ -839,7 +868,8 @@ the answer is unreadable."
   "ONE small request placing the references added by hand in FILE —
 no DharmaMitra, no new analysis."
   (let* ((refs (bcat-sentence--unaligned file))
-         (own (bcat-sentence--own-translations (bcat-sentence--text file)))
+         (own (bcat-sentence--own-translations
+               (bcat-sentence--segments-part (bcat-sentence--text file))))
          (meta (ignore-errors (tibetan-analysis--read-source-metadata source-file))))
     (require 'tibetan-translation-discussion)
     (tibetan-discussion--submit

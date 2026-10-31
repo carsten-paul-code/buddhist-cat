@@ -1,6 +1,22 @@
 #+begin_comment
 VORLAGE Tibetisch — Gerüst einer Satzdatei (Buddhist CAT, §5.74).
-Gliederung: ganzes Original (* Text) / Segmente / ganzer Satz.
+Gliederung: Original und Segmenttabellen mit Übersetzung (* Text) /
+ganzer Satz / Segmente.
+Reihenfolge seit 31.10. abends (Carsten, TĀ 1006, „die Anpassungen sind
+aber generisch“): erst lesen und übersetzen — * Text: die Segmenttabellen
+untereinander (⟦N⟧ vor den Tabellen eines Segments; Wörter und Glossen
+schwarz, Wortbildung, Teile, Form blau), darunter die Übersetzung und
+dieselbe in der zweiten Sprache (second-translation, Beschriftung
+second-label: „Deutsch“ bei Zielsprache Englisch, sonst „English“ —
+„damit ich mich leichter in die Konzepte rein denken kann“); dann
+* Sentence: Grammar, Concepts (die Konzepte der Segmente, je ⟦N⟧),
+Translations compared (Referenzen und die Einschätzung der
+Unterschiede); dann * Segments: der Rest der Erklärungen je Segment;
+am Schluss Kommentar (* Commentary: was rein muss) vor Weiterführendem
+(* Further Reading: Sanderson u. ä.).  Die ⟦N⟧-Marken außerhalb von
+* Segments machen die Datei ohne Abruf neu setzbar (C-c u L).
+Unter * Text oben die Uchen-Zeilen: das Tibetische hat keine eigene
+Rezitation.
 
 Platzhalter:  {{name}} setzt einen Wert ein (auch mehrzeilig).  Eine
 Zeile, deren Platzhalter ALLE leer sind, fällt weg — samt Beschriftung
@@ -20,9 +36,11 @@ erscheinen nicht in der Satzdatei.
 
 Felder: sent-num source-link segment-list hash created last-analyzed;
 segments: num uchen wylie glossed gloss-table translations structure note
-concepts (glossed = die Verszeile mit den Glossen in Klammern);
+concepts (glossed = die Verszeile mit den Glossen in Klammern, im
+PDF nicht mehr gedruckt);
 glosses (gesetzt, wenn eine Zeile Glossen hat) translation (die
-Übersetzung des ganzen Satzes, nach C-c u G) grammar comparison
+Übersetzung des ganzen Satzes, nach C-c u G) second-translation
+second-label grammar comparison
 lectures-p lectures (lecture-name lecture-body — #+CAT_LECTURES:, Sanderson zu TĀ 1.1–15, Carsten 30.10.: im PDF zum Annotieren) working-translation my-notes footnotes.
 * Text (Carsten 29.10.): je Segment Uchen über Wylie („erste Zeile
 Uchen, zweite Zeile Wylie“, wie im alten Handout), Vers mit Vokabeln,
@@ -48,45 +66,51 @@ Rumpf ohne Glossen bleibt sie.  Reines Sanskrit behält den Padapāṭha.
 #+begin_verse
 {{#segments}}
 {{uchen}}
-{{^glosses}}
+{{^gloss-table}}
 {{wylie}}
-{{/glosses}}
+{{/gloss-table}}
 {{/segments}}
 #+end_verse
-{{#glosses}}
 
-#+begin_verse
 {{#segments}}
-{{glossed}}
-{{/segments}}
-#+end_verse
-{{/glosses}}
+{{#gloss-table}}
+⟦{{num}}⟧
+{{gloss-table}}
 
+{{/gloss-table}}
+{{/segments}}
 *Translation:* {{translation}}
+{{#second-translation}}
+
+*{{second-label}}:* {{second-translation}}
+{{/second-translation}}
+
+* Sentence
+** Grammar
+{{grammar}}
+
+** Concepts
+{{#segments}}
+{{#concepts}}
+⟦{{num}}⟧ {{concepts}}
+
+{{/concepts}}
+{{/segments}}
+** Translations compared
+{{comparison}}
 
 * Segments
 {{#segments}}
 ** Segment {{num}}
-{{gloss-table}}
-
 {{translations}}
 
 *Structure:* {{structure}}
 
 *Note:* {{note}}
 
-*Concepts:* {{concepts}}
-
 {{/segments}}
-* Sentence
-** Grammar
-{{grammar}}
-
-** Translations compared
-{{comparison}}
-
 {{#lectures-p}}
-* Lectures
+* Further Reading
 {{#lectures}}
 ** {{lecture-name}}
 {{lecture-body}}

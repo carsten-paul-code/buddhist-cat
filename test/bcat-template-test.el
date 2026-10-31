@@ -197,9 +197,9 @@ Compounds — the Note of segment 686 dropped."
 
 (ert-deftest bcat-template-sanskrit-prose ()
   "Viveka prose (no metre): the Recitation holds only the Devanāgarī
-original (no metre line, no scansion); without a padapāṭha (the rump)
-the Text shows the line as transmitted, no glossed verse, no
-translation line."
+original (no metre line, no scansion); in the rump * Text is empty — no
+tables before C-c u G, no padapāṭha any more (31.10. abends: „Der Text
+kann ganz weg“), no translation line; * Sentence before * Segments."
   (let* ((bcat-template-directory
           (expand-file-name "Templates/analysis" bcat-template-test--root))
          (out (bcat-template-render-named
@@ -209,8 +209,8 @@ translation line."
                  (segments ((num . "687") (padapatha . "iha khalu śāstrādau …")))))))
     (should (string-match-p
              (regexp-quote (concat "#+SEGMENTS: 687\n\n* Recitation\n#+begin_verse\nइह खलु शास्त्रादौ …\n"
-                                   "#+end_verse\n\n* Text\n#+begin_verse\niha khalu śāstrādau …\n"
-                                   "#+end_verse\n\n* Segments\n** Segment 687\n\n* Sentence\n"))
+                                   "#+end_verse\n\n* Text\n\n* Sentence\n** Grammar\n\n** Concepts\n"
+                                   "** Translations compared\n\n* Segments\n** Segment 687\n\n"))
              out))
     (should-not (string-match-p "Translation:" out))))
 

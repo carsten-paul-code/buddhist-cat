@@ -1,8 +1,21 @@
 #+begin_comment
 VORLAGE Sanskrit — Gerüst einer Satzdatei (Buddhist CAT, §5.74).
-Gliederung wie Tibetisch, davor die Rezitation (Carsten 29.10.: „Es geht
-ja mit der Rezitation los“): Rezitation / ganzes Original (* Text) /
-Segmente / ganzer Satz.
+Gliederung: Rezitation (Carsten 29.10.: „Es geht ja mit der Rezitation
+los“; seit 31.10. ohne die Beschreibung des Metrums) / Segmenttabellen
+und Übersetzung (* Text) / ganzer Satz / Segmente.
+Reihenfolge seit 31.10. abends (Carsten, TĀ 1006, „die Anpassungen sind
+aber generisch“): erst lesen und übersetzen — * Text: die Segmenttabellen
+untereinander (⟦N⟧ vor den Tabellen eines Segments; Wörter und Glossen
+schwarz, Wortbildung, Teile, Form blau), darunter die Übersetzung und
+dieselbe in der zweiten Sprache (second-translation, Beschriftung
+second-label: „Deutsch“ bei Zielsprache Englisch, sonst „English“ —
+„damit ich mich leichter in die Konzepte rein denken kann“); dann
+* Sentence: Grammar, Concepts (die Konzepte der Segmente, je ⟦N⟧),
+Translations compared (Referenzen und die Einschätzung der
+Unterschiede); dann * Segments: der Rest der Erklärungen je Segment;
+am Schluss Kommentar (* Commentary: was rein muss) vor Weiterführendem
+(* Further Reading: Sanderson u. ä.).  Die ⟦N⟧-Marken außerhalb von
+* Segments machen die Datei ohne Abruf neu setzbar (C-c u L).
 
 Platzhalter und Abschnitte wie in tibetan.org: {{name}} setzt einen Wert
 ein; eine Zeile, deren Platzhalter ALLE leer sind, fällt samt
@@ -23,7 +36,8 @@ segments: num samhita (die Zeile wie überliefert) padapatha (die Zeile
 in IAST mit aufgelösten Sandhis; im Rumpf noch die überlieferte)
 glossed (Padapāṭha,
 Sandhis aufgelöst, Vokabeln in Klammern) gloss-table translations
-sandhi forms compounds structure note concepts;
+sandhi forms compounds structure note concepts; second-translation
+second-label;
 glosses (gesetzt, wenn es einen Padapāṭha gibt) translation grammar
 comparison word-analysis (je Segment Padapāṭha und „- Wort — Lemma;
 Form“: daraus lesen Zettel-Hervorhebung, Diskussion und
@@ -46,10 +60,6 @@ Goldman 1999).
 
 {{#recitation}}
 * Recitation
-{{#metre}}
-{{metre}}
-
-{{/metre}}
 #+begin_verse
 {{recitation}}
 #+end_verse
@@ -60,27 +70,36 @@ Goldman 1999).
 
 {{/recitation}}
 * Text
-#+begin_verse
 {{#segments}}
-{{padapatha}}
-{{/segments}}
-#+end_verse
-{{#glosses}}
+{{#gloss-table}}
+⟦{{num}}⟧
+{{gloss-table}}
 
-#+begin_verse
-{{#segments}}
-{{glossed}}
+{{/gloss-table}}
 {{/segments}}
-#+end_verse
-{{/glosses}}
-
 *Translation:* {{translation}}
+{{#second-translation}}
+
+*{{second-label}}:* {{second-translation}}
+{{/second-translation}}
+
+* Sentence
+** Grammar
+{{grammar}}
+
+** Concepts
+{{#segments}}
+{{#concepts}}
+⟦{{num}}⟧ {{concepts}}
+
+{{/concepts}}
+{{/segments}}
+** Translations compared
+{{comparison}}
 
 * Segments
 {{#segments}}
 ** Segment {{num}}
-{{gloss-table}}
-
 {{translations}}
 
 *Sandhi:* {{sandhi}}
@@ -96,23 +115,14 @@ Goldman 1999).
 
 *Note:* {{note}}
 
-*Concepts:* {{concepts}}
-
 {{/segments}}
 {{#word-analysis}}
 ** Word Analysis
 {{word-analysis}}
 
 {{/word-analysis}}
-* Sentence
-** Grammar
-{{grammar}}
-
-** Translations compared
-{{comparison}}
-
 {{#lectures-p}}
-* Lectures
+* Further Reading
 {{#lectures}}
 ** {{lecture-name}}
 {{lecture-body}}

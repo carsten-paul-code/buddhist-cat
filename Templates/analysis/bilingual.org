@@ -39,6 +39,19 @@ commentary-link (Kopf: das Kommentardokument) commentary (je Segment: die
 Kommentarsätze mit den Lemmata seiner Pādas, „*Sthiramati:* lemmata in
 258, 259“); lectures-p lectures (lecture-name lecture-body — #+CAT_LECTURES:, Sanderson zu TĀ 1.1–15, Carsten 30.10.: im PDF zum Annotieren) working-translation my-notes footnotes.
 Grammatische Begriffe nach der Devavāṇīpraveśikā.
+Reihenfolge seit 31.10. abends (Carsten, TĀ 1006, „die Anpassungen sind
+aber generisch“) wie in sanskrit.org: * Text (Original, Segmenttabellen,
+Übersetzung, zweite Sprache) / * Sentence (Grammar, Concepts,
+Translations compared) / das andere Original (* Tibetan bzw. * Sanskrit:
+je Segment ⟦N⟧ seine Zeilen mit Vokabeln und die Differences, dann die
+Tibetan rendering) / * Segments (der Rest je Segment) / * Commentary
+(was rein muss: die Kommentar-Links je Segment, der Bhāṣya mit Hint) /
+* Further Reading (Sanderson u. ä.).  Unter * Text oben das Original
+in seiner Schrift: Devanāgarī über der überlieferten Zeile bzw. Uchen.
+Felder dazu: second-translation second-label commentary-p (Kommentar-Links
+oder Bhāṣya da) assignment (gesetzt, sobald Claude die tibetischen
+Segmente zugeordnet hat; bis dahin steht unter * Tibetan der ganze
+tibetische Text).
 Seit 31.10. (Carsten: „den reinen Textblock in Wylie oder IAST nicht
 mehr“): unter * Text die Schriftzeile (Uchen/Devanāgarī) ohne die reine
 Transliteration darunter, sobald es die Zeile mit Vokabeln gibt; im
@@ -63,45 +76,69 @@ Rumpf ohne Glossen bleibt sie.  Reines Sanskrit behält den Padapāṭha.
 #+begin_verse
 {{#segments}}
 {{devanagari}}
-{{^glosses}}
 {{samhita}}
-{{/glosses}}
 {{/segments}}
 #+end_verse
-{{#glosses}}
 
-#+begin_verse
 {{#segments}}
-{{glossed}}
-{{/segments}}
-#+end_verse
-{{/glosses}}
-{{#tibetan-p}}
+{{#gloss-table}}
+⟦{{num}}⟧
+{{gloss-table}}
 
+{{/gloss-table}}
+{{/segments}}
+*Translation:* {{translation}}
+{{#second-translation}}
+
+*{{second-label}}:* {{second-translation}}
+{{/second-translation}}
+
+* Sentence
+** Grammar
+{{grammar}}
+
+** Concepts
+{{#segments}}
+{{#concepts}}
+⟦{{num}}⟧ {{concepts}}
+
+{{/concepts}}
+{{/segments}}
+** Translations compared
+{{comparison}}
+
+{{#tibetan-p}}
+* Tibetan
+{{^assignment}}
 #+begin_verse
 {{#tibetan}}
 {{uchen}}
-{{^tibetan-glosses}}
-{{wylie}}
-{{/tibetan-glosses}}
-{{/tibetan}}
-#+end_verse
-{{/tibetan-p}}
-{{#tibetan-glosses}}
-
-#+begin_verse
-{{#tibetan}}
 {{glossed}}
 {{/tibetan}}
 #+end_verse
-{{/tibetan-glosses}}
 
-*Translation:* {{translation}}
+{{/assignment}}
+{{#segments}}
+{{#tibetan-block}}
+⟦{{num}}⟧{{parallel}}
+#+begin_verse
+{{tibetan-block}}
+#+end_verse
 
+*Differences:* {{differences}}
+
+{{/tibetan-block}}
+{{/segments}}
+{{#rendering}}
+** Tibetan rendering
+{{rendering}}
+
+{{/rendering}}
+{{/tibetan-p}}
 * Segments
 {{#segments}}
 ** Segment {{num}}{{parallel}}
-{{gloss-table}}
+{{translations}}
 
 *Sandhi:* {{sandhi}}
 
@@ -116,38 +153,22 @@ Rumpf ohne Glossen bleibt sie.  Reines Sanskrit behält den Padapāṭha.
 
 *Note:* {{note}}
 
-*Concepts:* {{concepts}}
-
-{{#tibetan-block}}
-#+begin_verse
-{{tibetan-block}}
-#+end_verse
-{{/tibetan-block}}
-
-*Differences:* {{differences}}
-
-{{commentary}}
-
-{{translations}}
-
 {{/segments}}
 {{#word-analysis}}
 ** Word Analysis
 {{word-analysis}}
 
 {{/word-analysis}}
-* Sentence
-** Grammar
-{{grammar}}
+{{#commentary-p}}
+* Commentary
+{{#segments}}
+{{#commentary}}
+⟦{{num}}⟧ {{commentary}}
 
-** Tibetan rendering
-{{rendering}}
-
-** Translations compared
-{{comparison}}
-
+{{/commentary}}
+{{/segments}}
 {{#bhasya-p}}
-* Bhāṣya
+** Bhāṣya
 {{#bhasya-sanskrit-p}}
 #+begin_verse
 {{#bhasya-sanskrit}}
@@ -169,8 +190,9 @@ Rumpf ohne Glossen bleibt sie.  Reines Sanskrit behält den Padapāṭha.
 *Hint:* {{bhasya-hint}}
 
 {{/bhasya-p}}
+{{/commentary-p}}
 {{#lectures-p}}
-* Lectures
+* Further Reading
 {{#lectures}}
 ** {{lecture-name}}
 {{lecture-body}}

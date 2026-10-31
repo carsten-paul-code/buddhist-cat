@@ -663,23 +663,35 @@ segment parts) and grammar; the whole translation."
 
 (defun bcat-commentary--patch-links (file sent-num source-file assignment)
   "Bring the commentary lines of the analysed verse FILE (sentence
-SENT-NUM of SOURCE-FILE) up to date — before each segment's ⟦N⟧
-translation; a file not yet analysed is left alone."
+SENT-NUM of SOURCE-FILE) up to date: under * Commentary, before the
+bhāṣya, „⟦N⟧ *Sthiramati:* lemmata in …“ per segment — as the template
+writes them (31.10. abends: the commentary at the end, „Kommentare, wie
+Sthiramati im MSA, die unbedingt mit rein müssen“; before, ahead of each
+⟦N⟧ translation, a place an old file may still have).  A file not yet
+analysed is left alone."
   (let ((text (bcat-sentence--text file)))
-    (when (string-match-p "^⟦[0-9]+⟧ " text)
+    (when (string-match-p "^⟦[0-9]+⟧ " (bcat-sentence--segments-part text))
       (let* ((links (bcat-commentary-verse-links sent-num source-file assignment))
-             (name (regexp-quote (bcat-commentary--author (bcat-commentary-source source-file)))))
+             (name (regexp-quote (bcat-commentary--author (bcat-commentary-source source-file))))
+             (lines (mapconcat (lambda (l) (format "⟦%d⟧ %s\n\n" (car l) (cdr l)))
+                               (sort (cl-remove-if-not (lambda (l) (integerp (car l))) links)
+                                     (lambda (a b) (< (car a) (car b))))
+                               "")))
         (with-temp-buffer
           (insert text)
           (goto-char (point-min))
-          (while (re-search-forward (format "^\\*%s:\\* lemmata in .*\n\n" name) nil t)
+          (while (re-search-forward (format "^\\(?:⟦[0-9]+⟧ \\)?\\*%s:\\* lemmata in .*\n\n?" name) nil t)
             (replace-match ""))
-          (dolist (l links)
-            (when (integerp (car l))
-              (goto-char (point-min))
-              (when (re-search-forward (format "^⟦%d⟧ " (car l)) nil t)
+          (goto-char (point-min))
+          (cond
+           ((re-search-forward "^\\* Commentary\n" nil t)
+            (insert lines))
+           ((not (string-empty-p lines))
+            (goto-char (point-min))
+            (if (re-search-forward "^\\* \\(?:Further Reading\\|Working Translation\\)$" nil t)
                 (beginning-of-line)
-                (insert (cdr l) "\n\n"))))
+              (goto-char (point-max)))
+            (insert "* Commentary\n" lines)))
           (unless (equal (buffer-string) text)
             (bcat-sentence--save-visit file)
             (bcat-sentence--write file (buffer-string))))))))

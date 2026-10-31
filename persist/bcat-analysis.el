@@ -1017,7 +1017,8 @@ Sanskrit for * Text; the `rendering'."
        (sanskrit . ,sanskrit)
        (sanskrit-p . ,(and sanskrit t))
        (sanskrit-glosses . ,(and (cl-some (lambda (s) (alist-get 'glossed s)) sanskrit) t))
-       (rendering . ,(bcat-analysis--field parsed 'rendering)))
+       (rendering . ,(bcat-analysis--field parsed 'rendering))
+       (assignment . ,assign))
      base)))
 
 (provide 'bcat-analysis)

@@ -529,7 +529,10 @@ carries the running head."
             (should-not (string-match-p "\\\\begin{center}" tex))
             (should-not (string-match-p "\\\\begin{tabularx}" tex))
             (should (string-match-p "Satz 9 · SDA 9" tex))
-            (should (string-match-p (regexp-quote "\\mbox{brjod du med pa \\bcatg{[indescribable]}}") tex))
+            ;; 31.10. abends: the tables under * Text — words and gloss
+            ;; black, the function row blue.
+            (should (string-match-p (regexp-quote "\\bcatg{ADJ · predicate}") tex))
+            (should-not (string-match-p (regexp-quote "\\bcatg{indescribable}") tex))
             (should (string-match-p (regexp-quote "\\newfontfamily\\bcattib{Noto Serif Tibetan}") tex))
             (should (string-match-p (regexp-quote "{\\bcattib\\large བརྗོད་དུ་མེད་པ་བལྟར་མེད་པ། །}") tex))))
       (let ((buf (get-file-buffer file))) (when buf (kill-buffer buf)))

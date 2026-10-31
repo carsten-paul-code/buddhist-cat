@@ -155,7 +155,7 @@ IX.16 (sentence 64) — its pādas, its file in the header link."
                               text))
       (should (string-match-p "^#\\+CAT_PARALLEL_SEGMENTS: 139, 140, 141, 142$" text))
       (should (string-match-p (regexp-quote "ཇི་ལྟར་ཆུ་ཡི་སྣོད་ཆག་ན། །\nji ltar chu yi snod chag na/ /") text))
-      (should-not (string-match-p "ལྔ་པ་འདིས" (car (split-string text "^\\* Bhāṣya")))))))
+      (should-not (string-match-p "ལྔ་པ་འདིས" (car (split-string text "^\\* Commentary")))))))
 
 (ert-deftest bcat-verse-bhasya-section ()
   "Carsten 30.10.: the bhāṣya „im Vers als zusätzliche Section (unten)
@@ -166,20 +166,23 @@ the Tibetan verse file too.  A verse without bhāṣya has no section."
   (bcat-commentary-test--with-msa
     (let ((text (bcat-sentence-test--create-n src 36)))
       (should (string-match-p
-               (regexp-quote (concat "* Bhāṣya\n#+begin_verse\n"
+               (regexp-quote (concat "* Commentary\n** Bhāṣya\n#+begin_verse\n"
                                      "अथ पञ्चमः श्लोकः ।\natha pañcamaḥ ślokaḥ /\n"
                                      "अनेन पञ्चमेन"))
                text))
       (should (string-match-p (regexp-quote "ལྔ་པ་འདིས་ནི་") text))
       (should (string-match-p (regexp-quote "lnga pa 'dis ni thams cad du song ba") text))
-      (should (< (string-match "^\\* Sentence$" text) (string-match "^\\* Bhāṣya$" text)
+      ;; 31.10. abends: the commentary at the end, after the
+      ;; explanations („Kommentare … die unbedingt mit rein müssen“).
+      (should (< (string-match "^\\* Sentence$" text) (string-match "^\\* Segments$" text)
+                 (string-match "^\\* Commentary$" text)
                  (string-match "^\\* Working Translation$" text))))
-    (should (string-match-p "^\\* Bhāṣya$" (bcat-sentence-test--create-n tsrc 64)))
+    (should (string-match-p "^\\* Commentary\n\\*\\* Bhāṣya$" (bcat-sentence-test--create-n tsrc 64)))
     (should-not (string-match-p "Bhāṣya" (bcat-sentence-test--create-n src 38)))))
 
 (ert-deftest bcat-verse-bhasya-section-once ()
   "The rebuild (C-c u G) keeps a file's own L1 sections (`* Handout'),
-but * Bhāṣya is the template's: written anew, never carried over as
+but the Bhāṣya is the template's: written anew, never carried over as
 the file's own — else every landing appends it once more."
   (bcat-commentary-test--with-msa
     (bcat-sentence-test--create-n src 36)
@@ -187,7 +190,7 @@ the file's own — else every landing appends it once more."
       (bcat-sentence-test--fetch-n src 36))
     (dolist (file (list (tibetan-sentence--filepath 36 folder src)
                         (bcat-sentence-partner-file 36 src)))
-      (should (= 1 (cl-count "* Bhāṣya" (split-string (bcat-sentence-test--text-of file) "\n")
+      (should (= 1 (cl-count "** Bhāṣya" (split-string (bcat-sentence-test--text-of file) "\n")
                              :test #'equal))))))
 
 (ert-deftest bcat-verse-bhasya-sentence-opens-verse-file ()
@@ -228,8 +231,8 @@ for sentence 36, then the Tibetan one with the Tibetan verse IX.16
         (should-not (string-match-p "\\[143\\]" user)))
       (let ((text (bcat-sentence-test--text-of (tibetan-sentence--filepath 36 folder src))))
         (should (string-match-p "^\\*\\* Segment 92 · Tib\\. 139–140$" text))
-        (should (string-match-p "^\\* Bhāṣya$" text)))
-      (should (string-match-p "^\\* Bhāṣya$" (bcat-sentence-test--text-of
+        (should (string-match-p "^\\*\\* Bhāṣya$" text)))
+      (should (string-match-p "^\\*\\* Bhāṣya$" (bcat-sentence-test--text-of
                                               (tibetan-sentence--filepath 64 tfolder tsrc)))))))
 
 (defconst bcat-commentary-test--verse-answer-sa
@@ -423,7 +426,9 @@ quotes and how he reads it.  A second C-c u A never overwrites it."
 (ert-deftest bcat-commentary-verse-links ()
   "The verse files link the commentary: in the header, and per segment
 the Sthiramati sentences with the lemmata of its pādas — known once the
-Tibetan request has assigned the pādas (C-c u G)."
+Tibetan request has assigned the pādas (C-c u G).  Since 31.10. abends
+under * Commentary, „⟦N⟧ *Sthiramati:* …“, before the bhāṣya — nowhere
+else."
   (bcat-commentary-test--with-msa
     (should (string-match-p (regexp-quote "#+CAT_COMMENTARY: [[file:../../Sthiramati/analysis/comm-IX.16-savbh.org][Sthiramati zu MSA IX.16, MSA IX.17]]")
                             (bcat-sentence-test--create-n src 36)))
@@ -431,12 +436,11 @@ Tibetan request has assigned the pādas (C-c u G)."
       (bcat-sentence-test--fetch-n src 36))
     (let ((text (bcat-sentence-test--text-of (tibetan-sentence--filepath 36 folder src)))
           (link (lambda (n) (format "[[file:../../Sthiramati/analysis/comm-IX.16-savbh.org::*Sentence %d][%d]]" n n))))
-      (should (string-match-p (regexp-quote (format "*Sthiramati:* lemmata in %s, %s\n\n⟦92⟧"
-                                                    (funcall link 258) (funcall link 259)))
-                              text))
-      (should (string-match-p (regexp-quote (format "*Sthiramati:* lemmata in %s, %s\n\n⟦93⟧"
+      (should (string-match-p (regexp-quote (format "* Commentary\n⟦92⟧ *Sthiramati:* lemmata in %s, %s\n\n⟦93⟧ *Sthiramati:* lemmata in %s, %s\n\n** Bhāṣya"
+                                                    (funcall link 258) (funcall link 259)
                                                     (funcall link 261) (funcall link 262)))
-                              text)))
+                              text))
+      (should (= 2 (with-temp-buffer (insert text) (how-many "\\*Sthiramati:\\* lemmata" (point-min) (point-max))))))
     (should (string-match-p (regexp-quote "*Sthiramati:* lemmata in [[file:../../Sthiramati/analysis/comm-IX.16-savbh.org::*Sentence 258][258]]")
                             (bcat-sentence-test--text-of (tibetan-sentence--filepath 64 tfolder tsrc))))))
 
@@ -503,8 +507,12 @@ reMarkable (the hook runs for the verse file and the commentary)."
           (should-not (bcat-commentary-incomplete-p "Section IX.16" csrc)))
         (should (member doc done))
         (should (member (tibetan-sentence--filepath 36 folder src) done)))
-      (should (string-match-p "lemmata in .*\\]\\[258\\]\\], .*\\]\\[259\\]\\], .*\\]\\[260\\]\\]\n\n⟦92⟧"
-                              (bcat-sentence-test--text-of (tibetan-sentence--filepath 36 folder src)))))))
+      ;; After the commentary has landed: its lemmata (260 too) in the
+      ;; verse file, under * Commentary, the old line gone.
+      (let ((text (bcat-sentence-test--text-of (tibetan-sentence--filepath 36 folder src))))
+        (should (string-match-p "^\\* Commentary\n⟦92⟧ \\*Sthiramati:\\* lemmata in .*\\]\\[258\\]\\], .*\\]\\[259\\]\\], .*\\]\\[260\\]\\]\n\n⟦93⟧"
+                                text))
+        (should (= 2 (with-temp-buffer (insert text) (how-many "\\*Sthiramati:\\* lemmata" (point-min) (point-max)))))))))
 
 (ert-deftest bcat-commentary-status-line ()
   "30.10., IX.60: the commentary's PDF failed and the status said
