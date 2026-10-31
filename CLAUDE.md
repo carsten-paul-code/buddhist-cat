@@ -4594,7 +4594,13 @@ nicht.  ERT 2738.
 Ebene des Textes (Carsten: „auch für Tib. V“) — Ordner direkt unter
 WS…/SS… (`bcat-export--text-folder'), #+CAT_HANDOUTS: überschreibt;
 bestehende PDFs von AS/MSA dorthin verschoben, alte MSA-Synopsen
-msa-IX.60/61 in den Papierkorb.  ERT 2739.
+msa-IX.60/61 in den Papierkorb.  ERT 2739.  TĀ 1008: `49c0665'/`6a0ed46'
+überlange Tabellenzelle (Teile eines langen Kompositums, 160 Zeichen) an
+„·“ auf weitere Tabellenzeilen umbrochen — beim Schreiben und, für
+ältere Dateien, in der Exportkopie (statt winzig verkleinert);
+`6fd4bfb' Prosa-Rezitation in Sinnabschnitten: Feld `recitation' im
+Sanskrit-Prompt (nur Vorlage sanskrit), geprüft gegen den Text,
+Kopfzeile „Prosa — …“.  ERT 2742.
 
 #### Offen
 
