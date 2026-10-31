@@ -537,6 +537,7 @@ in the appropriate instance."
 (require 'bcat-parallel)
 (require 'bcat-commentary)
 (require 'bcat-export)
+(require 'bcat-faces)
 
 (provide 'buddhist-cat)
 ;; The old feature name, announced too: code that waits on it
