@@ -928,7 +928,8 @@ the Sanskrit prompts for a Sanskrit source, the Tibetan ones else."
          (segs (plist-get sentence :segs)))
     (if (bcat-sentence--sanskrit-p source-file)
         (let ((verse-mode (bcat-sentence--verse-mode-p source-file)))
-          (cons (bcat-analysis-sanskrit-system-prompt target verse-mode)
+          (cons (bcat-analysis-sanskrit-system-prompt
+                 target verse-mode (equal (bcat-sentence-template-name source-file) "sanskrit"))
                 (bcat-analysis-sanskrit-user-prompt
                  (plist-get sentence :sent-num) (plist-get sentence :verse)
                  (mapcar (lambda (s) (list (car s) (cdr s))) segs)

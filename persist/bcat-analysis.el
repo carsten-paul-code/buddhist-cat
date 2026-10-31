@@ -142,14 +142,16 @@ reference translations ((NAME . TEXT) …)."
    (mapconcat (lambda (r) (format "=== %s ===\n%s" (car r) (string-trim (cdr r)))) refs "\n")
    "\n\nReturn the JSON object now."))
 
-(defun bcat-analysis-sanskrit-system-prompt (target &optional bhasya)
+(defun bcat-analysis-sanskrit-system-prompt (target &optional bhasya recitation)
   "The system prompt of the Sanskrit sentence analysis (§5.74, Carsten
 29.10.: his Sanskrit is rudimentary, the class has Sanskrit
 professionals and goes deep into the grammar — roots, gaṇa, stems;
 terminology of the Devavāṇīpraveśikā) for the target language code
 TARGET — constant per document, so the prompt cache stays warm.
 BHASYA: the document is read verse by verse with the bhāṣya below the
-verse (MSA, 30.10.) — the answer has `bhasya_hint' too."
+verse (MSA, 30.10.) — the answer has `bhasya_hint' too.  RECITATION:
+the file has a Recitation (the Sanskrit template) — for prose the
+answer gives `recitation', the text in sense units (31.10., TĀ 1008)."
   (let ((lang (bcat-analysis--language target)))
     (format "You are a Sanskritist preparing one sentence or verse of a Sanskrit text for a university reading class of experienced Sanskritists; one participant reads Sanskrit only haltingly, so every form is spelled out. Work segment by segment, then on the whole sentence. Use the grammatical terminology of Goldman & Sutherland Goldman, Devavāṇīpraveśikā: Sanskrit terms, with the English equivalent where it helps. Answer with ONE JSON object and nothing else (no prose, no code fence):
 
@@ -177,10 +179,15 @@ Rules:
 - comparison: one to three sentences on the meaning-shifting differences between the translations including yours; \"\" when there are none.
 %s- JSON escaping: only \\\" and \\\\ — never a backslash before an apostrophe.
 - Write glosses, notes and explanations in %s. Never mention yourself."
-            (if bhasya ", \"bhasya_hint\": \"…\"" "")
-            (if bhasya
-                "- bhasya_hint: the bhāṣya on this verse is given as context; one to three sentences on what in it matters for reading the verse — how it takes a word or the verse's function, a reading it presupposes, where its Tibetan says something else; Sanskrit and Tibetan words in /italic/; \"\" when nothing.\n"
-              "")
+            (concat (if bhasya ", \"bhasya_hint\": \"…\"" "")
+                    (if recitation ", \"recitation\": [\"…\"]" ""))
+            (concat
+             (if bhasya
+                 "- bhasya_hint: the bhāṣya on this verse is given as context; one to three sentences on what in it matters for reading the verse — how it takes a word or the verse's function, a reading it presupposes, where its Tibetan says something else; Sanskrit and Tibetan words in /italic/; \"\" when nothing.\n"
+               "")
+             (if recitation
+                 "- recitation: for prose only (for a verse []): the transmitted text of the whole sentence exactly as given — same spelling and sandhi, nothing added or left out —, divided for reading aloud into lines, one array entry per line, each a sense unit of a few words ending at a clause or phrase boundary (break only where the text has a space); inside a line mark a short breath pause with ¦.\n"
+               ""))
             lang)))
 
 (defun bcat-analysis-sanskrit-user-prompt (sent-num verse segs refs &optional context bhasya)
@@ -806,6 +813,27 @@ LEMMA; FORM' — \"\" when no segment has words."
    (cl-remove-if-not (lambda (seg) (alist-get 'words seg)) segments)
    "\n\n"))
 
+(defun bcat-analysis--prose-recitation (base parsed)
+  "The recitation fields of a prose sentence from PARSED's `recitation'
+\(lines of sense units, ¦ a breath pause): each line in Devanāgarī over
+IAST, under a short header — when BASE has no scansion (no verse) and
+the lines are the transmitted text, broken at its spaces; else nil.
+31.10., TĀ 1008: prose had only the text as one long line."
+  (let* ((lines (cl-remove-if-not #'stringp (alist-get 'recitation parsed)))
+         (norm (lambda (s) (string-trim (replace-regexp-in-string
+                                         "[ \t\n]+" " " (replace-regexp-in-string "¦" " " s)))))
+         (text (mapconcat (lambda (seg) (or (alist-get 'samhita seg) ""))
+                          (alist-get 'segments base) " ")))
+    (when (and lines (not (alist-get 'scansion base))
+               (equal (funcall norm (string-join lines " ")) (funcall norm text)))
+      `((recitation . ,(mapconcat (lambda (line)
+                                    (let ((l (string-trim (replace-regexp-in-string
+                                                           "[ \t]+" " "
+                                                           (replace-regexp-in-string "[ \t]*¦[ \t]*" " ¦ " line)))))
+                                      (concat (tibetan-sanskrit-script-iast-to-devanagari l) "\n" l)))
+                                  lines "\n"))
+        (metre . "Prosa — zum lauten Lesen in Sinnabschnitten · ¦ kurze Atempause")))))
+
 (defun bcat-analysis-sanskrit-context (base parsed &optional refs)
   "Template fields of a fetched Sanskrit sentence: BASE (the rump —
 header, recitation, segments with num and samhita, user slots)
@@ -844,6 +872,7 @@ skipped keeps its rump fields."
                   seg))))
            (alist-get 'segments base))))
     (append
+     (bcat-analysis--prose-recitation base parsed)
      `((segments . ,segments)
        (glosses . ,(and (cl-some (lambda (s) (alist-get 'glossed s)) segments) t))
        (translation . ,(bcat-analysis--field parsed 'translation))

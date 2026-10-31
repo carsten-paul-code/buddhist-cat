@@ -158,6 +158,40 @@ translator without marks as \"Dyczkowski 2023: []\" and the file showed
                   '((shift . "Lindtner 1981: active, with the yogin as agent")))))
   (should-not (bcat-analysis-shift-lines '((shift . "")))))
 
+(ert-deftest bcat-analysis-prose-recitation ()
+  "31.10., TĀ Satz 1008 (Jayaratha's prose): „hat keine Rezitation“ — a
+prose sentence has no metre, so the recitation was the text as one
+long line.  Carsten chose sense units: for the Sanskrit template the
+request asks for `recitation' — the transmitted text unchanged, in lines
+of sense units, ¦ for a short breath pause —; the Recitation shows each
+line in Devanāgarī over IAST under a short header.  Taken only when the
+lines are the text (breaks at its spaces); a verse keeps its metre; the
+prompt of the other templates stays as it was."
+  (should (string-match-p "\"recitation\"" (bcat-analysis-sanskrit-system-prompt "en" nil t)))
+  (should-not (string-match-p "recitation" (bcat-analysis-sanskrit-system-prompt "en")))
+  (let* ((text "iha khalu śāstrādāvalaukikāśīrvādamukhena vakṣyamāṇaṣaḍardhaśāstrārthagarbhīkāreṇa samuciteṣṭadevatāṃ śāstrakāraḥ parāmṛśati")
+         (base `((recitation . "PLAIN")
+                 (segments ((num . 687) (samhita . ,text)))))
+         (lines '("iha khalu ¦ śāstrādāvalaukikāśīrvādamukhena"
+                  "vakṣyamāṇaṣaḍardhaśāstrārthagarbhīkāreṇa"
+                  "samuciteṣṭadevatāṃ ¦ śāstrakāraḥ parāmṛśati"))
+         (ctx (bcat-analysis-sanskrit-context base `((segments) (recitation . ,lines)))))
+    (should (string-match-p (regexp-quote "\niha khalu ¦ śāstrādāvalaukikāśīrvādamukhena\n")
+                            (alist-get 'recitation ctx)))
+    (should (string-match-p (regexp-quote "इह खलु ¦ शास्त्रादावलौकिकाशीर्वादमुखेन")
+                            (alist-get 'recitation ctx)))
+    (should (= 6 (length (split-string (alist-get 'recitation ctx) "\n"))))
+    (should (string-match-p "\\`Prosa" (alist-get 'metre ctx)))
+    ;; Not the text (a word changed, or a break inside a word): as it was.
+    (should (equal "PLAIN" (alist-get 'recitation
+                                      (bcat-analysis-sanskrit-context
+                                       base `((segments) (recitation "iha khalu" "śāstrādāv alaukika"))))))
+    ;; A verse (its scansion in the rump): the metre's recitation stays.
+    (should (equal "PLAIN" (alist-get 'recitation
+                                      (bcat-analysis-sanskrit-context
+                                       (cons '(scansion . "| – |") base)
+                                       `((segments) (recitation . ,lines))))))))
+
 (ert-deftest bcat-analysis-sanskrit-tables-wrap-long-cell ()
   "31.10., TĀ Satz 1008: the parts of „vakṣyamāṇa-ṣaḍardha-śāstra-artha-
 garbhīkāreṇa“ (160 characters) made a one-column table wider than the
