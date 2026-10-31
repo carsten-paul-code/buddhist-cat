@@ -218,30 +218,26 @@ conjunct (29.10.: Arial Unicode MS)."
   :type 'string
   :group 'buddhist-cat)
 
-(defcustom bcat-export-word-color "1F4E9E"
-  "Colour (HTML hex) of the words in the line with the vocabulary and in
-the word row of the tables — Carsten 31.10.: on the reMarkable Paper Pro
-the words of a segment were hard to keep apart from their glosses."
-  :type 'string
-  :group 'buddhist-cat)
-
-(defcustom bcat-export-gloss-color "6E6E6E"
-  "Colour (HTML hex) of the glosses in brackets in the line with the
-vocabulary (`bcat-export-word-color')."
+(defcustom bcat-export-gloss-color "1F4E9E"
+  "Colour (HTML hex) of what explains the words: the glosses in brackets
+in the line with the vocabulary and the rows below the words in the
+tables.  Carsten 31.10.: on the reMarkable Paper Pro the words of a
+segment were hard to keep apart from their glosses; words in blue came
+out greyish and lost contrast — „kehren wir es einfach so um“: the
+words black, the rest blue."
   :type 'string
   :group 'buddhist-cat)
 
 (defun bcat-export--font-lines ()
-  "#+LATEX_HEADER lines defining \\bcattib and \\bcatdeva, the colours
-\\bcatw (word) and \\bcatg (gloss), and loading adjustbox
+  "#+LATEX_HEADER lines defining \\bcattib and \\bcatdeva, the colour
+\\bcatg (gloss, `bcat-export-gloss-color'), and loading adjustbox
 \(`bcat-export--table-filter')."
   (concat
    "#+LATEX_HEADER: \\usepackage{fontspec}\n"
    "#+LATEX_HEADER: \\usepackage{adjustbox}\n"
    "#+LATEX_HEADER: \\usepackage{xcolor}\n"
-   (format "#+LATEX_HEADER: \\definecolor{bcatword}{HTML}{%s}\\definecolor{bcatgloss}{HTML}{%s}\n"
-           bcat-export-word-color bcat-export-gloss-color)
-   "#+LATEX_HEADER: \\newcommand{\\bcatw}[1]{\\textcolor{bcatword}{#1}}\\newcommand{\\bcatg}[1]{\\textcolor{bcatgloss}{#1}}\n"
+   (format "#+LATEX_HEADER: \\definecolor{bcatgloss}{HTML}{%s}\n" bcat-export-gloss-color)
+   "#+LATEX_HEADER: \\newcommand{\\bcatg}[1]{\\textcolor{bcatgloss}{#1}}\n"
    (format "#+LATEX_HEADER: \\newfontfamily\\bcattib{%s}[Script=Tibetan,Renderer=HarfBuzz]\n"
            bcat-export-tibetan-font)
    (format "#+LATEX_HEADER: \\newfontfamily\\bcatdeva{%s}[Script=Devanagari,Renderer=HarfBuzz]\n"
@@ -327,12 +323,12 @@ first, the bracket with the last."
   (let ((open (string-match " \\[" unit)))
     (cond
      ((null open) (format "\\mbox{%s}" unit))
-     ;; The word in \\bcatw, its gloss in \\bcatg (Carsten 31.10.).
+     ;; The gloss in \\bcatg, the word as it is (Carsten 31.10.).
      ((<= (string-width unit) bcat-export-unit-max)
-      (format "\\mbox{\\bcatw{%s} \\bcatg{%s}}" (substring unit 0 open) (substring unit (1+ open))))
+      (format "\\mbox{%s \\bcatg{%s}}" (substring unit 0 open) (substring unit (1+ open))))
      (t
       (let ((words (split-string (substring unit (+ open 2)))))
-        (concat (format "\\mbox{\\bcatw{%s} \\bcatg{[%s}}" (substring unit 0 open) (car words))
+        (concat (format "\\mbox{%s \\bcatg{[%s}}" (substring unit 0 open) (car words))
                 (mapconcat (lambda (w) (format " \\mbox{\\bcatg{%s}}" w)) (cdr words) "")))))))
 
 (defun bcat-export--verse-lines (latex)
@@ -380,24 +376,36 @@ ran off the page."
       ;; paragraph ran on beside the box — „Translation:“ in the table).
       (let ((end (if (string-match "\n*\\'" text) (match-beginning 0) (length text))))
         (concat "\\begin{adjustbox}{max width=\\linewidth}\n"
-                (bcat-export--word-row (substring text 0 end)) "\n"
+                (bcat-export--detail-rows (substring text 0 end)) "\n"
                 "\\end{adjustbox}"
                 (let ((tail (substring text end)))
                   (if (string-empty-p tail) "\n" tail))))
     text))
 
-(defun bcat-export--word-row (tabular)
-  "TABULAR (LaTeX) with each cell of its first row — the words — in
-\\bcatw (Carsten 31.10.: the words of a segment at a glance)."
-  (if (string-match "\\\\begin{tabular}{[^}\n]*}\n\\(?:\\\\[a-z]*rule\n\\|\\\\hline\n\\)*\\(.*?\\)\\(\\\\\\\\.*\\)$" tabular)
-      (let* ((beg (match-beginning 1)) (end (match-end 1))
-             ;; Positions first: `split-string' clobbers the match data.
-             (cells (split-string (substring tabular beg end) "[ \t]+&[ \t]+")))
-        (concat (substring tabular 0 beg)
-                (mapconcat (lambda (c) (if (string-blank-p c) c (format "\\bcatw{%s}" (string-trim c))))
-                           cells " & ")
-                (substring tabular end)))
-    tabular))
+(defun bcat-export--metre-row-p (row)
+  "Non-nil when the LaTeX table ROW holds only metre signs (– ⏑ ¦)."
+  (string-match-p "\\`[–⏑¦&|\\\\ \t]*\\'" row))
+
+(defun bcat-export--detail-rows (tabular)
+  "TABULAR (LaTeX) with the cells of every row below the first — what
+explains the words: formation, parts, gloss, form — in \\bcatg; the
+words' row as it is (Carsten 31.10.: words black, the rest blue).  A
+metre table (its second row only – and ⏑) stays as it is."
+  (let* ((lines (split-string tabular "\n"))
+         (rows (cl-remove-if-not (lambda (l) (string-match-p "\\\\\\\\[ \t]*\\'" l)) lines)))
+    (if (or (< (length rows) 2) (bcat-export--metre-row-p (nth 1 rows)))
+        tabular
+      (let ((first (car rows)))
+        (mapconcat
+         (lambda (l)
+           (if (or (eq l first) (not (memq l rows)))
+               l
+             (let* ((body (replace-regexp-in-string "\\\\\\\\[ \t]*\\'" "" l))
+                    (cells (split-string body "[ \t]+&[ \t]+")))
+               (concat (mapconcat (lambda (c) (if (string-blank-p c) c (format "\\bcatg{%s}" (string-trim c))))
+                                  cells " & ")
+                       "\\\\"))))
+         lines "\n")))))
 
 (defvar bcat-export--missing nil
   "The missing characters of the last `bcat-export-pdf', ((CHAR . FONT) …).")
