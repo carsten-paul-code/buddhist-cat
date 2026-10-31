@@ -4650,7 +4650,14 @@ neue Musterdateien), Datei gewinnt (Handkorrekturen bleiben).
 Umgebaut am 31.10. (Sicherung im Scratchpad, Absatzvergleich ohne
 unerwartete Verluste): TĀ 001, 1000–1008; AS 002/1002 (+ kunbtus);
 MSA 128–134 (+ mdo 183–191); bDen 9–20.  TĀ-PDFs lokal neu, NICHT auf
-dem reMarkable.  ERT 2759.
+dem reMarkable.  ERT 2759.  Danach (Tibetisch V, SDA 16): `d9fb3a0'
+tibetische Tabellen mit Uchen je Wort über dem Wylie (beide schwarz,
+Funktion blau) — Zuordnung Silbe für Silbe über tibetan-to-wylie-fixed
+(`bcat-analysis-uchen-words'), auch Rumpf, Partner, Kommentardokument;
+C-c u L ergänzt vorhandene Tabellen (auch ältere in Bändern); im PDF
+\bcattib\large in Tabellenzellen.  Bestand neu gesetzt, alle PDFs
+(TĀ, AS, MSA, bDen) auf dem reMarkable ersetzt (Carsten: Notizen
+darauf „nicht wichtig“).  ERT 2765.
 
 #### Offen
 
