@@ -25,9 +25,11 @@
           "#+end_verse\n\n"
           "*Structure:* /tad/ [object] → protasis\n\n"
           "* Segments\n** Segment 683\n"
-          "| tad  | an-ākarṇya       |\n"
-          "| —    | an- + ā-√karṇ-ya |\n"
-          "| that | not having heard |\n")
+          "| tad               | an-ākarṇya               |\n"
+          "| —                 | an- + ā-√karṇ-ya         |\n"
+          "|                   | an- not · √karṇ (10) ear |\n"
+          "| that              | not having heard         |\n"
+          "| pron. n. acc. sg. | gerund                   |\n")
   "A piece of a Sanskrit sentence file.")
 
 (defun bcat-faces-test--matches (matcher group)
@@ -51,14 +53,22 @@ Structure line outside the verse."
                    (bcat-faces-test--matches #'bcat-faces--unit-matcher 2)))))
 
 (ert-deftest bcat-faces-detail-rows ()
-  "In a table the rows below the words (formation, parts, gloss, form) —
+  "In a table the rows that explain the words (formation, parts, form) —
 not the words' row (Carsten 31.10.: the words stay black, the rest
-blue), and not the rows of the metre table (second row only – and ⏑)."
+blue), not the gloss row, next to last (same evening, TĀ 1006: „auch die
+Übersetzung der einzelnen Terme schwarz … dann sehe ich gleich was
+wichtig ist“), and not the rows of the metre table (second row only –
+and ⏑).  A table in bands (hline between): each band on its own."
   (with-temp-buffer
     (insert bcat-faces-test--text
-            "\n* Recitation\n| ta | da |\n| ⏑  | –  |\n")
+            "\n* Recitation\n| ta | da |\n| ⏑  | –  |\n"
+            "\n| bden  |\n| truth |\n| N     |\n|-------|\n| gnyis |\n| two   |\n| NUM   |\n")
     (org-mode)
-    (should (equal '("| —    | an- + ā-√karṇ-ya |" "| that | not having heard |")
+    (should (equal '("| —                 | an- + ā-√karṇ-ya         |"
+                     "|                   | an- not · √karṇ (10) ear |"
+                     "| pron. n. acc. sg. | gerund                   |"
+                     "| N     |"
+                     "| NUM   |")
                    (bcat-faces-test--matches #'bcat-faces--detail-row-matcher 0)))))
 
 (ert-deftest bcat-faces-only-in-sentence-files ()

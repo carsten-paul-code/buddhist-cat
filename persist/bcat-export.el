@@ -220,8 +220,9 @@ conjunct (29.10.: Arial Unicode MS)."
 
 (defcustom bcat-export-gloss-color "1F4E9E"
   "Colour (HTML hex) of what explains the words: the glosses in brackets
-in the line with the vocabulary and the rows below the words in the
-tables.  Carsten 31.10.: on the reMarkable Paper Pro the words of a
+in the line with the vocabulary and, in the tables, the rows that
+explain the words (formation, parts, form; not the gloss, TĀ 1006).
+Carsten 31.10.: on the reMarkable Paper Pro the words of a
 segment were hard to keep apart from their glosses; words in blue came
 out greyish and lost contrast — „kehren wir es einfach so um“: the
 words black, the rest blue."
@@ -387,18 +388,31 @@ ran off the page."
   (string-match-p "\\`[–⏑¦&|\\\\ \t]*\\'" row))
 
 (defun bcat-export--detail-rows (tabular)
-  "TABULAR (LaTeX) with the cells of every row below the first — what
-explains the words: formation, parts, gloss, form — in \\bcatg; the
-words' row as it is (Carsten 31.10.: words black, the rest blue).  A
-metre table (its second row only – and ⏑) stays as it is."
+  "TABULAR (LaTeX) with the cells of the rows that explain the words —
+formation, parts, form — in \\bcatg: in each band of the table (rows
+between \\hline) every row but the first (the words) and the one next
+to last (the gloss).  Carsten 31.10.: words black, the rest blue; the
+same evening, TĀ 1006: the gloss black too — „dann sehe ich gleich was
+wichtig ist“.  A metre table (its second row only – and ⏑) stays as it
+is."
   (let* ((lines (split-string tabular "\n"))
-         (rows (cl-remove-if-not (lambda (l) (string-match-p "\\\\\\\\[ \t]*\\'" l)) lines)))
+         (row-p (lambda (l) (string-match-p "\\\\\\\\[ \t]*\\'" l)))
+         (rows (cl-remove-if-not row-p lines)))
     (if (or (< (length rows) 2) (bcat-export--metre-row-p (nth 1 rows)))
         tabular
-      (let ((first (car rows)))
+      (let ((blue '()) (band '()))
+        ;; The bands, each closed by an \hline or the end.
+        (dolist (l (append lines (list "\\hline")))
+          (cond ((funcall row-p l) (push l band))
+                ((string-match-p "\\`[ \t]*\\\\hline" l)
+                 (let* ((b (nreverse band)) (n (length b)))
+                   (cl-loop for r in b for i from 0
+                            unless (or (= i 0) (= i (- n 2)))
+                            do (push r blue)))
+                 (setq band '()))))
         (mapconcat
          (lambda (l)
-           (if (or (eq l first) (not (memq l rows)))
+           (if (not (memq l blue))
                l
              (let* ((body (replace-regexp-in-string "\\\\\\\\[ \t]*\\'" "" l))
                     (cells (split-string body "[ \t]+&[ \t]+")))

@@ -10,19 +10,22 @@
 ;; came out greyish and took contrast from the words; „kehren wir es
 ;; einfach so um“: the words keep the text colour, blue are the gloss in
 ;; brackets in the line with the vocabulary and in every table the rows
-;; below the words (formation, parts, gloss, form) — not the metre table
+;; that explain the words (formation, parts, form) — not the gloss row
+;; (TĀ 1006, same evening: „auch die Übersetzung der einzelnen Terme
+;; schwarz … dann sehe ich gleich was wichtig ist“), not the metre table
 ;; of the Recitation.  `bcat-faces-mode' switches itself on in every
 ;; sentence file of a template (sent-…, comm-… with #+CAT_TEMPLATE:).
 
 ;;; Code:
 
 (require 'org)
+(require 'cl-lib)
 
 (defface bcat-gloss-face
   '((((background dark)) :foreground "#8FB4F0")
     (t :foreground "#1F4E9E"))
   "What explains the words: the glosses in brackets in the line with the
-vocabulary and the rows below the words in the tables (as
+vocabulary and the table rows that explain the words (as
 `bcat-export-gloss-color' in the PDF)."
   :group 'buddhist-cat)
 
@@ -42,26 +45,49 @@ verse block (a Structure line's brackets are no glosses)."
   "Non-nil when the table LINE holds only metre signs (– ⏑ ¦)."
   (string-match-p "\\`[ \t]*|[–⏑¦| \t]*\\'" line))
 
+(defun bcat-faces--band (pos)
+  "The rows of the table band around the table row at POS (rows between
+hlines), as a list of their line starts."
+  (save-excursion
+    (goto-char pos)
+    (beginning-of-line)
+    (while (and (not (bobp))
+                (save-excursion (forward-line -1) (looking-at "[ \t]*|[^-\n]")))
+      (forward-line -1))
+    (let ((rows '()))
+      (while (looking-at "[ \t]*|[^-\n]")
+        (push (point) rows)
+        (forward-line 1))
+      (nreverse rows))))
+
+(defun bcat-faces--metre-table-p (pos)
+  "Non-nil when the table row at POS belongs to a metre table — the
+table's second row holds only – ⏑ ¦."
+  (save-excursion
+    (goto-char pos)
+    (beginning-of-line)
+    (while (and (not (bobp))
+                (save-excursion (forward-line -1) (looking-at "[ \t]*|")))
+      (forward-line -1))
+    (forward-line 1)
+    (and (looking-at "[ \t]*|")
+         (bcat-faces--metre-row-p
+          (buffer-substring-no-properties (line-beginning-position) (line-end-position))))))
+
 (defun bcat-faces--detail-row-matcher (limit)
-  "Font-lock matcher: the next table row below a table's first row (the
-words) before LIMIT — group 0 the row; none of a metre table (its second
-row only – and ⏑)."
+  "Font-lock matcher: the next table row before LIMIT that explains the
+words — group 0 the row: in its band (rows between hlines) neither the
+first (the words) nor the one next to last (the gloss); none of a metre
+table."
   (let ((found nil))
     (while (and (not found) (re-search-forward "^[ \t]*|[^-\n].*$" limit t))
-      (let ((row-end (match-end 0)) (row-beg (match-beginning 0)))
-        (save-excursion
-          (goto-char row-beg)
-          (when (and (not (bobp))
-                     (progn (forward-line -1) (looking-at "[ \t]*|")))
-            ;; Up to the table's first row; its second row decides.
-            (while (and (not (bobp))
-                        (save-excursion (forward-line -1) (looking-at "[ \t]*|")))
-              (forward-line -1))
-            (forward-line 1)
-            (unless (bcat-faces--metre-row-p
-                     (buffer-substring-no-properties (line-beginning-position) (line-end-position)))
-              (setq found t))))
-        (when found (set-match-data (list row-beg row-end)))))
+      (let* ((beg (match-beginning 0)) (end (match-end 0))
+             (band (bcat-faces--band beg))
+             (i (cl-position beg band)))
+        (when (and i (/= i 0) (/= i (- (length band) 2))
+                   (not (bcat-faces--metre-table-p beg)))
+          (set-match-data (list beg end))
+          (setq found t))))
     found))
 
 (defconst bcat-faces--keywords
@@ -75,7 +101,8 @@ row only – and ⏑)."
 (define-minor-mode bcat-faces-mode
   "Words against glosses in a sentence file: the words in the text
 colour, blue the glosses in the line with the vocabulary and the rows
-below the words in the tables (Carsten 31.10.)."
+that explain the words — formation, parts, form — in the tables
+\(Carsten 31.10.)."
   :lighter nil
   (if bcat-faces-mode
       (font-lock-add-keywords nil bcat-faces--keywords 'append)

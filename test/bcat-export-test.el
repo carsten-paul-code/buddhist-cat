@@ -377,7 +377,12 @@ out greyish on the device and took contrast from the words: „kehren wir
 es einfach so um“ — the words stay black; blue (\bcatg) are the glosses
 in the line with the vocabulary and in every table the rows below the
 words (formation, parts, gloss, form).  The metre table of the
-Recitation stays uncoloured (its second row only – and ⏑)."
+Recitation stays uncoloured (its second row only – and ⏑).  Same
+evening, TĀ 1006: „In den Segmenttabellen sollte dann auch die
+Übersetzung der einzelnen Terme schwarz sein, dann sehe ich gleich was
+wichtig ist“ — the gloss row (next to last, as in
+`bcat-sentence--dictionary-words') is black too; per band of a table
+cut by \\hline."
   (let ((head (bcat-export--font-lines)))
     (should (string-match-p (regexp-quote "\\usepackage{xcolor}") head))
     (should (string-match-p (regexp-quote "\\definecolor{bcatgloss}{HTML}{1F4E9E}") head))
@@ -390,8 +395,34 @@ Recitation stays uncoloured (its second row only – and ⏑)."
                       "\\end{tabular}\n\n")
               'latex nil)))
     (should (string-match-p (regexp-quote "\niha & \\href{steinert:x}{khalu}\\\\\n") out))
-    (should (string-match-p (regexp-quote "\n\\bcatg{here} & \\bcatg{indeed}\\\\\n") out))
+    (should (string-match-p (regexp-quote "\nhere & indeed\\\\\n") out))
     (should (string-match-p (regexp-quote "\n\\bcatg{ind.} & \\\\\n") out)))
+  ;; Sanskrit: word, formation, parts, gloss, form — formation, parts
+  ;; and form blue.
+  (let ((out (bcat-export--table-filter
+              (concat "\\begin{tabular}{l}\n"
+                      "an-ākarṇya\\\\\n"
+                      "an- + ā-√karṇ-ya\\\\\n"
+                      "an- not · √karṇ (10) listen\\\\\n"
+                      "not having heard\\\\\n"
+                      "gerund\\\\\n"
+                      "\\end{tabular}\n\n")
+              'latex nil)))
+    (should (string-match-p (regexp-quote "\nan-ākarṇya\\\\\n") out))
+    (should (string-match-p (regexp-quote "\n\\bcatg{an- + ā-√karṇ-ya}\\\\\n") out))
+    (should (string-match-p (regexp-quote "\n\\bcatg{an- not · √karṇ (10) listen}\\\\\n") out))
+    (should (string-match-p (regexp-quote "\nnot having heard\\\\\n") out))
+    (should (string-match-p (regexp-quote "\n\\bcatg{gerund}\\\\\n") out)))
+  ;; A table in bands (\\hline between): each band its own words and gloss.
+  (let ((out (bcat-export--table-filter
+              (concat "\\begin{tabular}{l}\n"
+                      "bden\\\\\n" "truth\\\\\n" "N\\\\\n"
+                      "\\hline\n"
+                      "gnyis\\\\\n" "two\\\\\n" "NUM\\\\\n"
+                      "\\end{tabular}\n\n")
+              'latex nil)))
+    (should (string-match-p (regexp-quote "\ngnyis\\\\\ntwo\\\\\n\\bcatg{NUM}\\\\\n") out))
+    (should (string-match-p (regexp-quote "\nbden\\\\\ntruth\\\\\n\\bcatg{N}\\\\\n") out)))
   (let* ((metre (concat "\\begin{tabular}{lll}\n"
                         "ta & da & nā\\\\\n"
                         "⏑ & – & ¦\\\\\n"
