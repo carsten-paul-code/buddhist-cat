@@ -398,6 +398,32 @@ by its code („U+009A“)."
              (delete-dups (mapcar #'cdr missing))
              ", "))
 
+(defun bcat-export--wrap-wide-tables (&rest _)
+  "In the current (export) buffer: every org table with a cell wider than
+`bcat-analysis-sanskrit-table-width' gets that cell broken at its „·“
+into further lines (`bcat-analysis-wrap-rows') — 31.10., TĀ 1008 and
+five more files written before: a one-column table wider than the page,
+shrunk unreadable in the PDF.  Tables with rules (|---) and narrow ones
+stay as they are; the file is not touched.  For
+`org-export-before-processing-functions'."
+  (let ((max (- bcat-analysis-sanskrit-table-width 4)))
+    (save-excursion
+      (goto-char (point-min))
+      (while (re-search-forward "^|" nil t)
+        (let* ((beg (line-beginning-position))
+               (end (progn (while (and (zerop (forward-line 1)) (looking-at "|"))) (point)))
+               (lines (split-string (buffer-substring-no-properties beg end) "\n" t))
+               (rows (mapcar (lambda (l) (mapcar #'string-trim
+                                                 (split-string (string-trim l "[ \t]*|" "|[ \t]*") "|")))
+                             lines)))
+          (when (and (not (cl-some (lambda (l) (string-prefix-p "|-" l)) lines))
+                     (cl-some (lambda (row) (cl-some (lambda (c) (> (string-width c) max)) row)) rows))
+            (delete-region beg end)
+            (goto-char beg)
+            (insert (string-trim-right (tibetan-gloss-table--format-rows
+                                        (bcat-analysis-wrap-rows rows max)))
+                    "\n")))))))
+
 (defun bcat-export--drop-machine-sections (&rest _)
   "Delete from the current (export) buffer the `** Word Analysis'
 subtree — machine data for the zettel highlighting and the padapāṭha
@@ -463,7 +489,8 @@ LuaLaTeX could not set land in `bcat-export--missing'."
                             (org-export-filter-verse-block-functions
                              (cons #'bcat-export--verse-filter org-export-filter-verse-block-functions))
                             (org-export-before-processing-functions
-                             (append (list insert-head #'bcat-export--drop-machine-sections)
+                             (append (list insert-head #'bcat-export--drop-machine-sections
+                                           #'bcat-export--wrap-wide-tables)
                                      org-export-before-processing-functions)))
                         (expand-file-name (org-latex-export-to-pdf) (file-name-directory file))))
                  (base (file-name-sans-extension pdf))

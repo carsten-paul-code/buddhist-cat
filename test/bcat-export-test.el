@@ -89,6 +89,30 @@ names the handouts folder itself (relative to the source)."
                          (bcat-export--handout src "src-1.1"))))
       (delete-directory dir t))))
 
+(ert-deftest bcat-export-wraps-wide-tables ()
+  "31.10., TĀ Satz 1008 (and TĀ 1, 1000, 1001, MSA 130, 132): tables
+written before the wrapping of long cells have a cell wider than the
+page; the PDF shrank them to an unreadable size.  The export copy
+breaks such a cell at its „·“ into further lines of the table (the
+file stays as it is); a table without a long cell is left alone."
+  (let ((wide (concat "| vakṣyamāṇa-ṣaḍardha-śāstra-artha-garbhīkāreṇa |\n"
+                      "| √vac · ṣaḍ-ardha · śāstra · artha · garbhī-√kṛ-a |\n"
+                      "| √vac (2) speak · -ṣyamāṇa fut. pass. part. · ṣaḍ six · ardha half · śāstra treatise · artha meaning · garbhī- womb/containing · √kṛ (8) make · -a action noun |\n"
+                      "| by incorporating the meaning of the Ṣaḍardhaśāstra to be expounded |\n"
+                      "| m. inst. sg. |\n"))
+        (narrow "| iha | khalu |\n| —   | —     |\n"))
+    (with-temp-buffer
+      (insert "* Segments\n** Segment 687\n" wide "\n" narrow "\n⟦687⟧ *Translation:* Here.\n")
+      (org-mode)
+      (bcat-export--wrap-wide-tables)
+      (let ((lines (split-string (buffer-string) "\n")))
+        (should (cl-every (lambda (l) (or (not (string-prefix-p "|" l))
+                                          (<= (string-width l) bcat-analysis-sanskrit-table-width)))
+                          lines))
+        (should (member "| iha | khalu |" lines))
+        (should (string-match-p "-a action noun" (buffer-string)))
+        (should (string-match-p "^⟦687⟧ \\*Translation:\\* Here\\.$" (buffer-string)))))))
+
 (ert-deftest bcat-export-file-moves-only-its-own-pdf ()
   "30.10.: the first version moved whatever path the export returned —
 a test stub's /tmp/x.pdf existed on Carsten's machine and was moved
