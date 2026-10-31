@@ -4607,7 +4607,18 @@ Transliteration, sobald es die Vokabelzeile gibt (reines Sanskrit
 behält den Padapāṭha — `1e24292' nahm 48934ce zurück); `673e39e' PDF:
 Wort blau (\bcatw), Glosse grau (\bcatg), Wortzeile jeder Tabelle blau;
 `4327f1c' dieselben Farben in Emacs (persist/bcat-faces.el,
-`bcat-faces-mode' über org-mode-hook in sent-/comm-Dateien).  ERT 2746.
+`bcat-faces-mode' über org-mode-hook in sent-/comm-Dateien).  Am selben
+Abend UMGEKEHRT (Carsten: das Blau „kommt auf dem Remarkable Paper Pro
+eher wie ein grau an“, „dass die Übersetzung, die Grammatik etc. blau
+sind“): `c7bd53d' PDF — Wörter in Textfarbe, blau (bcatgloss 1F4E9E,
+\bcatg) die Glosse in Klammern und jede Tabellenzeile unter den Wörtern
+(`bcat-export--detail-rows'); eine Tabelle, deren zweite Zeile nur
+– ⏑ ¦ trägt (Rezitation), bleibt ungefärbt; \bcatw und
+`bcat-export-word-color' entfallen.  `6d622e6' dasselbe in Emacs
+(`bcat-gloss-face' blau, `bcat-faces--detail-row-matcher',
+`bcat-word-face' entfällt).  Beim Neuladen im laufenden Emacs behalten
+defcustom/defface den alten Wert — von Hand setzen (face-spec-set).
+ERT 2746.
 
 #### Offen
 
