@@ -5,27 +5,24 @@
 ;; lese fällt es mir schwer im Segment die einzelnen Wörter im Überblick
 ;; zu halten. Im .org geht's besser, ist aber auch nicht so richtig
 ;; optimal. Farbliche Hervorhebung wäre da schön“ — word against gloss.
-;; The PDF does it in LaTeX (bcat-export, \bcatw / \bcatg); here the
-;; same in Emacs: in the line with the vocabulary (a verse block) the
-;; word blue and its gloss in brackets grey, in every table the row of
-;; the words blue.  `bcat-faces-mode' switches itself on in every
+;; The PDF does it in LaTeX (bcat-export, \bcatg); here the same in
+;; Emacs.  First try: words blue — on the reMarkable Paper Pro the blue
+;; came out greyish and took contrast from the words; „kehren wir es
+;; einfach so um“: the words keep the text colour, blue are the gloss in
+;; brackets in the line with the vocabulary and in every table the rows
+;; below the words (formation, parts, gloss, form) — not the metre table
+;; of the Recitation.  `bcat-faces-mode' switches itself on in every
 ;; sentence file of a template (sent-…, comm-… with #+CAT_TEMPLATE:).
 
 ;;; Code:
 
 (require 'org)
 
-(defface bcat-word-face
+(defface bcat-gloss-face
   '((((background dark)) :foreground "#8FB4F0")
     (t :foreground "#1F4E9E"))
-  "The words in the line with the vocabulary and in the word row of the
-tables (as `bcat-export-word-color' in the PDF)."
-  :group 'buddhist-cat)
-
-(defface bcat-gloss-face
-  '((((background dark)) :foreground "#9A9A9A")
-    (t :foreground "#6E6E6E"))
-  "The glosses in brackets in the line with the vocabulary (as
+  "What explains the words: the glosses in brackets in the line with the
+vocabulary and the rows below the words in the tables (as
 `bcat-export-gloss-color' in the PDF)."
   :group 'buddhist-cat)
 
@@ -41,29 +38,44 @@ verse block (a Structure line's brackets are no glosses)."
         (setq found t)))
     found))
 
-(defun bcat-faces--word-row-matcher (limit)
-  "Font-lock matcher: the next first row of a table before LIMIT (the
-words) — group 0 the row."
+(defun bcat-faces--metre-row-p (line)
+  "Non-nil when the table LINE holds only metre signs (– ⏑ ¦)."
+  (string-match-p "\\`[ \t]*|[–⏑¦| \t]*\\'" line))
+
+(defun bcat-faces--detail-row-matcher (limit)
+  "Font-lock matcher: the next table row below a table's first row (the
+words) before LIMIT — group 0 the row; none of a metre table (its second
+row only – and ⏑)."
   (let ((found nil))
     (while (and (not found) (re-search-forward "^[ \t]*|[^-\n].*$" limit t))
-      (when (save-excursion
-              (beginning-of-line)
-              (or (bobp) (progn (forward-line -1) (not (looking-at "[ \t]*|")))))
-        (setq found t)))
+      (let ((row-end (match-end 0)) (row-beg (match-beginning 0)))
+        (save-excursion
+          (goto-char row-beg)
+          (when (and (not (bobp))
+                     (progn (forward-line -1) (looking-at "[ \t]*|")))
+            ;; Up to the table's first row; its second row decides.
+            (while (and (not (bobp))
+                        (save-excursion (forward-line -1) (looking-at "[ \t]*|")))
+              (forward-line -1))
+            (forward-line 1)
+            (unless (bcat-faces--metre-row-p
+                     (buffer-substring-no-properties (line-beginning-position) (line-end-position)))
+              (setq found t))))
+        (when found (set-match-data (list row-beg row-end)))))
     found))
 
 (defconst bcat-faces--keywords
-  '((bcat-faces--unit-matcher (1 'bcat-word-face prepend) (2 'bcat-gloss-face prepend))
-    (bcat-faces--word-row-matcher
+  '((bcat-faces--unit-matcher (2 'bcat-gloss-face prepend))
+    (bcat-faces--detail-row-matcher
      ("[^|\n]+" (progn (goto-char (match-beginning 0)) (match-end 0)) nil
-      (0 'bcat-word-face prepend))))
+      (0 'bcat-gloss-face prepend))))
   "The font-lock keywords of `bcat-faces-mode'.")
 
 ;;;###autoload
 (define-minor-mode bcat-faces-mode
-  "Words against glosses in a sentence file: in the line with the
-vocabulary the word blue and its gloss grey, in the tables the row of
-the words blue (Carsten 31.10.)."
+  "Words against glosses in a sentence file: the words in the text
+colour, blue the glosses in the line with the vocabulary and the rows
+below the words in the tables (Carsten 31.10.)."
   :lighter nil
   (if bcat-faces-mode
       (font-lock-add-keywords nil bcat-faces--keywords 'append)

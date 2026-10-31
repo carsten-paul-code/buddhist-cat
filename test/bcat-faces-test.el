@@ -50,13 +50,16 @@ Structure line outside the verse."
     (should (equal '("[that]" "[not having heard]")
                    (bcat-faces-test--matches #'bcat-faces--unit-matcher 2)))))
 
-(ert-deftest bcat-faces-word-row ()
-  "In a table the first row — the words — and no other."
+(ert-deftest bcat-faces-detail-rows ()
+  "In a table the rows below the words (formation, parts, gloss, form) —
+not the words' row (Carsten 31.10.: the words stay black, the rest
+blue), and not the rows of the metre table (second row only – and ⏑)."
   (with-temp-buffer
-    (insert bcat-faces-test--text)
+    (insert bcat-faces-test--text
+            "\n* Recitation\n| ta | da |\n| ⏑  | –  |\n")
     (org-mode)
-    (should (equal '("| tad  | an-ākarṇya       |")
-                   (bcat-faces-test--matches #'bcat-faces--word-row-matcher 0)))))
+    (should (equal '("| —    | an- + ā-√karṇ-ya |" "| that | not having heard |")
+                   (bcat-faces-test--matches #'bcat-faces--detail-row-matcher 0)))))
 
 (ert-deftest bcat-faces-only-in-sentence-files ()
   "Switched on in a sentence file of a template (sent-…, comm-… with
