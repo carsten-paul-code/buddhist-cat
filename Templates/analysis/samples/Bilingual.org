@@ -15,19 +15,12 @@
 * Text
 #+begin_verse
 कस्मात् पञ्चैव स्कन्धाः।
-kasmāt pañcaiva skandhāḥ.
 पञ्चाकारात्मवस्तूद्भावनताम् उपादाय।
-pañcākārātmavastūdbhāvanatām upādāya.
 सपरिग्रहदेहात्मवस्तूद्भावनताम् उपादाय।
-saparigrahadehātmavastūdbhāvanatām upādāya.
 उपभोगात्मवस्तूद्भावनताम् उपादाय।
-upabhogātmavastūdbhāvanatām upādāya.
 व्यवहारात्मवस्तूद्भावनताम् उपादाय।
-vyavahārātmavastūdbhāvanatām upādāya.
 धर्माधर्माभिसंस्कारात्मवस्तूद्भावनताम् उपादाय।
-dharmādharmābhisaṃskārātmavastūdbhāvanatām upādāya.
 तदाश्रयात्मवस्तूद्भावनताम् उपादाय।
-tadāśrayātmavastūdbhāvanatām upādāya.
 #+end_verse
 
 #+begin_verse
@@ -42,19 +35,12 @@ tad-āśraya-ātma-vastu-udbhāvanatām [self-basis: their support] upādāya [o
 
 #+begin_verse
 ཅིའི་ཕྱིར་ཕུང་པོ་རྣམས་ལྔ་ཁོ་ན་ཞེ་ན།
-ci'i phyir phung po rnams lnga kho na zhe na/
 བདག་གི་གཞི་རྣམ་པ་ལྔ་བརྗོད་པའི་ཕྱིར་ཏེ།
-bdag gi gzhi rnam pa lnga brjod pa'i phyir te/
 བདག་གི་གཞི་ལུས་ཡོངས་སུ་གཟུང་བ་དང་བཅས་པ་བརྗོད་པ་དང་།
-bdag gi gzhi lus yongs su gzung ba dang bcas pa brjod pa dang /
 བདག་གི་གཞི་ལོངས་སྤྱོད་བརྗོད་པ་དང་།
-bdag gi gzhi longs spyod brjod pa dang /
 བདག་གི་གཞི་ཐ་སྙད་བརྗོད་པ་དང་།
-bdag gi gzhi tha snyad brjod pa dang /
 བདག་གི་གཞི་ཆོས་དང་ཆོས་མ་ཡིན་པ་མངོན་པར་འདུ་བྱེད་པ་བརྗོད་པ་དང་།
-bdag gi gzhi chos dang chos ma yin pa mngon par 'du byed pa brjod pa dang /
 བདག་གི་གཞི་དེ་དག་གི་གནས་བརྗོད་པའི་ཕྱིར་རོ། །
-bdag gi gzhi de dag gi gnas brjod pa'i phyir ro/ /
 #+end_verse
 
 #+begin_verse

@@ -28,6 +28,10 @@ lectures-p lectures (lecture-name lecture-body — #+CAT_LECTURES:, Sanderson zu
 Uchen, zweite Zeile Wylie“, wie im alten Handout), Vers mit Vokabeln,
 Übersetzung —
 die Übersetzung steht zusätzlich unter Translations compared.
+Seit 31.10. (Carsten: „den reinen Textblock in Wylie oder IAST nicht
+mehr“): unter * Text die Schriftzeile (Uchen/Devanāgarī) ohne die reine
+Transliteration darunter, sobald es die Zeile mit Vokabeln gibt; im
+Rumpf ohne Glossen bleibt sie.  Reines Sanskrit behält den Padapāṭha.
 #+end_comment
 #+TITLE: Sentence {{sent-num}} Analysis
 #+STARTUP: showall
@@ -44,7 +48,9 @@ die Übersetzung steht zusätzlich unter Translations compared.
 #+begin_verse
 {{#segments}}
 {{uchen}}
+{{^glosses}}
 {{wylie}}
+{{/glosses}}
 {{/segments}}
 #+end_verse
 {{#glosses}}

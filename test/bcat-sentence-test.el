@@ -123,12 +123,13 @@ dictionary glosses in brackets — the same units as the tables
                    '(("[[steinert:'gyur ba med pa]['gyur ba med pa]]" "[[steinert:'dus]['dus]]" "ma byas")
                      ("immutable" "collect; assemble…" "")
                      ("?" "?" "?"))))))
-      ;; Carsten 29.10.: first the plain verse, then the one with the
-      ;; vocabulary; no translation line before C-c u G.
+      ;; Carsten 29.10.: first the verse, then the one with the
+      ;; vocabulary; no translation line before C-c u G.  31.10.: the
+      ;; plain Wylie under the Uchen only while there are no glosses.
       (should (string-match-p
                (regexp-quote (concat "* Text\n#+begin_verse\n"
-                                     "བརྗོད་དུ་མེད་པ་བལྟར་མེད་པ། །\nbrjod du med pa bltar med pa/ /\n"
-                                     "འགྱུར་བ་མེད་པ་འདུས་མ་བྱས། །\n'gyur ba med pa 'dus ma byas/ /\n"
+                                     "བརྗོད་དུ་མེད་པ་བལྟར་མེད་པ། །\n"
+                                     "འགྱུར་བ་མེད་པ་འདུས་མ་བྱས། །\n"
                                      "#+end_verse\n\n#+begin_verse\n"
                                      "brjod du med pa [inexpressible; ineffable] bltar med pa [invisible] / /\n"
                                      "'gyur ba med pa [immutable] 'dus [collect; assemble…] ma byas / /\n"
@@ -216,7 +217,7 @@ slots — and none of the old sections.  No AI request is made."
           ;; One verse line per pāda (with the dictionary glosses in
           ;; brackets where known — exact form: create-glossed-text).
           (should (string-match-p
-                   "#\\+begin_verse\nབརྗོད་དུ་མེད་པ་བལྟར་མེད་པ། །\nbrjod du med pa .*/ /\nའགྱུར་བ་མེད་པ་འདུས་མ་བྱས། །\n'gyur ba med pa .*/ /\n#\\+end_verse"
+                   "#\\+begin_verse\nབརྗོད་དུ་མེད་པ་བལྟར་མེད་པ། །\nའགྱུར་བ་མེད་པ་འདུས་མ་བྱས། །\n#\\+end_verse\n\n#\\+begin_verse\nbrjod du med pa .*/ /\n'gyur ba med pa .*/ /\n#\\+end_verse"
                    text))
           (should (string-match-p "^\\* Segments\n\\*\\* Segment 38\n| " text))
           (should (string-match-p "^\\*\\* Segment 39\n| " text))

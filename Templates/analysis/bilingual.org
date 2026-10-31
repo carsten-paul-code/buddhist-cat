@@ -39,6 +39,10 @@ commentary-link (Kopf: das Kommentardokument) commentary (je Segment: die
 Kommentarsätze mit den Lemmata seiner Pādas, „*Sthiramati:* lemmata in
 258, 259“); lectures-p lectures (lecture-name lecture-body — #+CAT_LECTURES:, Sanderson zu TĀ 1.1–15, Carsten 30.10.: im PDF zum Annotieren) working-translation my-notes footnotes.
 Grammatische Begriffe nach der Devavāṇīpraveśikā.
+Seit 31.10. (Carsten: „den reinen Textblock in Wylie oder IAST nicht
+mehr“): unter * Text die Schriftzeile (Uchen/Devanāgarī) ohne die reine
+Transliteration darunter, sobald es die Zeile mit Vokabeln gibt; im
+Rumpf ohne Glossen bleibt sie.  Reines Sanskrit behält den Padapāṭha.
 #+end_comment
 #+TITLE: Sentence {{sent-num}} Analysis
 #+STARTUP: showall
@@ -59,7 +63,9 @@ Grammatische Begriffe nach der Devavāṇīpraveśikā.
 #+begin_verse
 {{#segments}}
 {{devanagari}}
+{{^glosses}}
 {{samhita}}
+{{/glosses}}
 {{/segments}}
 #+end_verse
 {{#glosses}}
@@ -75,7 +81,9 @@ Grammatische Begriffe nach der Devavāṇīpraveśikā.
 #+begin_verse
 {{#tibetan}}
 {{uchen}}
+{{^tibetan-glosses}}
 {{wylie}}
+{{/tibetan-glosses}}
 {{/tibetan}}
 #+end_verse
 {{/tibetan-p}}
