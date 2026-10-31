@@ -23,36 +23,43 @@
 #+end_verse
 
 ⟦77⟧
+
 | [[steinert:ci'i phyir][ci'i phyir]]      | [[steinert:phung po][phung po]]    | [[steinert:rnams][rnams]]  | [[steinert:lnga][lnga]]            | [[steinert:kho na][kho na]]            | [[steinert:zhe na][zhe na]]                 |
 | why             | aggregate   | plural | five            | only              | if one asks            |
 | INT · adverbial | N · subject | PL     | NUM · predicate | ADV · restrictive | QUOT + CONV · question |
 
 ⟦78⟧
+
 | [[steinert:bdag gi gzhi][bdag gi gzhi]]  | [[steinert:rnam pa][rnam pa]] | [[steinert:lnga][lnga]] | [[steinert:brjod pa'i][brjod pa'i]]    | [[steinert:phyir][phyir]]      | te   |
 | basis of self | mode    | five | of stating    | because    |      |
 | N · object    | N       | NUM  | V nmlz. + GEN | N · causal | CONV |
 
 ⟦79⟧
+
 | [[steinert:bdag gi gzhi][bdag gi gzhi]]  | [[steinert:lus][lus]]            | [[steinert:yongs su gzung ba][yongs su gzung ba]]    | [[steinert:dang bcas pa][dang bcas pa]]  | [[steinert:brjod pa][brjod pa]] | dang |
 | basis of self | body           | what is appropriated | together with | stating  |      |
 | N · object    | N · apposition | V nmlz.              | ADJ           | V nmlz.  | COM  |
 
 ⟦80⟧
+
 | [[steinert:bdag gi gzhi][bdag gi gzhi]]  | [[steinert:longs spyod][longs spyod]]    | [[steinert:brjod pa][brjod pa]] | dang |
 | basis of self | experience     | stating  |      |
 | N · object    | N · apposition | V nmlz.  | COM  |
 
 ⟦81⟧
+
 | [[steinert:bdag gi gzhi][bdag gi gzhi]]  | [[steinert:tha snyad][tha snyad]]      | [[steinert:brjod pa][brjod pa]] | dang |
 | basis of self | convention     | stating  |      |
 | N · object    | N · apposition | V nmlz.  | COM  |
 
 ⟦82⟧
+
 | [[steinert:bdag gi gzhi][bdag gi gzhi]]  | [[steinert:chos][chos]]  | dang | [[steinert:chos ma yin pa][chos ma yin pa]] | [[steinert:mngon par 'du byed pa][mngon par 'du byed pa]] | [[steinert:brjod pa][brjod pa]] | dang |
 | basis of self | merit |      | demerit        | forming               | stating  |      |
 | N · object    | N     | COM  | N              | V nmlz.               | V nmlz.  | COM  |
 
 ⟦83⟧
+
 | [[steinert:bdag gi gzhi][bdag gi gzhi]]  | [[steinert:de dag][de dag]] | gi  | [[steinert:gnas][gnas]]           | [[steinert:brjod pa'i][brjod pa'i]]    | [[steinert:phyir][phyir]]      | [[steinert:ro][ro]]    |
 | basis of self | those  |     | support        | of stating    | because    | final |
 | N · object    | DEM PL | GEN | N · apposition | V nmlz. + GEN | N · causal | FIN   |

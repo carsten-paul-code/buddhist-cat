@@ -99,10 +99,14 @@ the other language's blocks and differences."
                  (labelled (bcat-relayout--put table num (car labelled) (cdr labelled))))))
             (when tables
               (bcat-relayout--put table num 'gloss-table (string-join (nreverse tables) "\n\n")))))))
-    ;; ⟦N⟧ under * Text: the tables.
+    ;; ⟦N⟧ under * Text: the tables — the mark on a line of its own, or
+    ;; (files of 31.10. before the PDF showed it beside the table) right
+    ;; above the first one.
     (let ((current nil))
       (dolist (p (bcat-relayout--paragraphs (bcat-relayout--section text 1 "Text")))
         (cond
+         ((string-match "\\`⟦\\([0-9]+\\)⟧\\'" p)
+          (setq current (string-to-number (match-string 1 p))))
          ((string-match "\\`⟦\\([0-9]+\\)⟧\n" p)
           (setq current (string-to-number (match-string 1 p)))
           (bcat-relayout--put table current 'gloss-table (substring p (match-end 0))))

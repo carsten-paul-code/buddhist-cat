@@ -130,10 +130,10 @@ more; with a table no plain Wylie under the Uchen)."
                  (regexp-quote (concat "* Text\n#+begin_verse\n"
                                        "བརྗོད་དུ་མེད་པ་བལྟར་མེད་པ། །\n"
                                        "འགྱུར་བ་མེད་པ་འདུས་མ་བྱས། །\n"
-                                       "#+end_verse\n\n⟦38⟧\n| [[steinert:brjod du med pa]"))
+                                       "#+end_verse\n\n⟦38⟧\n\n| [[steinert:brjod du med pa]"))
                  text))
         (should (string-match-p (regexp-quote "| inexpressible; ineffable | invisible") text))
-        (should (string-match-p (regexp-quote "\n\n⟦39⟧\n| [[steinert:'gyur ba med pa]") text))
+        (should (string-match-p (regexp-quote "\n\n⟦39⟧\n\n| [[steinert:'gyur ba med pa]") text))
         (should-not (string-match-p "\\[inexpressible" text))
         (should (string-match-p "\n\n\\* Sentence\n" text))))))
 
@@ -215,9 +215,9 @@ AI request is made."
           ;; One Uchen line per pāda, then the tables (exact form:
           ;; create-glossed-text).
           (should (string-match-p
-                   "#\\+begin_verse\nབརྗོད་དུ་མེད་པ་བལྟར་མེད་པ། །\nའགྱུར་བ་མེད་པ་འདུས་མ་བྱས། །\n#\\+end_verse\n\n⟦38⟧\n| "
+                   "#\\+begin_verse\nབརྗོད་དུ་མེད་པ་བལྟར་མེད་པ། །\nའགྱུར་བ་མེད་པ་འདུས་མ་བྱས། །\n#\\+end_verse\n\n⟦38⟧\n\n| "
                    text))
-          (should (string-match-p "^⟦39⟧\n| " text))
+          (should (string-match-p "^⟦39⟧\n\n| " text))
           (should (string-match-p "^\\* Segments\n\\*\\* Segment 38\n\n\\*\\* Segment 39\n" text))
           (should (string-match-p "steinert:" text))
           (should (string-match-p
@@ -934,7 +934,7 @@ with vocabulary under * Text, tables, Forms per segment — and the hook
         ;; description; no padapāṭha under * Text, the tables instead.
         (should (string-match-p "^\\* Recitation\n#\\+begin_verse\nअत्र" text))
         (should-not (string-match-p "Śloka (Anuṣṭubh)\\|atra \\[here\\]" text))
-        (should (string-match-p (regexp-quote "* Text\n⟦685⟧\n| atra |") text))
+        (should (string-match-p (regexp-quote "* Text\n⟦685⟧\n\n| atra |") text))
         (should (string-match-p (regexp-quote "| atra | mad-vāk ") text))
         (should (string-match-p "^\\*Forms:\\*\n- /mad-vāk/ — vāc- f\\." text))
         (should (string-match-p "^⟦685⟧ \\*Translation:\\* Although my speech" text))

@@ -31,6 +31,7 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 #+end_verse
 
 ⟦22⟧
+
 | kasmāt                | pañca            | eva  | skandhāḥ    |
 | —                     | —                | —    | —           |
 |                       |                  |      |             |
@@ -38,6 +39,7 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 | pron. abl. sg. (ind.) | num. m. nom. pl. | ind. | m. nom. pl. |
 
 ⟦23⟧
+
 | pañca-ākāra-ātma-vastu-udbhāvanatām                               | upādāya                                |
 | pañca · ā-√kṛ-a · ātman · √vas-tu · ud-√bhū-ana-tā                | upa-ā-√dā-ya                           |
 | five · form, mode · self · thing · bring forth (caus.) + abstract | upa- near · ā- to · √dā (3) give, take |
@@ -45,6 +47,7 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 | f. acc. sg.                                                       | ger.                                   |
 
 ⟦24⟧
+
 | sa-parigraha-deha-ātma-vastu-udbhāvanatām                              | upādāya                                |
 | sa · pari-√grah-a · deha · ātman · √vas-tu · ud-√bhū-ana-tā            | upa-ā-√dā-ya                           |
 | with · pari- around · √grah (9) seize · body · self · thing · bringing | upa- near · ā- to · √dā (3) give, take |
@@ -52,6 +55,7 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 | f. acc. sg.                                                            | ger.                                   |
 
 ⟦25⟧
+
 | upabhoga-ātma-vastu-udbhāvanatām                      | upādāya                                |
 | upa-√bhuj-a · ātman · √vas-tu · ud-√bhū-ana-tā        | upa-ā-√dā-ya                           |
 | upa- near · √bhuj (7) enjoy · self · thing · bringing | upa- near · ā- to · √dā (3) give, take |
@@ -59,6 +63,7 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 | f. acc. sg.                                           | ger.                                   |
 
 ⟦26⟧
+
 | vyavahāra-ātma-vastu-udbhāvanatām                               | upādāya                                |
 | vi-ava-√hṛ-a · ātman · √vas-tu · ud-√bhū-ana-tā                 | upa-ā-√dā-ya                           |
 | vi- apart · ava- down · √hṛ (1) carry · self · thing · bringing | upa- near · ā- to · √dā (3) give, take |
@@ -66,6 +71,7 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 | f. acc. sg.                                                     | ger.                                   |
 
 ⟦27⟧
+
 | dharma-adharma-abhisaṃskāra-ātma-vastu-udbhāvanatām                                         |
 | dharma · a-dharma · abhi-sam-√kṛ-a · ātman · √vas-tu · ud-√bhū-ana-tā                       |
 | merit · not · merit · abhi- toward · sam- together · √kṛ (8) make · self · thing · bringing |
@@ -79,6 +85,7 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 | ger.                                   |
 
 ⟦28⟧
+
 | tad-āśraya-ātma-vastu-udbhāvanatām                        | upādāya                                |
 | tad · ā-√śri-a · ātman · √vas-tu · ud-√bhū-ana-tā         | upa-ā-√dā-ya                           |
 | that · ā- to · √śri (1) lean on · self · thing · bringing | upa- near · ā- to · √dā (3) give, take |

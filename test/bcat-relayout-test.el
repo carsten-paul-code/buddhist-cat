@@ -83,6 +83,17 @@ for each template."
                    (format "Templates/analysis/samples/%s.org" (nth 1 case)))))
       (should (equal sample (bcat-relayout-test--render (nth 0 case) (nth 2 case) sample))))))
 
+(ert-deftest bcat-relayout-label-on-its-own-line ()
+  "31.10. abends, the first PDF of TĀ 1006 in the new order: „⟦683⟧“
+directly above a table stood beside it (LaTeX took both as one
+paragraph) — the mark gets a line of its own.  Files written before
+\(mark and table without a blank line) read back the same."
+  (let* ((sample (bcat-relayout-test--file "Templates/analysis/samples/Tibetan.org"))
+         (glued (replace-regexp-in-string "^\\(⟦[0-9]+⟧\\)\n\n|" "\\1\n|" sample)))
+    (should-not (equal glued sample))
+    (should (string-match-p "^⟦38⟧\n\n| " sample))
+    (should (equal sample (bcat-relayout-test--render "tibetan" (bcat-analysis-test--base) glued)))))
+
 (ert-deftest bcat-relayout-second-translation ()
   "The translation in the second language (*Deutsch:* under * Text)
 is read back and stays."
@@ -127,7 +138,7 @@ order — My Notes, a section of its own (* Handout), #+CREATED and
             (kill-buffer))))
       (let ((text (bcat-sentence-test--text-of file)))
         (should-not fired)
-        (should (string-match-p (regexp-quote "#+end_verse\n\n⟦38⟧\n| [[steinert:brjod du med pa][brjod du med pa]] |\n| indescribable |") text))
+        (should (string-match-p (regexp-quote "#+end_verse\n\n⟦38⟧\n\n| [[steinert:brjod du med pa][brjod du med pa]] |\n| indescribable |") text))
         (should (string-match-p (regexp-quote "** Concepts\n⟦39⟧ *'dus ma byas* (asaṃskṛta)\n") text))
         (should (string-match-p (regexp-quote "* Segments\n** Segment 38\n⟦38⟧ *Translation:* Indescribable and invisible,\n\n*Structure:* no finite verb\n") text))
         (should (string-match-p "^#\\+LAST_ANALYZED: 2026-10-20$" text))
