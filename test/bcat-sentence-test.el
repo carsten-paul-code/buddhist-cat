@@ -646,11 +646,17 @@ bold marks come from the answer."
                  " \"comparison\": \"\"}")
          bcat-sentence-test--answer t t)
       (bcat-sentence-test--fetch src))
-    (should (string-match-p
-             (regexp-quote (concat "*Lindtner 1981:* [It is also] inexpressible (avācya) and "
-                                   "invisible (adraṣṭavya). [fn:l9]\n\n"
-                                   "[fn:l9] Lindtner 1981, S. 197: Eimer's \"Befleckungen\" is wrong."))
-             (bcat-sentence-test--file-text src)))))
+    ;; The note stays — since 1.11. at the end of Translations compared,
+    ;; where the next heading ends the footnote (SDA 10: in the middle
+    ;; it swallowed the paragraphs after it).
+    (let ((text (bcat-sentence-test--file-text src)))
+      (should (string-match-p
+               (regexp-quote (concat "*Lindtner 1981:* [It is also] inexpressible (avācya) and "
+                                     "invisible (adraṣṭavya). [fn:l9]\n\n*DharmaMitra:*"))
+               text))
+      (should (string-match-p
+               (regexp-quote "\n\n[fn:l9] Lindtner 1981, S. 197: Eimer's \"Befleckungen\" is wrong.\n\n* Segments\n")
+               text)))))
 
 (ert-deftest bcat-sentence-fetch-unreadable-answer-keeps-file ()
   "An answer without a readable JSON object changes nothing; the hook
@@ -803,6 +809,18 @@ are."
                                    "→ Ruegg 1981: modal „unsayable“ for „indescribable“\n\n*Structure:* s"))
              out))
     (should (string-match-p (regexp-quote "Ruegg reads a modal nuance.\n\n* Segments") out))))
+
+(ert-deftest bcat-sentence-align-merge-footnotes-last ()
+  "The comparison sentence of a reference added by hand goes before the
+footnote definitions at the end of Translations compared — after one it
+would be swallowed into the footnote (SDA 10, 1.11.)."
+  (let* ((text (concat "* Sentence\n** Translations compared\n"
+                       "*Translation:* Own. Own two.\n\n*Lindtner 1981:* L. [fn:l]\n\n"
+                       "*Ruegg 1981:* Unsayable and unseen, unchanging, unconditioned.\n\n"
+                       "[fn:l] Lindtner's note.\n\n"
+                       "* Segments\n** Segment 38\n⟦38⟧ Own.\n\n** Segment 39\n⟦39⟧ Own two.\n"))
+         (out (bcat-sentence--align-merge text (bcat-analysis-parse bcat-sentence-test--align-answer))))
+    (should (string-match-p (regexp-quote "Ruegg reads a modal nuance.\n\n[fn:l] Lindtner's note.\n\n* Segments") out))))
 
 (ert-deftest bcat-sentence-fetch-aligns-added-reference ()
   "Carsten: „Wenn ich weitere Vergleichsübersetzungen einfüge

@@ -119,6 +119,17 @@ under * Text stays."
     (should (string-match-p "| CONV · cond\\. |\n\n→ if the yogin realizes it,\n\n⟦41⟧"
                             out))))
 
+(ert-deftest bcat-relayout-footnotes-last ()
+  "SDA 9–20 (1.11.): a footnote definition in the middle of Translations
+compared swallowed the paragraphs after it — set anew, it stands at the
+end of the block."
+  (let* ((text (concat "* Sentence\n** Grammar\nG\n\n** Concepts\n** Translations compared\n"
+                       "*Lindtner 1981:* L. [fn:l10]\n\n[fn:l10] Lindtner, Anm. 10.\n\n"
+                       "*Apple 2019:* A.\n\nThey differ.\n\n* Segments\n"))
+         (ctx (bcat-relayout-context '((segments)) text "tibetan")))
+    (should (equal "*Lindtner 1981:* L. [fn:l10]\n\n*Apple 2019:* A.\n\nThey differ.\n\n[fn:l10] Lindtner, Anm. 10."
+                   (alist-get 'comparison ctx)))))
+
 (ert-deftest bcat-relayout-second-translation ()
   "The translation in the second language (*Deutsch:* under * Text)
 is read back and stays."

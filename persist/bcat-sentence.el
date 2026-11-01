@@ -406,9 +406,11 @@ never Carsten's own „Übersetzung …“ rubric (as in the materializer)."
     (cl-remove-if (lambda (nb) (string-prefix-p "Übersetzung" (car nb))) bodies)))
 
 (defun bcat-sentence--comparison (refs)
-  "REFS ((NAME . BODY) …) as the paragraphs of Translations compared."
-  (mapconcat (lambda (nb) (format "*%s:* %s" (car nb) (string-trim (cdr nb))))
-             refs "\n\n"))
+  "REFS ((NAME . BODY) …) as the paragraphs of Translations compared —
+footnote definitions in them at the end (`bcat-analysis-footnotes-last')."
+  (bcat-analysis-footnotes-last
+   (mapconcat (lambda (nb) (format "*%s:* %s" (car nb) (string-trim (cdr nb))))
+              refs "\n\n")))
 
 (declare-function bcat-commentary-source "bcat-commentary" (source-file))
 (declare-function bcat-commentary-lead "bcat-commentary" (commentary-source))
@@ -830,7 +832,19 @@ Everything else stays as it is."
                                 (point-max))))
               (goto-char region-end)
               (skip-chars-backward " \t\n")
-              (insert "\n\n" comparison))))))
+              (insert "\n\n" comparison))))
+        ;; Footnote definitions (Lindtner's notes) back to the end, after
+        ;; the new paragraphs (SDA 10, 1.11.).
+        (goto-char region-start)
+        (let* ((region-end (if (re-search-forward "^\\*\\{1,2\\} " nil t)
+                               (line-beginning-position)
+                             (point-max)))
+               (old (buffer-substring region-start region-end))
+               (new (bcat-analysis-footnotes-last old)))
+          (unless (eq new old)
+            (delete-region region-start region-end)
+            (goto-char region-start)
+            (insert (string-trim new) "\n\n")))))
     (buffer-string)))
 
 (defun bcat-sentence--unreadable (what file response problem)

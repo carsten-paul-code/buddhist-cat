@@ -189,7 +189,8 @@ divided into sense units."
     (append
      (delq nil
            (list (funcall field 'grammar (bcat-relayout--section sentence 2 "Grammar"))
-                 (funcall field 'comparison (bcat-relayout--section sentence 2 "Translations compared"))
+                 (funcall field 'comparison (bcat-analysis-footnotes-last
+                                             (bcat-relayout--section sentence 2 "Translations compared")))
                  (funcall field 'rendering (or (bcat-relayout--section text 2 "Tibetan rendering")))
                  (funcall field 'word-analysis
                           (bcat-relayout--section (or (bcat-relayout--section text 1 "Segments") "")

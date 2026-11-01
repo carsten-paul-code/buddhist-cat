@@ -762,12 +762,29 @@ line breaks between."
                 (bcat-analysis-shift-lines seg))))
     (mapconcat #'identity lines " \\\\\n")))
 
+(defun bcat-analysis-footnotes-last (text)
+  "TEXT — paragraphs between blank lines — with its footnote definitions
+\(paragraphs beginning „[fn:“) at the end, in their order; TEXT itself
+when it has none.  Carsten 1.11., SDA 10: „Dharma Mitra und Apple [sind]
+mit in die Fußnote gewandert“ — Lindtner's notes come with his
+reference as org footnotes, and a definition runs on to the next
+heading, definition or two blank lines: it swallowed every paragraph
+after it.  At the end of Translations compared the next heading ends
+it."
+  (let ((paras (split-string (or text "") "\n[ \t]*\n" t "[ \t\n]+")))
+    (if (not (cl-some (lambda (p) (string-prefix-p "[fn:" p)) paras))
+        text
+      (string-join (append (cl-remove-if (lambda (p) (string-prefix-p "[fn:" p)) paras)
+                           (cl-remove-if-not (lambda (p) (string-prefix-p "[fn:" p)) paras))
+                   "\n\n"))))
+
 (defun bcat-analysis-comparison (parsed &optional refs)
   "Translations compared of the sentence: the own translation from
 PARSED, each of REFS ((NAME . TEXT) …, the texts sent with the request)
 with the marks of its segment parts, the comparison paragraph."
   (let ((segments (alist-get 'segments parsed)))
-    (string-join
+    (bcat-analysis-footnotes-last
+     (string-join
      (delq nil
            (append
             (let ((tr (bcat-analysis--field parsed 'translation)))
@@ -781,7 +798,7 @@ with the marks of its segment parts, the comparison paragraph."
                     refs)
             (let ((c (bcat-analysis--field parsed 'comparison)))
               (unless (string-empty-p c) (list c)))))
-     "\n\n")))
+     "\n\n"))))
 
 (defun bcat-analysis--second-translation (parsed)
   "The fields of the translation in the second language PARSED gives —

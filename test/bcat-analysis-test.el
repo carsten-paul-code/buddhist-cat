@@ -187,6 +187,28 @@ after band, the empty padding dropped, set again."
     (should (equal '("[[steinert:mu stegs][mu stegs]]" "kyis" "[[steinert:kyang][kyang]]") (nth 1 rows)))
     (should (equal '("N" "ERG" "CONJ") (nth 3 rows)))))
 
+(ert-deftest bcat-analysis-comparison-footnotes-last ()
+  "Carsten 1.11., SDA 10: „Dharma Mitra und Apple [sind] mit in die
+Fußnote gewandert“ — Lindtner's note comes as an org footnote
+definition inside his reference; a definition runs on to the next
+heading, definition or two blank lines, so it swallowed Apple,
+DharmaMitra and the comparison.  The definitions go to the end of
+Translations compared, the marker stays in the text."
+  (let* ((out (bcat-analysis-comparison
+               '((translation . "Own.") (comparison . "All three agree.") (segments))
+               '(("Lindtner 1981" . "Perception and inference. [fn:l10]\n\n[fn:l10] Lindtner 1981, Anm. 10: a note.")
+                 ("Apple 2019" . "Direct perception and inference.")
+                 ("DharmaMitra" . "Direct perception.")))))
+    (should (equal (concat "*Translation:* Own.\n\n"
+                           "*Lindtner 1981:* Perception and inference. [fn:l10]\n\n"
+                           "*Apple 2019:* Direct perception and inference.\n\n"
+                           "*DharmaMitra:* Direct perception.\n\n"
+                           "All three agree.\n\n"
+                           "[fn:l10] Lindtner 1981, Anm. 10: a note.")
+                   out))
+    (should (equal "A [fn:x]\n\nB\n\n[fn:x] n.\n\n[fn:y] m."
+                   (bcat-analysis-footnotes-last "A [fn:x]\n\n[fn:x] n.\n\nB\n\n[fn:y] m.")))))
+
 (ert-deftest bcat-analysis-second-language ()
   "Carsten 31.10. abends, TĀ 1006: „Darunter hätte ich dann gerne die
 Übersetzung in deutsch, damit ich mich leichter in die Konzepte rein
