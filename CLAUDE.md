@@ -4665,7 +4665,12 @@ S. 7 von 16).  Ebenfalls 1.11. (Carsten über die AS-Handout-Session:
 Segments … (überall)“): unter * Text nach den Tabellen jedes Segments
 „→ <eigene Segmentübersetzung>“ (Feld `segment-translation'); C-c u L
 holt sie in alten Dateien aus der ersten Zeile des ⟦N⟧-Blocks, eine
-von Hand korrigierte →-Zeile bleibt.
+von Hand korrigierte →-Zeile bleibt.  `c276523': org-Fußnotendefinitionen
+aus den Referenzen (Lindtners Anmerkungen, lindtner-sda.org) stehen am
+Ende von Translations compared — mitten im Abschnitt schluckte die
+Definition alle folgenden Absätze (SDA 10: Apple, DharmaMitra und die
+Einschätzung in der Fußnote); `bcat-analysis-footnotes-last' bei Abruf,
+Rumpf, C-c u L und Nachtragen.
 
 #### Offen
 
