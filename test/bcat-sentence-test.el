@@ -418,6 +418,35 @@ file once."
         (should (equal (list (tibetan-sentence--filepath 9 folder src)) done))
         (should (= 0 companions))))))
 
+(ert-deftest bcat-sentence-second-language-option ()
+  "Carsten 1.11.: the translation in the second language only as an
+option — per sentence (`:CAT_SECOND_LANGUAGE: t' in its drawer) or for
+the whole source (#+CAT_SECOND_LANGUAGE: t); without, the request does
+not ask for it."
+  (bcat-sentence-test--with-source
+    (bcat-sentence-test--create src)
+    (bcat-sentence-test--with-stubs bcat-sentence-test--answer
+      (bcat-sentence-test--fetch src)
+      (should-not (string-match-p "translation_de" (cdr (car prompts)))))
+    (with-temp-file src
+      (insert (replace-regexp-in-string ":VERSE: SDA 9\n" ":VERSE: SDA 9\n:CAT_SECOND_LANGUAGE: t\n"
+                                        bcat-sentence-test--source t t)))
+    (clrhash bcat-sentence--sentence-cache)
+    (bcat-sentence-test--with-stubs bcat-sentence-test--answer
+      (cl-letf (((symbol-function 'y-or-n-p) (lambda (_q) t)))
+        (tibetan-cascade-fetch (list :source src :sent-nums '(9) :label "Satz 9") t))
+      (should (string-match-p "\"translation_de\": the sentence translation once more in German"
+                              (cdr (car prompts)))))
+    (with-temp-file src
+      (insert (replace-regexp-in-string "#\\+TIBETAN_TARGET_LANG: en\n"
+                                        "\\&#+CAT_SECOND_LANGUAGE: t\n"
+                                        bcat-sentence-test--source)))
+    (clrhash bcat-sentence--sentence-cache)
+    (bcat-sentence-test--with-stubs bcat-sentence-test--answer
+      (cl-letf (((symbol-function 'y-or-n-p) (lambda (_q) t)))
+        (tibetan-cascade-fetch (list :source src :sent-nums '(9) :label "Satz 9") t))
+      (should (string-match-p "translation_de" (cdr (car prompts)))))))
+
 (ert-deftest bcat-sentence-fetch-complete-file-asks-nothing ()
   "A second C-c u G on a filled file sends nothing (only what is
 missing is fetched) and leaves the file as it is."

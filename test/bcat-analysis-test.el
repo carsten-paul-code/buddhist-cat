@@ -210,25 +210,37 @@ Translations compared, the marker stays in the text."
                    (bcat-analysis-footnotes-last "A [fn:x]\n\n[fn:x] n.\n\nB\n\n[fn:y] m.")))))
 
 (ert-deftest bcat-analysis-second-language ()
-  "Carsten 31.10. abends, TĀ 1006: „Darunter hätte ich dann gerne die
-Übersetzung in deutsch, damit ich mich leichter in die Konzepte rein
-denken kann (wenn ich in deutsch übersetze, dann entspr. in Englisch)“
-and on the references: „Bei der Unterscheidung auch was das auf Deutsch
-heißen würde“.  Every analysis prompt asks for the sentence translation
-in the other language (translation_de for English, translation_en for
-German) and, in the comparison, the differences in that language too;
-the field lands under the translation as *Deutsch:* / *English:*."
+  "Carsten 31.10. abends, TĀ 1006: the sentence translation in the
+other language (*Deutsch:* for English, *English:* for German) „damit
+ich mich leichter in die Konzepte rein denken kann“; 1.11.: „nicht als
+default …, sondern nur als Option (wahrscheinlich sogar auf
+Satzebene)“.  The system prompts no longer ask for it (they stay the
+same per document — the cache); the user prompt of a sentence with the
+option does (translation_de for English, translation_en for German).
+The comparison still names each reading in the second language (1006:
+„Bei der Unterscheidung auch was das auf Deutsch heißen würde“).  The
+field lands under the translation."
   (dolist (sys (list (bcat-analysis-sanskrit-system-prompt "en")
                      (bcat-analysis-system-prompt "en")
                      (bcat-analysis-tibetan-system-prompt "en")))
-    (should (string-match-p "\"translation_de\"" sys))
-    (should (string-match-p "translation_de: the sentence translation once more in German" sys))
+    (should-not (string-match-p "translation_de" sys))
     (should (string-match-p "what each reading would be in German" sys)))
   (dolist (sys (list (bcat-analysis-sanskrit-system-prompt "de")
                      (bcat-analysis-system-prompt "de")))
-    (should (string-match-p "\"translation_en\"" sys))
-    (should-not (string-match-p "translation_de" sys))
+    (should-not (string-match-p "translation_en" sys))
     (should (string-match-p "what each reading would be in English" sys)))
+  (let ((segs '((685 "atra madvāgaśaktāpi yanniyantraṇamullaset /"))))
+    (should-not (string-match-p "translation_de" (bcat-analysis-sanskrit-user-prompt 1007 nil segs nil)))
+    (should (string-match-p "\"translation_de\": the sentence translation once more in German"
+                            (bcat-analysis-sanskrit-user-prompt 1007 nil segs nil nil nil "en")))
+    (should (string-match-p "\"translation_en\": the sentence translation once more in English"
+                            (bcat-analysis-sanskrit-user-prompt 1007 nil segs nil nil nil "de")))
+    (should (string-match-p "translation_de"
+                            (bcat-analysis-user-prompt 9 nil '((38 "ཀ" "ka")) nil nil "en")))
+    (should (string-match-p "translation_de"
+                            (bcat-analysis-tibetan-user-prompt 3 nil '((22 "x" "t")) '((77 "ཀ" "ka")) nil nil "en")))
+    (should (string-match-p "translation_de.*\n\nReturn the JSON object now\\.\\'"
+                            (bcat-analysis-sanskrit-user-prompt 1007 nil segs nil nil nil "en"))))
   ;; The small request for a reference added by hand compares too.
   (should (string-match-p "what each reading would be in German" (bcat-analysis-align-system-prompt "en")))
   (let ((ctx (bcat-analysis-sanskrit-context

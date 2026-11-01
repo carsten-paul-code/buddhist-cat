@@ -4640,7 +4640,14 @@ unter * Commentary.  `ad89035' ⟦N⟧ auf eigener Zeile (sonst stand sie
 im PDF neben der Tabelle).  `af8848d' Abruf: `translation_de' (bzw.
 `_en' bei Zielsprache de) → *Deutsch:*/*English:* unter der
 Übersetzung; Vergleich nennt je Unterschied die Lesarten in der zweiten
-Sprache (auch der Abgleich-Abruf) — erst nach C-u C-c u G.  `c6cf502'
+Sprache (auch der Abgleich-Abruf) — erst nach C-u C-c u G.  Seit 1.11.
+ist die Übersetzung in der zweiten Sprache NUR OPTION (Carsten: „nicht
+als default …, sondern nur als Option (wahrscheinlich sogar auf
+Satzebene)“): `:CAT_SECOND_LANGUAGE: t' im Drawer des Satzes in der
+Quelle oder #+CAT_SECOND_LANGUAGE: t für die ganze Quelle; die Bitte
+steht dann in der Anfrage zum Satz (`bcat-analysis--second-request'),
+die System-Prompts bleiben je Dokument gleich (Cache).  Die Lesarten in
+der zweiten Sprache im Vergleich bleiben immer.  `c6cf502'
 C-c u L (`bcat-relayout', persist/bcat-relayout.el): Satzdatei OHNE
 Abruf neu setzen — liest die Felder aus der Datei zurück (alte und neue
 Ordnung; Spezifikation: test/fixtures/old-layout-*.org eingelesen =

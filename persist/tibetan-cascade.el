@@ -1953,9 +1953,11 @@ nested slot.  Returns `fired' / `dedup-hit' / nil (does not apply)."
 (defun tibetan-cascade--collect-sentences ()
   "Collect the current buffer's sentences with per-segment texts.
 Ordered list of plists (:sent-num N :segs ((GLOBAL-NUM . TEXT) …)
-:verse V :folios ((GLOBAL-NUM . FOLIO) …)) — :verse is the sentence
-heading's `:VERSE:' property (a kārikā, §5.68), :folios the segments'
-`:FOLIO:' markers (both nil when absent).  Sentences without segment
+:verse V :second-language S :folios ((GLOBAL-NUM . FOLIO) …)) — :verse
+is the sentence heading's `:VERSE:' property (a kārikā, §5.68),
+:second-language its `:CAT_SECOND_LANGUAGE:' (1.11.: the translation in
+the second language on request), :folios the segments' `:FOLIO:'
+markers (nil when absent).  Sentences without segment
 children are skipped.  Matches both `*** Sentence' and legacy
 `** Sentence' levels; segments at any deeper level (the
 `tibetan-auto--collect-segments' convention)."
@@ -1979,6 +1981,18 @@ children are skipped.  Matches both `*** Sentence' and legacy
                                        (re-search-forward
                                         "^:VERSE:[ \t]*\\(.+\\)$" end t))
                               (string-trim (match-string 1)))))))
+               ;; Carsten 1.11.: the translation in the second language
+               ;; only on request — per sentence.
+               (second (save-excursion
+                         (forward-line 1)
+                         (when (looking-at "^:PROPERTIES:$")
+                           (let ((end (save-excursion
+                                        (re-search-forward "^:END:$" limit t))))
+                             (and end
+                                  (re-search-forward
+                                   "^:CAT_SECOND_LANGUAGE:[ \t]*\\(.*\\)$" end t)
+                                  (not (member (downcase (string-trim (match-string 1)))
+                                               '("" "nil" "no" "nein"))))))))
                (segs '())
                (folios '()))
           (while (re-search-forward "^\\*+ Segment \\([0-9]+\\)" limit t)
@@ -2019,6 +2033,7 @@ children are skipped.  Matches both `*** Sentence' and legacy
                                        (match-string 1)))))))))
               (push (list :sent-num sent-num :segs (nreverse segs)
                           :verse verse
+                          :second-language second
                           :folios (nreverse folios)
                           :section-pos section-pos
                           :section-label section-label

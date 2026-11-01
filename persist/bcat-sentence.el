@@ -978,11 +978,25 @@ must not stop the analysis); never with an org link in it."
                     (error-message-string err))
            nil)))
 
+(defun bcat-sentence--second-language (sentence source-file)
+  "The target language code when SENTENCE of SOURCE-FILE gets the
+translation in the second language — its `:CAT_SECOND_LANGUAGE:' or the
+source's #+CAT_SECOND_LANGUAGE (Carsten 1.11.: „nicht als default …,
+sondern nur als Option (wahrscheinlich sogar auf Satzebene)“) —, else
+nil."
+  (let ((header (bcat-sentence--header-value source-file "CAT_SECOND_LANGUAGE")))
+    (when (or (plist-get sentence :second-language)
+              (and header (not (member (downcase header) '("" "nil" "no" "nein")))))
+      (or (plist-get (ignore-errors (tibetan-analysis--read-source-metadata source-file))
+                     :target-lang)
+          "en"))))
+
 (defun bcat-sentence--prompts (sentence source-file refs)
   "(SYSTEM . USER) for SENTENCE of SOURCE-FILE with the references REFS —
 the Sanskrit prompts for a Sanskrit source, the Tibetan ones else."
   (let* ((meta (ignore-errors (tibetan-analysis--read-source-metadata source-file)))
          (target (or (plist-get meta :target-lang) "en"))
+         (second (bcat-sentence--second-language sentence source-file))
          (segs (plist-get sentence :segs)))
     (if (bcat-sentence--sanskrit-p source-file)
         (let ((verse-mode (bcat-sentence--verse-mode-p source-file)))
@@ -994,13 +1008,15 @@ the Sanskrit prompts for a Sanskrit source, the Tibetan ones else."
                  refs
                  (plist-get meta :claude-context)
                  (and verse-mode (bcat-sentence--bhasya-texts (plist-get sentence :sent-num)
-                                                              source-file)))))
+                                                              source-file))
+                 second)))
       (cons (bcat-analysis-system-prompt target)
             (bcat-analysis-user-prompt
              (plist-get sentence :sent-num) (plist-get sentence :verse)
              (mapcar (lambda (s) (list (car s) (cdr s) (bcat-sentence--wylie (cdr s)))) segs)
              refs
-             (plist-get meta :claude-context))))))
+             (plist-get meta :claude-context)
+             second)))))
 
 (defun bcat-sentence--write-analysed (file sent-num segs source-file build)
   "Write the template FILE of sentence SENT-NUM (SEGS, from SOURCE-FILE)
@@ -1139,7 +1155,8 @@ reference translations of the Tibetan, the Tibetan source's
            (mapcar (lambda (s) (list (car s) (cdr s) (bcat-sentence--wylie (cdr s))))
                    (bcat-sentence--parallel-segs n source-file))
            trefs
-           (or (plist-get pmeta :claude-context) (plist-get meta :claude-context))))))
+           (or (plist-get pmeta :claude-context) (plist-get meta :claude-context))
+           (bcat-sentence--second-language sentence source-file)))))
 
 (defun bcat-sentence--tibetan-land (file sentence source-file refs parsed trefs response)
   "Finish the bilingual FILE with the Tibetan answer RESPONSE (PARSED the
