@@ -94,28 +94,6 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 
 *Translation:* Why are there just five aggregates (skandha)? — On account of their bringing to light (udbhāvanatā) the basis of self (ātmavastu) in five modes: the self-basis that is the body together with its possessions (saparigraha-deha), the self-basis that is experience (upabhoga), the self-basis that is conventional expression (vyavahāra), the self-basis that is the forming of merit and demerit (dharmādharmābhisaṃskāra), and the self-basis that is the support of these (tadāśraya).
 
-* Sentence
-** Grammar
-One question and its answer, the catechism form of the AS.  The question (22) is a nominal sentence with an understood copula: kasmāt pañcaiva skandhāḥ.  The answer (23–28) has no finite verb: six accusatives in -udbhāvanatām, each governed by the gerund upādāya used as a postposition („on account of“).  23 states the principle — the self-basis appears in five modes —, 24–28 list the five, each a compound ending in -ātmavastūdbhāvanatām.
-
-** Concepts
-⟦23⟧ *ātmavastu* — the „basis of self“: what the notion of a self is projected onto; the AS derives the number of the skandhas from the five ways such a basis appears.
-
-** Translations compared
-*Translation:* Why are there just five aggregates (skandha)? — On account of their bringing to light (udbhāvanatā) the basis of self (ātmavastu) in five modes: the self-basis that is the body together with its possessions (saparigraha-deha), the self-basis that is experience (upabhoga), the self-basis that is conventional expression (vyavahāra), the self-basis that is the forming of merit and demerit (dharmādharmābhisaṃskāra), and the self-basis that is the support of these (tadāśraya).
-
-*Rahula/Boin-Webb 2001:* Why are there only five aggregates? Because of the five methods by means of which *[the idea] of self (ātman)* makes its appearance: self as *physical apprehension*, self as experience, self as expression, self as *the agent* of all right and all wrong, and self as the basis of all that.
-
-*DharmaMitra:* Why are there exactly five aggregates (skandhas)?
-Because they serve to manifest the objective basis of the self (ātmavastu) in five ways:
-1. By manifesting the objective basis of the self as the body together with its possessions;
-2. By manifesting the objective basis of the self as the object of experience;
-3. By manifesting the objective basis of the self as the ground for conventional designation (vyavahāra);
-4. By manifesting the objective basis of the self as the formative activity (abhisaṃskāra) of merit and demerit (dharma-adharma);
-5. By manifesting the objective basis of the self as the support (āśraya) for those [preceding aggregates].
-
-Rahula/Boin-Webb reduce ātmavastu to „self“ and turn the forming of merit and demerit into „the agent“; DharmaMitra keeps the basis („objective basis“, with an added „objective“) and stays close to udbhāvanatā („manifest“).  Neither reflects the Tibetan's „stating“ (brjod pa).
-
 * Tibetan
 ⟦22⟧ · Tib. 77
 #+begin_verse
@@ -169,6 +147,28 @@ bdag gi gzhi [basis of self] de dag [those] gi [GEN] gnas [support] brjod pa'i [
 
 ** Tibetan rendering
 The Tibetan keeps the structure: /zhe na/ marks the question, /phyir te/ opens and /phyir ro/ closes the answer, /dang/ joins the five modes.  It renders the key terms consistently — /ātmavastu/ as /bdag gi gzhi/ („basis of self“), /udbhāvanatām upādāya/ as /brjod pa'i phyir/ („because of stating“).  That last choice shifts the sense: in the Sanskrit the skandhas bring the self-basis to light (/udbhāvanā/, from the causative of ud-√bhū); in the Tibetan they state or express it (/brjod pa/) — the translators read /udbhāvana/ in its sense „making known, declaring“.
+
+* Sentence
+** Grammar
+One question and its answer, the catechism form of the AS.  The question (22) is a nominal sentence with an understood copula: kasmāt pañcaiva skandhāḥ.  The answer (23–28) has no finite verb: six accusatives in -udbhāvanatām, each governed by the gerund upādāya used as a postposition („on account of“).  23 states the principle — the self-basis appears in five modes —, 24–28 list the five, each a compound ending in -ātmavastūdbhāvanatām.
+
+** Concepts
+⟦23⟧ *ātmavastu* — the „basis of self“: what the notion of a self is projected onto; the AS derives the number of the skandhas from the five ways such a basis appears.
+
+** Translations compared
+*Translation:* Why are there just five aggregates (skandha)? — On account of their bringing to light (udbhāvanatā) the basis of self (ātmavastu) in five modes: the self-basis that is the body together with its possessions (saparigraha-deha), the self-basis that is experience (upabhoga), the self-basis that is conventional expression (vyavahāra), the self-basis that is the forming of merit and demerit (dharmādharmābhisaṃskāra), and the self-basis that is the support of these (tadāśraya).
+
+*Rahula/Boin-Webb 2001:* Why are there only five aggregates? Because of the five methods by means of which *[the idea] of self (ātman)* makes its appearance: self as *physical apprehension*, self as experience, self as expression, self as *the agent* of all right and all wrong, and self as the basis of all that.
+
+*DharmaMitra:* Why are there exactly five aggregates (skandhas)?
+Because they serve to manifest the objective basis of the self (ātmavastu) in five ways:
+1. By manifesting the objective basis of the self as the body together with its possessions;
+2. By manifesting the objective basis of the self as the object of experience;
+3. By manifesting the objective basis of the self as the ground for conventional designation (vyavahāra);
+4. By manifesting the objective basis of the self as the formative activity (abhisaṃskāra) of merit and demerit (dharma-adharma);
+5. By manifesting the objective basis of the self as the support (āśraya) for those [preceding aggregates].
+
+Rahula/Boin-Webb reduce ātmavastu to „self“ and turn the forming of merit and demerit into „the agent“; DharmaMitra keeps the basis („objective basis“, with an added „objective“) and stays close to udbhāvanatā („manifest“).  Neither reflects the Tibetan's „stating“ (brjod pa).
 
 * Segments
 ** Segment 22 · Tib. 77

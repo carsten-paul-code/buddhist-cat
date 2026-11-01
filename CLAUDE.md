@@ -4657,7 +4657,10 @@ Funktion blau) — Zuordnung Silbe für Silbe über tibetan-to-wylie-fixed
 C-c u L ergänzt vorhandene Tabellen (auch ältere in Bändern); im PDF
 \bcattib\large in Tabellenzellen.  Bestand neu gesetzt, alle PDFs
 (TĀ, AS, MSA, bDen) auf dem reMarkable ersetzt (Carsten: Notizen
-darauf „nicht wichtig“).  ERT 2765.
+darauf „nicht wichtig“).  ERT 2765.  1.11.: zweisprachig steht
+* Tibetan (bzw. * Sanskrit in der Partnerdatei) gleich nach * Text,
+vor * Sentence (AS Satz 2: „im Handout kein Tibetisch“ — es stand auf
+S. 7 von 16).
 
 #### Offen
 

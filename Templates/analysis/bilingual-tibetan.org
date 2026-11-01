@@ -13,10 +13,12 @@ Platzhalter und Abschnitte wie in tibetan.org.  Erwartete Ausgabe:
 samples/Bilingual-Tibetan.org.
 Reihenfolge seit 31.10. abends (Carsten, TĀ 1006, „die Anpassungen sind
 aber generisch“) wie in sanskrit.org: * Text (Original, Segmenttabellen,
-Übersetzung, zweite Sprache) / * Sentence (Grammar, Concepts,
-Translations compared) / das andere Original (* Tibetan bzw. * Sanskrit:
-je Segment ⟦N⟧ seine Zeilen mit Vokabeln und die Differences, dann die
-Tibetan rendering) / * Segments (der Rest je Segment) / * Commentary
+Übersetzung, zweite Sprache) / das andere Original (* Tibetan bzw.
+* Sanskrit: je Segment ⟦N⟧ seine Zeilen mit Vokabeln und die
+Differences, dann die Tibetan rendering — seit 1.11. gleich nach dem
+Text, wie im Kurs: erst das Sanskrit übersetzen, dann das Tibetische
+lesen; AS Satz 2: „im Handout kein Tibetisch“, es stand auf S. 7 von
+16) / * Sentence (Grammar, Concepts, Translations compared) / * Segments (der Rest je Segment) / * Commentary
 (was rein muss: die Kommentar-Links je Segment, der Bhāṣya mit Hint) /
 * Further Reading (Sanderson u. ä.).  Unter * Text oben das Original
 in seiner Schrift: Devanāgarī über der überlieferten Zeile bzw. Uchen.
@@ -82,20 +84,6 @@ Rumpf ohne Glossen bleibt sie.  Reines Sanskrit behält den Padapāṭha.
 *{{second-label}}:* {{second-translation}}
 {{/second-translation}}
 
-* Sentence
-** Grammar
-{{grammar}}
-
-** Concepts
-{{#segments}}
-{{#concepts}}
-⟦{{num}}⟧ {{concepts}}
-
-{{/concepts}}
-{{/segments}}
-** Translations compared
-{{comparison}}
-
 {{#sanskrit-p}}
 * Sanskrit
 {{^assignment}}
@@ -124,6 +112,20 @@ Rumpf ohne Glossen bleibt sie.  Reines Sanskrit behält den Padapāṭha.
 
 {{/rendering}}
 {{/sanskrit-p}}
+* Sentence
+** Grammar
+{{grammar}}
+
+** Concepts
+{{#segments}}
+{{#concepts}}
+⟦{{num}}⟧ {{concepts}}
+
+{{/concepts}}
+{{/segments}}
+** Translations compared
+{{comparison}}
+
 * Segments
 {{#segments}}
 ** Segment {{num}}{{parallel}}

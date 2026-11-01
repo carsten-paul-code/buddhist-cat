@@ -73,20 +73,6 @@
 
 *Translation:* Why are the aggregates only five? — if one asks: because they state the basis of self in five modes: the basis of self that is the body together with what it has appropriated, the basis of self that is experience, the basis of self that is convention, the basis of self that is the forming of merit and demerit, and the basis of self that is their support.
 
-* Sentence
-** Grammar
-A question and its answer.  The question (77) ends in /zhe na/, „if one asks“.  The answer (78–83) is one causal construction: the nominalised verb /brjod pa/ „stating“ with five objects, each /bdag gi gzhi/ with an apposition, joined by /dang/ and framed by /phyir te/ (78) and /phyir ro/ (83).
-
-** Concepts
-⟦78⟧ *bdag gi gzhi* (ātmavastu) — the basis on which the idea of a self rests; the aggregates state it in five modes, and their number follows from these.
-
-** Translations compared
-*Translation:* Why are the aggregates only five? — if one asks: because they state the basis of self in five modes: the basis of self that is the body together with what it has appropriated, the basis of self that is experience, the basis of self that is convention, the basis of self that is the forming of merit and demerit, and the basis of self that is their support.
-
-*Rahula/Boin-Webb 2001:* Why are there only five aggregates? Because of the five methods by means of which [the idea] of self (ātman) *makes its appearance*: self as physical apprehension, self as experience, self as expression, self as the agent of all right and all wrong, and self as the basis of all that.
-
-Rahula/Boin-Webb follow the Sanskrit sense — the self „makes its appearance“ — where the Tibetan says that the aggregates state it (brjod pa).
-
 * Sanskrit
 ⟦77⟧ · Skt. 22
 #+begin_verse
@@ -140,6 +126,20 @@ tad-āśraya-ātma-vastu-udbhāvanatām [self-basis: their support] upādāya [o
 
 ** Tibetan rendering
 The Tibetan keeps the structure: /zhe na/ marks the question, /phyir te/ opens and /phyir ro/ closes the answer, /dang/ joins the five modes.  It renders the key terms consistently — /ātmavastu/ as /bdag gi gzhi/ („basis of self“), /udbhāvanatām upādāya/ as /brjod pa'i phyir/ („because of stating“).  That last choice shifts the sense: in the Sanskrit the skandhas bring the self-basis to light (/udbhāvanā/, from the causative of ud-√bhū); in the Tibetan they state or express it (/brjod pa/) — the translators read /udbhāvana/ in its sense „making known, declaring“.
+
+* Sentence
+** Grammar
+A question and its answer.  The question (77) ends in /zhe na/, „if one asks“.  The answer (78–83) is one causal construction: the nominalised verb /brjod pa/ „stating“ with five objects, each /bdag gi gzhi/ with an apposition, joined by /dang/ and framed by /phyir te/ (78) and /phyir ro/ (83).
+
+** Concepts
+⟦78⟧ *bdag gi gzhi* (ātmavastu) — the basis on which the idea of a self rests; the aggregates state it in five modes, and their number follows from these.
+
+** Translations compared
+*Translation:* Why are the aggregates only five? — if one asks: because they state the basis of self in five modes: the basis of self that is the body together with what it has appropriated, the basis of self that is experience, the basis of self that is convention, the basis of self that is the forming of merit and demerit, and the basis of self that is their support.
+
+*Rahula/Boin-Webb 2001:* Why are there only five aggregates? Because of the five methods by means of which [the idea] of self (ātman) *makes its appearance*: self as physical apprehension, self as experience, self as expression, self as the agent of all right and all wrong, and self as the basis of all that.
+
+Rahula/Boin-Webb follow the Sanskrit sense — the self „makes its appearance“ — where the Tibetan says that the aggregates state it (brjod pa).
 
 * Segments
 ** Segment 77 · Skt. 22
