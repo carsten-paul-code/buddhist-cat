@@ -24,12 +24,16 @@
 | indescribable   | invisible       |
 | ADJ · predicate | ADJ · predicate |
 
+→ Indescribable (brjod du med pa: avācya) and invisible (bltar med pa: adraṣṭavya),
+
 ⟦39⟧
 
 | འགྱུར་བ་མེད་པ      | འདུས                   | མ་བྱས                  |
 | [[steinert:'gyur ba med pa]['gyur ba med pa]] | [[steinert:'dus]['dus]]                  | [[steinert:ma byas][ma byas]]               |
 | immutable       | assembled, compounded | not made              |
 | ADJ · predicate | V pf. ('du ba)        | NEG + V pf. (byed pa) |
+
+→ immutable ('gyur ba med pa: avikāra) and uncompounded ('dus ma byas: asaṃskṛta)
 
 ⟦40⟧
 
@@ -38,12 +42,16 @@
 | yogin         | by  | that         | realizes | if           |
 | N · agent     | ERG | DEM · object | V tr.    | CONV · cond. |
 
+→ if a yogin (rnal 'byor pa: yogin) realizes that,
+
 ⟦41⟧
 
 | ཉོན་མོངས     | ཤེས་བྱའི           | སྒྲིབ་པ        | སྤངས                          |
 | [[steinert:nyon mongs][nyon mongs]] | [[steinert:shes bya'i][shes bya'i]]      | [[steinert:sgrib pa][sgrib pa]]    | [[steinert:spangs][spangs]]                       |
 | affliction | of the knowable | obstruction | abandoned                    |
 | N          | N + GEN         | N · object  | V pf. ('pong ba) · main verb |
+
+→ the obstructions of affliction (nyon mongs: kleśa) and of the knowable (śes bya'i sgrib pa: jñeyāvaraṇa) are abandoned.
 
 *Translation:* Indescribable (brjod du med pa: avācya) and invisible (bltar med pa: adraṣṭavya), immutable ('gyur ba med pa: avikāra) and uncompounded ('dus ma byas: asaṃskṛta) — if a yogin (rnal 'byor pa: yogin) realizes that, the obstructions of affliction (nyon mongs: kleśa) and of the knowable (śes bya'i sgrib pa: jñeyāvaraṇa) are abandoned.
 

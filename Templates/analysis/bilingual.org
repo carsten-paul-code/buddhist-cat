@@ -88,6 +88,10 @@ Rumpf ohne Glossen bleibt sie.  Reines Sanskrit behält den Padapāṭha.
 
 {{gloss-table}}
 
+{{#segment-translation}}
+→ {{segment-translation}}
+
+{{/segment-translation}}
 {{/gloss-table}}
 {{/segments}}
 *Translation:* {{translation}}

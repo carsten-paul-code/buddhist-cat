@@ -40,6 +40,7 @@ tatpārameśvaraṃ śrīman|mahānandavijṛmbhitam // 7")
 | ni- in · √yantr (10) restrain · -ana action | ud- up · √las (1) shine |
 | control                                     | may shine forth         |
 | n. nom. sg.                                 | opt. 3 sg. P            |")
+      (segment-translation . "Although my speech (vāc) is incapable (aśakta) here, whatever control (niyantraṇa) may shine forth (ullaset) —")
       (translations . "⟦685⟧ *Translation:* Although my speech (vāc) is incapable (aśakta) here, whatever control (niyantraṇa) may shine forth (ullaset) — \\\\
 *Dyczkowski 2023:* Although my speech is powerless here (in this task), whatever *restriction* may arise (on one's understanding of the teachings is not my fault, rather) \\\\
 *DharmaMitra:* In this matter, whatever *unfettered expression* may emerge, even though my own voice is powerless, \\\\
@@ -70,6 +71,7 @@ tatpārameśvaraṃ śrīman|mahānandavijṛmbhitam // 7")
 | śrī glory · -mat having · mahā great · ā-√nand (1) rejoice · vi- apart · √jṛmbh (1) open · -ita ppp |
 | unfolding of glorious great bliss                                                                   |
 | n. nom. sg.                                                                                         |")
+      (segment-translation . "that belongs to the Supreme Lord (pārameśvara): it is the unfolding (vijṛmbhita) of glorious great bliss (mahānanda).")
       (translations . "⟦686⟧ *Translation:* that belongs to the Supreme Lord (pārameśvara): it is the unfolding (vijṛmbhita) of glorious great bliss (mahānanda). \\\\
 *Dyczkowski 2023:* that is (all) the venerable expansion of the Supreme Lord's great bliss (which both hides and reveals the truth). (7) \\\\
 *DharmaMitra:* that is the unfolding of the glorious Great Bliss of the Supreme Lord.")

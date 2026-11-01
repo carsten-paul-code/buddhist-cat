@@ -93,7 +93,12 @@ the other language's blocks and differences."
               (let ((labelled (bcat-relayout--labelled p)))
                 (cond
                  ((string-prefix-p "|" p) (push p tables))
-                 ((string-match-p "\\`⟦[0-9]+⟧ " p) (bcat-relayout--put table num 'translations p))
+                 ((string-match "\\`⟦[0-9]+⟧ \\(?:\\*Translation:\\* \\)?\\(.*?\\)\\(?: \\\\\\\\\\)?$" p)
+                  ;; Its first line is the segment's own translation —
+                  ;; what * Text shows after the tables since 1.11., for
+                  ;; a file written before.
+                  (bcat-relayout--put table num 'segment-translation (match-string 1 p))
+                  (bcat-relayout--put table num 'translations p))
                  ((bcat-relayout--verse-body p)
                   (bcat-relayout--put table num block-field (bcat-relayout--verse-body p)))
                  (labelled (bcat-relayout--put table num (car labelled) (cdr labelled))))))
@@ -112,6 +117,8 @@ the other language's blocks and differences."
           (bcat-relayout--put table current 'gloss-table (substring p (match-end 0))))
          ((and current (string-prefix-p "|" p))
           (bcat-relayout--put table current 'gloss-table p t))
+         ((and current (string-match "\\`→ " p))
+          (bcat-relayout--put table current 'segment-translation (substring p (match-end 0))))
          (t (setq current nil)))))
     ;; ⟦N⟧ under Concepts.
     (let ((current nil))

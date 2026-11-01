@@ -824,6 +824,7 @@ segment Claude skipped keeps its rump fields."
                                                                (alist-get 'uchen seg)))
                     (translations . ,(bcat-analysis-translations-block
                                       (if (stringp num) (string-to-number num) num) c))
+                    (segment-translation . ,(bcat-analysis--field c 'translation))
                     (structure . ,(bcat-analysis--field c 'structure))
                     (note . ,(bcat-analysis--field c 'note))
                     (concepts . ,(bcat-analysis--field c 'concepts)))
@@ -1000,6 +1001,7 @@ skipped keeps its rump fields."
                                  (or (alist-get 'samhita seg) "") words))
                     (gloss-table . ,(bcat-analysis-sanskrit-tables words))
                     (translations . ,(bcat-analysis-translations-block n c))
+                    (segment-translation . ,(bcat-analysis--field c 'translation))
                     (sandhi . ,(bcat-analysis--field c 'sandhi))
                     (forms . ,(mapconcat (lambda (l) (concat "- " l))
                                          (bcat-analysis--word-entries (alist-get 'forms c))

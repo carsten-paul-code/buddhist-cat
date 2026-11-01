@@ -6,7 +6,11 @@ und Übersetzung (* Text) / ganzer Satz / Segmente.
 Reihenfolge seit 31.10. abends (Carsten, TĀ 1006, „die Anpassungen sind
 aber generisch“): erst lesen und übersetzen — * Text: die Segmenttabellen
 untereinander (⟦N⟧ vor den Tabellen eines Segments; Wörter und Glossen
-schwarz, Wortbildung, Teile, Form blau), darunter die Übersetzung und
+schwarz, Wortbildung, Teile, Form blau; nach den Tabellen „→“ die
+Übersetzung des Segments, segment-translation — nur die eigene, in der
+Zielsprache, Carsten 1.11.: „nach der Segmenttabelle eine Übersetzung
+(nur Zielsprache) des Segments wäre wahrscheinlich doch hilfreich
+(überall)“), darunter die Übersetzung des Satzes und
 dieselbe in der zweiten Sprache (second-translation, Beschriftung
 second-label: „Deutsch“ bei Zielsprache Englisch, sonst „English“ —
 „damit ich mich leichter in die Konzepte rein denken kann“); dann
@@ -76,6 +80,10 @@ Goldman 1999).
 
 {{gloss-table}}
 
+{{#segment-translation}}
+→ {{segment-translation}}
+
+{{/segment-translation}}
 {{/gloss-table}}
 {{/segments}}
 *Translation:* {{translation}}

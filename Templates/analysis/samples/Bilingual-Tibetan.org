@@ -29,12 +29,16 @@
 | why             | aggregate   | plural | five            | only              | if one asks            |
 | INT · adverbial | N · subject | PL     | NUM · predicate | ADV · restrictive | QUOT + CONV · question |
 
+→ Why are the aggregates (phung po: skandha) only five? — if one asks:
+
 ⟦78⟧
 
 | བདག་གི་གཞི      | རྣམ་པ    | ལྔ    | བརྗོད་པའི        | ཕྱིར         | ཏེ    |
 | [[steinert:bdag gi gzhi][bdag gi gzhi]]  | [[steinert:rnam pa][rnam pa]] | [[steinert:lnga][lnga]] | [[steinert:brjod pa'i][brjod pa'i]]    | [[steinert:phyir][phyir]]      | te   |
 | basis of self | mode    | five | of stating    | because    |      |
 | N · object    | N       | NUM  | V nmlz. + GEN | N · causal | CONV |
+
+→ because they state the basis of self (bdag gi gzhi: ātmavastu) in five modes:
 
 ⟦79⟧
 
@@ -43,12 +47,16 @@
 | basis of self | body           | what is appropriated | together with | stating  |      |
 | N · object    | N · apposition | V nmlz.              | ADJ           | V nmlz.  | COM  |
 
+→ the basis of self that is the body together with what it has appropriated (yongs su gzung ba: parigraha) is stated,
+
 ⟦80⟧
 
 | བདག་གི་གཞི      | ལོངས་སྤྱོད         | བརྗོད་པ    | དང   |
 | [[steinert:bdag gi gzhi][bdag gi gzhi]]  | [[steinert:longs spyod][longs spyod]]    | [[steinert:brjod pa][brjod pa]] | dang |
 | basis of self | experience     | stating  |      |
 | N · object    | N · apposition | V nmlz.  | COM  |
+
+→ the basis of self that is experience (longs spyod: upabhoga),
 
 ⟦81⟧
 
@@ -57,6 +65,8 @@
 | basis of self | convention     | stating  |      |
 | N · object    | N · apposition | V nmlz.  | COM  |
 
+→ the basis of self that is convention (tha snyad: vyavahāra),
+
 ⟦82⟧
 
 | བདག་གི་གཞི      | ཆོས    | དང   | ཆོས་མ་ཡིན་པ      | མངོན་པར་འདུ་བྱེད་པ        | བརྗོད་པ    | དང   |
@@ -64,12 +74,16 @@
 | basis of self | merit |      | demerit        | forming               | stating  |      |
 | N · object    | N     | COM  | N              | V nmlz.               | V nmlz.  | COM  |
 
+→ the basis of self that is the forming (mngon par 'du byed pa: abhisaṃskāra) of merit and demerit,
+
 ⟦83⟧
 
 | བདག་གི་གཞི      | དེ་དག   | གི   | གནས            | བརྗོད་པའི        | ཕྱིར         | རོ     |
 | [[steinert:bdag gi gzhi][bdag gi gzhi]]  | [[steinert:de dag][de dag]] | gi  | [[steinert:gnas][gnas]]           | [[steinert:brjod pa'i][brjod pa'i]]    | [[steinert:phyir][phyir]]      | [[steinert:ro][ro]]    |
 | basis of self | those  |     | support        | of stating    | because    | final |
 | N · object    | DEM PL | GEN | N · apposition | V nmlz. + GEN | N · causal | FIN   |
+
+→ and the basis of self that is their support (gnas: āśraya) — because these are stated.
 
 *Translation:* Why are the aggregates only five? — if one asks: because they state the basis of self in five modes: the basis of self that is the body together with what it has appropriated, the basis of self that is experience, the basis of self that is convention, the basis of self that is the forming of merit and demerit, and the basis of self that is their support.
 

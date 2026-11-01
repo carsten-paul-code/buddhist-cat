@@ -4660,7 +4660,12 @@ C-c u L ergänzt vorhandene Tabellen (auch ältere in Bändern); im PDF
 darauf „nicht wichtig“).  ERT 2765.  1.11.: zweisprachig steht
 * Tibetan (bzw. * Sanskrit in der Partnerdatei) gleich nach * Text,
 vor * Sentence (AS Satz 2: „im Handout kein Tibetisch“ — es stand auf
-S. 7 von 16).
+S. 7 von 16).  Ebenfalls 1.11. (Carsten über die AS-Handout-Session:
+„nach der Segmenttabelle eine Übersetzung (nur Zielsprache) des
+Segments … (überall)“): unter * Text nach den Tabellen jedes Segments
+„→ <eigene Segmentübersetzung>“ (Feld `segment-translation'); C-c u L
+holt sie in alten Dateien aus der ersten Zeile des ⟦N⟧-Blocks, eine
+von Hand korrigierte →-Zeile bleibt.
 
 #### Offen
 

@@ -106,6 +106,19 @@ a table that has it keeps it."
     (should (string-match-p "\\`| བརྗོད་དུ་མེད་པ +| བལྟར་མེད་པ +|\n| \\[\\[steinert:brjod" table))
     (should (equal table (bcat-analysis-uchen-table table "བརྗོད་དུ་མེད་པ་བལྟར་མེད་པ། །")))))
 
+(ert-deftest bcat-relayout-segment-translation ()
+  "Carsten 1.11.: „nach der Segmenttabelle eine Übersetzung (nur
+Zielsprache) des Segments“ — a file written before gets it from the
+first line of the segment's translation block; a line corrected by hand
+under * Text stays."
+  (let* ((sample (bcat-relayout-test--file "Templates/analysis/samples/Tibetan.org"))
+         (edited (replace-regexp-in-string "^→ if a yogin .*$" "→ if the yogin realizes it," sample t t))
+         (out (bcat-relayout-test--render "tibetan" (bcat-analysis-test--base) edited)))
+    (should (string-match-p "^→ if the yogin realizes it,$" out))
+    (should (string-match-p "^⟦40⟧ \\*Translation:\\* if a yogin (rnal 'byor pa: yogin) realizes that, " out))
+    (should (string-match-p "| CONV · cond\\. |\n\n→ if the yogin realizes it,\n\n⟦41⟧"
+                            out))))
+
 (ert-deftest bcat-relayout-second-translation ()
   "The translation in the second language (*Deutsch:* under * Text)
 is read back and stays."

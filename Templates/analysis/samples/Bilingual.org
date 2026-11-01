@@ -38,6 +38,8 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 | why                   | five             | only | aggregates  |
 | pron. abl. sg. (ind.) | num. m. nom. pl. | ind. | m. nom. pl. |
 
+→ Why are there just five aggregates (skandha)? —
+
 ⟦23⟧
 
 | pañca-ākāra-ātma-vastu-udbhāvanatām                               | upādāya                                |
@@ -45,6 +47,8 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 | five · form, mode · self · thing · bring forth (caus.) + abstract | upa- near · ā- to · √dā (3) give, take |
 | showing a fivefold self-basis                                     | on account of                          |
 | f. acc. sg.                                                       | ger.                                   |
+
+→ On account of their bringing to light (udbhāvanatā) the basis of self (ātmavastu) in five modes:
 
 ⟦24⟧
 
@@ -54,6 +58,8 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 | self-basis: body + possessions                                         | on account of                          |
 | f. acc. sg.                                                            | ger.                                   |
 
+→ the self-basis that is the body together with its possessions (saparigraha-deha),
+
 ⟦25⟧
 
 | upabhoga-ātma-vastu-udbhāvanatām                      | upādāya                                |
@@ -62,6 +68,8 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 | self-basis: experience                                | on account of                          |
 | f. acc. sg.                                           | ger.                                   |
 
+→ the self-basis that is experience (upabhoga),
+
 ⟦26⟧
 
 | vyavahāra-ātma-vastu-udbhāvanatām                               | upādāya                                |
@@ -69,6 +77,8 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 | vi- apart · ava- down · √hṛ (1) carry · self · thing · bringing | upa- near · ā- to · √dā (3) give, take |
 | self-basis: expression                                          | on account of                          |
 | f. acc. sg.                                                     | ger.                                   |
+
+→ the self-basis that is conventional expression (vyavahāra),
 
 ⟦27⟧
 
@@ -84,6 +94,8 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 | on account of                          |
 | ger.                                   |
 
+→ the self-basis that is the forming of merit and demerit (dharmādharmābhisaṃskāra),
+
 ⟦28⟧
 
 | tad-āśraya-ātma-vastu-udbhāvanatām                        | upādāya                                |
@@ -91,6 +103,8 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 | that · ā- to · √śri (1) lean on · self · thing · bringing | upa- near · ā- to · √dā (3) give, take |
 | self-basis: their support                                 | on account of                          |
 | f. acc. sg.                                               | ger.                                   |
+
+→ and the self-basis that is the support of these (tadāśraya).
 
 *Translation:* Why are there just five aggregates (skandha)? — On account of their bringing to light (udbhāvanatā) the basis of self (ātmavastu) in five modes: the self-basis that is the body together with its possessions (saparigraha-deha), the self-basis that is experience (upabhoga), the self-basis that is conventional expression (vyavahāra), the self-basis that is the forming of merit and demerit (dharmādharmābhisaṃskāra), and the self-basis that is the support of these (tadāśraya).
 
