@@ -844,6 +844,23 @@ the sentence."
     (should (< (string-match "^\\* Sentence$" out) (string-match "^\\*\\* Tibetan rendering$" out)
                (string-match "^\\*\\* Translations compared$" out) (string-match "^\\* Segments$" out)))))
 
+(ert-deftest bcat-analysis-pair-lists-reordered ()
+  "MSA IX.60: the Tibetan reorders the pādas — 459 renders Sanskrit 287,
+460–461 286, 462 287 again.  The differences of a Sanskrit segment
+stand once, after the last Tibetan segment that renders it; the
+Sanskrit marks link the first."
+  (let* ((lists (bcat-analysis-pair-lists
+                 '(((num . 286)) ((num . 287)))
+                 '(((num . 459) (uchen . "A")) ((num . 460) (uchen . "B"))
+                   ((num . 461) (uchen . "C")) ((num . 462) (uchen . "D")))
+                 '((459 . 287) (460 . 286) (461 . 286) (462 . 287))
+                 '((286 . "D286") (287 . "D287"))))
+         (tibs (nth 1 lists)))
+    (should (equal '("" "" "D286" "D287") (mapcar (lambda (s) (alist-get 'differences s)) tibs)))
+    (should (equal '(" · [[tib-460][Tib. 460–461]]" " · [[tib-459][Tib. 459, 462]]")
+                   (mapcar (lambda (s) (alist-get 'mark s)) (nth 0 lists))))
+    (should (equal '("B C" "A D") (mapcar (lambda (l) (alist-get 'line l)) (nth 2 lists))))))
+
 (ert-deftest bcat-analysis-partner-two-parts ()
   "The Tibetan file of the pair mirrored (Carsten 1.11.: „Spiegeln:
 Tibetisch zuerst“): * Text the Tibetan — Uchen, per segment mark (link

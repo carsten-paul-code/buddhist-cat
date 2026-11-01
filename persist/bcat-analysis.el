@@ -1129,8 +1129,12 @@ assignment — one per segment, its Wylie under it when it has no table."
          (t-items (mapcar (lambda (ts)
                             (let* ((cell (assq (bcat-analysis--num ts) assignment))
                                    (skt (cdr cell))
-                                   (next (cadr (memq cell assignment)))
-                                   (last (and skt (not (eql skt (cdr next))))))
+                                   ;; The last Tibetan segment that renders
+                                   ;; SKT — the Tibetan may reorder (MSA
+                                   ;; IX.60: 459 → 287, 460–461 → 286,
+                                   ;; 462 → 287).
+                                   (last (and skt (not (cl-find skt (cdr (memq cell assignment))
+                                                                :key #'cdr)))))
                               (let ((d (or (and last (cdr (assq skt differences))) "")))
                                 (append `((mark . ,(if skt (format " · [[skt-%d][Skt. %d]]" skt skt) ""))
                                           (differences . ,d)
