@@ -28,10 +28,11 @@
     (insert-file-contents (expand-file-name name bcat-analysis-test--root))
     (buffer-string)))
 
-(defun bcat-relayout-test--render (template base text)
-  "TEXT read back into BASE and rendered with the tool's TEMPLATE."
+(defun bcat-relayout-test--render (template base text &optional other)
+  "TEXT read back into BASE and rendered with the tool's TEMPLATE —
+OTHER the text of the partner file of a bilingual pair."
   (let ((bcat-template-directory (expand-file-name "Templates/analysis" bcat-analysis-test--root)))
-    (bcat-template-render-named template (bcat-relayout-context base text template))))
+    (bcat-template-render-named template (bcat-relayout-context base text template other))))
 
 (defun bcat-relayout-test--partner-base ()
   "The rump of the pair's Tibetan file of AS 3, with the Sanskrit
@@ -57,31 +58,38 @@ segments the rump has (Devanāgarī, the line as transmitted)."
 
 (ert-deftest bcat-relayout-old-bilingual ()
   "AS 3 (Sanskrit with the Tibetan) in the old order → the new sample:
-the Tibetan per segment with its differences under * Tibetan — read
-from the old segments, the assignment from their headings."
+per segment the Sanskrit tables and translation, the Tibetan tables
+(Uchen added) and translation — read from the partner file —, the
+differences; the assignment from the segment headings (1.11.)."
   (should (equal (bcat-relayout-test--file "Templates/analysis/samples/Bilingual.org")
                  (bcat-relayout-test--render
                   "bilingual" (bcat-analysis-test--base-003)
-                  (bcat-relayout-test--file "test/fixtures/old-layout-Bilingual.org")))))
+                  (bcat-relayout-test--file "test/fixtures/old-layout-Bilingual.org")
+                  (bcat-relayout-test--file "test/fixtures/old-layout-Bilingual-Tibetan.org")))))
 
 (ert-deftest bcat-relayout-old-partner ()
-  "The Tibetan file of the pair in the old order → the new sample: the
-Sanskrit per group under * Sanskrit."
+  "The Tibetan file of the pair in the old order → the new sample:
+mirrored, the Sanskrit segment (tables, translation, differences — from
+the Sanskrit file) after the last Tibetan segment of its group."
   (should (equal (bcat-relayout-test--file "Templates/analysis/samples/Bilingual-Tibetan.org")
                  (bcat-relayout-test--render
                   "bilingual-tibetan" (bcat-relayout-test--partner-base)
-                  (bcat-relayout-test--file "test/fixtures/old-layout-Bilingual-Tibetan.org")))))
+                  (bcat-relayout-test--file "test/fixtures/old-layout-Bilingual-Tibetan.org")
+                  (bcat-relayout-test--file "test/fixtures/old-layout-Bilingual.org")))))
 
 (ert-deftest bcat-relayout-new-order-unchanged ()
   "A file in the new order read back and set anew is the same file —
 for each template."
-  (dolist (case `(("sanskrit" "Sanskrit" ,(bcat-analysis-test--base-1007))
-                  ("tibetan" "Tibetan" ,(bcat-analysis-test--base))
-                  ("bilingual" "Bilingual" ,(bcat-analysis-test--base-003))
-                  ("bilingual-tibetan" "Bilingual-Tibetan" ,(bcat-relayout-test--partner-base))))
+  (dolist (case `(("sanskrit" "Sanskrit" ,(bcat-analysis-test--base-1007) nil)
+                  ("tibetan" "Tibetan" ,(bcat-analysis-test--base) nil)
+                  ("bilingual" "Bilingual" ,(bcat-analysis-test--base-003) "Bilingual-Tibetan")
+                  ("bilingual-tibetan" "Bilingual-Tibetan" ,(bcat-relayout-test--partner-base) "Bilingual")))
     (let ((sample (bcat-relayout-test--file
-                   (format "Templates/analysis/samples/%s.org" (nth 1 case)))))
-      (should (equal sample (bcat-relayout-test--render (nth 0 case) (nth 2 case) sample))))))
+                   (format "Templates/analysis/samples/%s.org" (nth 1 case))))
+          (other (and (nth 3 case)
+                      (bcat-relayout-test--file
+                       (format "Templates/analysis/samples/%s.org" (nth 3 case))))))
+      (should (equal sample (bcat-relayout-test--render (nth 0 case) (nth 2 case) sample other))))))
 
 (ert-deftest bcat-relayout-label-on-its-own-line ()
   "31.10. abends, the first PDF of TĀ 1006 in the new order: „⟦683⟧“
@@ -236,6 +244,29 @@ a class template that brings back the glossed verse lines)."
       (let ((text (bcat-sentence-test--text-of file)))
         (should (string-match-p "^\\*Structure:\\* corrected by hand$" text))
         (should (string-match-p "^GLOSSED brjod du med pa \\[indescribable\\]" text))))))
+
+(ert-deftest bcat-relayout-file-pair ()
+  "C-c u L on the Sanskrit file of a pair (Carsten 1.11.): the Tibetan
+tables and translations per segment come from the Tibetan file of the
+pair; no request."
+  (bcat-sentence-test--with-pair
+    (bcat-sentence-test--create-n src 3)
+    (bcat-sentence-test--with-stubs #'bcat-sentence-test--pair-answers
+      (bcat-sentence-test--fetch-n src 3))
+    (let ((file (tibetan-sentence--filepath 3 folder src))
+          (fired nil))
+      ;; A pair written before: no Tibetan under * Text, no answer kept.
+      (delete-file (bcat-sentence--answers-file file))
+      (with-temp-file file
+        (insert (replace-regexp-in-string "^| ཅིའི་ཕྱིར\\(?:.\\|\n\\)*?\n\n→ [^\n]*\n\n" ""
+                                          (bcat-sentence-test--text-of file) t t)))
+      (should-not (string-match-p "^| ཅིའི་ཕྱིར" (bcat-sentence-test--text-of file)))
+      (cl-letf (((symbol-function 'tibetan-discussion--submit)
+                 (lambda (&rest _) (setq fired t))))
+        (bcat-relayout-file file))
+      (should-not fired)
+      (should (string-match-p "^⟦22⟧ · Tib\\. 77\n\n| kasmāt" (bcat-sentence-test--text-of file)))
+      (should (string-match-p "\n\n| ཅིའི་ཕྱིར" (bcat-sentence-test--text-of file))))))
 
 (ert-deftest bcat-relayout-key-and-menu ()
   "C-c u L sets anew; the menu offers it next to the jumps."

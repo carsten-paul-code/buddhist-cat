@@ -13,15 +13,23 @@ Platzhalter und Abschnitte wie in tibetan.org.  Erwartete Ausgabe:
 samples/Bilingual-Tibetan.org.
 Reihenfolge seit 31.10. abends (Carsten, TĀ 1006, „die Anpassungen sind
 aber generisch“) wie in sanskrit.org: * Text (Original, Segmenttabellen,
-Übersetzung, zweite Sprache) / das andere Original (* Tibetan bzw.
-* Sanskrit: je Segment ⟦N⟧ seine Zeilen mit Vokabeln und die
-Differences, dann die Tibetan rendering — seit 1.11. gleich nach dem
-Text, wie im Kurs: erst das Sanskrit übersetzen, dann das Tibetische
-lesen; AS Satz 2: „im Handout kein Tibetisch“, es stand auf S. 7 von
-16) / * Sentence (Grammar, Concepts, Translations compared) / * Segments (der Rest je Segment) / * Commentary
+Übersetzung, zweite Sprache; seit 1.11. je Segment auch die andere
+Sprache, s. u.) / * Sentence (Grammar, Concepts, Tibetan rendering,
+Translations compared) / * Segments (der Rest je Segment) / * Commentary
 (was rein muss: die Kommentar-Links je Segment, der Bhāṣya mit Hint) /
 * Further Reading (Sanderson u. ä.).  Unter * Text oben das Original
 in seiner Schrift: Devanāgarī über der überlieferten Zeile bzw. Uchen.
+Seit 1.11. (Carsten: „Prinzipiell soll das Rendering und der Aufbau
+immer gleich sein, egal ob ein- oder zweisprachig. Nur, dass bei
+zweisprachig in einer Segmentsektion beide Sprachen als Tabelle, mit
+der Übersetzung in die Zielsprache darunter … und zusätzlich noch ein
+Unterschieds-Hint kommt.“): unter * Text oben beide Originale, dann je
+Segment ⟦N⟧ · Tib./Skt. …, seine Tabellen und „→ Übersetzung“, die
+Segmente der anderen Sprache (other-segments: num gloss-table
+segment-translation, beim Partner auch differences) ebenso, dann
+*Differences:*; kein eigener Abschnitt * Tibetan/* Sanskrit mehr, die
+Tibetan rendering unter * Sentence.  Partnerdatei gespiegelt: Tibetisch
+zuerst, das Sanskrit-Segment nach dem letzten tibetischen seiner Gruppe.
 Felder dazu: second-translation second-label commentary-p assignment
 (gesetzt, sobald Claude die Segmente zugeordnet hat; bis dahin steht
 unter * Sanskrit der ganze Sanskrit-Text).
@@ -70,27 +78,7 @@ Rumpf ohne Glossen bleibt sie.  Reines Sanskrit behält den Padapāṭha.
 {{/segments}}
 #+end_verse
 
-{{#segments}}
-{{#gloss-table}}
-⟦{{num}}⟧
-
-{{gloss-table}}
-
-{{#segment-translation}}
-→ {{segment-translation}}
-
-{{/segment-translation}}
-{{/gloss-table}}
-{{/segments}}
-*Translation:* {{translation}}
-{{#second-translation}}
-
-*{{second-label}}:* {{second-translation}}
-{{/second-translation}}
-
 {{#sanskrit-p}}
-* Sanskrit
-{{^assignment}}
 #+begin_verse
 {{#sanskrit}}
 {{devanagari}}
@@ -98,24 +86,37 @@ Rumpf ohne Glossen bleibt sie.  Reines Sanskrit behält den Padapāṭha.
 {{/sanskrit}}
 #+end_verse
 
-{{/assignment}}
+{{/sanskrit-p}}
 {{#segments}}
-{{#sanskrit-block}}
+{{#gloss-table}}
 ⟦{{num}}⟧{{parallel}}
-#+begin_verse
-{{sanskrit-block}}
-#+end_verse
 
+{{gloss-table}}
+
+{{/gloss-table}}
+{{#segment-translation}}
+→ {{segment-translation}}
+
+{{/segment-translation}}
+{{#other-segments}}
+{{gloss-table}}
+
+{{#segment-translation}}
+→ {{segment-translation}}
+
+{{/segment-translation}}
+{{#differences}}
 *Differences:* {{differences}}
 
-{{/sanskrit-block}}
+{{/differences}}
+{{/other-segments}}
 {{/segments}}
-{{#rendering}}
-** Tibetan rendering
-{{rendering}}
+*Translation:* {{translation}}
+{{#second-translation}}
 
-{{/rendering}}
-{{/sanskrit-p}}
+*{{second-label}}:* {{second-translation}}
+{{/second-translation}}
+
 * Sentence
 ** Grammar
 {{grammar}}
@@ -127,6 +128,11 @@ Rumpf ohne Glossen bleibt sie.  Reines Sanskrit behält den Padapāṭha.
 
 {{/concepts}}
 {{/segments}}
+{{#rendering}}
+** Tibetan rendering
+{{rendering}}
+
+{{/rendering}}
 ** Translations compared
 {{comparison}}
 

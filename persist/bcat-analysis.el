@@ -1128,6 +1128,18 @@ without a valid assignment see `bcat-analysis--assignment'."
                                            (bcat-analysis--num-ranges
                                             (mapcar #'bcat-analysis--num mine)))
                                  ""))
+                  ;; Carsten 1.11.: per segment both languages as tables
+                  ;; with their translation — the Tibetan segments of
+                  ;; this Sanskrit one.
+                  (other-segments
+                   . ,(mapcar (lambda (ts)
+                                (let ((c (cdr (assoc (bcat-analysis--num ts) by-num))))
+                                  `((num . ,(bcat-analysis--num ts))
+                                    (gloss-table . ,(if c (bcat-analysis-gloss-table
+                                                           (alist-get 'words c) (alist-get 'uchen ts))
+                                                      ""))
+                                    (segment-translation . ,(if c (bcat-analysis--field c 'translation) "")))))
+                              mine))
                   (tibetan-block . ,(mapconcat (lambda (ts)
                                                  (concat (alist-get 'uchen ts) "\n"
                                                          (alist-get 'glossed ts)))
@@ -1162,10 +1174,24 @@ Sanskrit for * Text; the `rendering'."
            (lambda (seg)
              (let* ((sa (cdr (assq (bcat-analysis--num seg) assign)))
                     (first (and sa (not (memq sa seen))))
-                    (s (and first (cl-find sa sanskrit :key #'bcat-analysis--num))))
+                    (s (and first (cl-find sa sanskrit :key #'bcat-analysis--num)))
+                    ;; The last Tibetan segment of its group: the next
+                    ;; one goes with another Sanskrit segment.
+                    (next (cadr (memq (assq (bcat-analysis--num seg) assign) assign)))
+                    (last (and sa (not (eql sa (cdr next)))))
+                    (whole (and last (cl-find sa sanskrit :key #'bcat-analysis--num))))
                (when first (push sa seen))
                (append
                 `((parallel . ,(if sa (format " · Skt. %d" sa) ""))
+                  ;; Carsten 1.11. („Spiegeln: Tibetisch zuerst“): after
+                  ;; the last Tibetan segment of a group its Sanskrit one —
+                  ;; tables, translation, differences.
+                  (other-segments
+                   . ,(and whole
+                           (list `((num . ,sa)
+                                   (gloss-table . ,(or (alist-get 'gloss-table whole) ""))
+                                   (segment-translation . ,(or (alist-get 'segment-translation whole) ""))
+                                   (differences . ,(bcat-analysis--differences parsed sa))))))
                   (sanskrit-block . ,(if s
                                          (concat (alist-get 'devanagari s) "\n"
                                                  (or (alist-get 'glossed s) (alist-get 'samhita s)))

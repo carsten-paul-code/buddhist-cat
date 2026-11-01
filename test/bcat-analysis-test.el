@@ -800,6 +800,66 @@ translations; the Tibetan rendering of the whole sentence."
                       bcat-analysis-test--refs-003)
                      (bcat-analysis-parse (bcat-analysis-test--answer-003 "kunbtus"))))))))
 
+(defun bcat-analysis-test--bilingual-003 ()
+  "AS sentence 3 rendered with the bilingual template from both answers."
+  (let ((bcat-template-directory (expand-file-name "Templates/analysis" bcat-analysis-test--root)))
+    (bcat-template-render-named
+     "bilingual"
+     (bcat-analysis-bilingual-context
+      (bcat-analysis-sanskrit-context
+       (bcat-analysis-test--base-003)
+       (bcat-analysis-parse (bcat-analysis-test--answer-003 "asam"))
+       bcat-analysis-test--refs-003)
+      (bcat-analysis-parse (bcat-analysis-test--answer-003 "kunbtus"))))))
+
+(ert-deftest bcat-analysis-bilingual-per-segment ()
+  "Carsten 1.11.: „Prinzipiell soll das Rendering und der Aufbau immer
+gleich sein, egal ob ein- oder zweisprachig. Nur, dass bei zweisprachig
+in einer Segmentsektion beide Sprachen als Tabelle, mit der Übersetzung
+in die Zielsprache darunter … und zusätzlich noch ein
+Unterschieds-Hint kommt.“  Under * Text both originals (Devanāgarī
+over IAST, then the Uchen), then per Sanskrit segment: its tables, its
+translation, the tables of its Tibetan segment(s) (Uchen first), their
+translation, the differences.  No * Tibetan section; the Tibetan
+rendering under * Sentence."
+  (let ((out (bcat-analysis-test--bilingual-003)))
+    (should (string-match-p "^\\* Text\n#\\+begin_verse\nकस्मात्" out))
+    (should (string-match-p "^#\\+end_verse\n\n#\\+begin_verse\nཅིའི་ཕྱིར" out))
+    (let ((seg (substring out (string-match "^⟦23⟧ · Tib\\. 78$" out) (string-match "^⟦24⟧" out))))
+      (should (string-match-p
+               (concat "\\`⟦23⟧ · Tib\\. 78\n\n| pañca-ākāra-ātma-vastu-udbhāvanatām .*\n\\(?:|.*\n\\)*"
+                       "\n→ On account of their bringing to light .*\n\n"
+                       "| བདག་གི་གཞི .*\n| \\[\\[steinert:bdag gi gzhi\\].*\n\\(?:|.*\n\\)*"
+                       "\n→ because they state the basis of self .*\n\n"
+                       "\\*Differences:\\* /udbhāvanatā/")
+               seg)))
+    (should-not (string-match-p "^\\* Tibetan$" out))
+    (should (< (string-match "^\\* Sentence$" out) (string-match "^\\*\\* Tibetan rendering$" out)
+               (string-match "^\\*\\* Translations compared$" out) (string-match "^\\* Segments$" out)))))
+
+(ert-deftest bcat-analysis-partner-per-segment ()
+  "The Tibetan file of the pair mirrored (Carsten 1.11.: „Spiegeln:
+Tibetisch zuerst“): per Tibetan segment its tables and translation;
+after the last of a group the Sanskrit segment's tables, its
+translation and the differences.  No * Sanskrit section."
+  (let* ((bcat-template-directory (expand-file-name "Templates/analysis" bcat-analysis-test--root))
+         (tibetan (bcat-analysis-parse (bcat-analysis-test--answer-003 "kunbtus")))
+         (out (bcat-template-render-named
+               "bilingual-tibetan"
+               (bcat-analysis-partner-context
+                (bcat-analysis-context (bcat-analysis-test--base-tib-003) tibetan
+                                       bcat-analysis-test--refs-tib-003)
+                tibetan (bcat-analysis-test--sanskrit-003)))))
+    (let ((seg (substring out (string-match "^⟦78⟧ · Skt\\. 23$" out) (string-match "^⟦79⟧" out))))
+      (should (string-match-p
+               (concat "\\`⟦78⟧ · Skt\\. 23\n\n| བདག་གི་གཞི .*\n\\(?:|.*\n\\)*"
+                       "\n→ because they state the basis of self .*\n\n"
+                       "| pañca-ākāra-ātma-vastu-udbhāvanatām .*\n\\(?:|.*\n\\)*"
+                       "\n→ On account of their bringing to light .*\n\n"
+                       "\\*Differences:\\* /udbhāvanatā/")
+               seg)))
+    (should-not (string-match-p "^\\* Sanskrit$" out))))
+
 (ert-deftest bcat-analysis-num-ranges ()
   "Segment numbers for a heading: runs as ranges, gaps by comma."
   (should (equal "77" (bcat-analysis--num-ranges '(77))))

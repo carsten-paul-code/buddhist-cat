@@ -4670,7 +4670,17 @@ aus den Referenzen (Lindtners Anmerkungen, lindtner-sda.org) stehen am
 Ende von Translations compared — mitten im Abschnitt schluckte die
 Definition alle folgenden Absätze (SDA 10: Apple, DharmaMitra und die
 Einschätzung in der Fußnote); `bcat-analysis-footnotes-last' bei Abruf,
-Rumpf, C-c u L und Nachtragen.
+Rumpf, C-c u L und Nachtragen.  ZWEISPRACHIG JE SEGMENT (1.11., Carsten:
+„Prinzipiell soll das Rendering und der Aufbau immer gleich sein, egal ob
+ein- oder zweisprachig“): unter * Text oben beide Originale, dann je
+Sanskrit-Segment „⟦N⟧ · Tib. …“, seine Tabellen, „→“, die zugeordneten
+tibetischen Segmente (Tabellen mit Uchen, „→“), *Differences:*; kein
+* Tibetan mehr, Tibetan rendering unter * Sentence.  Partnerdatei
+gespiegelt (Tibetisch zuerst, das Sanskrit-Segment mit Differences nach
+dem letzten tibetischen seiner Gruppe).  Feld `other-segments' (aus
+bilingual-/partner-context; C-c u L liest es aus der Partnerdatei —
+`bcat-relayout-context' mit OTHER-TEXT; was im eigenen File nach dem
+ersten „→“ steht, wird nicht zurückgelesen).
 
 #### Offen
 

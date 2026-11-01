@@ -1144,9 +1144,11 @@ differences, the rendering; C-c u H runs once, at the end."
       (let ((text (bcat-sentence-test--file-text-n src 3)))
         (should (string-match-p "^\\*\\* Segment 22 · Tib\\. 77$" text))
         (should (string-match-p "^\\*\\* Segment 23 · Tib\\. 78–79$" text))
-        (should (string-match-p (regexp-quote "ཅིའི་ཕྱིར་ཕུང་པོ་རྣམས་ལྔ་ཁོ་ན་ཞེ་ན།\nci'i phyir [why] phung po [aggregate] rnams [plural] lnga [five] kho na [only] zhe na [if one asks] /\n#+end_verse") text))
-        (should (string-match-p (regexp-quote "⟦23⟧ · Tib. 78–79\n#+begin_verse\n") text))
-        (should (string-match-p (regexp-quote "*Differences:* /udbhāvanatā/ is rendered /brjod pa/ („stating“).\n\n** Tibetan rendering") text))
+        ;; 1.11.: per segment both languages as tables with their
+        ;; translation, then the differences.
+        (should (string-match-p (regexp-quote "→ Why are there just five aggregates? —\n\n| ཅིའི་ཕྱིར") text))
+        (should (string-match-p (regexp-quote "⟦23⟧ · Tib. 78–79\n\n| ") text))
+        (should (string-match-p (regexp-quote "*Differences:* /udbhāvanatā/ is rendered /brjod pa/ („stating“).\n\n*Translation:*") text))
         (should (string-match-p (regexp-quote "** Segment 23 · Tib. 78–79\n⟦23⟧ *Translation:* On account of") text))
         (should (string-match-p "^\\*\\* Tibetan rendering\nThe Tibetan states the self-basis" text))
         (should (string-match-p "^⟦22⟧ \\*Translation:\\* Why are there just five aggregates" text)))
@@ -1257,8 +1259,8 @@ the assignment 77 → 22, 78–79 → 23.")
 Satz im Tibetischen springen“.  In a pair each sentence file links the
 other's sentence file in its header; C-c u A on the Tibetan source
 builds its file from the bilingual-tibetan template — the Sanskrit of
-the sentence as Devanāgarī over IAST under * Sanskrit (31.10. abends:
-the other language after Translations compared; per segment once
+the sentence as Devanāgarī over IAST under * Text, after the Uchen
+\(1.11.: both originals at the top, per segment both languages once
 Claude has assigned them)."
   (bcat-sentence-test--with-pair
     (let ((text (bcat-sentence-test--create-n src 3)))
@@ -1267,7 +1269,9 @@ Claude has assigned them)."
       (should (string-match-p "^#\\+CAT_TEMPLATE: bilingual-tibetan$" text))
       (should (string-match-p (regexp-quote "#+CAT_PARALLEL: [[file:../../Sanskrit/analysis/sent-003-asam.org][sent-003-asam.org]]") text))
       (should (string-match-p "^#\\+CAT_PARALLEL_SEGMENTS: 22, 23$" text))
-      (should (string-match-p (regexp-quote "* Sanskrit\n#+begin_verse\nकस्मात् पञ्चैव स्कन्धाः।\nkasmāt pañcaiva skandhāḥ.\n") text))
+      ;; 1.11.: both originals under * Text, the Tibetan first.
+      (should (string-match-p (regexp-quote "#+end_verse\n\n#+begin_verse\nकस्मात् पञ्चैव स्कन्धाः।\nkasmāt pañcaiva skandhāḥ.\n") text))
+      (should-not (string-match-p "^\\* Sanskrit$" text))
       (should (string-match-p "^\\*\\* Segment 77$" text)))))
 
 (ert-deftest bcat-sentence-fetch-pair ()
@@ -1297,9 +1301,15 @@ The PDF is made of the Sanskrit file only („nur die zweisprachige“)."
           (should (equal "bilingual-tibetan" (bcat-sentence-file-p tfile)))
           (should (string-match-p "^\\*\\* Segment 77 · Skt\\. 22$" text))
           (should (string-match-p "^\\*\\* Segment 79 · Skt\\. 23$" text))
-          (should (string-match-p (regexp-quote "#+begin_verse\nकस्मात् पञ्चैव स्कन्धाः।\nkasmāt [why] pañca [five] eva [only] skandhāḥ [aggregates].\n#+end_verse") text))
-          (should (string-match-p (regexp-quote "⟦78⟧ · Skt. 23\n#+begin_verse\n") text))
-          (should (string-match-p (regexp-quote "*Differences:* /udbhāvanatā/ is rendered /brjod pa/ („stating“).\n\n** Tibetan rendering") text))
+          ;; 1.11., mirrored: both originals at the top, per Tibetan
+          ;; segment its table and translation, after the last of a
+          ;; group the Sanskrit segment and the differences.
+          (should (string-match-p (regexp-quote "#+begin_verse\nकस्मात् पञ्चैव स्कन्धाः।\nkasmāt pañcaiva skandhāḥ.\n") text))
+          ;; (78 and 79 have no words in this answer: no table, so no
+          ;; mark — their translations, then the Sanskrit segment 23.)
+          (should (string-match-p (regexp-quote "→ the body with what it appropriated,\n\n| pañca-ākāra-ātma-vastu-udbhāvanatām") text))
+          (should (< (string-match "^→ the body with what it appropriated,$" text) (string-match "^\\*Differences:\\*" text)))
+          (should (string-match-p (regexp-quote "*Differences:* /udbhāvanatā/ is rendered /brjod pa/ („stating“).\n\n*Translation:*") text))
           (should (string-match-p (regexp-quote "** Segment 78 · Skt. 23\n⟦78⟧ *Translation:* because they state") text))
           (should (= 1 (with-temp-buffer (insert text) (how-many "^\\*Differences:\\*" (point-min) (point-max)))))
           (should (string-match-p "^⟦77⟧ \\*Translation:\\* Why are the aggregates only five" text))
