@@ -81,27 +81,24 @@ sentence's drawer or #+CAT_SECOND_LANGUAGE in the source).  In the user
 prompt, not the system prompt: that stays the same per document (the
 cache)."
   (let ((second (bcat-analysis--second-language target)))
-    (format "\n\nAlso add to the JSON object the field \"%s\": the sentence translation once more in %s — close to the original, the key terms with the original in parentheses; the class thinks the concepts through in this language too."
-            (car second) (cdr second))))
+    (format "\n\nAlso add to the JSON object the field \"%s\": the sentence translation once more in %s — close to the original, the key terms with the original in parentheses; the class thinks the concepts through in this language too.  In the comparison, for each difference also say what each reading would be in %s (in quotation marks)."
+            (car second) (cdr second) (cdr second))))
 
-(defun bcat-analysis--sentence-rules (target)
-  "The rules for the sentence translation and the comparison of an
-analysis in TARGET — each difference also in the second language
-\(Carsten 31.10. abends, TĀ 1006: on the references „auch was das auf
-Deutsch heißen würde“).  The translation in the second language is an
-option of the sentence (`bcat-analysis--second-request')."
-  (let ((second (bcat-analysis--second-language target)))
-    (format "- translation (sentence): your translation of the whole sentence (the segment parts joined).
-- comparison: one to three sentences on the meaning-shifting differences between the translations including yours, for each difference what each reading would be in %s (in quotation marks); \"\" when there are none."
-            (cdr second))))
+(defconst bcat-analysis--sentence-rules
+  "- translation (sentence): your translation of the whole sentence (the segment parts joined).
+- comparison: one to three sentences on the meaning-shifting differences between the translations including yours; \"\" when there are none."
+  "The rules for the sentence translation and the comparison — one
+wording for every analysis.  The translation in the second language and
+the readings of the comparison in it are an option of the sentence
+\(`bcat-analysis--second-request').")
 
-(defun bcat-analysis--tibetan-rules (lang &optional target)
+(defun bcat-analysis--tibetan-rules (lang)
   "The rules for the fields of a Tibetan sentence analysis, from words
-to comparison (glosses in LANG, the analysis in TARGET) — one wording
-for the Tibetan analysis and the Tibetan request of a bilingual pair."
+to comparison (glosses in LANG) — one wording for the Tibetan analysis
+and the Tibetan request of a bilingual pair."
   (concat (bcat-analysis--tibetan-segment-rules lang) "\n"
           "- grammar: an overview of the whole sentence — verb backbone, clause linkage, agents, elisions.\n"
-          (bcat-analysis--sentence-rules target)))
+          bcat-analysis--sentence-rules))
 
 (defun bcat-analysis--references-block (refs)
   "The reference translations REFS ((NAME . TEXT) …) of a user prompt."
@@ -123,7 +120,7 @@ Rules:
 - segments: one entry per given segment, same numbers, same order.
 %s
 - Write glosses, notes and explanations in %s. Never mention yourself."
-            (bcat-analysis--tibetan-rules lang target) lang)))
+            (bcat-analysis--tibetan-rules lang) lang)))
 
 (defun bcat-analysis-user-prompt (sent-num verse segs refs &optional context second)
   "The user prompt for sentence SENT-NUM (VERSE its :VERSE: or nil):
@@ -155,15 +152,17 @@ SOURCE the language of the text (\"Classical Tibetan\" by default,
 Rules:
 - segments: one entry per given segment; references: for every given reference translation the part that corresponds to this segment, quoted verbatim (not its notes). Mark with org bold *…* ONLY passages that shift the meaning against the original or against the given translation of the segment; stylistic variation is not marked.
 - shift: one line on what the marked passages shift, beginning with the translator name; \"\" when nothing is marked.
-- comparison: one or two sentences on the meaning-shifting differences of the new translation(s), for each difference what each reading would be in %s (in quotation marks); \"\" when there are none.
+- comparison: one or two sentences on the meaning-shifting differences of the new translation(s); \"\" when there are none.
 - Write in %s. Never mention yourself."
-            (or source "Classical Tibetan") (cdr (bcat-analysis--second-language target)) lang)))
+            (or source "Classical Tibetan") lang)))
 
-(defun bcat-analysis-align-user-prompt (sent-num verse segs refs &optional context)
+(defun bcat-analysis-align-user-prompt (sent-num verse segs refs &optional context second)
   "User prompt of the alignment request: SEGS ((NUM TEXT WYLIE
 TRANSLATION) …) with the translation already in the file — WYLIE nil
 for Sanskrit, whose TEXT is shown as transmitted —, REFS the new
-reference translations ((NAME . TEXT) …)."
+reference translations ((NAME . TEXT) …); SECOND, the target language
+code of a sentence with the option, asks for the readings of the
+comparison in the second language too."
   (concat
    (if context (concat (mapconcat #'identity context "\n") "\n\n") "")
    (format "Sentence %d%s — segments:\n" sent-num (if verse (format " (%s)" verse) ""))
@@ -172,6 +171,10 @@ reference translations ((NAME . TEXT) …)."
               segs "\n")
    "\n\nReference translations to align:\n"
    (mapconcat (lambda (r) (format "=== %s ===\n%s" (car r) (string-trim (cdr r)))) refs "\n")
+   (if second
+       (format "\n\nIn the comparison, for each difference also say what each reading would be in %s (in quotation marks)."
+               (cdr (bcat-analysis--second-language second)))
+     "")
    "\n\nReturn the JSON object now."))
 
 (defun bcat-analysis-sanskrit-system-prompt (target &optional bhasya recitation)
@@ -212,7 +215,7 @@ Rules:
 - Write glosses, notes and explanations in %s. Never mention yourself."
             (concat (if bhasya ", \"bhasya_hint\": \"…\"" "")
                     (if recitation ", \"recitation\": [\"…\"]" ""))
-            (bcat-analysis--sentence-rules target)
+            bcat-analysis--sentence-rules
             (concat
              (if bhasya
                  "- bhasya_hint: the bhāṣya on this verse is given as context; one to three sentences on what in it matters for reading the verse — how it takes a word or the verse's function, a reading it presupposes, where its Tibetan says something else; Sanskrit and Tibetan words in /italic/; \"\" when nothing.\n"
@@ -268,7 +271,7 @@ Rules:
 - rendering: the Tibetan translation of the whole sentence in two to five sentences — how it reproduces the structure, how it renders the key terms, where it shifts the sense; Sanskrit and Tibetan words in /italic/.
 - JSON escaping: only \\\" and \\\\ — never a backslash before an apostrophe.
 - Write glosses, notes and explanations in %s. Never mention yourself."
-            (bcat-analysis--tibetan-rules lang target) lang)))
+            (bcat-analysis--tibetan-rules lang) lang)))
 
 (defun bcat-analysis-tibetan-user-prompt (sent-num verse sanskrit tibetan refs &optional context second)
   "User prompt of the Tibetan request for sentence SENT-NUM (VERSE its

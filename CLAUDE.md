@@ -4646,8 +4646,10 @@ als default …, sondern nur als Option (wahrscheinlich sogar auf
 Satzebene)“): `:CAT_SECOND_LANGUAGE: t' im Drawer des Satzes in der
 Quelle oder #+CAT_SECOND_LANGUAGE: t für die ganze Quelle; die Bitte
 steht dann in der Anfrage zum Satz (`bcat-analysis--second-request'),
-die System-Prompts bleiben je Dokument gleich (Cache).  Die Lesarten in
-der zweiten Sprache im Vergleich bleiben immer.  `c6cf502'
+die System-Prompts bleiben je Dokument gleich (Cache).  Ebenso (1.11.,
+„ja, bitte auch nur auf Wunsch“) die Lesarten in der zweiten Sprache im
+Vergleich — dieselbe Option, auch im Abgleich-Abruf für nachgetragene
+Referenzen.  `c6cf502'
 C-c u L (`bcat-relayout', persist/bcat-relayout.el): Satzdatei OHNE
 Abruf neu setzen — liest die Felder aus der Datei zurück (alte und neue
 Ordnung; Spezifikation: test/fixtures/old-layout-*.org eingelesen =

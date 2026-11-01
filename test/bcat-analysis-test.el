@@ -216,33 +216,40 @@ ich mich leichter in die Konzepte rein denken kann“; 1.11.: „nicht als
 default …, sondern nur als Option (wahrscheinlich sogar auf
 Satzebene)“.  The system prompts no longer ask for it (they stay the
 same per document — the cache); the user prompt of a sentence with the
-option does (translation_de for English, translation_en for German).
-The comparison still names each reading in the second language (1006:
-„Bei der Unterscheidung auch was das auf Deutsch heißen würde“).  The
-field lands under the translation."
+option does (translation_de for English, translation_en for German) —
+and asks the comparison to name each reading in that language too
+\(1006: „Bei der Unterscheidung auch was das auf Deutsch heißen würde“;
+1.11.: „ja, bitte auch nur auf Wunsch“), as does the small request for a
+reference added by hand.  The field lands under the translation."
   (dolist (sys (list (bcat-analysis-sanskrit-system-prompt "en")
                      (bcat-analysis-system-prompt "en")
                      (bcat-analysis-tibetan-system-prompt "en")))
     (should-not (string-match-p "translation_de" sys))
-    (should (string-match-p "what each reading would be in German" sys)))
+    (should-not (string-match-p "what each reading would be" sys)))
   (dolist (sys (list (bcat-analysis-sanskrit-system-prompt "de")
                      (bcat-analysis-system-prompt "de")))
-    (should-not (string-match-p "translation_en" sys))
-    (should (string-match-p "what each reading would be in English" sys)))
+    (should-not (string-match-p "translation_en\\|what each reading would be" sys)))
+  (should-not (string-match-p "what each reading would be" (bcat-analysis-align-system-prompt "en")))
+  (should (string-match-p "what each reading would be in German"
+                          (bcat-analysis-align-user-prompt 9 nil '((38 "ཀ" "ka" "t")) '(("R" . "r")) nil "en")))
+  (should-not (string-match-p "what each reading would be"
+                              (bcat-analysis-align-user-prompt 9 nil '((38 "ཀ" "ka" "t")) '(("R" . "r")))))
   (let ((segs '((685 "atra madvāgaśaktāpi yanniyantraṇamullaset /"))))
     (should-not (string-match-p "translation_de" (bcat-analysis-sanskrit-user-prompt 1007 nil segs nil)))
     (should (string-match-p "\"translation_de\": the sentence translation once more in German"
                             (bcat-analysis-sanskrit-user-prompt 1007 nil segs nil nil nil "en")))
     (should (string-match-p "\"translation_en\": the sentence translation once more in English"
                             (bcat-analysis-sanskrit-user-prompt 1007 nil segs nil nil nil "de")))
+    (should (string-match-p "what each reading would be in German"
+                            (bcat-analysis-sanskrit-user-prompt 1007 nil segs nil nil nil "en")))
+    (should-not (string-match-p "what each reading would be"
+                                (bcat-analysis-sanskrit-user-prompt 1007 nil segs nil)))
     (should (string-match-p "translation_de"
                             (bcat-analysis-user-prompt 9 nil '((38 "ཀ" "ka")) nil nil "en")))
     (should (string-match-p "translation_de"
                             (bcat-analysis-tibetan-user-prompt 3 nil '((22 "x" "t")) '((77 "ཀ" "ka")) nil nil "en")))
     (should (string-match-p "translation_de.*\n\nReturn the JSON object now\\.\\'"
                             (bcat-analysis-sanskrit-user-prompt 1007 nil segs nil nil nil "en"))))
-  ;; The small request for a reference added by hand compares too.
-  (should (string-match-p "what each reading would be in German" (bcat-analysis-align-system-prompt "en")))
   (let ((ctx (bcat-analysis-sanskrit-context
               (bcat-analysis-test--base-1007)
               (bcat-analysis-parse
@@ -982,7 +989,7 @@ with Wylie, the reference translations of the Tibetan."
                    "\"note\"" "\"concepts\"" "\"differences\"" "\"text\"" "\"grammar\""
                    "\"comparison\"" "\"rendering\""))
       (should (string-match-p (regexp-quote key) sys)))
-    (should (string-match-p (regexp-quote (bcat-analysis--tibetan-rules "German" "de")) sys))
+    (should (string-match-p (regexp-quote (bcat-analysis--tibetan-rules "German")) sys))
     (should (string-match-p "never decrease" sys))
     (should (string-match-p "goes with the first" sys))
     (should (string-match-p "No entry where the Tibetan renders the Sanskrit faithfully" sys))

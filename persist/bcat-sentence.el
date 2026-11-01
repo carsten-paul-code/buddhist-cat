@@ -913,7 +913,8 @@ no DharmaMitra, no new analysis."
                                           (cdr (assq (car s) own))))
                         (plist-get sentence :segs))
                 refs
-                (plist-get meta :claude-context)))))
+                (plist-get meta :claude-context)
+                (bcat-sentence--second-language sentence source-file)))))
      (lambda (f response) (bcat-sentence--align-land f response)))
     (bcat-status-step file :align "Zuordnung angefragt")
     'fired))
