@@ -371,6 +371,23 @@ the sentence."
            `((sanskrit . ,(mapcar #'bcat-sentence--sanskrit-segment segs))
              (sanskrit-p . t))))))))
 
+(defun bcat-sentence--pair-rump (template segments parallel)
+  "The two parts of a pair's file of TEMPLATE before C-c u G (Carsten
+1.11., `bcat-analysis-pair-lists'): its SEGMENTS and the other
+language's from PARALLEL (`bcat-sentence--parallel-fields') — marks,
+the dictionary tables of the Tibetan, the Uchen one line per segment;
+nil for another template."
+  (pcase template
+    ("bilingual"
+     (let ((lists (bcat-analysis-pair-lists segments (alist-get 'tibetan parallel) nil nil)))
+       `((segments . ,(nth 0 lists))
+         (tibetan-segments . ,(nth 1 lists))
+         (tibetan-lines . ,(nth 2 lists)))))
+    ("bilingual-tibetan"
+     (let ((lists (bcat-analysis-pair-lists (alist-get 'sanskrit parallel) segments nil nil)))
+       `((segments . ,(nth 1 lists))
+         (sanskrit-segments . ,(nth 0 lists)))))))
+
 (defun bcat-sentence--recitation (texts)
   "Recitation fields of a Sanskrit sentence with the segment lines TEXTS:
 recitation — the original line by line in Devanāgarī with the IAST
@@ -492,8 +509,10 @@ existing file (user slots, `created')."
        ;; wegfallen“); there the Tibetan instead.
        (and (equal template "sanskrit")
             (bcat-sentence--recitation (mapcar (lambda (s) (string-trim (cdr s))) segs)))
-       (and (assoc template bcat-sentence--pair-templates)
-            (bcat-sentence--parallel-fields sent-num source-file))
+       (let ((parallel (and (assoc template bcat-sentence--pair-templates)
+                            (bcat-sentence--parallel-fields sent-num source-file))))
+         (append (and parallel (bcat-sentence--pair-rump template segments parallel))
+                 parallel))
        (bcat-sentence--bhasya-fields sent-num source-file)
        (bcat-sentence--lecture-fields sent-num source-file)
        `((sent-num . ,sent-num)
@@ -1058,14 +1077,15 @@ compared are REFS as sent, marked from the answer's segment parts."
    (lambda (base)
      (bcat-sentence--fetched-context base sentence source-file refs parsed tibetan))))
 
-(defun bcat-sentence--write-partner (sentence source-file tibetan trefs sanskrit &optional hint assignment)
+(defun bcat-sentence--write-partner (sentence source-file tibetan trefs sanskrit &optional hint assignment sanskrit-translation)
   "Write the Tibetan file of the bilingual SENTENCE of the paired
 SOURCE-FILE (Carsten 30.10.: „das volle Programm“): the Tibetan analysis
 from TIBETAN, the answer of the Tibetan request (TREFS the references
 sent with it), with the Sanskrit segments SANSKRIT as the Sanskrit file
 has them, HINT the hint on the bhāṣya from the Sanskrit answer,
 ASSIGNMENT the Tibetan segments' Sanskrit ones (for the commentary
-links).  Returns the file."
+links), SANSKRIT-TRANSLATION the Sanskrit sentence's (its part, 1.11.).
+Returns the file."
   (let* ((n (plist-get sentence :sent-num))
          (parallel (bcat-sentence-parallel-source source-file))
          ;; The Tibetan sentence's own number (MSA: 64 for the Sanskrit 36).
@@ -1078,7 +1098,7 @@ links).  Returns the file."
              (bcat-sentence--commentary-fields
               (plist-get other :sent-num) parallel
               (bcat-analysis-partner-context (bcat-analysis-context base tibetan trefs)
-                                             tibetan sanskrit)
+                                             tibetan sanskrit sanskrit-translation)
               assignment))))
     tfile))
 
@@ -1137,7 +1157,8 @@ FILE as the Sanskrit answer left it when the answer is unreadable."
           (bcat-sentence--write-partner sentence source-file tibetan trefs
                                         (alist-get 'segments context)
                                         (alist-get 'bhasya-hint context)
-                                        (alist-get 'assignment context))))
+                                        (alist-get 'assignment context)
+                                        (alist-get 'translation context))))
       (bcat-status-step file :tibetan "Tibetisch ✓")
       (run-hook-with-args 'bcat-sentence-after-fetch-functions file)
       file)))

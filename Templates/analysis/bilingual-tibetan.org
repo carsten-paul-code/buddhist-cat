@@ -19,17 +19,18 @@ Translations compared) / * Segments (der Rest je Segment) / * Commentary
 (was rein muss: die Kommentar-Links je Segment, der Bhāṣya mit Hint) /
 * Further Reading (Sanderson u. ä.).  Unter * Text oben das Original
 in seiner Schrift: Devanāgarī über der überlieferten Zeile bzw. Uchen.
-Seit 1.11. (Carsten: „Prinzipiell soll das Rendering und der Aufbau
-immer gleich sein, egal ob ein- oder zweisprachig. Nur, dass bei
-zweisprachig in einer Segmentsektion beide Sprachen als Tabelle, mit
-der Übersetzung in die Zielsprache darunter … und zusätzlich noch ein
-Unterschieds-Hint kommt.“): unter * Text oben beide Originale, dann je
-Segment ⟦N⟧ · Tib./Skt. …, seine Tabellen und „→ Übersetzung“, die
-Segmente der anderen Sprache (other-segments: num gloss-table
-segment-translation, beim Partner auch differences) ebenso, dann
-*Differences:*; kein eigener Abschnitt * Tibetan/* Sanskrit mehr, die
-Tibetan rendering unter * Sentence.  Partnerdatei gespiegelt: Tibetisch
-zuerst, das Sanskrit-Segment nach dem letzten tibetischen seiner Gruppe.
+Seit 1.11. mittags (zweite Fassung; Carsten: beide Sprachen je Segment
+waren „nicht gut handelbar“ — AS 2: 41 tibetische Segmente, 21 Seiten —
+„Dann trennen wir das bitte wieder. Erst Sanskrit, dann Tibetisch …
+so handeln, wie bei den einsprachigen, nur dass zu den Tibetisch
+Übersetzungen noch die Differenz zum Sanskrit ergänzt wird“, mit
+Sprungmarken): zwei Teile, jeder wie eine einsprachige Datei — Original,
+je Segment <<skt-N>>/<<tib-N>>⟦N⟧ mit Link zum Gegenstück (mark), die
+Tabellen, „→“, die Satzübersetzung; im tibetischen Teil nach dem letzten
+Segment einer Gruppe *Differences:*.  Felder: mark, tibetan-segments
+tibetan-lines (das Uchen, eine Zeile je Sanskrit-Segment)
+tibetan-translation bzw. sanskrit-segments sanskrit-translation
+(`bcat-analysis-pair-lists').
 Felder dazu: second-translation second-label commentary-p assignment
 (gesetzt, sobald Claude die Segmente zugeordnet hat; bis dahin steht
 unter * Sanskrit der ganze Sanskrit-Text).
@@ -78,29 +79,15 @@ Rumpf ohne Glossen bleibt sie.  Reines Sanskrit behält den Padapāṭha.
 {{/segments}}
 #+end_verse
 
-{{#sanskrit-p}}
-#+begin_verse
-{{#sanskrit}}
-{{devanagari}}
-{{samhita}}
-{{/sanskrit}}
-#+end_verse
-
-{{/sanskrit-p}}
 {{#segments}}
-{{#gloss-table}}
-⟦{{num}}⟧{{parallel}}
+{{#shown}}
+<<tib-{{num}}>>⟦{{num}}⟧{{mark}}
 
+{{/shown}}
+{{#gloss-table}}
 {{gloss-table}}
 
 {{/gloss-table}}
-{{#segment-translation}}
-→ {{segment-translation}}
-
-{{/segment-translation}}
-{{#other-segments}}
-{{gloss-table}}
-
 {{#segment-translation}}
 → {{segment-translation}}
 
@@ -109,7 +96,6 @@ Rumpf ohne Glossen bleibt sie.  Reines Sanskrit behält den Padapāṭha.
 *Differences:* {{differences}}
 
 {{/differences}}
-{{/other-segments}}
 {{/segments}}
 *Translation:* {{translation}}
 {{#second-translation}}
@@ -117,6 +103,34 @@ Rumpf ohne Glossen bleibt sie.  Reines Sanskrit behält den Padapāṭha.
 *{{second-label}}:* {{second-translation}}
 {{/second-translation}}
 
+{{#sanskrit-p}}
+* Sanskrit
+#+begin_verse
+{{#sanskrit}}
+{{devanagari}}
+{{samhita}}
+{{/sanskrit}}
+#+end_verse
+
+{{#sanskrit-segments}}
+{{#shown}}
+<<skt-{{num}}>>⟦{{num}}⟧{{mark}}
+
+{{/shown}}
+{{#gloss-table}}
+{{gloss-table}}
+
+{{/gloss-table}}
+{{#segment-translation}}
+→ {{segment-translation}}
+
+{{/segment-translation}}
+{{/sanskrit-segments}}
+{{#sanskrit-translation}}
+*Translation:* {{sanskrit-translation}}
+
+{{/sanskrit-translation}}
+{{/sanskrit-p}}
 * Sentence
 ** Grammar
 {{grammar}}

@@ -255,18 +255,18 @@ pair; no request."
       (bcat-sentence-test--fetch-n src 3))
     (let ((file (tibetan-sentence--filepath 3 folder src))
           (fired nil))
-      ;; A pair written before: no Tibetan under * Text, no answer kept.
+      ;; A pair written before: no Tibetan part, no answer kept.
       (delete-file (bcat-sentence--answers-file file))
       (with-temp-file file
-        (insert (replace-regexp-in-string "^| ཅིའི་ཕྱིར\\(?:.\\|\n\\)*?\n\n→ [^\n]*\n\n" ""
-                                          (bcat-sentence-test--text-of file) t t)))
+        (insert (replace-regexp-in-string "^\\* Tibetan\n\\(?:.\\|\n\\)*?\\(^\\* Sentence$\\)" "\\1"
+                                          (bcat-sentence-test--text-of file) t)))
       (should-not (string-match-p "^| ཅིའི་ཕྱིར" (bcat-sentence-test--text-of file)))
       (cl-letf (((symbol-function 'tibetan-discussion--submit)
                  (lambda (&rest _) (setq fired t))))
         (bcat-relayout-file file))
       (should-not fired)
-      (should (string-match-p "^⟦22⟧ · Tib\\. 77\n\n| kasmāt" (bcat-sentence-test--text-of file)))
-      (should (string-match-p "\n\n| ཅིའི་ཕྱིར" (bcat-sentence-test--text-of file))))))
+      (should (string-match-p "^<<skt-22>>⟦22⟧ · \\[\\[tib-77\\]\\[Tib\\. 77\\]\\]\n\n| kasmāt" (bcat-sentence-test--text-of file)))
+      (should (string-match-p "^\\* Tibetan\n\\(?:.\\|\n\\)*\n\n| ཅིའི་ཕྱིར" (bcat-sentence-test--text-of file))))))
 
 (ert-deftest bcat-relayout-key-and-menu ()
   "C-c u L sets anew; the menu offers it next to the jumps."

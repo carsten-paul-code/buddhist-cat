@@ -114,9 +114,9 @@ the other language's blocks and differences."
     (let ((current nil) (own nil))
       (dolist (p (bcat-relayout--paragraphs (bcat-relayout--section text 1 "Text")))
         (cond
-         ((string-match "\\`⟦\\([0-9]+\\)⟧\\(?: · [^\n]*\\)?\\'" p)
+         ((string-match "\\`\\(?:<<[^>\n]*>>\\)?⟦\\([0-9]+\\)⟧[^\n]*\\'" p)
           (setq current (string-to-number (match-string 1 p)) own t))
-         ((string-match "\\`⟦\\([0-9]+\\)⟧\\(?: · [^\n]*\\)?\n" p)
+         ((string-match "\\`\\(?:<<[^>\n]*>>\\)?⟦\\([0-9]+\\)⟧[^\n]*\n" p)
           (setq current (string-to-number (match-string 1 p)) own t)
           (bcat-relayout--put table current 'gloss-table (substring p (match-end 0))))
          ((and current (string-prefix-p "|" p))
@@ -136,14 +136,21 @@ the other language's blocks and differences."
             (progn (setq current (string-to-number (match-string 1 p)))
                    (bcat-relayout--put table current 'concepts (substring p (match-end 0))))
           (when current (bcat-relayout--put table current 'concepts p t)))))
-    ;; ⟦N⟧ under * Tibetan / * Sanskrit: the other language, its differences.
+    ;; ⟦N⟧ under * Tibetan / * Sanskrit, the other language: there its
+    ;; differences.  Since 1.11. mittags the marks are the other
+    ;; language's („<<tib-78>>⟦78⟧ · [[skt-23][Skt. 23]]“) — the
+    ;; differences after them belong to the Sanskrit segment the link
+    ;; names; before (7f0ee89) ⟦N⟧ was this file's segment.
     (let ((current nil))
       (dolist (p (bcat-relayout--paragraphs
                   (bcat-relayout--before-l2
                    (or (bcat-relayout--section text 1 "\\(?:Tibetan\\|Sanskrit\\)") ""))))
         (cond
-         ((string-match "\\`⟦\\([0-9]+\\)⟧.*\n" p)
-          (setq current (string-to-number (match-string 1 p)))
+         ((string-match "\\`\\(?:<<[^>\n]*>>\\)?⟦\\([0-9]+\\)⟧\\([^\n]*\\)" p)
+          (let ((mark (match-string 2 p)) (n (string-to-number (match-string 1 p))))
+            (setq current (if (string-match "Skt\\. \\([0-9]+\\)" mark)
+                              (string-to-number (match-string 1 mark))
+                            n)))
           (let ((body (bcat-relayout--verse-body p)))
             (when body (bcat-relayout--put table current block-field body))))
          ((and current (string-match "\\`\\*Differences:\\* " p))
@@ -205,35 +212,42 @@ divided into sense units."
                                                   2 "Word Analysis"))))
      (nreverse out))))
 
-(defun bcat-relayout--other-segments (num template assignment other base)
-  "The segments of the other language shown with segment NUM of a
-bilingual file of TEMPLATE (Carsten 1.11.), from OTHER — the fields read
-back from the partner file, a hash NUM → alist: in the Sanskrit file the
-Tibetan segments ASSIGNMENT gives NUM, their tables with the Uchen row
-\(BASE's `tibetan' has their Uchen); in the Tibetan file after the last
-segment of a group its Sanskrit one, with the differences."
-  (let ((item (lambda (n &rest more)
-                (let ((f (gethash n other)))
-                  (append `((num . ,n)
-                            (gloss-table . ,(or (alist-get 'gloss-table f) ""))
-                            (segment-translation . ,(or (alist-get 'segment-translation f) "")))
-                          more)))))
-    (if (equal template "bilingual")
-        (mapcar (lambda (a)
-                  (let* ((tib (car a))
-                         (uchen (alist-get 'uchen (cl-find tib (alist-get 'tibetan base)
-                                                           :key #'bcat-analysis--num)))
-                         (it (funcall item tib)))
-                    (setf (alist-get 'gloss-table it)
-                          (bcat-analysis-uchen-table (alist-get 'gloss-table it) uchen))
-                    it))
-                (cl-remove-if-not (lambda (a) (eql num (cdr a))) assignment))
-      (let* ((cell (assq num assignment))
-             (next (cadr (memq cell assignment))))
-        (when (and cell (not (eql (cdr cell) (cdr next))))
-          (list (funcall item (cdr cell)
-                         (cons 'differences
-                               (or (alist-get 'differences (gethash (cdr cell) other)) "")))))))))
+(defun bcat-relayout--pair-fields (template segments assignment other other-text base)
+  "The two parts of a bilingual file of TEMPLATE (Carsten 1.11.,
+`bcat-analysis-pair-lists') set anew: SEGMENTS its own, merged; the
+other language's segments from BASE (its rump: `tibetan' or `sanskrit')
+completed from OTHER — the fields read back from the partner file
+OTHER-TEXT (the Tibetan tables with the Uchen row) — and the partner's
+sentence translation.  ASSIGNMENT from the segment headings."
+  (let* ((sanskrit-file (equal template "bilingual"))
+         (others (mapcar (lambda (o)
+                           (let* ((f (gethash (bcat-analysis--num o) other))
+                                  (table (alist-get 'gloss-table f)))
+                             (append
+                              (and table
+                                   `((gloss-table . ,(if sanskrit-file
+                                                         (bcat-analysis-uchen-table table (alist-get 'uchen o))
+                                                       table))))
+                              (and (alist-get 'segment-translation f)
+                                   `((segment-translation . ,(alist-get 'segment-translation f))))
+                              (and (alist-get 'differences f)
+                                   `((differences . ,(alist-get 'differences f))))
+                              o)))
+                         (alist-get (if sanskrit-file 'tibetan 'sanskrit) base)))
+         (sanskrit (if sanskrit-file segments others))
+         (tibetan (if sanskrit-file others segments))
+         (diffs (mapcar (lambda (s) (cons (bcat-analysis--num s) (or (alist-get 'differences s) "")))
+                        sanskrit))
+         (lists (bcat-analysis-pair-lists sanskrit tibetan assignment diffs))
+         (translation (alist-get 'translation (bcat-relayout--sentence-fields other-text base))))
+    (if sanskrit-file
+        `((segments . ,(nth 0 lists))
+          (tibetan-segments . ,(nth 1 lists))
+          (tibetan-lines . ,(nth 2 lists))
+          (tibetan-translation . ,(or translation "")))
+      `((segments . ,(nth 1 lists))
+        (sanskrit-segments . ,(nth 0 lists))
+        (sanskrit-translation . ,(or translation ""))))))
 
 (defun bcat-relayout-context (base text template &optional other-text)
   "The template fields of the sentence file TEXT (template TEMPLATE):
@@ -257,14 +271,11 @@ segments per segment come from there (Carsten 1.11.)."
                                (when (and uchen (alist-get 'gloss-table fields))
                                  (setf (alist-get 'gloss-table fields)
                                        (bcat-analysis-uchen-table (alist-get 'gloss-table fields) uchen)))
-                               (when other
-                                 (push (cons 'other-segments
-                                             (bcat-relayout--other-segments
-                                              (bcat-analysis--num seg) template assignment other base))
-                                       fields))
                                (append fields seg)))
-                           (alist-get 'segments base))))
-    (append `((segments . ,segments))
+                           (alist-get 'segments base)))
+         (pair (and other (bcat-relayout--pair-fields template segments assignment
+                                                       other other-text base))))
+    (append (or pair `((segments . ,segments)))
             (and assignment `((assignment . ,assignment)))
             (bcat-relayout--sentence-fields text base)
             base)))

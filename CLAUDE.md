@@ -4670,17 +4670,21 @@ aus den Referenzen (Lindtners Anmerkungen, lindtner-sda.org) stehen am
 Ende von Translations compared — mitten im Abschnitt schluckte die
 Definition alle folgenden Absätze (SDA 10: Apple, DharmaMitra und die
 Einschätzung in der Fußnote); `bcat-analysis-footnotes-last' bei Abruf,
-Rumpf, C-c u L und Nachtragen.  ZWEISPRACHIG JE SEGMENT (1.11., Carsten:
-„Prinzipiell soll das Rendering und der Aufbau immer gleich sein, egal ob
-ein- oder zweisprachig“): unter * Text oben beide Originale, dann je
-Sanskrit-Segment „⟦N⟧ · Tib. …“, seine Tabellen, „→“, die zugeordneten
-tibetischen Segmente (Tabellen mit Uchen, „→“), *Differences:*; kein
-* Tibetan mehr, Tibetan rendering unter * Sentence.  Partnerdatei
-gespiegelt (Tibetisch zuerst, das Sanskrit-Segment mit Differences nach
-dem letzten tibetischen seiner Gruppe).  Feld `other-segments' (aus
-bilingual-/partner-context; C-c u L liest es aus der Partnerdatei —
-`bcat-relayout-context' mit OTHER-TEXT; was im eigenen File nach dem
-ersten „→“ steht, wird nicht zurückgelesen).
+Rumpf, C-c u L und Nachtragen.  ZWEISPRACHIG (1.11.; erste Fassung 0269fe5 mit beiden Sprachen je
+Segment war „nicht gut handelbar“ — AS 2: 41 tibetische Segmente, 21
+Seiten): zwei Teile, jeder wie eine einsprachige Datei — * Text das
+Sanskrit (Devanāgarī/IAST, je Segment <<skt-N>>⟦N⟧ · [[tib-M][Tib. M–K]],
+Tabellen, „→“, Satzübersetzung), * Tibetan das Tibetische (Uchen eine
+Zeile je Sanskrit-Segment, je Segment <<tib-M>>⟦M⟧ · [[skt-N][Skt. N]],
+Tabellen mit Uchen, „→“, nach dem letzten einer Gruppe *Differences:*,
+tibetische Satzübersetzung); Tibetan rendering unter * Sentence.
+Partnerdatei gespiegelt (Tibetisch zuerst, * Sanskrit danach).
+`bcat-analysis-pair-lists' (mark, shown — Marke auch ohne Tabelle,
+sobald Übersetzung oder Differenz da ist —, Uchen-Zeilen) für Abruf,
+Rumpf (`bcat-sentence--pair-rump') und C-c u L (`bcat-relayout--pair-
+fields': die andere Sprache und ihre Satzübersetzung aus der
+Partnerdatei; Differenzen im Sanskrit-File über das „Skt. N“ der
+Marke).
 
 #### Offen
 

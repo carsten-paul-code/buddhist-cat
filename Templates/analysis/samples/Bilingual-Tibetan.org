@@ -22,6 +22,80 @@
 བདག་གི་གཞི་དེ་དག་གི་གནས་བརྗོད་པའི་ཕྱིར་རོ། །
 #+end_verse
 
+<<tib-77>>⟦77⟧ · [[skt-22][Skt. 22]]
+
+| ཅིའི་ཕྱིར           | ཕུང་པོ        | རྣམས    | ལྔ               | ཁོ་ན               | ཞེ་ན                    |
+| [[steinert:ci'i phyir][ci'i phyir]]      | [[steinert:phung po][phung po]]    | [[steinert:rnams][rnams]]  | [[steinert:lnga][lnga]]            | [[steinert:kho na][kho na]]            | [[steinert:zhe na][zhe na]]                 |
+| why             | aggregate   | plural | five            | only              | if one asks            |
+| INT · adverbial | N · subject | PL     | NUM · predicate | ADV · restrictive | QUOT + CONV · question |
+
+→ Why are the aggregates (phung po: skandha) only five? — if one asks:
+
+<<tib-78>>⟦78⟧ · [[skt-23][Skt. 23]]
+
+| བདག་གི་གཞི      | རྣམ་པ    | ལྔ    | བརྗོད་པའི        | ཕྱིར         | ཏེ    |
+| [[steinert:bdag gi gzhi][bdag gi gzhi]]  | [[steinert:rnam pa][rnam pa]] | [[steinert:lnga][lnga]] | [[steinert:brjod pa'i][brjod pa'i]]    | [[steinert:phyir][phyir]]      | te   |
+| basis of self | mode    | five | of stating    | because    |      |
+| N · object    | N       | NUM  | V nmlz. + GEN | N · causal | CONV |
+
+→ because they state the basis of self (bdag gi gzhi: ātmavastu) in five modes:
+
+*Differences:* /udbhāvanatā/ („bringing to light, making appear“) is rendered /brjod pa/ („stating, expressing“), /upādāya/ („on account of“) as /phyir/ („because“); the abstract -tā is not rendered.  The Tibetan has the skandhas state the self-basis rather than bring it forth.
+
+<<tib-79>>⟦79⟧ · [[skt-24][Skt. 24]]
+
+| བདག་གི་གཞི      | ལུས             | ཡོངས་སུ་གཟུང་བ          | དང་བཅས་པ      | བརྗོད་པ    | དང   |
+| [[steinert:bdag gi gzhi][bdag gi gzhi]]  | [[steinert:lus][lus]]            | [[steinert:yongs su gzung ba][yongs su gzung ba]]    | [[steinert:dang bcas pa][dang bcas pa]]  | [[steinert:brjod pa][brjod pa]] | dang |
+| basis of self | body           | what is appropriated | together with | stating  |      |
+| N · object    | N · apposition | V nmlz.              | ADJ           | V nmlz.  | COM  |
+
+→ the basis of self that is the body together with what it has appropriated (yongs su gzung ba: parigraha) is stated,
+
+*Differences:* /parigraha/ is rendered /yongs su gzung ba/ („what is fully grasped, appropriated“) — the body with what it has appropriated, not its outward possessions.
+
+<<tib-80>>⟦80⟧ · [[skt-25][Skt. 25]]
+
+| བདག་གི་གཞི      | ལོངས་སྤྱོད         | བརྗོད་པ    | དང   |
+| [[steinert:bdag gi gzhi][bdag gi gzhi]]  | [[steinert:longs spyod][longs spyod]]    | [[steinert:brjod pa][brjod pa]] | dang |
+| basis of self | experience     | stating  |      |
+| N · object    | N · apposition | V nmlz.  | COM  |
+
+→ the basis of self that is experience (longs spyod: upabhoga),
+
+<<tib-81>>⟦81⟧ · [[skt-26][Skt. 26]]
+
+| བདག་གི་གཞི      | ཐ་སྙད           | བརྗོད་པ    | དང   |
+| [[steinert:bdag gi gzhi][bdag gi gzhi]]  | [[steinert:tha snyad][tha snyad]]      | [[steinert:brjod pa][brjod pa]] | dang |
+| basis of self | convention     | stating  |      |
+| N · object    | N · apposition | V nmlz.  | COM  |
+
+→ the basis of self that is convention (tha snyad: vyavahāra),
+
+<<tib-82>>⟦82⟧ · [[skt-27][Skt. 27]]
+
+| བདག་གི་གཞི      | ཆོས    | དང   | ཆོས་མ་ཡིན་པ      | མངོན་པར་འདུ་བྱེད་པ        | བརྗོད་པ    | དང   |
+| [[steinert:bdag gi gzhi][bdag gi gzhi]]  | [[steinert:chos][chos]]  | dang | [[steinert:chos ma yin pa][chos ma yin pa]] | [[steinert:mngon par 'du byed pa][mngon par 'du byed pa]] | [[steinert:brjod pa][brjod pa]] | dang |
+| basis of self | merit |      | demerit        | forming               | stating  |      |
+| N · object    | N     | COM  | N              | V nmlz.               | V nmlz.  | COM  |
+
+→ the basis of self that is the forming (mngon par 'du byed pa: abhisaṃskāra) of merit and demerit,
+
+*Differences:* The dvandva is spelled out with /dang/; /abhisaṃskāra/ becomes the verbal phrase /mngon par 'du byed pa/ („forming, compounding“).
+
+<<tib-83>>⟦83⟧ · [[skt-28][Skt. 28]]
+
+| བདག་གི་གཞི      | དེ་དག   | གི   | གནས            | བརྗོད་པའི        | ཕྱིར         | རོ     |
+| [[steinert:bdag gi gzhi][bdag gi gzhi]]  | [[steinert:de dag][de dag]] | gi  | [[steinert:gnas][gnas]]           | [[steinert:brjod pa'i][brjod pa'i]]    | [[steinert:phyir][phyir]]      | [[steinert:ro][ro]]    |
+| basis of self | those  |     | support        | of stating    | because    | final |
+| N · object    | DEM PL | GEN | N · apposition | V nmlz. + GEN | N · causal | FIN   |
+
+→ and the basis of self that is their support (gnas: āśraya) — because these are stated.
+
+*Differences:* /tad-/ is read as plural, /de dag/ („those“); /phyir ro/ closes the answer that /phyir te/ opened in 78.
+
+*Translation:* Why are the aggregates only five? — if one asks: because they state the basis of self in five modes: the basis of self that is the body together with what it has appropriated, the basis of self that is experience, the basis of self that is convention, the basis of self that is the forming of merit and demerit, and the basis of self that is their support.
+
+* Sanskrit
 #+begin_verse
 कस्मात् पञ्चैव स्कन्धाः।
 kasmāt pañcaiva skandhāḥ.
@@ -39,14 +113,7 @@ dharmādharmābhisaṃskārātmavastūdbhāvanatām upādāya.
 tadāśrayātmavastūdbhāvanatām upādāya.
 #+end_verse
 
-⟦77⟧ · Skt. 22
-
-| ཅིའི་ཕྱིར           | ཕུང་པོ        | རྣམས    | ལྔ               | ཁོ་ན               | ཞེ་ན                    |
-| [[steinert:ci'i phyir][ci'i phyir]]      | [[steinert:phung po][phung po]]    | [[steinert:rnams][rnams]]  | [[steinert:lnga][lnga]]            | [[steinert:kho na][kho na]]            | [[steinert:zhe na][zhe na]]                 |
-| why             | aggregate   | plural | five            | only              | if one asks            |
-| INT · adverbial | N · subject | PL     | NUM · predicate | ADV · restrictive | QUOT + CONV · question |
-
-→ Why are the aggregates (phung po: skandha) only five? — if one asks:
+<<skt-22>>⟦22⟧ · [[tib-77][Tib. 77]]
 
 | kasmāt                | pañca            | eva  | skandhāḥ    |
 | —                     | —                | —    | —           |
@@ -56,14 +123,7 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 
 → Why are there just five aggregates (skandha)? —
 
-⟦78⟧ · Skt. 23
-
-| བདག་གི་གཞི      | རྣམ་པ    | ལྔ    | བརྗོད་པའི        | ཕྱིར         | ཏེ    |
-| [[steinert:bdag gi gzhi][bdag gi gzhi]]  | [[steinert:rnam pa][rnam pa]] | [[steinert:lnga][lnga]] | [[steinert:brjod pa'i][brjod pa'i]]    | [[steinert:phyir][phyir]]      | te   |
-| basis of self | mode    | five | of stating    | because    |      |
-| N · object    | N       | NUM  | V nmlz. + GEN | N · causal | CONV |
-
-→ because they state the basis of self (bdag gi gzhi: ātmavastu) in five modes:
+<<skt-23>>⟦23⟧ · [[tib-78][Tib. 78]]
 
 | pañca-ākāra-ātma-vastu-udbhāvanatām                               | upādāya                                |
 | pañca · ā-√kṛ-a · ātman · √vas-tu · ud-√bhū-ana-tā                | upa-ā-√dā-ya                           |
@@ -73,16 +133,7 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 
 → On account of their bringing to light (udbhāvanatā) the basis of self (ātmavastu) in five modes:
 
-*Differences:* /udbhāvanatā/ („bringing to light, making appear“) is rendered /brjod pa/ („stating, expressing“), /upādāya/ („on account of“) as /phyir/ („because“); the abstract -tā is not rendered.  The Tibetan has the skandhas state the self-basis rather than bring it forth.
-
-⟦79⟧ · Skt. 24
-
-| བདག་གི་གཞི      | ལུས             | ཡོངས་སུ་གཟུང་བ          | དང་བཅས་པ      | བརྗོད་པ    | དང   |
-| [[steinert:bdag gi gzhi][bdag gi gzhi]]  | [[steinert:lus][lus]]            | [[steinert:yongs su gzung ba][yongs su gzung ba]]    | [[steinert:dang bcas pa][dang bcas pa]]  | [[steinert:brjod pa][brjod pa]] | dang |
-| basis of self | body           | what is appropriated | together with | stating  |      |
-| N · object    | N · apposition | V nmlz.              | ADJ           | V nmlz.  | COM  |
-
-→ the basis of self that is the body together with what it has appropriated (yongs su gzung ba: parigraha) is stated,
+<<skt-24>>⟦24⟧ · [[tib-79][Tib. 79]]
 
 | sa-parigraha-deha-ātma-vastu-udbhāvanatām                              | upādāya                                |
 | sa · pari-√grah-a · deha · ātman · √vas-tu · ud-√bhū-ana-tā            | upa-ā-√dā-ya                           |
@@ -92,16 +143,7 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 
 → the self-basis that is the body together with its possessions (saparigraha-deha),
 
-*Differences:* /parigraha/ is rendered /yongs su gzung ba/ („what is fully grasped, appropriated“) — the body with what it has appropriated, not its outward possessions.
-
-⟦80⟧ · Skt. 25
-
-| བདག་གི་གཞི      | ལོངས་སྤྱོད         | བརྗོད་པ    | དང   |
-| [[steinert:bdag gi gzhi][bdag gi gzhi]]  | [[steinert:longs spyod][longs spyod]]    | [[steinert:brjod pa][brjod pa]] | dang |
-| basis of self | experience     | stating  |      |
-| N · object    | N · apposition | V nmlz.  | COM  |
-
-→ the basis of self that is experience (longs spyod: upabhoga),
+<<skt-25>>⟦25⟧ · [[tib-80][Tib. 80]]
 
 | upabhoga-ātma-vastu-udbhāvanatām                      | upādāya                                |
 | upa-√bhuj-a · ātman · √vas-tu · ud-√bhū-ana-tā        | upa-ā-√dā-ya                           |
@@ -111,14 +153,7 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 
 → the self-basis that is experience (upabhoga),
 
-⟦81⟧ · Skt. 26
-
-| བདག་གི་གཞི      | ཐ་སྙད           | བརྗོད་པ    | དང   |
-| [[steinert:bdag gi gzhi][bdag gi gzhi]]  | [[steinert:tha snyad][tha snyad]]      | [[steinert:brjod pa][brjod pa]] | dang |
-| basis of self | convention     | stating  |      |
-| N · object    | N · apposition | V nmlz.  | COM  |
-
-→ the basis of self that is convention (tha snyad: vyavahāra),
+<<skt-26>>⟦26⟧ · [[tib-81][Tib. 81]]
 
 | vyavahāra-ātma-vastu-udbhāvanatām                               | upādāya                                |
 | vi-ava-√hṛ-a · ātman · √vas-tu · ud-√bhū-ana-tā                 | upa-ā-√dā-ya                           |
@@ -128,14 +163,7 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 
 → the self-basis that is conventional expression (vyavahāra),
 
-⟦82⟧ · Skt. 27
-
-| བདག་གི་གཞི      | ཆོས    | དང   | ཆོས་མ་ཡིན་པ      | མངོན་པར་འདུ་བྱེད་པ        | བརྗོད་པ    | དང   |
-| [[steinert:bdag gi gzhi][bdag gi gzhi]]  | [[steinert:chos][chos]]  | dang | [[steinert:chos ma yin pa][chos ma yin pa]] | [[steinert:mngon par 'du byed pa][mngon par 'du byed pa]] | [[steinert:brjod pa][brjod pa]] | dang |
-| basis of self | merit |      | demerit        | forming               | stating  |      |
-| N · object    | N     | COM  | N              | V nmlz.               | V nmlz.  | COM  |
-
-→ the basis of self that is the forming (mngon par 'du byed pa: abhisaṃskāra) of merit and demerit,
+<<skt-27>>⟦27⟧ · [[tib-82][Tib. 82]]
 
 | dharma-adharma-abhisaṃskāra-ātma-vastu-udbhāvanatām                                         |
 | dharma · a-dharma · abhi-sam-√kṛ-a · ātman · √vas-tu · ud-√bhū-ana-tā                       |
@@ -151,16 +179,7 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 
 → the self-basis that is the forming of merit and demerit (dharmādharmābhisaṃskāra),
 
-*Differences:* The dvandva is spelled out with /dang/; /abhisaṃskāra/ becomes the verbal phrase /mngon par 'du byed pa/ („forming, compounding“).
-
-⟦83⟧ · Skt. 28
-
-| བདག་གི་གཞི      | དེ་དག   | གི   | གནས            | བརྗོད་པའི        | ཕྱིར         | རོ     |
-| [[steinert:bdag gi gzhi][bdag gi gzhi]]  | [[steinert:de dag][de dag]] | gi  | [[steinert:gnas][gnas]]           | [[steinert:brjod pa'i][brjod pa'i]]    | [[steinert:phyir][phyir]]      | [[steinert:ro][ro]]    |
-| basis of self | those  |     | support        | of stating    | because    | final |
-| N · object    | DEM PL | GEN | N · apposition | V nmlz. + GEN | N · causal | FIN   |
-
-→ and the basis of self that is their support (gnas: āśraya) — because these are stated.
+<<skt-28>>⟦28⟧ · [[tib-83][Tib. 83]]
 
 | tad-āśraya-ātma-vastu-udbhāvanatām                        | upādāya                                |
 | tad · ā-√śri-a · ātman · √vas-tu · ud-√bhū-ana-tā         | upa-ā-√dā-ya                           |
@@ -170,9 +189,7 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 
 → and the self-basis that is the support of these (tadāśraya).
 
-*Differences:* /tad-/ is read as plural, /de dag/ („those“); /phyir ro/ closes the answer that /phyir te/ opened in 78.
-
-*Translation:* Why are the aggregates only five? — if one asks: because they state the basis of self in five modes: the basis of self that is the body together with what it has appropriated, the basis of self that is experience, the basis of self that is convention, the basis of self that is the forming of merit and demerit, and the basis of self that is their support.
+*Translation:* Why are there just five aggregates (skandha)? — On account of their bringing to light (udbhāvanatā) the basis of self (ātmavastu) in five modes: the self-basis that is the body together with its possessions (saparigraha-deha), the self-basis that is experience (upabhoga), the self-basis that is conventional expression (vyavahāra), the self-basis that is the forming of merit and demerit (dharmādharmābhisaṃskāra), and the self-basis that is the support of these (tadāśraya).
 
 * Sentence
 ** Grammar

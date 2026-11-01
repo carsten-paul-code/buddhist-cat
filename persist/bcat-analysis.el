@@ -1095,115 +1095,146 @@ for none."
                      (alist-get 'differences parsed)))
    " "))
 
+(defun bcat-analysis-pair-lists (sanskrit tibetan assignment differences)
+  "The two parts of a bilingual pair (Carsten 1.11.: „Erst Sanskrit,
+dann Tibetisch … so handeln, wie bei den einsprachigen, nur dass zu den
+Tibetisch Übersetzungen noch die Differenz zum Sanskrit ergänzt wird“;
+„Sprungmarken … sollten wir … einfügen“): SANSKRIT and TIBETAN — the
+segments, alists with num, gloss-table, segment-translation … —, the
+ASSIGNMENT ((TIB . SKT) …) and DIFFERENCES ((SKT . TEXT) …).  Returns
+\(SANSKRIT-ITEMS TIBETAN-ITEMS UCHEN-LINES): each Sanskrit segment with
+its `mark' — a link to its first Tibetan segment, „ · Tib. 46–63“ —,
+each Tibetan one with its mark back („ · Skt. 19“) and, the last of
+its group, the group's `differences'; the Uchen of the Tibetan one line
+per Sanskrit segment (AS 2: 7 lines, not 41), or — before the
+assignment — one per segment, its Wylie under it when it has no table."
+  (let* ((tibs-of (lambda (skt) (cl-loop for a in assignment when (eql (cdr a) skt) collect (car a))))
+         ;; The mark stands whenever the segment shows something — so
+         ;; differences after a segment without a table still have it.
+         (shown (lambda (item)
+                  (and (cl-some (lambda (k) (let ((v (alist-get k item)))
+                                              (and (stringp v) (not (string-blank-p v)))))
+                                '(gloss-table segment-translation differences))
+                       t)))
+         (uchen-of (lambda (n) (string-trim (or (alist-get 'uchen (cl-find n tibetan :key #'bcat-analysis--num)) ""))))
+         (s-items (mapcar (lambda (s)
+                            (let ((tibs (funcall tibs-of (bcat-analysis--num s))))
+                              (append `((mark . ,(if tibs
+                                                     (format " · [[tib-%d][Tib. %s]]" (car tibs)
+                                                             (bcat-analysis--num-ranges tibs))
+                                                   ""))
+                                        (shown . ,(funcall shown s)))
+                                      s)))
+                          sanskrit))
+         (t-items (mapcar (lambda (ts)
+                            (let* ((cell (assq (bcat-analysis--num ts) assignment))
+                                   (skt (cdr cell))
+                                   (next (cadr (memq cell assignment)))
+                                   (last (and skt (not (eql skt (cdr next))))))
+                              (let ((d (or (and last (cdr (assq skt differences))) "")))
+                                (append `((mark . ,(if skt (format " · [[skt-%d][Skt. %d]]" skt skt) ""))
+                                          (differences . ,d)
+                                          (shown . ,(funcall shown (cons (cons 'differences d) ts))))
+                                        ts))))
+                          tibetan))
+         (lines (if assignment
+                    (delq nil (mapcar (lambda (s)
+                                        (let ((tibs (funcall tibs-of (bcat-analysis--num s))))
+                                          (and tibs `((line . ,(mapconcat uchen-of tibs " ")) (wylie . "")))))
+                                      sanskrit))
+                  (mapcar (lambda (ts)
+                            `((line . ,(funcall uchen-of (bcat-analysis--num ts)))
+                              (wylie . ,(if (string-blank-p (or (alist-get 'gloss-table ts) ""))
+                                            (or (alist-get 'wylie ts) "")
+                                          ""))))
+                          tibetan))))
+    (list s-items t-items lines)))
+
+(defun bcat-analysis--tibetan-answered (tibetan parsed)
+  "The TIBETAN segments (num uchen wylie …) with the tables (Uchen above
+the Wylie) and translations of PARSED, the answer of the Tibetan
+request."
+  (let ((by-num (mapcar (lambda (c) (cons (bcat-analysis--num c) c))
+                        (alist-get 'segments parsed))))
+    (mapcar (lambda (ts)
+              (let ((c (cdr (assoc (bcat-analysis--num ts) by-num))))
+                (if (null c)
+                    ts
+                  (append `((gloss-table . ,(bcat-analysis-gloss-table (alist-get 'words c)
+                                                                      (alist-get 'uchen ts)))
+                            (segment-translation . ,(bcat-analysis--field c 'translation)))
+                          ts))))
+            tibetan)))
+
 (defun bcat-analysis-bilingual-context (base parsed)
   "Template fields of a bilingual sentence: BASE (the fields after the
-Sanskrit answer, with `tibetan', the Tibetan segments: num uchen wylie
-\(glossed)) completed from PARSED, the answer of the Tibetan request:
-the Tibetan lines with Claude's glosses; per Sanskrit segment the
-Tibetan segments Claude assigned to it — `parallel' for the heading
-\(\" · Tib. 40–44\"), `tibetan-block' Uchen over glossed Wylie — and its
+Sanskrit answer, with `tibetan', the Tibetan segments: num uchen wylie)
+completed from PARSED, the answer of the Tibetan request — the two
+parts (`bcat-analysis-pair-lists'): the Sanskrit segments with their
+marks, `tibetan-segments' (tables, translations, marks, differences),
+`tibetan-lines' (the Uchen) and `tibetan-translation'; per Sanskrit
+segment `parallel' for its heading (\" · Tib. 40–44\") and its
 `differences'; the `rendering'.  AS sentence 2 has 7 Sanskrit and 41
 Tibetan segments (Carsten 30.10.: Claude assigns them); for segments
 without a valid assignment see `bcat-analysis--assignment'."
-  (let* ((by-num (mapcar (lambda (c) (cons (bcat-analysis--num c) c))
-                         (alist-get 'segments parsed)))
-         (assign (bcat-analysis--assignment (alist-get 'tibetan base) parsed
+  (let* ((assign (bcat-analysis--assignment (alist-get 'tibetan base) parsed
                                             (mapcar #'bcat-analysis--num (alist-get 'segments base))))
-         (tibetan
-          (mapcar (lambda (ts)
-                    (let ((n (bcat-analysis--num ts)))
-                      (append `((glossed . ,(bcat-analysis--glossed ts (cdr (assoc n by-num))))
-                                (sanskrit . ,(cdr (assq n assign))))
-                              ts)))
-                  (alist-get 'tibetan base)))
+         (tibetan (bcat-analysis--tibetan-answered (alist-get 'tibetan base) parsed))
+         (diffs (mapcar (lambda (seg)
+                          (let ((n (bcat-analysis--num seg)))
+                            (cons n (bcat-analysis--differences parsed n))))
+                        (alist-get 'segments base)))
          (segments
           (mapcar
            (lambda (seg)
              (let* ((n (bcat-analysis--num seg))
-                    (mine (cl-remove-if-not (lambda (ts) (eql n (alist-get 'sanskrit ts)))
-                                            tibetan)))
+                    (mine (cl-loop for a in assign when (eql (cdr a) n) collect (car a))))
                (append
-                `((parallel . ,(if mine
-                                   (concat " · Tib. "
-                                           (bcat-analysis--num-ranges
-                                            (mapcar #'bcat-analysis--num mine)))
-                                 ""))
-                  ;; Carsten 1.11.: per segment both languages as tables
-                  ;; with their translation — the Tibetan segments of
-                  ;; this Sanskrit one.
-                  (other-segments
-                   . ,(mapcar (lambda (ts)
-                                (let ((c (cdr (assoc (bcat-analysis--num ts) by-num))))
-                                  `((num . ,(bcat-analysis--num ts))
-                                    (gloss-table . ,(if c (bcat-analysis-gloss-table
-                                                           (alist-get 'words c) (alist-get 'uchen ts))
-                                                      ""))
-                                    (segment-translation . ,(if c (bcat-analysis--field c 'translation) "")))))
-                              mine))
-                  (tibetan-block . ,(mapconcat (lambda (ts)
-                                                 (concat (alist-get 'uchen ts) "\n"
-                                                         (alist-get 'glossed ts)))
-                                               mine "\n"))
-                  (differences . ,(bcat-analysis--differences parsed n)))
+                `((parallel . ,(if mine (concat " · Tib. " (bcat-analysis--num-ranges mine)) ""))
+                  (differences . ,(cdr (assq n diffs))))
                 seg)))
-           (alist-get 'segments base))))
+           (alist-get 'segments base)))
+         (lists (bcat-analysis-pair-lists segments tibetan assign diffs)))
     (append
-     `((segments . ,segments)
+     `((segments . ,(nth 0 lists))
+       (tibetan-segments . ,(nth 1 lists))
+       (tibetan-lines . ,(nth 2 lists))
+       (tibetan-translation . ,(bcat-analysis--field parsed 'translation))
        (tibetan . ,tibetan)
-       (tibetan-glosses . ,(bcat-analysis-glosses-p tibetan))
        (rendering . ,(bcat-analysis--field parsed 'rendering))
        (assignment . ,assign))
      base)))
 
-(defun bcat-analysis-partner-context (base parsed sanskrit)
+(defun bcat-analysis-partner-context (base parsed sanskrit &optional sanskrit-translation)
   "Template fields of the Tibetan file of a bilingual pair (Carsten
-30.10.: „ein gegenseitiges Verlinken“, „das volle Programm“): BASE (the
-Tibetan analysis, `bcat-analysis-context') completed from PARSED, the
-answer of the Tibetan request, and SANSKRIT, the Sanskrit segments
-after the Sanskrit answer (num devanagari samhita glossed …): per
-Tibetan segment the Sanskrit segment it translates (`parallel',
-\" · Skt. 17\"); at the first Tibetan segment of each group the
-Sanskrit lines (`sanskrit-block': Devanāgarī over the padapāṭha with
-vocabulary, or the line as transmitted) and the `differences'; the
-Sanskrit for * Text; the `rendering'."
+30.10.: „ein gegenseitiges Verlinken“, „das volle Programm“; 1.11.:
+mirrored, Tibetan first): BASE (the Tibetan analysis,
+`bcat-analysis-context') completed from PARSED, the answer of the
+Tibetan request, and SANSKRIT, the Sanskrit segments after the Sanskrit
+answer (num devanagari samhita gloss-table segment-translation …): the
+two parts (`bcat-analysis-pair-lists') — the Tibetan segments with
+their marks and, the last of a group, its differences;
+`sanskrit-segments' with theirs; SANSKRIT-TRANSLATION, the sentence's —
+per Tibetan segment `parallel' (\" · Skt. 17\") for its heading; the
+`rendering'."
   (let* ((assign (bcat-analysis--assignment (alist-get 'segments base) parsed
                                             (mapcar #'bcat-analysis--num sanskrit)))
-         (seen '())
+         (diffs (mapcar (lambda (s)
+                          (let ((n (bcat-analysis--num s)))
+                            (cons n (bcat-analysis--differences parsed n))))
+                        sanskrit))
          (segments
-          (mapcar
-           (lambda (seg)
-             (let* ((sa (cdr (assq (bcat-analysis--num seg) assign)))
-                    (first (and sa (not (memq sa seen))))
-                    (s (and first (cl-find sa sanskrit :key #'bcat-analysis--num)))
-                    ;; The last Tibetan segment of its group: the next
-                    ;; one goes with another Sanskrit segment.
-                    (next (cadr (memq (assq (bcat-analysis--num seg) assign) assign)))
-                    (last (and sa (not (eql sa (cdr next)))))
-                    (whole (and last (cl-find sa sanskrit :key #'bcat-analysis--num))))
-               (when first (push sa seen))
-               (append
-                `((parallel . ,(if sa (format " · Skt. %d" sa) ""))
-                  ;; Carsten 1.11. („Spiegeln: Tibetisch zuerst“): after
-                  ;; the last Tibetan segment of a group its Sanskrit one —
-                  ;; tables, translation, differences.
-                  (other-segments
-                   . ,(and whole
-                           (list `((num . ,sa)
-                                   (gloss-table . ,(or (alist-get 'gloss-table whole) ""))
-                                   (segment-translation . ,(or (alist-get 'segment-translation whole) ""))
-                                   (differences . ,(bcat-analysis--differences parsed sa))))))
-                  (sanskrit-block . ,(if s
-                                         (concat (alist-get 'devanagari s) "\n"
-                                                 (or (alist-get 'glossed s) (alist-get 'samhita s)))
-                                       ""))
-                  (differences . ,(if first (bcat-analysis--differences parsed sa) "")))
-                seg)))
-           (alist-get 'segments base))))
+          (mapcar (lambda (seg)
+                    (let ((sa (cdr (assq (bcat-analysis--num seg) assign))))
+                      (cons (cons 'parallel (if sa (format " · Skt. %d" sa) "")) seg)))
+                  (alist-get 'segments base)))
+         (lists (bcat-analysis-pair-lists sanskrit segments assign diffs)))
     (append
-     `((segments . ,segments)
+     `((segments . ,(nth 1 lists))
+       (sanskrit-segments . ,(nth 0 lists))
+       (sanskrit-translation . ,(or sanskrit-translation ""))
        (sanskrit . ,sanskrit)
        (sanskrit-p . ,(and sanskrit t))
-       (sanskrit-glosses . ,(and (cl-some (lambda (s) (alist-get 'glossed s)) sanskrit) t))
        (rendering . ,(bcat-analysis--field parsed 'rendering))
        (assignment . ,assign))
      base)))
