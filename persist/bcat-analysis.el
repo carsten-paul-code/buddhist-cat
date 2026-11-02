@@ -782,13 +782,18 @@ mit in die Fußnote gewandert“ — Lindtner's notes come with his
 reference as org footnotes, and a definition runs on to the next
 heading, definition or two blank lines: it swallowed every paragraph
 after it.  At the end of Translations compared the next heading ends
-it."
-  (let ((paras (split-string (or text "") "\n[ \t]*\n" t "[ \t\n]+")))
+it.  Only the text before TEXT's first heading counts: the units of the
+comparison below it (*** Übersicht …, 2.11.) stay where they are."
+  (let* ((text (or text ""))
+         (cut (and (string-match "^\\*+ " text) (match-beginning 0)))
+         (head (if cut (substring text 0 cut) text))
+         (paras (split-string head "\n[ \t]*\n" t "[ \t\n]+")))
     (if (not (cl-some (lambda (p) (string-prefix-p "[fn:" p)) paras))
         text
-      (string-join (append (cl-remove-if (lambda (p) (string-prefix-p "[fn:" p)) paras)
-                           (cl-remove-if-not (lambda (p) (string-prefix-p "[fn:" p)) paras))
-                   "\n\n"))))
+      (concat (string-join (append (cl-remove-if (lambda (p) (string-prefix-p "[fn:" p)) paras)
+                                   (cl-remove-if-not (lambda (p) (string-prefix-p "[fn:" p)) paras))
+                           "\n\n")
+              (if cut (concat "\n\n" (substring text cut)) "")))))
 
 (defun bcat-analysis-comparison (parsed &optional refs)
   "Translations compared of the sentence: the own translation from

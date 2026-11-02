@@ -1079,5 +1079,14 @@ the one before; the Sanskrit part links back."
     (should (alist-get 'sanskrit-p ctx))
     (should (equal "Close." (alist-get 'rendering ctx)))))
 
+(ert-deftest bcat-analysis-footnotes-last-before-headings ()
+  "The footnote definitions of the references go to the end of the text
+before the first heading — the units of the comparison (*** Übersicht …)
+stay where they are; C-c u L reads the whole section with them."
+  (should (equal "A [fn:x]\n\nB\n\n[fn:x] n.\n\n*** Übersicht\nT\n\nU"
+                 (bcat-analysis-footnotes-last "A [fn:x]\n\n[fn:x] n.\n\nB\n\n*** Übersicht\nT\n\nU")))
+  (should (equal "A\n\n*** Übersicht\nT"
+                 (bcat-analysis-footnotes-last "A\n\n*** Übersicht\nT"))))
+
 (provide 'bcat-analysis-test)
 ;;; bcat-analysis-test.el ends here
