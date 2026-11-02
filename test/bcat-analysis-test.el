@@ -124,7 +124,7 @@ segment as transmitted, the references."
                '("Abhinavagupta, Tantrāloka"))))
     (dolist (key '("\"words\"" "\"lemma\"" "\"formation\"" "\"parts\"" "\"gloss\"" "\"form\""
                    "\"sandhi\"" "\"forms\"" "\"compounds\"" "\"shift\"" "\"structure\""
-                   "\"grammar\"" "\"comparison\""))
+                   "\"grammar\"" "\"units\""))
       (should (string-match-p (regexp-quote key) sys)))
     (should (string-match-p "Devavāṇīpraveśikā" sys))
     (should (string-match-p "prathama puruṣa is the 3rd person" sys))
@@ -623,7 +623,7 @@ reference translation by name (or \"none\")."
                '(("Lindtner 1981" . "inexpressible") ("DharmaMitra" . "Inexpressible"))
                '("Atiśa, Satyadvayāvatāra"))))
     (dolist (key '("\"segments\"" "\"words\"" "\"gloss\"" "\"function\"" "\"shift\""
-                   "\"structure\"" "\"note\"" "\"concepts\"" "\"grammar\"" "\"comparison\""))
+                   "\"structure\"" "\"note\"" "\"concepts\"" "\"grammar\"" "\"units\""))
       (should (string-match-p (regexp-quote key) sys-en)))
     ;; 29.10.: Claude no longer copies whole reference translations
     ;; (verbatim copies broke the JSON and dropped Lindtner's note) —
@@ -987,7 +987,7 @@ with Wylie, the reference translations of the Tibetan."
     (dolist (key '("\"segments\"" "\"sanskrit\"" "\"words\"" "\"wylie\"" "\"gloss\""
                    "\"function\"" "\"translation\"" "\"references\"" "\"shift\"" "\"structure\""
                    "\"note\"" "\"concepts\"" "\"differences\"" "\"text\"" "\"grammar\""
-                   "\"comparison\"" "\"rendering\""))
+                   "\"units\"" "\"rendering\""))
       (should (string-match-p (regexp-quote key) sys)))
     (should (string-match-p (regexp-quote (bcat-analysis--tibetan-rules "German")) sys))
     (should (string-match-p "never decrease" sys))
@@ -996,7 +996,7 @@ with Wylie, the reference translations of the Tibetan."
     (should (string-match-p "/italic/" sys))
     (should (string-match-p "never a backslash before an apostrophe" sys))
     (should (string-match-p "in German" sys))
-    (should (string-match-p (regexp-quote "Asaṅga, Abhidharmasamuccaya\n\nSentence 3 — Sanskrit segments:\n[22] kasmāt pañcaiva skandhāḥ.\n     Translation: Why are there just five aggregates? —\n\nTibetan segments:\n[77] Tibetan: ཅིའི་ཕྱིར། །\n     Wylie: ci'i phyir/ /\n\nReference translations:\n=== Rahula/Boin-Webb 2001 ===\nWhy are there only five aggregates?\n\nReturn the JSON object now.") user))))
+    (should (string-match-p (regexp-quote "Asaṅga, Abhidharmasamuccaya\n\nSentence 3 — Sanskrit segments:\n[22] kasmāt pañcaiva skandhāḥ.\n     Translation: Why are there just five aggregates? —\n\nTibetan segments:\n[77] Tibetan: ཅིའི་ཕྱིར། །\n     Wylie: ci'i phyir/ /\n\nReference translations:\n=== Rahula/Boin-Webb 2001 ===\nWhy are there only five aggregates?\n\nSigla for the comparison: C = your translation, R = Rahula/Boin-Webb 2001.\n\nReturn the JSON object now.") user))))
 
 (defun bcat-analysis-test--base-tib-003 ()
   "The rump of the Tibetan file of AS sentence 3 (the pair's partner):
@@ -1078,6 +1078,169 @@ the one before; the Sanskrit part links back."
                    (mapcar (lambda (s) (alist-get 'mark s)) (alist-get 'sanskrit-segments ctx))))
     (should (alist-get 'sanskrit-p ctx))
     (should (equal "Close." (alist-get 'rendering ctx)))))
+
+
+;; ----------------------------------------------------------------------------
+;; Translations compared: units, rating, proposal (Carsten 2.11.)
+;; ----------------------------------------------------------------------------
+
+(ert-deftest bcat-analysis-comparison-units-contract ()
+  "Carsten 2.11. (Muster Resources/vergleich-ta1-1.org of the Tantrāloka
+reading, „das Muster passt“; „Immer“ — every C-c u G): Translations
+compared becomes a comparison unit by unit.  Every sentence analysis —
+Sanskrit, Tibetan and the Tibetan request of a bilingual pair — asks
+for the units (passage, rating green/yellow/red, core, the readings by
+siglum, finding, weight), the proposal (a double sense in two
+versions), the decisions and the errors of its own analysis.  The
+finding argues from the original, never from a translator's standing
+\(„es gibt da keine Autorität, auf die man sich verlassen kann“);
+lectures are cited with their time mark.  The short comparison
+paragraph is gone; the reasoning is in German
+\(`bcat-analysis-comparison-language'), the renderings in the target
+language."
+  (dolist (sys (list (bcat-analysis-sanskrit-system-prompt "en")
+                     (bcat-analysis-system-prompt "en")
+                     (bcat-analysis-tibetan-system-prompt "en")))
+    (dolist (key '("\"units\"" "\"passage\"" "\"rating\"" "\"core\"" "\"readings\""
+                   "\"sigla\"" "\"finding\"" "\"weight\"" "\"proposal\"" "\"label\""
+                   "\"decisions\"" "\"corrections\""))
+      (should (string-match-p (regexp-quote key) sys)))
+    (should-not (string-match-p (regexp-quote "\"comparison\"") sys))
+    (should (string-match-p "\"green\": no difference in meaning" sys))
+    (should (string-match-p "\"yellow\": a possible other interpretation" sys))
+    (should (string-match-p "\"red\": different meanings, not both right at once" sys))
+    (should (string-match-p "never from a translator's standing" sys))
+    (should (string-match-p (regexp-quote "(S, I 0:15:24)") sys))
+    (should (string-match-p "double sense" sys))
+    (should (string-match-p "core, finding, the notes in weight, decisions and corrections in German" sys))
+    (should (string-match-p "renderings in weight and proposal in English" sys)))
+  (let ((bcat-analysis-comparison-language "en"))
+    (should (string-match-p "decisions and corrections in English"
+                            (bcat-analysis-sanskrit-system-prompt "de")))
+    (should (string-match-p "renderings in weight and proposal in German"
+                            (bcat-analysis-sanskrit-system-prompt "de")))))
+
+(ert-deftest bcat-analysis-sigla ()
+  "The sigla of the comparison from the reference names (Muster: D =
+Dyczkowski 2023, W = Wallis 2015, S = Sanderson 2022, DM = DharmaMitra,
+C = the own translation): the initial of the first word, its capitals
+when it has several (DharmaMitra); C stays the own translation; a
+collision takes the next letters (Sanderson 2022/2025 → S, Sa)."
+  (should (equal '(("Dyczkowski 2023" . "D") ("Wallis 2015" . "W")
+                   ("Sanderson 2022" . "S") ("DharmaMitra" . "DM"))
+                 (bcat-analysis-sigla '("Dyczkowski 2023" "Wallis 2015" "Sanderson 2022" "DharmaMitra"))))
+  (should (equal '(("Sanderson 2022" . "S") ("Sanderson 2025" . "Sa") ("Cox 2010" . "Co"))
+                 (bcat-analysis-sigla '("Sanderson 2022" "Sanderson 2025" "Cox 2010"))))
+  (should (equal '(("Rahula/Boin-Webb 2001" . "R") ("Lindtner 1981" . "L"))
+                 (bcat-analysis-sigla '("Rahula/Boin-Webb 2001" "Lindtner 1981")))))
+
+(ert-deftest bcat-analysis-comparison-prompt-sigla-lectures ()
+  "The user prompt of every sentence analysis names the sigla of the
+comparison; Sanderson's lectures on the sentence (#+CAT_LECTURES) go
+with it — Carsten 2.11.: „Ja, nur beim Vergleich“ (before: never in a
+prompt) — their YouTube links reduced to the time mark."
+  (let* ((refs '(("Dyczkowski 2023" . "my speech") ("Sanderson 2022" . "Literal: my speech")
+                 ("DharmaMitra" . "my words")))
+         (lectures '(("Sanderson, Readings in the Tantrāloka I"
+                      . "[[https://www.youtube.com/watch?v=x&t=924s][0:15:24]] /kula/ means body here.")))
+         (segs '((685 "atra madvāgaśaktāpi yanniyantraṇamullaset /")))
+         (user (bcat-analysis-sanskrit-user-prompt 1007 nil segs refs nil nil nil lectures)))
+    (should (string-match-p
+             (regexp-quote "Sigla for the comparison: C = your translation, D = Dyczkowski 2023, S = Sanderson 2022, DM = DharmaMitra")
+             user))
+    (should (string-match-p
+             (regexp-quote "=== Sanderson, Readings in the Tantrāloka I ===\n[0:15:24] /kula/ means body here.")
+             user))
+    (should (string-match-p "only for the comparison" user))
+    (should-not (string-match-p "youtube" user))
+    (should (string-match-p "Return the JSON object now\\.\\'" user))
+    (should-not (string-match-p "Lectures" (bcat-analysis-sanskrit-user-prompt 1007 nil segs refs)))
+    (let ((tib (bcat-analysis-user-prompt 9 nil '((38 "ཀ" "ka")) '(("Lindtner 1981" . "x")) nil nil lectures)))
+      (should (string-match-p (regexp-quote "Sigla for the comparison: C = your translation, L = Lindtner 1981") tib))
+      (should (string-match-p (regexp-quote "=== Sanderson, Readings in the Tantrāloka I ===") tib)))
+    (should (string-match-p
+             (regexp-quote "Sigla for the comparison: C = your translation, R = Rahula/Boin-Webb 2001")
+             (bcat-analysis-tibetan-user-prompt 3 nil '((22 "x" "t")) '((77 "ཀ" "ka"))
+                                                '(("Rahula/Boin-Webb 2001" . "y")))))))
+
+(defconst bcat-analysis-test--units-answer
+  "{\"segments\": [], \"translation\": \"May my heart flash forth.\",
+ \"units\": [{\"passage\": \"/abhinavasṛṣṭimahā/\", \"rating\": \"red\", \"core\": \"/mahas/ (Glanz) gegen /mahā/ „groß“\",
+              \"readings\": [{\"sigla\": \"D\", \"text\": \"„the glory“\"}, {\"sigla\": \"DM, C\", \"text\": \"„the great Mother“\"}],
+              \"finding\": \"Zwei Analysen.\", \"weight\": \"„whose radiance is ever-new creation“\"},
+             {\"passage\": \"/jananī/, /janakaḥ/\", \"rating\": \"green\", \"core\": \"Mutter | Vater\",
+              \"readings\": [], \"finding\": \"Alle: Mutter, Vater.\", \"weight\": \"\"}],
+ \"proposal\": [{\"label\": \"Erster Sinn\", \"text\": \"May my Heart flash forth in full.\"},
+                {\"label\": \"Zweiter Sinn\", \"text\": \"… my mother Vimalā …\"}],
+ \"decisions\": \"/mahas/ statt /mahā/ (Nr. 1).\",
+ \"corrections\": [\"Die Grammar nennt /saṃsphuratāt/ āśīrliṅ — falsch, -tāt-Imperativ.\"]}"
+  "A Sanskrit answer with the comparison of Carsten's Muster (TĀ 1.1).")
+
+(ert-deftest bcat-analysis-comparison-units-render ()
+  "Translations compared as in the Muster: the translations with their
+marks (footnote definitions still before the first heading), then
+*** Übersicht — the sigla, the table Nr. | Stelle | Einstufung | Kern
+with fixed column widths and the cell colour of the rating
+\(@@latex:\\cellcolor{ok|mid|bad}@@grün/gelb/rot), a bar in a cell
+escaped —, *** Die Stellen im Einzelnen (**** per unit: readings as a
+description list, *Befund:*, *Gewicht:*; a green unit without readings
+only its finding), *** Übersetzungsvorschlag (one quote per sense,
+*Entscheidungen:*), *** Berichtigungen zur Analyse."
+  (let* ((parsed (bcat-analysis-parse bcat-analysis-test--units-answer))
+         (out (bcat-analysis-comparison
+               parsed '(("Dyczkowski 2023" . "the glory [fn:d1]\n\n[fn:d1] Dyczkowski's note.")
+                        ("DharmaMitra" . "the great Mother"))))
+         (table (cl-remove-if-not (lambda (l) (string-prefix-p "|" l)) (split-string out "\n"))))
+    (should (string-prefix-p
+             (concat "*Translation:* May my heart flash forth.\n\n"
+                     "*Dyczkowski 2023:* the glory [fn:d1]\n\n"
+                     "*DharmaMitra:* the great Mother\n\n"
+                     "[fn:d1] Dyczkowski's note.\n\n"
+                     "*** Übersicht\n"
+                     "Sigel: C = Translation (oben), D = Dyczkowski 2023, DM = DharmaMitra\n\n"
+                     "#+ATTR_LATEX: :align rp{4.3cm}p{1.6cm}p{8cm} :font \\small\n")
+             out))
+    (should (= 4 (length table)))
+    (should (= 1 (length (delete-dups (mapcar #'string-width table)))))
+    (should (string-match-p "\\`| Nr\\. | Stelle +| Einstufung +| Kern +|\\'" (nth 0 table)))
+    (should (string-match-p "\\`|-----\\+-+\\+-+\\+-+|\\'" (nth 1 table)))
+    (should (string-match-p (concat "\\`| +1 | /abhinavasṛṣṭimahā/ +| "
+                                    (regexp-quote "@@latex:\\cellcolor{bad}@@rot")
+                                    " +| /mahas/ (Glanz) gegen /mahā/ „groß“ +|\\'")
+                            (nth 2 table)))
+    (should (string-match-p (concat "\\`| +2 | /jananī/, /janakaḥ/ +| "
+                                    (regexp-quote "@@latex:\\cellcolor{ok}@@grün")
+                                    " +| Mutter \\\\vert{} Vater +|\\'")
+                            (nth 3 table)))
+    (should (string-suffix-p
+             (concat "\n\n*** Die Stellen im Einzelnen\n"
+                     "**** 1. /abhinavasṛṣṭimahā/ — rot\n"
+                     "- D :: „the glory“\n"
+                     "- DM, C :: „the great Mother“\n"
+                     "*Befund:* Zwei Analysen.\n"
+                     "*Gewicht:* „whose radiance is ever-new creation“\n\n"
+                     "**** 2. /jananī/, /janakaḥ/ — grün\n"
+                     "*Befund:* Alle: Mutter, Vater.\n\n"
+                     "*** Übersetzungsvorschlag\n"
+                     "*Erster Sinn:*\n#+begin_quote\nMay my Heart flash forth in full.\n#+end_quote\n\n"
+                     "*Zweiter Sinn:*\n#+begin_quote\n… my mother Vimalā …\n#+end_quote\n\n"
+                     "*Entscheidungen:* /mahas/ statt /mahā/ (Nr. 1).\n\n"
+                     "*** Berichtigungen zur Analyse\n"
+                     "- Die Grammar nennt /saṃsphuratāt/ āśīrliṅ — falsch, -tāt-Imperativ.")
+             out))
+    ;; One sense: the quote without a label; no corrections: no heading.
+    (let ((one (bcat-analysis-comparison
+                (append '((proposal ((label . "") (text . "One."))) (corrections))
+                        parsed)
+                nil)))
+      (should (string-match-p "\\*\\*\\* Übersetzungsvorschlag\n#\\+begin_quote\nOne\\.\n#\\+end_quote" one))
+      (should-not (string-match-p "Berichtigungen" one)))
+    ;; English labels.
+    (let ((en (let ((bcat-analysis-comparison-language "en")) (bcat-analysis-comparison parsed nil))))
+      (dolist (s '("*** Overview\nSigla: C = Translation (above)" "| No. | Passage" "| Rating" "| Point"
+                   "@@latex:\\cellcolor{bad}@@red" "**** 1. /abhinavasṛṣṭimahā/ — red" "*Finding:* "
+                   "*Weight:* " "*** Proposed translation" "*Decisions:* " "*** Corrections to the analysis"))
+        (should (string-match-p (regexp-quote s) en))))))
 
 (ert-deftest bcat-analysis-footnotes-last-before-headings ()
   "The footnote definitions of the references go to the end of the text

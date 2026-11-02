@@ -81,16 +81,46 @@ sentence's drawer or #+CAT_SECOND_LANGUAGE in the source).  In the user
 prompt, not the system prompt: that stays the same per document (the
 cache)."
   (let ((second (bcat-analysis--second-language target)))
-    (format "\n\nAlso add to the JSON object the field \"%s\": the sentence translation once more in %s — close to the original, the key terms with the original in parentheses; the class thinks the concepts through in this language too.  In the comparison, for each difference also say what each reading would be in %s (in quotation marks)."
+    (format "\n\nAlso add to the JSON object the field \"%s\": the sentence translation once more in %s — close to the original, the key terms with the original in parentheses; the class thinks the concepts through in this language too.  In the comparison units, the finding also says what each reading would be in %s (in quotation marks)."
             (car second) (cdr second) (cdr second))))
 
-(defconst bcat-analysis--sentence-rules
-  "- translation (sentence): your translation of the whole sentence (the segment parts joined).
-- comparison: one to three sentences on the meaning-shifting differences between the translations including yours; \"\" when there are none."
-  "The rules for the sentence translation and the comparison — one
-wording for every analysis.  The translation in the second language and
-the readings of the comparison in it are an option of the sentence
-\(`bcat-analysis--second-request').")
+(defcustom bcat-analysis-comparison-language "de"
+  "Language code of the reasoning in the comparison of the translations
+\(units, finding, weight, decisions, corrections) — independent of the
+target language, in which the renderings stay.  Carsten 2.11. (Muster
+vergleich-ta1-1.org of the Tantrāloka reading): „Sprache der
+Begründungen Deutsch, Übersetzungen Englisch (wie im Muster)“."
+  :type '(choice (const :tag "Deutsch" "de") (const :tag "English" "en"))
+  :group 'buddhist-cat)
+
+(defconst bcat-analysis--comparison-schema
+  "\"units\": [{\"passage\": \"…\", \"rating\": \"green|yellow|red\", \"core\": \"…\", \"readings\": [{\"sigla\": \"…\", \"text\": \"…\"}], \"finding\": \"…\", \"weight\": \"…\"}], \"proposal\": [{\"label\": \"…\", \"text\": \"…\"}], \"decisions\": \"…\", \"corrections\": [\"…\"]"
+  "The comparison's part of the JSON contract of every sentence analysis
+\(`bcat-analysis--sentence-rules').")
+
+(defun bcat-analysis--sentence-rules (lang)
+  "The rules for the sentence translation and the comparison of the
+translations (renderings in LANG) — one wording for every analysis.
+Carsten 2.11. (Muster vergleich-ta1-1.org, „das Muster passt“; at
+every C-c u G): instead of a short paragraph, unit by unit — rated
+green/yellow/red, argued from the original, „es gibt da keine
+Autorität, auf die man sich verlassen kann“ —, a proposal that decides
+the red units, the decisions, the errors of the own analysis.  The
+translation in the second language and the readings of the comparison
+in it are an option of the sentence (`bcat-analysis--second-request')."
+  (format "- translation (sentence): your translation of the whole sentence (the segment parts joined).
+- units: the translations compared unit by unit. Divide the sentence into its units of meaning — a word, a compound or a phrase; about 4 to 12 for a verse — and set side by side what each given translation makes of each: yours (siglum C) and every reference translation, by the sigla the request gives. One entry per unit in the order of the text, a last one for the sentence as a whole only where it matters (a double sense, śleṣa, that a translation gives only in part); [] when no reference translation is given.
+  - passage: the unit, words of the original in /italic/: \"/vimalakalāśrayā/\", \"/jananī/, /janakaḥ/\".
+  - rating: \"green\": no difference in meaning, only in wording; \"yellow\": a possible other interpretation, both defensible from the text; \"red\": different meanings, not both right at once.
+  - core: the point of the unit for the overview table, at most 80 characters.
+  - readings: each translation's wording of the unit, verbatim in „…“ (shortened with … where long); translations reading alike in one entry (\"sigla\": \"D, DM, C\"); a second sense after a semicolon; [] for a green unit whose finding names the common reading.
+  - finding: why the readings differ and what the original supports — argued from the original alone: grammar, sandhi, lexicon, the context in the work and its commentary; never from a translator's standing (there is no authority to rely on). An argument from the given lectures is cited with siglum, lecture and time mark: \"(S, I 0:15:24)\". Words of the original in /italic/. For a green unit one sentence.
+  - weight: the reading the finding favours, as a rendering in „…“, with a short note where needed; \"\" for a green unit.
+- proposal: your translation of the sentence weighed by the units — the red units decided, for the yellow ones the chosen reading (the other belongs in a note); where the text has a double sense one entry per sense, each with its label (\"First sense (theological)\"), else one entry with the label \"\"; [] when units is [].
+- decisions: the decisions of the proposal, by unit number, in one to three sentences; \"\" when units is [].
+- corrections: errors of your own analysis above that the comparison brings to light (a form misidentified, a gloss that does not fit), one sentence each; [] when there are none.
+- Language of the comparison: core, finding, the notes in weight, decisions and corrections in %s, the labels of the proposal too; readings verbatim; the renderings in weight and proposal in %s."
+          (bcat-analysis--language bcat-analysis-comparison-language) lang))
 
 (defun bcat-analysis--tibetan-rules (lang)
   "The rules for the fields of a Tibetan sentence analysis, from words
@@ -98,7 +128,7 @@ to comparison (glosses in LANG) — one wording for the Tibetan analysis
 and the Tibetan request of a bilingual pair."
   (concat (bcat-analysis--tibetan-segment-rules lang) "\n"
           "- grammar: an overview of the whole sentence — verb backbone, clause linkage, agents, elisions.\n"
-          bcat-analysis--sentence-rules))
+          (bcat-analysis--sentence-rules lang)))
 
 (defun bcat-analysis--references-block (refs)
   "The reference translations REFS ((NAME . TEXT) …) of a user prompt."
@@ -108,27 +138,73 @@ and the Tibetan request of a bilingual pair."
                          refs "\n")
             "none")))
 
+(defun bcat-analysis-sigla (names)
+  "The sigla of the comparison for the reference NAMES: ((NAME . SIGLUM)
+…) — the initial of the first word, its capitals when it has several
+\(DharmaMitra: DM); C is the own translation; on a collision the next
+letters (Sanderson 2025 after Sanderson 2022: Sa).  Muster 2.11.: D =
+Dyczkowski 2023, W = Wallis 2015, S = Sanderson 2022, DM, C."
+  (let ((case-fold-search nil) (taken (list "C")) (out '()))
+    (dolist (name names (nreverse out))
+      (let* ((word (or (car (split-string name "[ /,]+" t)) "X"))
+             (caps (replace-regexp-in-string "[^[:upper:]]" "" word))
+             (sig (if (> (length caps) 1) caps (upcase (substring word 0 1))))
+             (i 2))
+        (while (member sig taken)
+          (setq sig (if (<= i (length word))
+                        (concat (upcase (substring word 0 1)) (substring word 1 i))
+                      (format "%s%d" sig i))
+                i (1+ i)))
+        (push sig taken)
+        (push (cons name sig) out)))))
+
+(defun bcat-analysis--lecture-text (body)
+  "The lecture BODY for a prompt: a time-mark link (YouTube) as its time
+mark in brackets, any other link as its text."
+  (replace-regexp-in-string
+   "\\[\\[[^]]*\\]\\[\\([^]]*\\)\\]\\]" "\\1"
+   (replace-regexp-in-string "\\[\\[[^]]*\\]\\[\\([0-9]+:[0-9:]+\\)\\]\\]" "[\\1]" body)))
+
+(defun bcat-analysis--comparison-block (refs lectures)
+  "The paragraphs of a user prompt for the comparison: the sigla of REFS
+\((NAME . TEXT) …) and the LECTURES on the sentence ((NAME . BODY) …) —
+Carsten 2.11.: Sanderson's lectures „nur beim Vergleich“ (before: never
+in a prompt)."
+  (concat
+   "\n\nSigla for the comparison: C = your translation"
+   (mapconcat (lambda (s) (format ", %s = %s" (cdr s) (car s)))
+              (bcat-analysis-sigla (mapcar #'car refs)) "")
+   "."
+   (if lectures
+       (concat "\n\nLectures on this sentence — only for the comparison (the findings), cite with the time mark:\n"
+               (mapconcat (lambda (l) (format "=== %s ===\n%s" (car l)
+                                              (string-trim (bcat-analysis--lecture-text (cdr l)))))
+                          lectures "\n"))
+     "")))
+
 (defun bcat-analysis-system-prompt (target)
   "The system prompt of the sentence analysis for the target language
 code TARGET — constant per document, so the prompt cache stays warm."
   (let ((lang (bcat-analysis--language target)))
     (format "You are a philologist preparing one sentence or verse of a Classical Tibetan Buddhist text for a university reading class. Work segment by segment, then on the whole sentence. Answer with ONE JSON object and nothing else (no prose, no code fence):
 
-{\"segments\": [{\"num\": <segment number>, \"words\": [{\"wylie\": \"…\", \"gloss\": \"…\", \"function\": \"…\"}], \"translation\": \"…\", \"references\": [{\"name\": \"…\", \"text\": \"…\"}], \"shift\": \"…\", \"structure\": \"…\", \"note\": \"…\", \"concepts\": \"…\"}], \"grammar\": \"…\", \"translation\": \"…\", \"comparison\": \"…\"}
+{\"segments\": [{\"num\": <segment number>, \"words\": [{\"wylie\": \"…\", \"gloss\": \"…\", \"function\": \"…\"}], \"translation\": \"…\", \"references\": [{\"name\": \"…\", \"text\": \"…\"}], \"shift\": \"…\", \"structure\": \"…\", \"note\": \"…\", \"concepts\": \"…\"}], \"grammar\": \"…\", \"translation\": \"…\", %s}
 
 Rules:
 - segments: one entry per given segment, same numbers, same order.
 %s
 - Write glosses, notes and explanations in %s. Never mention yourself."
-            (bcat-analysis--tibetan-rules lang) lang)))
+            bcat-analysis--comparison-schema (bcat-analysis--tibetan-rules lang) lang)))
 
-(defun bcat-analysis-user-prompt (sent-num verse segs refs &optional context second)
+(defun bcat-analysis-user-prompt (sent-num verse segs refs &optional context second lectures)
   "The user prompt for sentence SENT-NUM (VERSE its :VERSE: or nil):
 SEGS ((NUM TIBETAN WYLIE) …), REFS ((NAME . TEXT) …) the reference
 translations (DharmaMitra among them), CONTEXT the document's
 #+TIBETAN_CLAUDE_CONTEXT lines; SECOND, the target language code of a
 sentence with the option, asks for the translation in the second
-language (`bcat-analysis--second-request')."
+language (`bcat-analysis--second-request'); the sigla of the comparison
+and LECTURES ((NAME . BODY) …) on the sentence for it
+\(`bcat-analysis--comparison-block')."
   (concat
    (if context (concat (mapconcat #'identity context "\n") "\n\n") "")
    (format "Sentence %d%s — segments:\n" sent-num
@@ -136,6 +212,7 @@ language (`bcat-analysis--second-request')."
    (mapconcat (lambda (s) (bcat-analysis--segment-entry (nth 0 s) (nth 1 s) (nth 2 s)))
               segs "\n")
    (bcat-analysis--references-block refs)
+   (bcat-analysis--comparison-block refs lectures)
    (if second (bcat-analysis--second-request second) "")
    "\n\nReturn the JSON object now."))
 
@@ -190,7 +267,7 @@ answer gives `recitation', the text in sense units (31.10., TĀ 1008)."
   (let ((lang (bcat-analysis--language target)))
     (format "You are a Sanskritist preparing one sentence or verse of a Sanskrit text for a university reading class of experienced Sanskritists; one participant reads Sanskrit only haltingly, so every form is spelled out. Work segment by segment, then on the whole sentence. Use the grammatical terminology of Goldman & Sutherland Goldman, Devavāṇīpraveśikā: Sanskrit terms, with the English equivalent where it helps. Answer with ONE JSON object and nothing else (no prose, no code fence):
 
-{\"segments\": [{\"num\": <segment number>, \"words\": [{\"word\": \"…\", \"lemma\": \"…\", \"formation\": \"…\", \"parts\": \"…\", \"gloss\": \"…\", \"form\": \"…\"}], \"translation\": \"…\", \"references\": [{\"name\": \"…\", \"text\": \"…\"}], \"shift\": [\"…\"], \"sandhi\": \"…\", \"forms\": [{\"word\": \"…\", \"analysis\": \"…\"}], \"compounds\": [{\"word\": \"…\", \"analysis\": \"…\"}], \"structure\": \"…\", \"note\": \"…\", \"concepts\": \"…\"}], \"grammar\": \"…\", \"translation\": \"…\", \"comparison\": \"…\"%s}
+{\"segments\": [{\"num\": <segment number>, \"words\": [{\"word\": \"…\", \"lemma\": \"…\", \"formation\": \"…\", \"parts\": \"…\", \"gloss\": \"…\", \"form\": \"…\"}], \"translation\": \"…\", \"references\": [{\"name\": \"…\", \"text\": \"…\"}], \"shift\": [\"…\"], \"sandhi\": \"…\", \"forms\": [{\"word\": \"…\", \"analysis\": \"…\"}], \"compounds\": [{\"word\": \"…\", \"analysis\": \"…\"}], \"structure\": \"…\", \"note\": \"…\", \"concepts\": \"…\"}], \"grammar\": \"…\", \"translation\": \"…\", %s%s}
 
 Rules:
 - segments: one entry per given segment, same numbers, same order.
@@ -213,9 +290,10 @@ Rules:
 %s
 %s- JSON escaping: only \\\" and \\\\ — never a backslash before an apostrophe.
 - Write glosses, notes and explanations in %s. Never mention yourself."
+            bcat-analysis--comparison-schema
             (concat (if bhasya ", \"bhasya_hint\": \"…\"" "")
                     (if recitation ", \"recitation\": [\"…\"]" ""))
-            bcat-analysis--sentence-rules
+            (bcat-analysis--sentence-rules lang)
             (concat
              (if bhasya
                  "- bhasya_hint: the bhāṣya on this verse is given as context; one to three sentences on what in it matters for reading the verse — how it takes a word or the verse's function, a reading it presupposes, where its Tibetan says something else; Sanskrit and Tibetan words in /italic/; \"\" when nothing.\n"
@@ -225,13 +303,13 @@ Rules:
                ""))
             lang)))
 
-(defun bcat-analysis-sanskrit-user-prompt (sent-num verse segs refs &optional context bhasya second)
+(defun bcat-analysis-sanskrit-user-prompt (sent-num verse segs refs &optional context bhasya second lectures)
   "The user prompt for the Sanskrit sentence SENT-NUM (VERSE its :VERSE:
 or nil): SEGS ((NUM TEXT) …) the segments as transmitted, REFS ((NAME .
 TEXT) …) the reference translations, CONTEXT the document's
 #+TIBETAN_CLAUDE_CONTEXT lines, BHASYA (SANSKRIT . TIBETAN) the bhāṣya
-on the verse — lines as transmitted, the Tibetan in Wylie; SECOND as in
-`bcat-analysis-user-prompt'."
+on the verse — lines as transmitted, the Tibetan in Wylie; SECOND and
+LECTURES as in `bcat-analysis-user-prompt'."
   (concat
    (if context (concat (mapconcat #'identity context "\n") "\n\n") "")
    (format "Sentence %d%s — segments:\n" sent-num (if verse (format " (%s)" verse) ""))
@@ -242,6 +320,7 @@ on the verse — lines as transmitted, the Tibetan in Wylie; SECOND as in
                (if (cdr bhasya) (concat "\nTibetan: " (string-join (cdr bhasya) " ")) ""))
      "")
    (bcat-analysis--references-block refs)
+   (bcat-analysis--comparison-block refs lectures)
    (if second (bcat-analysis--second-request second) "")
    "\n\nReturn the JSON object now."))
 
@@ -261,7 +340,7 @@ Constant per document."
   (let ((lang (bcat-analysis--language target)))
     (format "You prepare the Tibetan translation of one sentence of a Sanskrit Buddhist text for a university reading class that reads and translates the Sanskrit first, then reads the Tibetan aloud, analyses it and discusses where it differs from the Sanskrit. Work segment by segment, then on the whole sentence. Answer with ONE JSON object and nothing else (no prose, no code fence):
 
-{\"segments\": [{\"num\": <Tibetan segment number>, \"sanskrit\": <Sanskrit segment number>, \"words\": [{\"wylie\": \"…\", \"gloss\": \"…\", \"function\": \"…\"}], \"translation\": \"…\", \"references\": [{\"name\": \"…\", \"text\": \"…\"}], \"shift\": \"…\", \"structure\": \"…\", \"note\": \"…\", \"concepts\": \"…\"}], \"differences\": [{\"sanskrit\": <Sanskrit segment number>, \"text\": \"…\"}], \"grammar\": \"…\", \"translation\": \"…\", \"comparison\": \"…\", \"rendering\": \"…\"}
+{\"segments\": [{\"num\": <Tibetan segment number>, \"sanskrit\": <Sanskrit segment number>, \"words\": [{\"wylie\": \"…\", \"gloss\": \"…\", \"function\": \"…\"}], \"translation\": \"…\", \"references\": [{\"name\": \"…\", \"text\": \"…\"}], \"shift\": \"…\", \"structure\": \"…\", \"note\": \"…\", \"concepts\": \"…\"}], \"differences\": [{\"sanskrit\": <Sanskrit segment number>, \"text\": \"…\"}], \"grammar\": \"…\", \"translation\": \"…\", %s, \"rendering\": \"…\"}
 
 Rules:
 - segments: one entry per given Tibetan segment, same numbers, same order.
@@ -271,15 +350,16 @@ Rules:
 - rendering: the Tibetan translation of the whole sentence in two to five sentences — how it reproduces the structure, how it renders the key terms, where it shifts the sense; Sanskrit and Tibetan words in /italic/.
 - JSON escaping: only \\\" and \\\\ — never a backslash before an apostrophe.
 - Write glosses, notes and explanations in %s. Never mention yourself."
-            (bcat-analysis--tibetan-rules lang) lang)))
+            bcat-analysis--comparison-schema (bcat-analysis--tibetan-rules lang) lang)))
 
-(defun bcat-analysis-tibetan-user-prompt (sent-num verse sanskrit tibetan refs &optional context second)
+(defun bcat-analysis-tibetan-user-prompt (sent-num verse sanskrit tibetan refs &optional context second lectures)
   "User prompt of the Tibetan request for sentence SENT-NUM (VERSE its
 :VERSE: or nil): SANSKRIT ((NUM TEXT TRANSLATION) …) the Sanskrit
 segments as transmitted with the translation of the Sanskrit answer,
 TIBETAN ((NUM TIBETAN WYLIE) …), REFS ((NAME . TEXT) …) the reference
 translations of the Tibetan, CONTEXT the #+TIBETAN_CLAUDE_CONTEXT lines
-\(the Tibetan source's), SECOND as in `bcat-analysis-user-prompt'."
+\(the Tibetan source's), SECOND and LECTURES as in
+`bcat-analysis-user-prompt'."
   (concat
    (if context (concat (mapconcat #'identity context "\n") "\n\n") "")
    (format "Sentence %d%s — Sanskrit segments:\n" sent-num (if verse (format " (%s)" verse) ""))
@@ -289,6 +369,7 @@ translations of the Tibetan, CONTEXT the #+TIBETAN_CLAUDE_CONTEXT lines
    (mapconcat (lambda (s) (bcat-analysis--segment-entry (nth 0 s) (nth 1 s) (nth 2 s)))
               tibetan "\n")
    (bcat-analysis--references-block refs)
+   (bcat-analysis--comparison-block refs lectures)
    (if second (bcat-analysis--second-request second) "")
    "\n\nReturn the JSON object now."))
 
@@ -795,12 +876,166 @@ comparison below it (*** Übersicht …, 2.11.) stay where they are."
                            "\n\n")
               (if cut (concat "\n\n" (substring text cut)) "")))))
 
+(defconst bcat-analysis--comparison-labels
+  '(("de" (overview . "Übersicht") (passages . "Die Stellen im Einzelnen")
+     (proposal . "Übersetzungsvorschlag") (corrections . "Berichtigungen zur Analyse")
+     (columns "Nr." "Stelle" "Einstufung" "Kern")
+     (finding . "Befund") (weight . "Gewicht") (decisions . "Entscheidungen")
+     (sigla . "Sigel") (own . "Translation (oben)")
+     (green . "grün") (yellow . "gelb") (red . "rot"))
+    ("en" (overview . "Overview") (passages . "The passages")
+     (proposal . "Proposed translation") (corrections . "Corrections to the analysis")
+     (columns "No." "Passage" "Rating" "Point")
+     (finding . "Finding") (weight . "Weight") (decisions . "Decisions")
+     (sigla . "Sigla") (own . "Translation (above)")
+     (green . "green") (yellow . "yellow") (red . "red")))
+  "The words of the comparison in the file, by
+`bcat-analysis-comparison-language' — the Muster's (2.11.) for German.")
+
+(defconst bcat-analysis--rating-colours
+  '((green . "ok") (yellow . "mid") (red . "bad"))
+  "The cell colour of each rating — the colours ok, mid, bad of the
+Muster's xcolor definitions (`bcat-export--font-lines').")
+
+(defconst bcat-analysis--comparison-table-attr
+  "#+ATTR_LATEX: :align rp{4.3cm}p{1.6cm}p{8cm} :font \\small"
+  "The overview table's fixed column widths — without them it runs over
+the page (the Muster's).")
+
+(defun bcat-analysis--comparison-label (key)
+  "The word for KEY in `bcat-analysis-comparison-language' (English when
+that language has none)."
+  (alist-get key (cdr (or (assoc bcat-analysis-comparison-language bcat-analysis--comparison-labels)
+                          (assoc "en" bcat-analysis--comparison-labels)))))
+
+(defun bcat-analysis--rating (rating)
+  "The RATING of a unit as `green', `yellow' or `red' — also given as
+grün/gelb/rot or ok/mid/bad —, or nil."
+  (pcase (downcase (string-trim (or rating "")))
+    ((or "green" "grün" "ok") 'green)
+    ((or "yellow" "gelb" "mid") 'yellow)
+    ((or "red" "rot" "bad") 'red)))
+
+(defun bcat-analysis--rating-word (rating)
+  "RATING (Claude's) as the word of the file — the raw text when unknown."
+  (let ((r (bcat-analysis--rating rating)))
+    (if r (bcat-analysis--comparison-label r) (string-trim (or rating "")))))
+
+(defun bcat-analysis--table-cell (text)
+  "TEXT as one cell of an org table: one line, a bar as \\vert{}."
+  (replace-regexp-in-string
+   "|" "\\vert{}"
+   (replace-regexp-in-string "[ \t]*\n[ \t]*" " " (string-trim (or text ""))) t t))
+
+(defun bcat-analysis--aligned-table (header rows)
+  "HEADER and ROWS (lists of cells) as an org table aligned in the raw
+file, an hline under the header; the first column (numbers) to the right."
+  (let* ((all (cons header rows))
+         (widths (cl-loop for i below (length header)
+                          collect (cl-loop for r in all maximize (string-width (or (nth i r) "")))))
+         (line (lambda (r)
+                 (concat "| "
+                         (mapconcat
+                          (lambda (i)
+                            (let* ((c (or (nth i r) "")) (pad (make-string (- (nth i widths) (string-width c)) ?\s)))
+                              (if (= i 0) (concat pad c) (concat c pad))))
+                          (number-sequence 0 (1- (length header))) " | ")
+                         " |"))))
+    (concat (funcall line header) "\n"
+            "|" (mapconcat (lambda (w) (make-string (+ w 2) ?-)) widths "+") "|\n"
+            (mapconcat line rows "\n"))))
+
+(defun bcat-analysis-comparison-units (parsed &optional refs)
+  "The comparison of the translations unit by unit from PARSED (Carsten
+2.11., Muster vergleich-ta1-1.org): *** Übersicht — the sigla of REFS
+and the table Nr. | Stelle | Einstufung | Kern, each rating with its
+cell colour —, *** Die Stellen im Einzelnen (per unit the readings, the
+finding, the weight), *** Übersetzungsvorschlag (a quote per sense, the
+decisions), *** Berichtigungen zur Analyse; \"\" without units."
+  (let ((units (alist-get 'units parsed))
+        (proposal (cl-remove-if (lambda (p) (string-empty-p (bcat-analysis--field p 'text)))
+                                (alist-get 'proposal parsed)))
+        (decisions (bcat-analysis--field parsed 'decisions))
+        (corrections (cl-remove-if-not (lambda (c) (and (stringp c) (not (string-blank-p c))))
+                                       (alist-get 'corrections parsed)))
+        (label #'bcat-analysis--comparison-label))
+    (if (null units)
+        ""
+      (string-join
+       (delq nil
+             (list
+              (concat "*** " (funcall label 'overview) "\n"
+                      (funcall label 'sigla) ": C = " (funcall label 'own)
+                      (mapconcat (lambda (s) (format ", %s = %s" (cdr s) (car s)))
+                                 (bcat-analysis-sigla (mapcar #'car refs)) "")
+                      "\n\n" bcat-analysis--comparison-table-attr "\n"
+                      (bcat-analysis--aligned-table
+                       (alist-get 'columns (cdr (or (assoc bcat-analysis-comparison-language
+                                                           bcat-analysis--comparison-labels)
+                                                    (assoc "en" bcat-analysis--comparison-labels))))
+                       (cl-loop for u in units for i from 1
+                                for r = (bcat-analysis--rating (bcat-analysis--field u 'rating))
+                                collect (list (number-to-string i)
+                                              (bcat-analysis--table-cell (bcat-analysis--field u 'passage))
+                                              (concat (if r (format "@@latex:\\cellcolor{%s}@@"
+                                                                    (alist-get r bcat-analysis--rating-colours))
+                                                        "")
+                                                      (bcat-analysis--table-cell
+                                                       (bcat-analysis--rating-word (bcat-analysis--field u 'rating))))
+                                              (bcat-analysis--table-cell (bcat-analysis--field u 'core))))))
+              (concat "*** " (funcall label 'passages) "\n"
+                      (mapconcat
+                       (lambda (iu)
+                         (let* ((u (cdr iu))
+                                (one (lambda (s) (replace-regexp-in-string "[ \t]*\n[ \t]*" " " s)))
+                                (finding (bcat-analysis--field u 'finding))
+                                (weight (bcat-analysis--field u 'weight)))
+                           (string-join
+                            (append
+                             (list (format "**** %d. %s — %s" (car iu)
+                                           (funcall one (bcat-analysis--field u 'passage))
+                                           (bcat-analysis--rating-word (bcat-analysis--field u 'rating))))
+                             (delq nil (mapcar (lambda (r)
+                                                 (let ((text (bcat-analysis--field r 'text)))
+                                                   (unless (string-empty-p text)
+                                                     (format "- %s :: %s" (bcat-analysis--field r 'sigla)
+                                                             (funcall one text)))))
+                                               (alist-get 'readings u)))
+                             (unless (string-empty-p finding)
+                               (list (format "*%s:* %s" (funcall label 'finding) (funcall one finding))))
+                             (unless (string-empty-p weight)
+                               (list (format "*%s:* %s" (funcall label 'weight) (funcall one weight)))))
+                            "\n")))
+                       (cl-loop for u in units for i from 1 collect (cons i u))
+                       "\n\n"))
+              (when (or proposal (not (string-empty-p decisions)))
+                (concat "*** " (funcall label 'proposal) "\n"
+                        (string-join
+                         (append
+                          (mapcar (lambda (p)
+                                    (let ((l (bcat-analysis--field p 'label)))
+                                      (concat (if (string-empty-p l) "" (format "*%s:*\n" l))
+                                              "#+begin_quote\n" (bcat-analysis--field p 'text)
+                                              "\n#+end_quote")))
+                                  proposal)
+                          (unless (string-empty-p decisions)
+                            (list (format "*%s:* %s" (funcall label 'decisions) decisions))))
+                         "\n\n")))
+              (when corrections
+                (concat "*** " (funcall label 'corrections) "\n"
+                        (mapconcat (lambda (c) (concat "- " (string-trim c))) corrections "\n")))))
+       "\n\n"))))
+
 (defun bcat-analysis-comparison (parsed &optional refs)
   "Translations compared of the sentence: the own translation from
 PARSED, each of REFS ((NAME . TEXT) …, the texts sent with the request)
-with the marks of its segment parts, the comparison paragraph."
-  (let ((segments (alist-get 'segments parsed)))
-    (bcat-analysis-footnotes-last
+with the marks of its segment parts, the comparison paragraph of an
+older answer, then the units of the comparison
+\(`bcat-analysis-comparison-units')."
+  (let ((segments (alist-get 'segments parsed))
+        (units (bcat-analysis-comparison-units parsed refs)))
+    (concat
+     (bcat-analysis-footnotes-last
      (string-join
      (delq nil
            (append
@@ -815,7 +1050,8 @@ with the marks of its segment parts, the comparison paragraph."
                     refs)
             (let ((c (bcat-analysis--field parsed 'comparison)))
               (unless (string-empty-p c) (list c)))))
-     "\n\n"))))
+     "\n\n"))
+     (if (string-empty-p units) "" (concat "\n\n" units)))))
 
 (defun bcat-analysis--second-translation (parsed)
   "The fields of the translation in the second language PARSED gives —
