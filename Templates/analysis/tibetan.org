@@ -14,8 +14,10 @@ dieselbe in der zweiten Sprache (second-translation, Beschriftung
 second-label: „Deutsch“ bei Zielsprache Englisch, sonst „English“ —
 „damit ich mich leichter in die Konzepte rein denken kann“); dann
 * Sentence: Grammar, Concepts (die Konzepte der Segmente, je ⟦N⟧),
-Translations compared (Referenzen und die Einschätzung der
-Unterschiede); dann * Segments: der Rest der Erklärungen je Segment;
+Translations compared (Referenzen, seit 2.11. darunter der Vergleich
+je Bedeutungseinheit: Übersicht mit Farbtabelle, die Stellen im
+Einzelnen, Übersetzungsvorschlag, Berichtigungen — Muster
+vergleich-ta1-1.org, `bcat-analysis-comparison-units'); dann * Segments: der Rest der Erklärungen je Segment;
 am Schluss Kommentar (* Commentary: was rein muss) vor Weiterführendem
 (* Further Reading: Sanderson u. ä.).  Die ⟦N⟧-Marken außerhalb von
 * Segments machen die Datei ohne Abruf neu setzbar (C-c u L).

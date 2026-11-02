@@ -4694,6 +4694,44 @@ Rumpf (`bcat-sentence--pair-rump') und C-c u L (`bcat-relayout--pair-
 fields': die andere Sprache und ihre Satzübersetzung aus der
 Partnerdatei; Differenzen im Sanskrit-File über das „Skt. N“ der
 Marke).
+VERGLEICH JE BEDEUTUNGSEINHEIT (2.11.; Vorgabe von Carsten über die
+Session „Tantraloka Reading Resources“, Muster
+`WS26-27/Tantraloka/Resources/vergleich-ta1-1.org' zu TĀ 1.1, „das
+Muster passt“; Entscheidungen: bei JEDEM C-c u G, Vorlesungen „nur beim
+Vergleich“, Platz in Translations compared): `5905615' der kurze
+Vergleichsabsatz ist durch `units' ersetzt — je Bedeutungseinheit
+passage, rating green/yellow/red (grün = nur Wortwahl, gelb = andere
+Deutung, beide vertretbar, rot = nicht beide zugleich richtig), core,
+readings {sigla, text}, finding (am Original begründet, „es gibt da
+keine Autorität, auf die man sich verlassen kann“; Vorlesungen mit
+Zeitmarke „(S, I 0:15:24)“), weight; dazu proposal (Doppelsinn in zwei
+Fassungen), decisions, corrections (Fehler der eigenen Analyse).
+Vertrag `bcat-analysis--comparison-schema' + Regeln in
+`bcat-analysis--sentence-rules' (Funktion der Zielsprache) für alle
+drei Satz-Abrufe (Tibetisch, Sanskrit, tibetischer Abruf des Paars;
+NICHT der Kommentar-Abruf).  Begründungen in
+`bcat-analysis-comparison-language' (Vorgabe "de"), Übersetzungen in
+der Zielsprache.  Sigel aus den Referenznamen (`bcat-analysis-sigla':
+Anfangsbuchstabe, DharmaMitra → DM, C = eigene, Kollision → Sa) im
+Benutzerprompt.  Darstellung unter ** Translations compared nach den
+Referenzen: *** Übersicht (Sigel + Tabelle Nr. | Stelle | Einstufung |
+Kern, @@latex:\cellcolor{ok|mid|bad}@@grün/gelb/rot, #+ATTR_LATEX mit
+den festen Spaltenbreiten des Musters), *** Die Stellen im Einzelnen
+(**** N. /stelle/ — gelb, Lesarten als Beschreibungsliste, *Befund:*,
+*Gewicht:*), *** Übersetzungsvorschlag (#+begin_quote je Sinn,
+*Entscheidungen:*), *** Berichtigungen zur Analyse.  C-c u L liest den
+ganzen Abschnitt samt Unterabschnitten zurück.  `4927592'
+Fußnotendefinitionen nur vor der ersten Überschrift sammeln; `f3dbdc4'
+nachgetragene Referenz: Absatz + Vergleichssatz über den Einheiten;
+`121e166' Vorlesungen (#+CAT_LECTURES, `bcat-sentence--lectures') gehen
+mit in den Abruf, YouTube-Links zu [0:10:20] — vorher nie (TĀ 1.13: ~100 000
+Zeichen Eingabe); `f7879d3' PDF: colortbl + Farben ok/mid/bad im Kopf,
+Tabelle mit Kopfzeile ohne \bcatg, `org-export-headline-levels' 4 (****
+als \paragraph*, mit defvar — sonst im .elc wirkungslos); `696ba01'
+Emacs: Übersicht nicht blau (`bcat-faces--header-table-p'); `4c80ebe'
+Einstufungen in Emacs farbig (`bcat-rating-ok/mid/bad-face').
+Bestehende Satzdateien bekommen den Vergleich erst mit C-u C-c u G
+\(Neuabruf, Carstens Entscheidung).  ERT 2784.
 
 #### Offen
 
