@@ -519,6 +519,57 @@ file.  Other sections at the end stay in the PDF."
                            "* Eigene Liste\nL\n")
                    (buffer-string)))))
 
+(ert-deftest bcat-export-comparison-table ()
+  "2.11. (Muster vergleich-ta1-1.org): the overview table of the
+comparison — the ratings with \\cellcolor{ok|mid|bad} — needs colortbl
+and the Muster's three colours in the header; as a table with a header
+row (one row, then \\hline) it is no table of words: no row in
+\\bcatg."
+  (let ((head (bcat-export--font-lines)))
+    (should (string-match-p (regexp-quote "\\usepackage{colortbl}") head))
+    (should (string-match-p (regexp-quote "\\definecolor{ok}{RGB}{200,235,200}") head))
+    (should (string-match-p (regexp-quote "\\definecolor{mid}{RGB}{250,235,160}") head))
+    (should (string-match-p (regexp-quote "\\definecolor{bad}{RGB}{245,190,185}") head)))
+  (let ((tabular (concat "\\begin{tabular}{rp{4.3cm}p{1.6cm}p{8cm}}\n"
+                         "Nr. & Stelle & Einstufung & Kern\\\\\n"
+                         "\\hline\n"
+                         "1 & \\emph{a} & \\cellcolor{bad}rot & x\\\\\n"
+                         "2 & \\emph{b} & \\cellcolor{ok}grün & y\\\\\n"
+                         "3 & \\emph{c} & \\cellcolor{mid}gelb & z\\\\\n"
+                         "\\end{tabular}")))
+    (should (equal tabular (bcat-export--detail-rows tabular)))))
+
+(ert-deftest bcat-export-comparison-smoke ()
+  "Real LuaLaTeX run: the comparison's units (**** headings) export as
+headings, not as list items (H:4 bound for the export), the cell colours
+reach the LaTeX, and the PDF is made."
+  (skip-unless (executable-find "lualatex"))
+  (let* ((dir (make-temp-file "bcat-export-" t))
+         (file (expand-file-name "sent-001-tantralo.org" dir)))
+    (unwind-protect
+        (progn
+          (with-temp-file file
+            (insert "#+TITLE: Sentence 1 Analysis\n#+OPTIONS: toc:nil num:nil title:nil author:nil date:nil\n"
+                    "#+CAT_TEMPLATE: sanskrit\n\n* Sentence\n** Translations compared\n"
+                    "*Translation:* May my heart flash forth.\n\n"
+                    "*** Übersicht\nSigel: C = Translation (oben), D = Dyczkowski 2023\n\n"
+                    "#+ATTR_LATEX: :align rp{4.3cm}p{1.6cm}p{8cm} :font \\small\n"
+                    "| Nr. | Stelle | Einstufung                   | Kern |\n"
+                    "|-----+--------+------------------------------+------|\n"
+                    "|   1 | /a/    | @@latex:\\cellcolor{bad}@@rot | x    |\n\n"
+                    "*** Die Stellen im Einzelnen\n**** 1. /a/ — rot\n- D :: „a“\n*Befund:* b\n"))
+          (let ((bcat-export-keep-tex t))
+            (should (file-exists-p (bcat-export-pdf file))))
+          (let ((tex (with-temp-buffer
+                       (insert-file-contents (expand-file-name "sent-001-tantralo.tex" dir))
+                       (buffer-string))))
+            (should (string-match-p (regexp-quote "\\cellcolor{bad}rot") tex))
+            (should (string-match-p (regexp-quote "\\paragraph*{1. \\emph{a} — rot}") tex))
+            (should-not (string-match-p (regexp-quote "\\item 1. \\emph{a}") tex))
+            (should-not (string-match-p "\\\\bcatg{[23] &" tex))))
+      (let ((buf (get-file-buffer file))) (when buf (kill-buffer buf)))
+      (delete-directory dir t))))
+
 (ert-deftest bcat-export-pdf-smoke ()
   "Real LuaLaTeX run (only where lualatex is installed): the reviewed
 Tibetan sample becomes a PDF and the .tex is cleared away; kept on

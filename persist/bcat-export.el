@@ -44,6 +44,7 @@
 (defvar org-export-filter-table-functions)
 (defvar org-export-filter-verse-block-functions)
 (defvar org-export-before-processing-functions)
+(defvar org-export-headline-levels)
 (defvar tibetan-cascade-subtree-confirm-threshold)
 
 (defcustom bcat-export-auto t
@@ -231,12 +232,16 @@ words black, the rest blue."
 
 (defun bcat-export--font-lines ()
   "#+LATEX_HEADER lines defining \\bcattib and \\bcatdeva, the colour
-\\bcatg (gloss, `bcat-export-gloss-color'), and loading adjustbox
-\(`bcat-export--table-filter')."
+\\bcatg (gloss, `bcat-export-gloss-color'), loading adjustbox
+\(`bcat-export--table-filter'), and colortbl with the colours ok, mid,
+bad of the ratings in the comparison's overview (2.11., Muster
+vergleich-ta1-1.org, `bcat-analysis--rating-colours')."
   (concat
    "#+LATEX_HEADER: \\usepackage{fontspec}\n"
    "#+LATEX_HEADER: \\usepackage{adjustbox}\n"
    "#+LATEX_HEADER: \\usepackage{xcolor}\n"
+   "#+LATEX_HEADER: \\usepackage{colortbl}\n"
+   "#+LATEX_HEADER: \\definecolor{ok}{RGB}{200,235,200}\\definecolor{mid}{RGB}{250,235,160}\\definecolor{bad}{RGB}{245,190,185}\n"
    (format "#+LATEX_HEADER: \\definecolor{bcatgloss}{HTML}{%s}\n" bcat-export-gloss-color)
    "#+LATEX_HEADER: \\newcommand{\\bcatg}[1]{\\textcolor{bcatgloss}{#1}}\n"
    (format "#+LATEX_HEADER: \\newfontfamily\\bcattib{%s}[Script=Tibetan,Renderer=HarfBuzz]\n"
@@ -403,11 +408,16 @@ the first is Uchen (its Wylie) and the one next to last (the gloss).
 Carsten 31.10.: words black, the rest blue; the same evening, TĀ 1006:
 the gloss black too — „dann sehe ich gleich was wichtig ist“;
 Tibetisch V: Uchen and Wylie black.  A metre table (its second row only
-– and ⏑) stays as it is."
+– and ⏑) stays as it is, as does a table with a header row — one row,
+then \\hline: the comparison's overview (2.11.); no table of words has
+one."
   (let* ((lines (split-string tabular "\n"))
          (row-p (lambda (l) (string-match-p "\\\\\\\\[ \t]*\\'" l)))
-         (rows (cl-remove-if-not row-p lines)))
-    (if (or (< (length rows) 2) (bcat-export--metre-row-p (nth 1 rows)))
+         (rows (cl-remove-if-not row-p lines))
+         (header (let ((first (cl-position-if row-p lines)))
+                   (and first (nth (1+ first) lines)
+                        (string-match-p "\\`[ \t]*\\\\hline" (nth (1+ first) lines))))))
+    (if (or (< (length rows) 2) header (bcat-export--metre-row-p (nth 1 rows)))
         tabular
       (let ((blue '()) (band '()))
         ;; The bands, each closed by an \hline or the end.
@@ -546,6 +556,9 @@ LuaLaTeX could not set land in `bcat-export--missing'."
                              '("%latex -interaction nonstopmode -output-directory %o %f"
                                "%latex -interaction nonstopmode -output-directory %o %f"))
                             (org-latex-tables-centered nil)
+                            ;; **** (a unit of the comparison, 2.11.) as a
+                            ;; heading, not as a list item.
+                            (org-export-headline-levels 4)
                             ;; The log is read first (missing characters),
                             ;; then cleared as org would.
                             (org-latex-remove-logfiles nil)
