@@ -80,6 +80,22 @@ Uchen and Wylie black): only the function row is blue."
     (should (equal '("| DEM       | ABL  |")
                    (bcat-faces-test--matches #'bcat-faces--detail-row-matcher 0)))))
 
+(ert-deftest bcat-faces-comparison-table-plain ()
+  "2.11.: the overview table of the comparison (a header row and an hline
+under it — no table of words has one) stays in the text colour: no
+detail rows there."
+  (with-temp-buffer
+    (insert "** Translations compared\n*** Übersicht\n"
+            "| Nr. | Stelle | Einstufung                   | Kern |\n"
+            "|-----+--------+------------------------------+------|\n"
+            "|   1 | /a/    | @@latex:\\cellcolor{bad}@@rot | x    |\n"
+            "|   2 | /b/    | @@latex:\\cellcolor{ok}@@grün | y    |\n"
+            "|   3 | /c/    | @@latex:\\cellcolor{mid}@@gelb | z    |\n"
+            "\n| bden  |\n| truth |\n| N     |\n")
+    (org-mode)
+    (should (equal '("| N     |")
+                   (bcat-faces-test--matches #'bcat-faces--detail-row-matcher 0)))))
+
 (ert-deftest bcat-faces-only-in-sentence-files ()
   "Switched on in a sentence file of a template (sent-…, comm-… with
 #+CAT_TEMPLATE:), not in other org files."

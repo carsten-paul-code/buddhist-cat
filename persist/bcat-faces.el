@@ -74,11 +74,25 @@ table's second row holds only – ⏑ ¦."
          (bcat-faces--metre-row-p
           (buffer-substring-no-properties (line-beginning-position) (line-end-position))))))
 
+(defun bcat-faces--header-table-p (pos)
+  "Non-nil when the table row at POS belongs to a table with a header
+row — its second line an hline: the comparison's overview (2.11.); no
+table of words has one."
+  (save-excursion
+    (goto-char pos)
+    (beginning-of-line)
+    (while (and (not (bobp))
+                (save-excursion (forward-line -1) (looking-at "[ \t]*|")))
+      (forward-line -1))
+    (and (looking-at "[ \t]*|[^-\n]")
+         (progn (forward-line 1) (looking-at "[ \t]*|-")))))
+
 (defun bcat-faces--detail-row-matcher (limit)
   "Font-lock matcher: the next table row before LIMIT that explains the
 words — group 0 the row: in its band (rows between hlines) neither the
 first (the words), nor the second when the first is Uchen (its Wylie),
-nor the one next to last (the gloss); none of a metre table."
+nor the one next to last (the gloss); none of a metre table or of a
+table with a header row."
   (let ((found nil))
     (while (and (not found) (re-search-forward "^[ \t]*|[^-\n].*$" limit t))
       (let* ((beg (match-beginning 0)) (end (match-end 0))
@@ -92,7 +106,8 @@ nor the one next to last (the gloss); none of a metre table."
                                                  (point) (line-end-position)))))))
         (when (and i (/= i 0) (/= i (- (length band) 2))
                    (not (and uchen (= i 1)))
-                   (not (bcat-faces--metre-table-p beg)))
+                   (not (bcat-faces--metre-table-p beg))
+                   (not (bcat-faces--header-table-p beg)))
           (set-match-data (list beg end))
           (setq found t))))
     found))
