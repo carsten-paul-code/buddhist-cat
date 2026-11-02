@@ -4740,7 +4740,13 @@ Einheit `doubts' {who, verdict wrong|doubtful, reason (Nebensatz ohne
 *abzulehnen*, weil … Besser: …“; rot, sobald eine Lesart wrong ist
 \(TĀ 1.1 hatte gupta verworfen und doch gelb); `5012ec5' Farbe in Emacs.
 Der Hänger danach war NICHT der Vergleich, sondern §5.70 (Nachtrag).
-ERT 2787.
+ERT 2787.  Danach: `5e81f1b' PDF-Fehler „Missing } inserted“ bei zwei
+leeren Zellen nebeneinander (Teile-Zeile aus Pronomen, TĀ 1006/1007) —
+`bcat-export--cells'; ZIELSPRACHE (Carsten: „bitte im Handout auch immer
+alles in der Zielsprache“): `bcat-analysis-comparison-language' Vorgabe
+nil = Zielsprache des Dokuments (Prompt und Wörter im File), der Rumpf
+trägt `target-lang', die Kontexte reichen sie an
+`bcat-analysis-comparison' weiter.  ERT 2790.
 
 #### Offen
 

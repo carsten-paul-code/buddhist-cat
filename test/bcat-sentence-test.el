@@ -609,6 +609,15 @@ the YouTube links reduced to their time marks."
       (bcat-export--drop-machine-sections)
       (should (string-match-p "^\\* Further Reading$" (buffer-string))))))
 
+(ert-deftest bcat-sentence-rump-target-language ()
+  "2.11.: the rump carries the source's target language (`target-lang')
+— the comparison is rendered in it („im Handout auch immer alles in der
+Zielsprache“)."
+  (bcat-sentence-test--with-source
+    (should (equal "en" (alist-get 'target-lang
+                                   (bcat-sentence-rump-context
+                                    9 (tibetan-cascade--segs-for-sentence src 9) src))))))
+
 (ert-deftest bcat-sentence-no-lectures ()
   "Without #+CAT_LECTURES: no * Lectures."
   (bcat-sentence-test--with-source

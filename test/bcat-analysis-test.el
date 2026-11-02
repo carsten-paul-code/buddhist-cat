@@ -1097,10 +1097,12 @@ finding argues from the original, never from a translator's standing
 lectures are cited with their time mark.  The short comparison
 paragraph is gone; the reasoning is in German
 \(`bcat-analysis-comparison-language'), the renderings in the target
-language."
-  (dolist (sys (list (bcat-analysis-sanskrit-system-prompt "en")
-                     (bcat-analysis-system-prompt "en")
-                     (bcat-analysis-tibetan-system-prompt "en")))
+language.  Since the same day the reasoning follows the target
+language unless `bcat-analysis-comparison-language' is set (here: de)."
+  (dolist (sys (let ((bcat-analysis-comparison-language "de"))
+                 (list (bcat-analysis-sanskrit-system-prompt "en")
+                       (bcat-analysis-system-prompt "en")
+                       (bcat-analysis-tibetan-system-prompt "en"))))
     (dolist (key '("\"units\"" "\"passage\"" "\"rating\"" "\"core\"" "\"readings\""
                    "\"sigla\"" "\"finding\"" "\"weight\"" "\"proposal\"" "\"label\""
                    "\"decisions\"" "\"corrections\""))
@@ -1189,7 +1191,8 @@ only its finding), *** Übersetzungsvorschlag (one quote per sense,
   (let* ((parsed (bcat-analysis-parse bcat-analysis-test--units-answer))
          (out (bcat-analysis-comparison
                parsed '(("Dyczkowski 2023" . "the glory [fn:d1]\n\n[fn:d1] Dyczkowski's note.")
-                        ("DharmaMitra" . "the great Mother"))))
+                        ("DharmaMitra" . "the great Mother"))
+               "de"))
          (table (cl-remove-if-not (lambda (l) (string-prefix-p "|" l)) (split-string out "\n"))))
     (should (string-prefix-p
              (concat "*Translation:* May my heart flash forth.\n\n"
@@ -1232,11 +1235,11 @@ only its finding), *** Übersetzungsvorschlag (one quote per sense,
     (let ((one (bcat-analysis-comparison
                 (append '((proposal ((label . "") (text . "One."))) (corrections))
                         parsed)
-                nil)))
+                nil "de")))
       (should (string-match-p "\\*\\*\\* Übersetzungsvorschlag\n#\\+begin_quote\nOne\\.\n#\\+end_quote" one))
       (should-not (string-match-p "Berichtigungen" one)))
     ;; English labels.
-    (let ((en (let ((bcat-analysis-comparison-language "en")) (bcat-analysis-comparison parsed nil))))
+    (let ((en (bcat-analysis-comparison parsed nil "en")))
       (dolist (s '("*** Overview\nSigla: C = Translation (above)" "| No. | Passage" "| Rating" "| Point"
                    "@@latex:\\cellcolor{bad}@@red" "**** 1. /abhinavasṛṣṭimahā/ — red" "*Finding:* "
                    "*Weight:* " "*** Proposed translation" "*Decisions:* " "*** Corrections to the analysis"))
@@ -1286,7 +1289,7 @@ red first, its number, passage and rating, then one line per doubt —
 who and how, *abzulehnen*/*fraglich*, weil …, Besser: …; nothing for
 units without doubts, no section without any."
   (let* ((parsed (bcat-analysis-parse bcat-analysis-test--doubts-answer))
-         (out (bcat-analysis-comparison parsed nil)))
+         (out (bcat-analysis-comparison parsed nil "de")))
     (should (string-match-p
              (regexp-quote
               (concat "|   3 | /pañcamukhaguptarucir/ | @@latex:\\cellcolor{bad}@@rot  | gupta  |\n\n"
@@ -1300,13 +1303,45 @@ units without doubts, no section without any."
                       "*** Die Stellen im Einzelnen\n"))
              out))
     (should-not (string-match-p "2\\. /jananī/ — grün\\*" out))
-    (let ((en (let ((bcat-analysis-comparison-language "en")) (bcat-analysis-comparison parsed nil))))
+    (let ((en (bcat-analysis-comparison parsed nil "en")))
       (should (string-match-p (regexp-quote "*** For the class\n- *3. /pañcamukhaguptarucir/ — red*") en))
       (should (string-match-p (regexp-quote "— *wrong*, because gupta") en))
       (should (string-match-p (regexp-quote "Better: „whose radiance") en)))
     (should-not (string-match-p "Für die Klasse"
                                 (bcat-analysis-comparison
-                                 (bcat-analysis-parse bcat-analysis-test--units-answer) nil)))))
+                                 (bcat-analysis-parse bcat-analysis-test--units-answer) nil "de")))))
+
+(ert-deftest bcat-analysis-comparison-target-language ()
+  "Carsten 2.11.: „bitte im Handout auch immer alles in der
+Zielsprache“ — the comparison's reasoning and its words (headings,
+table, verdicts) follow the document's target language; German only
+when `bcat-analysis-comparison-language' says so (default nil).  The
+target comes with the rump (`target-lang') into the context."
+  (should (null (eval (car (get 'bcat-analysis-comparison-language 'standard-value)))))
+  (let ((bcat-analysis-comparison-language nil))
+    (should (string-match-p "reason, decisions and corrections in English"
+                            (bcat-analysis-sanskrit-system-prompt "en")))
+    (should (string-match-p "reason, decisions and corrections in German"
+                            (bcat-analysis-sanskrit-system-prompt "de")))
+    (let ((parsed (bcat-analysis-parse bcat-analysis-test--units-answer)))
+      (should (string-match-p "^\\*\\*\\* Overview$" (bcat-analysis-comparison parsed nil "en")))
+      (should (string-match-p "^\\*\\*\\* Übersicht$" (bcat-analysis-comparison parsed nil "de")))
+      (should (string-match-p "^\\*\\*\\* Overview$"
+                              (alist-get 'comparison
+                                         (bcat-analysis-sanskrit-context
+                                          (cons '(target-lang . "en") (bcat-analysis-test--base-1007))
+                                          parsed nil))))
+      (should (string-match-p "^\\*\\*\\* Overview$"
+                              (alist-get 'comparison
+                                         (bcat-analysis-context
+                                          (cons '(target-lang . "en") (bcat-analysis-test--base))
+                                          parsed nil))))))
+  (let ((bcat-analysis-comparison-language "de"))
+    (should (string-match-p "reason, decisions and corrections in German"
+                            (bcat-analysis-sanskrit-system-prompt "en")))
+    (should (string-match-p "^\\*\\*\\* Übersicht$"
+                            (bcat-analysis-comparison
+                             (bcat-analysis-parse bcat-analysis-test--units-answer) nil "en")))))
 
 (ert-deftest bcat-analysis-footnotes-last-before-headings ()
   "The footnote definitions of the references go to the end of the text

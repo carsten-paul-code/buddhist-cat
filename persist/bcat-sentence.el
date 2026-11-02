@@ -522,6 +522,9 @@ existing file (user slots, `created')."
        (bcat-sentence--bhasya-fields sent-num source-file)
        (bcat-sentence--lecture-fields sent-num source-file)
        `((sent-num . ,sent-num)
+         ;; The comparison is rendered in it (2.11.: „im Handout auch
+         ;; immer alles in der Zielsprache“).
+         (target-lang . ,tibetan-analysis--target-lang)
          (source-link . ,(format "[[file:../%s::*Sentence %d][%s / Sentence %d]]"
                                  name sent-num name sent-num))
          (segment-list . ,(mapconcat (lambda (s) (number-to-string (car s))) segs ", "))

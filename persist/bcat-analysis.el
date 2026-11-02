@@ -84,13 +84,15 @@ cache)."
     (format "\n\nAlso add to the JSON object the field \"%s\": the sentence translation once more in %s — close to the original, the key terms with the original in parentheses; the class thinks the concepts through in this language too.  In the comparison units, the finding also says what each reading would be in %s (in quotation marks)."
             (car second) (cdr second) (cdr second))))
 
-(defcustom bcat-analysis-comparison-language "de"
+(defcustom bcat-analysis-comparison-language nil
   "Language code of the reasoning in the comparison of the translations
-\(units, finding, weight, decisions, corrections) — independent of the
-target language, in which the renderings stay.  Carsten 2.11. (Muster
-vergleich-ta1-1.org of the Tantrāloka reading): „Sprache der
-Begründungen Deutsch, Übersetzungen Englisch (wie im Muster)“."
-  :type '(choice (const :tag "Deutsch" "de") (const :tag "English" "en"))
+\(core, finding, weight, the class conclusions, decisions, corrections)
+and of its words in the file; nil: the document's target language.
+Carsten 2.11.: first „Sprache der Begründungen Deutsch, Übersetzungen
+Englisch (wie im Muster)“, the same day „bitte im Handout auch immer
+alles in der Zielsprache“ — so nil; \"de\" or \"en\" fixes one."
+  :type '(choice (const :tag "Zielsprache des Dokuments" nil)
+                 (const :tag "Deutsch" "de") (const :tag "English" "en"))
   :group 'buddhist-cat)
 
 (defconst bcat-analysis--comparison-schema
@@ -121,7 +123,10 @@ in it are an option of the sentence (`bcat-analysis--second-request')."
 - decisions: the decisions of the proposal, by unit number, in one to three sentences; \"\" when units is [].
 - corrections: errors of your own analysis above that the comparison brings to light (a form misidentified, a gloss that does not fit), one sentence each; [] when there are none.
 - Language of the comparison: core, finding, the notes in weight, reason, decisions and corrections in %s, the labels of the proposal too; readings verbatim; the renderings in weight and proposal in %s."
-          (bcat-analysis--language bcat-analysis-comparison-language) lang))
+          (if bcat-analysis-comparison-language
+              (bcat-analysis--language bcat-analysis-comparison-language)
+            lang)
+          lang))
 
 (defun bcat-analysis--tibetan-rules (lang)
   "The rules for the fields of a Tibetan sentence analysis, from words
@@ -907,11 +912,20 @@ Muster's xcolor definitions (`bcat-export--font-lines').")
   "The overview table's fixed column widths — without them it runs over
 the page (the Muster's).")
 
+(defvar bcat-analysis--comparison-lang "en"
+  "Language code of the comparison being rendered — bound by
+`bcat-analysis-comparison-units' (`bcat-analysis-comparison-language' or
+the document's target language).")
+
+(defun bcat-analysis--comparison-labels-for ()
+  "The words of `bcat-analysis--comparison-lang' (English when that
+language has none)."
+  (cdr (or (assoc bcat-analysis--comparison-lang bcat-analysis--comparison-labels)
+           (assoc "en" bcat-analysis--comparison-labels))))
+
 (defun bcat-analysis--comparison-label (key)
-  "The word for KEY in `bcat-analysis-comparison-language' (English when
-that language has none)."
-  (alist-get key (cdr (or (assoc bcat-analysis-comparison-language bcat-analysis--comparison-labels)
-                          (assoc "en" bcat-analysis--comparison-labels)))))
+  "The word for KEY in the language of the comparison being rendered."
+  (alist-get key (bcat-analysis--comparison-labels-for)))
 
 (defun bcat-analysis--rating (rating)
   "The RATING of a unit as `green', `yellow' or `red' — also given as
@@ -993,14 +1007,17 @@ ich bin mir nicht sicher, ob das richtig ist weil … Dafür müsste ich es
         (sort items (lambda (a b) (if (= (car a) (car b)) (< (nth 1 a) (nth 1 b)) (< (car a) (car b)))))
         "\n")))))
 
-(defun bcat-analysis-comparison-units (parsed &optional refs)
+(defun bcat-analysis-comparison-units (parsed &optional refs target)
   "The comparison of the translations unit by unit from PARSED (Carsten
 2.11., Muster vergleich-ta1-1.org): *** Übersicht — the sigla of REFS
 and the table Nr. | Stelle | Einstufung | Kern, each rating with its
 cell colour —, *** Die Stellen im Einzelnen (per unit the readings, the
 finding, the weight), *** Übersetzungsvorschlag (a quote per sense, the
-decisions), *** Berichtigungen zur Analyse; \"\" without units."
-  (let ((units (alist-get 'units parsed))
+decisions), *** Berichtigungen zur Analyse; \"\" without units.  In
+`bcat-analysis-comparison-language', else in the target language TARGET
+\(Carsten 2.11.: „im Handout auch immer alles in der Zielsprache“)."
+  (let ((bcat-analysis--comparison-lang (or bcat-analysis-comparison-language target "en"))
+        (units (alist-get 'units parsed))
         (proposal (cl-remove-if (lambda (p) (string-empty-p (bcat-analysis--field p 'text)))
                                 (alist-get 'proposal parsed)))
         (decisions (bcat-analysis--field parsed 'decisions))
@@ -1018,9 +1035,7 @@ decisions), *** Berichtigungen zur Analyse; \"\" without units."
                                  (bcat-analysis-sigla (mapcar #'car refs)) "")
                       "\n\n" bcat-analysis--comparison-table-attr "\n"
                       (bcat-analysis--aligned-table
-                       (alist-get 'columns (cdr (or (assoc bcat-analysis-comparison-language
-                                                           bcat-analysis--comparison-labels)
-                                                    (assoc "en" bcat-analysis--comparison-labels))))
+                       (alist-get 'columns (bcat-analysis--comparison-labels-for))
                        (cl-loop for u in units for i from 1
                                 for r = (bcat-analysis--rating (bcat-analysis--field u 'rating))
                                 collect (list (number-to-string i)
@@ -1075,14 +1090,14 @@ decisions), *** Berichtigungen zur Analyse; \"\" without units."
                         (mapconcat (lambda (c) (concat "- " (string-trim c))) corrections "\n")))))
        "\n\n"))))
 
-(defun bcat-analysis-comparison (parsed &optional refs)
+(defun bcat-analysis-comparison (parsed &optional refs target)
   "Translations compared of the sentence: the own translation from
 PARSED, each of REFS ((NAME . TEXT) …, the texts sent with the request)
 with the marks of its segment parts, the comparison paragraph of an
-older answer, then the units of the comparison
-\(`bcat-analysis-comparison-units')."
+older answer, then the units of the comparison in the target language
+TARGET (`bcat-analysis-comparison-units')."
   (let ((segments (alist-get 'segments parsed))
-        (units (bcat-analysis-comparison-units parsed refs)))
+        (units (bcat-analysis-comparison-units parsed refs target)))
     (concat
      (bcat-analysis-footnotes-last
      (string-join
@@ -1155,7 +1170,7 @@ segment Claude skipped keeps its rump fields."
        (glosses . ,(bcat-analysis-glosses-p segments))
        (translation . ,(bcat-analysis--field parsed 'translation))
        (grammar . ,(bcat-analysis--field parsed 'grammar))
-       (comparison . ,(bcat-analysis-comparison parsed refs)))
+       (comparison . ,(bcat-analysis-comparison parsed refs (alist-get 'target-lang base))))
      base)))
 
 ;; ----------------------------------------------------------------------------
@@ -1340,7 +1355,7 @@ skipped keeps its rump fields."
        (glosses . ,(and (cl-some (lambda (s) (alist-get 'glossed s)) segments) t))
        (translation . ,(bcat-analysis--field parsed 'translation))
        (grammar . ,(bcat-analysis--field parsed 'grammar))
-       (comparison . ,(bcat-analysis-comparison parsed refs))
+       (comparison . ,(bcat-analysis-comparison parsed refs (alist-get 'target-lang base)))
        (word-analysis . ,(bcat-analysis-word-analysis (alist-get 'segments parsed)))
        (bhasya-hint . ,(bcat-analysis--field parsed 'bhasya_hint)))
      base)))
