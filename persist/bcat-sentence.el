@@ -470,17 +470,23 @@ wie Sthiramati im MSA, die unbedingt mit rein müssen“)."
 
 (declare-function tibetan-cascade--ref-bodies "tibetan-cascade" (refs-file heading-re))
 
-(defun bcat-sentence--lecture-fields (sent-num source-file)
+(defun bcat-sentence--lectures (sent-num source-file)
   "The lectures on sentence SENT-NUM from the #+CAT_LECTURES: file of
-SOURCE-FILE (`** Sentence N' / `*** <lecture>', as the verse references):
+SOURCE-FILE (`** Sentence N' / `*** <lecture>', as the verse
+references): ((NAME . BODY) …), or nil."
+  (let* ((v (bcat-sentence--header-value source-file "CAT_LECTURES"))
+         (file (and v (expand-file-name v (file-name-directory source-file)))))
+    (and file (tibetan-cascade--ref-bodies
+               file (format "^\\*\\* Sentence %d\\b" sent-num)))))
+
+(defun bcat-sentence--lecture-fields (sent-num source-file)
+  "The lectures on sentence SENT-NUM of SOURCE-FILE as template fields:
 \((lectures-p . t) (lectures ((lecture-name . N) (lecture-body . B)) …)),
 or nil.  Carsten 30.10.: Sanderson's lectures on TĀ 1.1–15 in the
 sentence file and its PDF — the preparation on the reMarkable, with
-handwritten notes.  Never in a prompt."
-  (let* ((v (bcat-sentence--header-value source-file "CAT_LECTURES"))
-         (file (and v (expand-file-name v (file-name-directory source-file))))
-         (bodies (and file (tibetan-cascade--ref-bodies
-                            file (format "^\\*\\* Sentence %d\\b" sent-num)))))
+handwritten notes.  In the prompt only for the comparison
+\(`bcat-sentence--prompts', 2.11.)."
+  (let ((bodies (bcat-sentence--lectures sent-num source-file)))
     (when bodies
       `((lectures-p . t)
         (lectures . ,(mapcar (lambda (b) `((lecture-name . ,(car b)) (lecture-body . ,(cdr b))))
@@ -996,10 +1002,13 @@ nil."
 
 (defun bcat-sentence--prompts (sentence source-file refs)
   "(SYSTEM . USER) for SENTENCE of SOURCE-FILE with the references REFS —
-the Sanskrit prompts for a Sanskrit source, the Tibetan ones else."
+the Sanskrit prompts for a Sanskrit source, the Tibetan ones else; the
+lectures on the sentence (#+CAT_LECTURES) for the comparison of the
+translations — Carsten 2.11.: „Ja, nur beim Vergleich“."
   (let* ((meta (ignore-errors (tibetan-analysis--read-source-metadata source-file)))
          (target (or (plist-get meta :target-lang) "en"))
          (second (bcat-sentence--second-language sentence source-file))
+         (lectures (bcat-sentence--lectures (plist-get sentence :sent-num) source-file))
          (segs (plist-get sentence :segs)))
     (if (bcat-sentence--sanskrit-p source-file)
         (let ((verse-mode (bcat-sentence--verse-mode-p source-file)))
@@ -1012,14 +1021,14 @@ the Sanskrit prompts for a Sanskrit source, the Tibetan ones else."
                  (plist-get meta :claude-context)
                  (and verse-mode (bcat-sentence--bhasya-texts (plist-get sentence :sent-num)
                                                               source-file))
-                 second)))
+                 second lectures)))
       (cons (bcat-analysis-system-prompt target)
             (bcat-analysis-user-prompt
              (plist-get sentence :sent-num) (plist-get sentence :verse)
              (mapcar (lambda (s) (list (car s) (cdr s) (bcat-sentence--wylie (cdr s)))) segs)
              refs
              (plist-get meta :claude-context)
-             second)))))
+             second lectures)))))
 
 (defun bcat-sentence--write-analysed (file sent-num segs source-file build)
   "Write the template FILE of sentence SENT-NUM (SEGS, from SOURCE-FILE)

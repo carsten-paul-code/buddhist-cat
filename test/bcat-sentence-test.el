@@ -570,7 +570,9 @@ handschriftliche Notizen machen. Deshalb will ich Sanderson im PDF
 haben.“  A source with #+CAT_LECTURES: names a file of `** Sentence N'
 / `*** <lecture>' passages; the sentence file gets them under
 * Further Reading (31.10. abends: at the end, after the explanations —
-„Sanderson u.ä. am Schluss“; in the PDF), never in the prompt."
+„Sanderson u.ä. am Schluss“; in the PDF).  In the prompt since 2.11.,
+for the comparison of the translations only („Ja, nur beim Vergleich“),
+the YouTube links reduced to their time marks."
   (bcat-sentence-test--with-source
     (with-temp-file src
       (insert (replace-regexp-in-string "#\\+TIBETAN_SENTENCE_REFS: refs.org\n"
@@ -592,7 +594,13 @@ haben.“  A source with #+CAT_LECTURES: names a file of `** Sentence N'
                  (string-match "^\\* Working Translation$" text))))
     (bcat-sentence-test--with-stubs bcat-sentence-test--answer
       (bcat-sentence-test--fetch src)
-      (should-not (cl-some (lambda (p) (string-match-p "immensely tricky" (cdr p))) prompts))
+      (should (string-match-p
+               (regexp-quote (concat "Lectures on this sentence — only for the comparison (the findings), cite with the time mark:\n"
+                                     "=== Sanderson, Readings I (27.01.2022) ===\n"
+                                     "[0:10:20] It's an immensely tricky verse.\n\n"
+                                     "[0:11:28] And Jayaratha, our only surviving commentator."))
+               (cdr (car prompts))))
+      (should-not (string-match-p "youtube" (cdr (car prompts))))
       (should (string-match-p "^\\* Further Reading\n\\*\\* Sanderson"
                               (bcat-sentence-test--file-text src))))
     (with-temp-buffer
