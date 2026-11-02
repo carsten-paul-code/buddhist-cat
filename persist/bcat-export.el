@@ -400,6 +400,20 @@ font has no Tibetan."
   "Non-nil when the LaTeX table ROW holds only metre signs (– ⏑ ¦)."
   (string-match-p "\\`[–⏑¦&|\\\\ \t]*\\'" row))
 
+(defun bcat-export--cells (row)
+  "The cells of the LaTeX table ROW (without its \\\\), split at every
+& that is not escaped (\\&) — also between empty cells: 2.11., TĀ 1006,
+the parts row of three pronouns, „ &  & “, became „ & \\bcatg{&}“ when
+the space-greedy separator ate the room before the second &."
+  (let ((cells '()) (start 0) (pos 0))
+    (while (string-match "&" row pos)
+      (let ((i (match-beginning 0)))
+        (unless (and (> i 0) (eq (aref row (1- i)) ?\\))
+          (push (substring row start i) cells)
+          (setq start (1+ i)))
+        (setq pos (1+ i))))
+    (nreverse (cons (substring row start) cells))))
+
 (defun bcat-export--detail-rows (tabular)
   "TABULAR (LaTeX) with the cells of the rows that explain the words —
 formation, parts, form — in \\bcatg: in each band of the table (rows
@@ -435,10 +449,14 @@ one."
            (if (not (memq l blue))
                l
              (let* ((body (replace-regexp-in-string "\\\\\\\\[ \t]*\\'" "" l))
-                    (cells (split-string body "[ \t]+&[ \t]+")))
-               (concat (mapconcat (lambda (c) (if (string-blank-p c) c (format "\\bcatg{%s}" (string-trim c))))
-                                  cells " & ")
-                       "\\\\"))))
+                    (cells (bcat-export--cells body)))
+               (if (cl-every #'string-blank-p cells)
+                   l
+                 (concat (mapconcat (lambda (c)
+                                      (let ((c (string-trim c)))
+                                        (if (string-empty-p c) "" (format "\\bcatg{%s}" c))))
+                                    cells " & ")
+                         "\\\\")))))
          lines "\n")))))
 
 (defvar bcat-export--missing nil

@@ -519,6 +519,29 @@ file.  Other sections at the end stay in the PDF."
                            "* Eigene Liste\nL\n")
                    (buffer-string)))))
 
+(ert-deftest bcat-export-detail-rows-empty-cells ()
+  "Bug (Carsten 2.11.: „es kommen jetzt wieder PDF Warnungen“ — „PDF
+file produced with errors“ nach C-c u G auf TĀ 1006 und 1007): eine
+Zeile mit zwei leeren Zellen nebeneinander — die Teile-Zeile, wenn alle
+Wörter Pronomen sind (anyaiḥ yat tena), LaTeX „ &  & \\\\“ — wurde am
+Trenner falsch zerlegt: das Leerzeichen-gierige [ \t]+&[ \t]+ fraß den
+Raum vor dem zweiten &, das & selbst wurde zur Zelle \\bcatg{&}, LaTeX
+meldete „Missing } inserted“.  Leere Zellen bleiben leer, ein \\& im
+Text bleibt in seiner Zelle."
+  (let ((out (bcat-export--detail-rows
+              (concat "\\begin{tabular}{lll}\n"
+                      "anyaiḥ & yat & tena\\\\\n"
+                      "— & — & —\\\\\n"
+                      " &  & \\\\\n"
+                      "R\\&D & a & b\\\\\n"
+                      "by others & whatever & by that\\\\\n"
+                      "pron. & pron. & pron.\\\\\n"
+                      "\\end{tabular}"))))
+    (should-not (string-match-p (regexp-quote "\\bcatg{&}") out))
+    (should (string-match-p (regexp-quote "\n &  & \\\\\n") out))
+    (should (string-match-p (regexp-quote "\n\\bcatg{R\\&D} & \\bcatg{a} & \\bcatg{b}\\\\\n") out))
+    (should (string-match-p (regexp-quote "\n\\bcatg{—} & \\bcatg{—} & \\bcatg{—}\\\\\n") out))))
+
 (ert-deftest bcat-export-comparison-table ()
   "2.11. (Muster vergleich-ta1-1.org): the overview table of the
 comparison — the ratings with \\cellcolor{ok|mid|bad} — needs colortbl
