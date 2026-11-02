@@ -4731,7 +4731,16 @@ als \paragraph*, mit defvar — sonst im .elc wirkungslos); `696ba01'
 Emacs: Übersicht nicht blau (`bcat-faces--header-table-p'); `4c80ebe'
 Einstufungen in Emacs farbig (`bcat-rating-ok/mid/bad-face').
 Bestehende Satzdateien bekommen den Vergleich erst mit C-u C-c u G
-\(Neuabruf, Carstens Entscheidung).  ERT 2784.
+\(Neuabruf, Carstens Entscheidung).  ERT 2784.  Gleicher Tag, nach dem
+ersten echten Lauf (TĀ 1.1): `67333b3' *** Für die Klasse direkt unter
+der Tabelle (Carsten: „x übersetzt so und so, ich bin mir nicht sicher,
+ob das richtig ist weil … übersichtlich sehen“) — je gelber/roter
+Einheit `doubts' {who, verdict wrong|doubtful, reason (Nebensatz ohne
+„weil“), better}, rote zuerst, „- *N. /stelle/ — rot*“ + „D „…“ —
+*abzulehnen*, weil … Besser: …“; rot, sobald eine Lesart wrong ist
+\(TĀ 1.1 hatte gupta verworfen und doch gelb); `5012ec5' Farbe in Emacs.
+Der Hänger danach war NICHT der Vergleich, sondern §5.70 (Nachtrag).
+ERT 2787.
 
 #### Offen
 
