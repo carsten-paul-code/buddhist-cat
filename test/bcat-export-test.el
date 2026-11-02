@@ -593,6 +593,31 @@ reach the LaTeX, and the PDF is made."
       (let ((buf (get-file-buffer file))) (when buf (kill-buffer buf)))
       (delete-directory dir t))))
 
+(ert-deftest bcat-export-no-false-reference-warning ()
+  "Bug (Carsten 2.11.: „Warning (ox-latex): PDF file produced with
+warnings: [undefined reference]“ bei jedem zweisprachigen AS-Satz): die
+Sprungmarken (<<skt-N>>, [[tib-M][Tib. M]]) sind im ersten LaTeX-Lauf
+noch unbekannt, im zweiten aufgelöst — org prüfte aber die Ausgabe des
+ersten Laufs (die zwei Läufe lagen in umgekehrter Folge in *Org PDF
+LaTeX Output*, die Suche ab der letzten „This is …TeX“-Zeile traf den
+ersten).  Ein Dokument mit interner Verknüpfung gibt keine Warnung."
+  (skip-unless (executable-find "lualatex"))
+  (let* ((dir (make-temp-file "bcat-export-" t))
+         (file (expand-file-name "sent-006-asam.org" dir))
+         (warnings '()))
+    (unwind-protect
+        (progn
+          (with-temp-file file
+            (insert "#+TITLE: Sentence 6\n#+OPTIONS: toc:nil num:nil title:nil\n\n* Text\n"
+                    "<<skt-44>>⟦44⟧ · [[tib-110][Tib. 110]]\n\nOne.\n\n"
+                    "* Tibetan\n<<tib-110>>⟦110⟧ · [[skt-44][Skt. 44]]\n\nTwo.\n"))
+          (cl-letf (((symbol-function 'display-warning)
+                     (lambda (type message &rest _) (push (cons type message) warnings))))
+            (should (file-exists-p (bcat-export-pdf file))))
+          (should-not (cl-some (lambda (w) (string-match-p "undefined reference" (cdr w))) warnings)))
+      (let ((buf (get-file-buffer file))) (when buf (kill-buffer buf)))
+      (delete-directory dir t))))
+
 (ert-deftest bcat-export-pdf-smoke ()
   "Real LuaLaTeX run (only where lualatex is installed): the reviewed
 Tibetan sample becomes a PDF and the .tex is cleared away; kept on

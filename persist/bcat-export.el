@@ -570,9 +570,13 @@ LuaLaTeX could not set land in `bcat-export--missing'."
         (with-current-buffer buf
           (when (buffer-modified-p) (save-buffer))
           (let* ((pdf (let ((org-latex-compiler "lualatex")
+                            ;; Both runs in ONE command: org checks the
+                            ;; output from the last „This is …TeX“ on, and
+                            ;; with two commands that was the FIRST run's —
+                            ;; the jump marks of a bilingual file, unknown
+                            ;; there, gave „[undefined reference]“ (2.11.).
                             (org-latex-pdf-process
-                             '("%latex -interaction nonstopmode -output-directory %o %f"
-                               "%latex -interaction nonstopmode -output-directory %o %f"))
+                             '("%latex -interaction nonstopmode -output-directory %o %f; %latex -interaction nonstopmode -output-directory %o %f"))
                             (org-latex-tables-centered nil)
                             ;; **** (a unit of the comparison, 2.11.) as a
                             ;; heading, not as a list item.
