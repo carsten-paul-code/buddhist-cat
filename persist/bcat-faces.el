@@ -112,11 +112,51 @@ table with a header row."
           (setq found t))))
     found))
 
+(defface bcat-rating-ok-face
+  '((t :background "#C8EBC8" :foreground "black"))
+  "A unit of the comparison rated green — no difference in meaning (the
+Muster's colour ok, 2.11.)."
+  :group 'buddhist-cat)
+
+(defface bcat-rating-mid-face
+  '((t :background "#FAEBA0" :foreground "black"))
+  "A unit of the comparison rated yellow — a possible other
+interpretation (the Muster's colour mid)."
+  :group 'buddhist-cat)
+
+(defface bcat-rating-bad-face
+  '((t :background "#F5BEB9" :foreground "black"))
+  "A unit of the comparison rated red — different meanings (the Muster's
+colour bad)."
+  :group 'buddhist-cat)
+
+(defun bcat-faces--rating-face (rating)
+  "The face of RATING — a cell colour (ok, mid, bad) or the rating word
+\(green/grün, yellow/gelb, red/rot) —, or nil."
+  (pcase (downcase (or rating ""))
+    ((or "ok" "green" "grün") 'bcat-rating-ok-face)
+    ((or "mid" "yellow" "gelb") 'bcat-rating-mid-face)
+    ((or "bad" "red" "rot") 'bcat-rating-bad-face)))
+
+(defun bcat-faces--rating-matcher (limit)
+  "Font-lock matcher: the next rating of the comparison before LIMIT
+\(2.11.) — in the overview table the word after
+@@latex:\\cellcolor{…}@@, at the end of a unit's heading (**** N. … —
+gelb) the rating word.  Group 1 the colour or the word, group 2 the word
+to colour, group 3 the LaTeX snippet (only in the table)."
+  (re-search-forward
+   (concat "\\(?:\\(?3:@@latex:\\\\cellcolor{\\(?1:ok\\|mid\\|bad\\)}@@\\)\\(?2:[^ \t|\n]+\\)\\)"
+           "\\|\\(?:^\\*\\{4\\} [0-9]+\\. .* — \\(?1:\\(?2:grün\\|gelb\\|rot\\|green\\|yellow\\|red\\)\\)[ \t]*$\\)")
+   limit t))
+
 (defconst bcat-faces--keywords
   '((bcat-faces--unit-matcher (2 'bcat-gloss-face prepend))
     (bcat-faces--detail-row-matcher
      ("[^|\n]+" (progn (goto-char (match-beginning 0)) (match-end 0)) nil
-      (0 'bcat-gloss-face prepend))))
+      (0 'bcat-gloss-face prepend)))
+    (bcat-faces--rating-matcher
+     (3 'shadow prepend t)
+     (2 (bcat-faces--rating-face (match-string 1)) prepend)))
   "The font-lock keywords of `bcat-faces-mode'.")
 
 ;;;###autoload
@@ -124,7 +164,8 @@ table with a header row."
   "Words against glosses in a sentence file: the words in the text
 colour, blue the glosses in the line with the vocabulary and the rows
 that explain the words — formation, parts, form — in the tables
-\(Carsten 31.10.)."
+\(Carsten 31.10.); the ratings of the comparison in green, yellow, red
+\(2.11.)."
   :lighter nil
   (if bcat-faces-mode
       (font-lock-add-keywords nil bcat-faces--keywords 'append)

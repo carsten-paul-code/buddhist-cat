@@ -96,6 +96,32 @@ detail rows there."
     (should (equal '("| N     |")
                    (bcat-faces-test--matches #'bcat-faces--detail-row-matcher 0)))))
 
+(ert-deftest bcat-faces-ratings ()
+  "2.11.: the ratings of the comparison in their colour in Emacs too —
+Carsten reads the .org first: the word after @@latex:\\cellcolor{…}@@
+in the overview (the snippet itself greyed) and the rating at the end of
+a unit's heading, green/yellow/red as in the PDF (the Muster's ok, mid,
+bad)."
+  (with-temp-buffer
+    (insert "|   1 | /a/ | @@latex:\\cellcolor{bad}@@rot  | x |\n"
+            "|   2 | /b/ | @@latex:\\cellcolor{ok}@@grün  | y |\n"
+            "**** 1. /abhinavasṛṣṭimahā/ — gelb\n"
+            "**** 2. /hṛdayam/ — green\n"
+            "*Befund:* gelb ist hier kein Urteil.\n")
+    (org-mode)
+    (should (equal '(("rot" . bcat-rating-bad-face) ("grün" . bcat-rating-ok-face)
+                     ("gelb" . bcat-rating-mid-face) ("green" . bcat-rating-ok-face))
+                   (progn (goto-char (point-min))
+                          (let ((out '()))
+                            (while (bcat-faces--rating-matcher (point-max))
+                              (push (cons (match-string-no-properties 2)
+                                          (bcat-faces--rating-face (match-string-no-properties 1)))
+                                    out))
+                            (nreverse out)))))
+    (should (eq 'bcat-rating-bad-face (bcat-faces--rating-face "bad")))
+    (should (eq 'bcat-rating-mid-face (bcat-faces--rating-face "yellow")))
+    (should-not (bcat-faces--rating-face "blau"))))
+
 (ert-deftest bcat-faces-only-in-sentence-files ()
   "Switched on in a sentence file of a template (sent-…, comm-… with
 #+CAT_TEMPLATE:), not in other org files."
