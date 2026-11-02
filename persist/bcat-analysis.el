@@ -94,7 +94,7 @@ Begründungen Deutsch, Übersetzungen Englisch (wie im Muster)“."
   :group 'buddhist-cat)
 
 (defconst bcat-analysis--comparison-schema
-  "\"units\": [{\"passage\": \"…\", \"rating\": \"green|yellow|red\", \"core\": \"…\", \"readings\": [{\"sigla\": \"…\", \"text\": \"…\"}], \"finding\": \"…\", \"weight\": \"…\"}], \"proposal\": [{\"label\": \"…\", \"text\": \"…\"}], \"decisions\": \"…\", \"corrections\": [\"…\"]"
+  "\"units\": [{\"passage\": \"…\", \"rating\": \"green|yellow|red\", \"core\": \"…\", \"readings\": [{\"sigla\": \"…\", \"text\": \"…\"}], \"finding\": \"…\", \"weight\": \"…\", \"doubts\": [{\"who\": \"…\", \"verdict\": \"doubtful|wrong\", \"reason\": \"…\", \"better\": \"…\"}]}], \"proposal\": [{\"label\": \"…\", \"text\": \"…\"}], \"decisions\": \"…\", \"corrections\": [\"…\"]"
   "The comparison's part of the JSON contract of every sentence analysis
 \(`bcat-analysis--sentence-rules').")
 
@@ -111,15 +111,16 @@ in it are an option of the sentence (`bcat-analysis--second-request')."
   (format "- translation (sentence): your translation of the whole sentence (the segment parts joined).
 - units: the translations compared unit by unit. Divide the sentence into its units of meaning — a word, a compound or a phrase; about 4 to 12 for a verse — and set side by side what each given translation makes of each: yours (siglum C) and every reference translation, by the sigla the request gives. One entry per unit in the order of the text, a last one for the sentence as a whole only where it matters (a double sense, śleṣa, that a translation gives only in part); [] when no reference translation is given.
   - passage: the unit, words of the original in /italic/: \"/vimalakalāśrayā/\", \"/jananī/, /janakaḥ/\".
-  - rating: \"green\": no difference in meaning, only in wording; \"yellow\": a possible other interpretation, both defensible from the text; \"red\": different meanings, not both right at once.
+  - rating: \"green\": no difference in meaning, only in wording; \"yellow\": a possible other interpretation, both defensible from the text; \"red\": different meanings, not both right at once — red as soon as one reading is wrong (a doubt with the verdict \"wrong\").
   - core: the point of the unit for the overview table, at most 80 characters.
   - readings: each translation's wording of the unit, verbatim in „…“ (shortened with … where long); translations reading alike in one entry (\"sigla\": \"D, DM, C\"); a second sense after a semicolon; [] for a green unit whose finding names the common reading.
   - finding: why the readings differ and what the original supports — argued from the original alone: grammar, sandhi, lexicon, the context in the work and its commentary; never from a translator's standing (there is no authority to rely on). An argument from the given lectures is cited with siglum, lecture and time mark: \"(S, I 0:15:24)\". Words of the original in /italic/. For a green unit one sentence.
   - weight: the reading the finding favours, as a rendering in „…“, with a short note where needed; \"\" for a green unit.
+  - doubts: the conclusion for the class, said aloud as „D renders it so, I am not sure that is right, because …“ — draw the conclusion wherever the text allows one. For every yellow and red unit one entry per rendering the finding questions (translations reading alike in one entry; yours too, when it is questioned); [] for a green unit. who: the sigla with their wording, „D „the hidden (protected) light“, DM „concealed within the five faces““. verdict: \"wrong\": the original excludes it (grammar, lexicon, the context); \"doubtful\": defensible, but the original speaks against it. reason: why, in one or two sentences, argued from the original as in the finding, a lecture with its time mark — a subordinate clause without the conjunction (\"because\" is set before it; in German verb last: \"gupta (√gup) zuerst ‚bewahrt‘ heißt\"). better: the rendering to prefer in „…“ with the sigla of the translations that have it, \"\" when none is better.
 - proposal: your translation of the sentence weighed by the units — the red units decided, for the yellow ones the chosen reading (the other belongs in a note); where the text has a double sense one entry per sense, each with its label (\"First sense (theological)\"), else one entry with the label \"\"; [] when units is [].
 - decisions: the decisions of the proposal, by unit number, in one to three sentences; \"\" when units is [].
 - corrections: errors of your own analysis above that the comparison brings to light (a form misidentified, a gloss that does not fit), one sentence each; [] when there are none.
-- Language of the comparison: core, finding, the notes in weight, decisions and corrections in %s, the labels of the proposal too; readings verbatim; the renderings in weight and proposal in %s."
+- Language of the comparison: core, finding, the notes in weight, reason, decisions and corrections in %s, the labels of the proposal too; readings verbatim; the renderings in weight and proposal in %s."
           (bcat-analysis--language bcat-analysis-comparison-language) lang))
 
 (defun bcat-analysis--tibetan-rules (lang)
@@ -882,12 +883,16 @@ comparison below it (*** Übersicht …, 2.11.) stay where they are."
      (columns "Nr." "Stelle" "Einstufung" "Kern")
      (finding . "Befund") (weight . "Gewicht") (decisions . "Entscheidungen")
      (sigla . "Sigel") (own . "Translation (oben)")
+     (class . "Für die Klasse") (wrong . "abzulehnen") (doubtful . "fraglich")
+     (because . "weil") (better . "Besser")
      (green . "grün") (yellow . "gelb") (red . "rot"))
     ("en" (overview . "Overview") (passages . "The passages")
      (proposal . "Proposed translation") (corrections . "Corrections to the analysis")
      (columns "No." "Passage" "Rating" "Point")
      (finding . "Finding") (weight . "Weight") (decisions . "Decisions")
      (sigla . "Sigla") (own . "Translation (above)")
+     (class . "For the class") (wrong . "wrong") (doubtful . "doubtful")
+     (because . "because") (better . "Better")
      (green . "green") (yellow . "yellow") (red . "red")))
   "The words of the comparison in the file, by
 `bcat-analysis-comparison-language' — the Muster's (2.11.) for German.")
@@ -945,6 +950,49 @@ file, an hline under the header; the first column (numbers) to the right."
             "|" (mapconcat (lambda (w) (make-string (+ w 2) ?-)) widths "+") "|\n"
             (mapconcat line rows "\n"))))
 
+(defun bcat-analysis--class-conclusions (units)
+  "*** Für die Klasse from UNITS (Carsten 2.11.: „x übersetzt so und so,
+ich bin mir nicht sicher, ob das richtig ist weil … Dafür müsste ich es
+übersichtlich sehen“): per unit with doubts — red first, then by number —
+„- *N. /stelle/ — rot*“ and a line per doubt: who and how —
+*abzulehnen*/*fraglich*, weil …  Besser: …; nil without doubts."
+  (let* ((label #'bcat-analysis--comparison-label)
+         (one (lambda (s) (replace-regexp-in-string "[ \t]*\n[ \t]*" " " s)))
+         (items
+          (cl-loop for u in units for i from 1
+                   for doubts = (cl-remove-if (lambda (d) (string-empty-p (bcat-analysis--field d 'who)))
+                                              (alist-get 'doubts u))
+                   when doubts
+                   collect (list (if (eq (bcat-analysis--rating (bcat-analysis--field u 'rating)) 'red) 0 1)
+                                 i u doubts))))
+    (when items
+      (concat
+       "*** " (funcall label 'class) "\n"
+       (mapconcat
+        (lambda (item)
+          (pcase-let ((`(,_ ,i ,u ,doubts) item))
+            (concat
+             (format "- *%d. %s — %s*" i (funcall one (bcat-analysis--field u 'passage))
+                     (bcat-analysis--rating-word (bcat-analysis--field u 'rating)))
+             (mapconcat
+              (lambda (d)
+                (let* ((verdict (if (equal (downcase (bcat-analysis--field d 'verdict)) "wrong")
+                                    'wrong 'doubtful))
+                       (reason (string-remove-suffix "." (bcat-analysis--field d 'reason)))
+                       (better (bcat-analysis--field d 'better)))
+                  (concat "\n  - " (funcall one (bcat-analysis--field d 'who))
+                          " — *" (funcall label verdict) "*"
+                          (if (string-empty-p reason) ""
+                            (concat ", " (funcall label 'because) " " (funcall one reason)))
+                          "."
+                          (if (string-empty-p better) ""
+                            (format " %s: %s" (funcall label 'better)
+                                    (string-remove-suffix "." (funcall one better))))
+                          (if (string-empty-p better) "" "."))))
+              doubts ""))))
+        (sort items (lambda (a b) (if (= (car a) (car b)) (< (nth 1 a) (nth 1 b)) (< (car a) (car b)))))
+        "\n")))))
+
 (defun bcat-analysis-comparison-units (parsed &optional refs)
   "The comparison of the translations unit by unit from PARSED (Carsten
 2.11., Muster vergleich-ta1-1.org): *** Übersicht — the sigla of REFS
@@ -983,6 +1031,7 @@ decisions), *** Berichtigungen zur Analyse; \"\" without units."
                                                       (bcat-analysis--table-cell
                                                        (bcat-analysis--rating-word (bcat-analysis--field u 'rating))))
                                               (bcat-analysis--table-cell (bcat-analysis--field u 'core))))))
+              (bcat-analysis--class-conclusions units)
               (concat "*** " (funcall label 'passages) "\n"
                       (mapconcat
                        (lambda (iu)

@@ -1112,7 +1112,7 @@ language."
     (should (string-match-p "never from a translator's standing" sys))
     (should (string-match-p (regexp-quote "(S, I 0:15:24)") sys))
     (should (string-match-p "double sense" sys))
-    (should (string-match-p "core, finding, the notes in weight, decisions and corrections in German" sys))
+    (should (string-match-p "core, finding, the notes in weight, reason, decisions and corrections in German" sys))
     (should (string-match-p "renderings in weight and proposal in English" sys)))
   (let ((bcat-analysis-comparison-language "en"))
     (should (string-match-p "decisions and corrections in English"
@@ -1241,6 +1241,72 @@ only its finding), *** Übersetzungsvorschlag (one quote per sense,
                    "@@latex:\\cellcolor{bad}@@red" "**** 1. /abhinavasṛṣṭimahā/ — red" "*Finding:* "
                    "*Weight:* " "*** Proposed translation" "*Decisions:* " "*** Corrections to the analysis"))
         (should (string-match-p (regexp-quote s) en))))))
+
+(ert-deftest bcat-analysis-comparison-doubts-contract ()
+  "Carsten 2.11.: „die Auswertung der Comparison mit Schlußfolgerung …
+immer, wenn möglich und es nötig erscheint. In der Klasse will ich dann
+sagen können: x übersetzt so und so, ich bin mir nicht sicher, ob das
+richtig ist weil … Dafür müsste ich es übersichtlich sehen.“  Every
+yellow and red unit names its doubts — who renders how, how sure
+\(doubtful / wrong), why, what is better — and the rating follows the
+verdict: red as soon as a reading is wrong (TĀ 1.1: gupta „hidden“
+rejected, yet rated yellow)."
+  (dolist (sys (list (bcat-analysis-sanskrit-system-prompt "en")
+                     (bcat-analysis-system-prompt "en")
+                     (bcat-analysis-tibetan-system-prompt "en")))
+    (dolist (key '("\"doubts\"" "\"who\"" "\"verdict\"" "\"reason\"" "\"better\""))
+      (should (string-match-p (regexp-quote key) sys)))
+    (should (string-match-p "\"wrong\": the original excludes it" sys))
+    (should (string-match-p "\"doubtful\": " sys))
+    (should (string-match-p "red as soon as one reading is wrong" sys))
+    (should (string-match-p "draw the conclusion wherever the text allows one" sys))
+    (should (string-match-p "reason: .*without the conjunction" sys))))
+
+(defconst bcat-analysis-test--doubts-answer
+  "{\"segments\": [], \"translation\": \"May my heart flash forth.\",
+ \"units\": [{\"passage\": \"/vimalakalāśrayā/\", \"rating\": \"yellow\", \"core\": \"kalā\",
+              \"readings\": [], \"finding\": \"f1\", \"weight\": \"w1\",
+              \"doubts\": [{\"who\": \"D „(of the Moon)“\", \"verdict\": \"doubtful\",
+                           \"reason\": \"das im Kompositum nicht steht\", \"better\": \"\"}]},
+             {\"passage\": \"/jananī/\", \"rating\": \"green\", \"core\": \"Mutter\",
+              \"readings\": [], \"finding\": \"Alle: Mutter.\", \"weight\": \"\", \"doubts\": []},
+             {\"passage\": \"/pañcamukhaguptarucir/\", \"rating\": \"red\", \"core\": \"gupta\",
+              \"readings\": [], \"finding\": \"f5\", \"weight\": \"w5\",
+              \"doubts\": [{\"who\": \"D „the hidden (protected) light“, DM „concealed within the five faces“\",
+                           \"verdict\": \"wrong\",
+                           \"reason\": \"gupta (√gup) zuerst ‚bewahrt, geschützt‘ heißt (S, I 0:21:33)\",
+                           \"better\": \"„whose radiance is maintained through his five faces“ (W, S)\"}]}],
+ \"proposal\": [], \"decisions\": \"\", \"corrections\": []}"
+  "An answer with doubts in a yellow and a red unit.")
+
+(ert-deftest bcat-analysis-comparison-doubts-render ()
+  "„Für die Klasse“ directly under the colour table (Carsten 2.11.:
+„Liste direkt unter der Tabelle“): per yellow or red unit with doubts,
+red first, its number, passage and rating, then one line per doubt —
+who and how, *abzulehnen*/*fraglich*, weil …, Besser: …; nothing for
+units without doubts, no section without any."
+  (let* ((parsed (bcat-analysis-parse bcat-analysis-test--doubts-answer))
+         (out (bcat-analysis-comparison parsed nil)))
+    (should (string-match-p
+             (regexp-quote
+              (concat "|   3 | /pañcamukhaguptarucir/ | @@latex:\\cellcolor{bad}@@rot  | gupta  |\n\n"
+                      "*** Für die Klasse\n"
+                      "- *3. /pañcamukhaguptarucir/ — rot*\n"
+                      "  - D „the hidden (protected) light“, DM „concealed within the five faces“ — "
+                      "*abzulehnen*, weil gupta (√gup) zuerst ‚bewahrt, geschützt‘ heißt (S, I 0:21:33). "
+                      "Besser: „whose radiance is maintained through his five faces“ (W, S).\n"
+                      "- *1. /vimalakalāśrayā/ — gelb*\n"
+                      "  - D „(of the Moon)“ — *fraglich*, weil das im Kompositum nicht steht.\n\n"
+                      "*** Die Stellen im Einzelnen\n"))
+             out))
+    (should-not (string-match-p "2\\. /jananī/ — grün\\*" out))
+    (let ((en (let ((bcat-analysis-comparison-language "en")) (bcat-analysis-comparison parsed nil))))
+      (should (string-match-p (regexp-quote "*** For the class\n- *3. /pañcamukhaguptarucir/ — red*") en))
+      (should (string-match-p (regexp-quote "— *wrong*, because gupta") en))
+      (should (string-match-p (regexp-quote "Better: „whose radiance") en)))
+    (should-not (string-match-p "Für die Klasse"
+                                (bcat-analysis-comparison
+                                 (bcat-analysis-parse bcat-analysis-test--units-answer) nil)))))
 
 (ert-deftest bcat-analysis-footnotes-last-before-headings ()
   "The footnote definitions of the references go to the end of the text
