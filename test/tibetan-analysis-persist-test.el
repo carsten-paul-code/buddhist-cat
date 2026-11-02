@@ -1078,6 +1078,66 @@ andere org-Puffer behalten den globalen Wert."
       (should-not (local-variable-p 'org-element-cache-persistent))
       (should org-element-cache-persistent))))
 
+(ert-deftest tibetan-analysis-org-persist-cache-never-restored ()
+  "Bug (2.11.2026, Hänger nach C-u C-c u G auf TĀ 1.1, nach jedem
+Neustart wieder beim Öffnen): ~/.cache/org-persist hielt einen
+verdorbenen org-element-Cache von sent-001-tantralo.org unter dem md5
+des Inhalts, der org-indent-Agent kreiste (Timer-Protokoll).  Die Bremse
+von §5.70 — `org-element-cache-persistent' lokal nil im
+`org-mode-hook' — kommt zu spät: org lädt den gespeicherten Cache schon
+beim Einrichten des Puffers, vor dem Hook.  Ein gespeicherter Cache
+einer Analyse-Datei (geschrieben in einer Sitzung ohne das Werkzeug)
+wird beim Öffnen nie gelesen, und keiner wird geschrieben."
+  (require 'org-persist)
+  (require 'org-element)
+  (let* ((dir (make-temp-file "bcat-persist-" t))
+         (org-persist-directory (file-name-as-directory (expand-file-name "persist" dir)))
+         (org-persist--index nil) (org-persist--index-hash nil) (org-persist--index-age nil)
+         (org-element-use-cache t)
+         (org-element-cache-persistent t)
+         (file (expand-file-name "analysis/sent-001-tantralo.org" dir)))
+    (unwind-protect
+        (progn
+          (make-directory (file-name-directory file) t)
+          (with-temp-file file (insert "* Sentence\n** Translations compared\n- D :: „a“\n*Befund:* b\n"))
+          ;; A session without the tool persists the cache.
+          (let ((org-mode-hook (remq 'tibetan-analysis-mode-hook org-mode-hook))
+                (org-persist-before-write-hook
+                 (remq 'tibetan-analysis--org-persist-forbid org-persist-before-write-hook)))
+            (with-current-buffer (find-file-noselect file)
+              (org-element-at-point (point-max))
+              (should (> (avl-tree-size org-element--cache) 0))
+              (org-persist-write-all (current-buffer))
+              (kill-buffer)))
+          (org-persist--load-index)
+          (should (cl-some (lambda (c) (equal file (plist-get (plist-get c :associated) :file)))
+                           org-persist--index))
+          ;; The next visit must not restore it.
+          (with-current-buffer (find-file-noselect file)
+            (unwind-protect
+                (should (or (null org-element--cache)
+                            (zerop (avl-tree-size org-element--cache))))
+              (kill-buffer)))
+          ;; A visit with the tool writes no cache data for it.
+          (let* ((data (lambda ()
+                         (cl-remove-if (lambda (f) (member (file-name-nondirectory f)
+                                                           '("index.eld" "gc-lock.eld")))
+                                       (directory-files-recursively org-persist-directory ""))))
+                 (before (funcall data)))
+            (with-current-buffer (find-file-noselect file)
+              (org-element-at-point (point-max))
+              (insert "x")
+              (org-persist-write-all (current-buffer))
+              (set-buffer-modified-p nil)
+              (kill-buffer))
+            (should (equal before (funcall data))))
+          ;; The commentary documents (comm-…) too; other files not.
+          (should (tibetan-analysis--org-persist-forbid
+                   '(elisp org-element--cache) '(:file "/x/analysis/comm-IX.60-savbh.org")))
+          (should-not (tibetan-analysis--org-persist-forbid
+                       '(elisp org-element--cache) '(:file "/x/notes.org"))))
+      (delete-directory dir t))))
+
 (ert-deftest tibetan-analysis-mode-hook-preserves-content ()
   "Test that mode-hook doesn't modify buffer content."
   (with-temp-buffer

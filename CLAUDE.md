@@ -4923,7 +4923,17 @@ dauerhaft: `tibetan-analysis-mode-hook' setzt in Analyse-Puffern
 `org-element-cache-persistent' lokal nil (RED-Test
 `tibetan-analysis-mode-hook-no-persistent-org-element-cache').
 Empfehlung an Carsten: global nil (die Dateien sind klein und werden
-ständig neu geschrieben).
+ständig neu geschrieben).  NACHTRAG 2.11.2026: Die lokale Bremse wirkte
+nicht — org stellt den gespeicherten Cache beim Einrichten des Puffers
+wieder her, VOR dem `org-mode-hook'; wieder 1528 Satzdatei-Caches auf
+Platte, Emacs hing nach C-u C-c u G auf TĀ 1.1 und bei jedem Öffnen
+danach (Timer-Protokoll: `org-indent-initialize-agent' auf
+sent-001-tantralo.org, Cache-Hash = md5 des Inhalts).  Fix im Werkzeug:
+`tibetan-analysis--org-persist-forbid' in `org-persist-before-read-hook'
+und `-before-write-hook' (seg-/sent-/comm-Dateien unter analysis/), Test
+`tibetan-analysis-org-persist-cache-never-restored'; in Carstens
+init-org-stable.el jetzt global `org-element-cache-persistent' nil
+\(~/.emacs.d a22f852); ~/.cache/org-persist → org-persist.bak-2026-11-02.
 
 **Wie der Backtrace zustande kam** (`scripts/timer-trace.el', per
 `(load …)' aus der Init oder `emacsclient -e'): (1) Advice um

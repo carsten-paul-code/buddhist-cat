@@ -998,7 +998,10 @@ of sentence files from sessions in which the landing still wrote with
 the change hooks off — stale positions under the hash of the final
 content — and every later visit restored the corrupt cache, on which
 the org-indent agent then looped forever.  A 16 KB file's cache is
-rebuilt in milliseconds."
+rebuilt in milliseconds.  The local nil comes after org has set the
+buffer up — and restored a persisted cache (2.11.2026, TĀ 1.1): reading
+and writing are stopped by `tibetan-analysis--org-persist-forbid'; the
+local nil keeps org from registering the buffer again."
   (when (tibetan-analysis--analysis-buffer-name-p (buffer-file-name))
     (setq-local org-element-cache-persistent nil)
     (tibetan-analysis-setup-faces)
@@ -1006,6 +1009,24 @@ rebuilt in milliseconds."
       (tibetan-analysis-class-fold))))
 
 (add-hook 'org-mode-hook 'tibetan-analysis-mode-hook)
+
+(defun tibetan-analysis--org-persist-forbid (_container &optional associated)
+  "For `org-persist-before-read-hook' and `-before-write-hook': `forbid'
+when ASSOCIATED is a file the tool writes — seg-/sent- analysis files
+and the commentary documents (comm-…) —, so no org-persist data of
+theirs is ever read or written.  2.11.2026, TĀ 1.1 after C-u C-c u G:
+Emacs hung on every visit — a corrupt org-element cache persisted under
+the hash of the content, the org-indent agent looping on it (as on
+26.10., §5.70).  The local nil of `tibetan-analysis-mode-hook' comes
+too late for that: org restores the cache while setting up the buffer,
+before `org-mode-hook' runs."
+  (let ((file (plist-get associated :file)))
+    (and (stringp file)
+         (string-match-p "analysis/\\(?:\\(?:seg\\|sent\\)-[0-9]\\|comm-\\)[^/]*\\.org\\'" file)
+         'forbid)))
+
+(add-hook 'org-persist-before-read-hook #'tibetan-analysis--org-persist-forbid)
+(add-hook 'org-persist-before-write-hook #'tibetan-analysis--org-persist-forbid)
 
 ;; ============================================================================
 ;; PATH AND FILENAME FUNCTIONS
