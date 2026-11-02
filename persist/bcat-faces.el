@@ -142,11 +142,14 @@ colour bad)."
   "Font-lock matcher: the next rating of the comparison before LIMIT
 \(2.11.) — in the overview table the word after
 @@latex:\\cellcolor{…}@@, at the end of a unit's heading (**** N. … —
-gelb) the rating word.  Group 1 the colour or the word, group 2 the word
+gelb) and of an item of „Für die Klasse“ (- *N. … — rot*) the rating
+word.  Group 1 the colour or the word, group 2 the word
 to colour, group 3 the LaTeX snippet (only in the table)."
   (re-search-forward
    (concat "\\(?:\\(?3:@@latex:\\\\cellcolor{\\(?1:ok\\|mid\\|bad\\)}@@\\)\\(?2:[^ \t|\n]+\\)\\)"
-           "\\|\\(?:^\\*\\{4\\} [0-9]+\\. .* — \\(?1:\\(?2:grün\\|gelb\\|rot\\|green\\|yellow\\|red\\)\\)[ \t]*$\\)")
+           "\\|\\(?:^\\*\\{4\\} [0-9]+\\. .* — \\(?1:\\(?2:grün\\|gelb\\|rot\\|green\\|yellow\\|red\\)\\)[ \t]*$\\)"
+           ;; „Für die Klasse“: - *3. /stelle/ — rot*
+           "\\|\\(?:^- \\*[0-9]+\\. .* — \\(?1:\\(?2:grün\\|gelb\\|rot\\|green\\|yellow\\|red\\)\\)\\*[ \t]*$\\)")
    limit t))
 
 (defconst bcat-faces--keywords

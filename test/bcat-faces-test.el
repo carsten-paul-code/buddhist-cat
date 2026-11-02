@@ -107,10 +107,12 @@ bad)."
             "|   2 | /b/ | @@latex:\\cellcolor{ok}@@grün  | y |\n"
             "**** 1. /abhinavasṛṣṭimahā/ — gelb\n"
             "**** 2. /hṛdayam/ — green\n"
-            "*Befund:* gelb ist hier kein Urteil.\n")
+            "*Befund:* gelb ist hier kein Urteil.\n"
+            "- *3. /pañcamukhaguptarucir/ — rot*\n")
     (org-mode)
     (should (equal '(("rot" . bcat-rating-bad-face) ("grün" . bcat-rating-ok-face)
-                     ("gelb" . bcat-rating-mid-face) ("green" . bcat-rating-ok-face))
+                     ("gelb" . bcat-rating-mid-face) ("green" . bcat-rating-ok-face)
+                     ("rot" . bcat-rating-bad-face))
                    (progn (goto-char (point-min))
                           (let ((out '()))
                             (while (bcat-faces--rating-matcher (point-max))
