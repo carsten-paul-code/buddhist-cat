@@ -851,6 +851,22 @@ would be swallowed into the footnote (SDA 10, 1.11.)."
          (out (bcat-sentence--align-merge text (bcat-analysis-parse bcat-sentence-test--align-answer))))
     (should (string-match-p (regexp-quote "Ruegg reads a modal nuance.\n\n[fn:l] Lindtner's note.\n\n* Segments") out))))
 
+(ert-deftest bcat-sentence-align-merge-before-units ()
+  "2.11.: Translations compared has the units of the comparison below the
+translations (*** Übersicht …).  The marked paragraph of a reference
+added by hand and its comparison sentence stay above them, the footnote
+definitions after them; the units stay as they are."
+  (let* ((text (concat "* Sentence\n** Translations compared\n"
+                       "*Translation:* Own. Own two.\n\n*Lindtner 1981:* L. [fn:l]\n\n"
+                       "*Ruegg 1981:* Unsayable and unseen, unchanging, unconditioned.\n\n"
+                       "[fn:l] Lindtner's note.\n\n"
+                       "*** Übersicht\nSigel: C = Translation (oben), L = Lindtner 1981\n\n"
+                       "*** Die Stellen im Einzelnen\n**** 1. /brjod du med pa/ — gelb\n*Befund:* b\n\n"
+                       "* Segments\n** Segment 38\n⟦38⟧ Own.\n\n** Segment 39\n⟦39⟧ Own two.\n"))
+         (out (bcat-sentence--align-merge text (bcat-analysis-parse bcat-sentence-test--align-answer))))
+    (should (string-match-p (regexp-quote "*Ruegg 1981:* *Unsayable* and unseen, unchanging, unconditioned.\n\nRuegg reads a modal nuance.\n\n[fn:l] Lindtner's note.\n\n*** Übersicht\n") out))
+    (should (string-match-p (regexp-quote "*** Die Stellen im Einzelnen\n**** 1. /brjod du med pa/ — gelb\n*Befund:* b\n\n* Segments") out))))
+
 (ert-deftest bcat-sentence-fetch-aligns-added-reference ()
   "Carsten: „Wenn ich weitere Vergleichsübersetzungen einfüge
 funktioniert das dann automatisch bei C-c u G?“ — yes: a filled file

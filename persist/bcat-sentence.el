@@ -843,10 +843,12 @@ Everything else stays as it is."
                               (bcat-analysis-mark-reference
                                own (bcat-analysis--reference-parts
                                     (alist-get 'segments parsed) name)))))))
+        ;; The region: the translations up to the first heading — the
+        ;; units of the comparison (*** Übersicht …, 2.11.) stay below.
         (let ((comparison (bcat-analysis--field parsed 'comparison)))
           (unless (string-empty-p comparison)
             (goto-char region-start)
-            (let ((region-end (if (re-search-forward "^\\*\\{1,2\\} " nil t)
+            (let ((region-end (if (re-search-forward "^\\*+ " nil t)
                                   (line-beginning-position)
                                 (point-max))))
               (goto-char region-end)
@@ -855,7 +857,7 @@ Everything else stays as it is."
         ;; Footnote definitions (Lindtner's notes) back to the end, after
         ;; the new paragraphs (SDA 10, 1.11.).
         (goto-char region-start)
-        (let* ((region-end (if (re-search-forward "^\\*\\{1,2\\} " nil t)
+        (let* ((region-end (if (re-search-forward "^\\*+ " nil t)
                                (line-beginning-position)
                              (point-max)))
                (old (buffer-substring region-start region-end))
