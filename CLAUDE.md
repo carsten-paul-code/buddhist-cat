@@ -4746,7 +4746,30 @@ leeren Zellen nebeneinander (Teile-Zeile aus Pronomen, TĀ 1006/1007) —
 alles in der Zielsprache“): `bcat-analysis-comparison-language' Vorgabe
 nil = Zielsprache des Dokuments (Prompt und Wörter im File), der Rumpf
 trägt `target-lang', die Kontexte reichen sie an
-`bcat-analysis-comparison' weiter.  ERT 2790.
+`bcat-analysis-comparison' weiter.  ERT 2790.  BILDSCHIRM (4.11., nach
+vier Readings, Bildschirmfoto bDen 16 auf dem MacBook: „ziemlich viel
+verschenkter Platz“; Carsten wählte alle vier Maßnahmen): `f9afe47'
+keine Zeilennummern in Satzdateien und Kaskaden-Quellen
+\(`bcat-faces--reading-view', after-change-major-mode-hook Tiefe 90,
+`bcat-faces-line-numbers'); `d7f6f04' Kopfzeilen hinter #+TITLE
+eingeklappt (`bcat-faces--header-matcher', M-x
+bcat-faces-toggle-header); `e135425' ⟦N⟧ direkt über der Tabelle, die
+Leerzeile setzt nur der Export (`bcat-export--marks-apart'),
+zweisprachig bleibt sie bei einer Marke ohne Tabelle; `253e832'
+Funktion höchstens 25 Zeichen (Prompt), länger ab
+`bcat-analysis-function-width' 30 am „·“ gekürzt, der Rest als Zeile
+„/wylie/: …“ unter *Structure:*; C-c u L verdichtet bestehende Tabellen
+\(`bcat-analysis-compact-tables') und stückelt neu; `9f89f6b'
+Tibetisch in Satzdateien Kailasa 18 (`bcat-tibetan-face' mit EIGENEM
+Fontset — Carstens Init legt U+0F00–U+0FFF fest auf Tibetan Machine Uni
+20, ein Fontset-Eintrag schlägt die Face-Familie; die goldenen Shads
+über das in ~/.emacs.d 0778318 benannte `cp/tibetan-shad-face'
+umgelenkt): Zeilen 43 → 27 px; `ac85e5b' Uchen-Zeile pixelgenau
+bündig (`bcat-faces--uchen-row-matcher': die ganze Füllung vor einem
+Strich als EIN `(space :align-to COL)').  Alle 48 Vorlagen-Satzdateien
+mit C-c u L neu gesetzt (Sicherung im Scratchpad, 129 Reststücke nach
+Structure, kein Verlust); PDFs auf dem reMarkable unverändert.
+ERT 2800.
 
 #### Offen
 
