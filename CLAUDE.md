@@ -4769,7 +4769,18 @@ bündig (`bcat-faces--uchen-row-matcher': die ganze Füllung vor einem
 Strich als EIN `(space :align-to COL)').  Alle 48 Vorlagen-Satzdateien
 mit C-c u L neu gesetzt (Sicherung im Scratchpad, 129 Reststücke nach
 Structure, kein Verlust); PDFs auf dem reMarkable unverändert.
-ERT 2800.
+ERT 2800.  Danach (Carsten an bDen 16): `d23104f' Wörterbuchform des
+Verbs in der Funktion nur bei anderem Stamm (`bcat-analysis--trim-lemma':
+„V pf. (brgyud pa)“ unter brgyud pa'i → „V pf.“, spangs „('pong ba)“
+bleibt; 54 von 99 waren Wiederholung); `b409251' die Datei zählt
+Tabellen, wie sie dastehen (Zelle + 3, Grenze 158 = sein Fenster),
+der Export stückelt tibetische Tabellen nach dem PDF-Maß neu
+\(`bcat-export--rechunk-tibetan-tables', 130/6) — Segment 70 brach
+vorher bei 119 Zeichen um; `5722374' BUG aus 5905615: Claude benannte
+Referenzteile mit Sigeln („*L:*“) — Markierungen in Translations
+compared wären verloren gegangen; Prompt „Sigel nur in den Einheiten“,
+`bcat-analysis--full-names' heilt die Antwort; 9 Dateien (AS 5–7, 1003,
+bDen 14–16) per Skript umbenannt.  ERT 2804.
 
 #### Offen
 
