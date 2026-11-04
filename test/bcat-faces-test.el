@@ -124,6 +124,29 @@ bad)."
     (should (eq 'bcat-rating-mid-face (bcat-faces--rating-face "yellow")))
     (should-not (bcat-faces--rating-face "blau"))))
 
+(ert-deftest bcat-faces-no-line-numbers-when-reading ()
+  "Carsten 4.11., reading on the MacBook: „ziemlich viel verschenkter
+Platz“ — no line numbers in sentence files and in the cascade source
+\(its window was 22 characters wide), even with
+`global-display-line-numbers-mode' on; other org files keep them."
+  (let ((dir (make-temp-file "bcat-faces-" t))
+        (was global-display-line-numbers-mode))
+    (unwind-protect
+        (let ((sent (expand-file-name "sent-016-bden.org" dir))
+              (source (expand-file-name "bden-gnyis-cat.org" dir))
+              (other (expand-file-name "notes.org" dir)))
+          (global-display-line-numbers-mode 1)
+          (with-temp-file sent (insert "#+CAT_TEMPLATE: tibetan\n\n" bcat-faces-test--text))
+          (with-temp-file source (insert "#+TITLE: bDen\n#+TIBETAN_LAYOUT: cascade\n\n* Tibetan Text\n"))
+          (with-temp-file other (insert bcat-faces-test--text))
+          (dolist (f (list sent source other))
+            (with-current-buffer (find-file-noselect f)
+              (unwind-protect
+                  (should (eq (equal f other) (and display-line-numbers-mode t)))
+                (kill-buffer)))))
+      (global-display-line-numbers-mode (if was 1 -1))
+      (delete-directory dir t))))
+
 (ert-deftest bcat-faces-only-in-sentence-files ()
   "Switched on in a sentence file of a template (sent-…, comm-… with
 #+CAT_TEMPLATE:), not in other org files."

@@ -187,5 +187,32 @@ template — sent-… or comm-… with a #+CAT_TEMPLATE: line."
 
 (add-hook 'org-mode-hook #'bcat-faces-maybe)
 
+(defcustom bcat-faces-line-numbers nil
+  "Non-nil: line numbers in sentence files and cascade sources as in
+other buffers.  Carsten 4.11. (reading on the MacBook, „ziemlich viel
+verschenkter Platz“): off — the source window beside the sentence file
+was 22 characters wide."
+  :type 'boolean
+  :group 'buddhist-cat)
+
+(defun bcat-faces--reading-file-p ()
+  "Non-nil in a sentence file of a template or a cascade source."
+  (and buffer-file-name
+       (derived-mode-p 'org-mode)
+       (save-excursion
+         (goto-char (point-min))
+         (re-search-forward "^#\\+\\(?:CAT_TEMPLATE\\|TIBETAN_LAYOUT\\):[ \t]*\\S-"
+                            (min (point-max) 4000) t))))
+
+(defun bcat-faces--reading-view ()
+  "`after-change-major-mode-hook' (late, after the globalized modes):
+no line numbers in a reading file unless `bcat-faces-line-numbers'."
+  (when (and (not bcat-faces-line-numbers)
+             (bound-and-true-p display-line-numbers-mode)
+             (bcat-faces--reading-file-p))
+    (display-line-numbers-mode -1)))
+
+(add-hook 'after-change-major-mode-hook #'bcat-faces--reading-view 90)
+
 (provide 'bcat-faces)
 ;;; bcat-faces.el ends here
