@@ -20,6 +20,11 @@
 
 (require 'org)
 (require 'cl-lib)
+(require 'face-remap)
+
+(declare-function set-fontset-font "fontset.c" (fontset characters font-spec &optional frame add))
+(declare-function fontset-list "fontset.c" ())
+(declare-function create-fontset-from-fontset-spec "fontset" (fontset-spec &optional style-variant noerror))
 
 (defface bcat-gloss-face
   '((((background dark)) :foreground "#8FB4F0")
@@ -152,6 +157,57 @@ to colour, group 3 the LaTeX snippet (only in the table)."
            "\\|\\(?:^- \\*[0-9]+\\. .* — \\(?1:\\(?2:grün\\|gelb\\|rot\\|green\\|yellow\\|red\\)\\)\\*[ \t]*$\\)")
    limit t))
 
+(defface bcat-tibetan-face
+  '((t :family "Kailasa" :height 1.3))
+  "Tibetan script in a sentence file.  Carsten 4.11. (reading on the
+MacBook, „ziemlich viel verschenkter Platz“): with Tibetan Machine Uni 20
+an Uchen line was 43 px high against 19 for Latin; of four variants he
+chose Kailasa 18 (font height ≈ 23 px).  Relative height, so it follows
+the default font and text scaling."
+  :group 'buddhist-cat)
+
+(defun bcat-faces--tibetan-matcher (limit)
+  "Font-lock matcher: the next run of Tibetan script before LIMIT.  A
+function — a Tibetan character range as a string keyword is dropped
+beside others (§5.31)."
+  (re-search-forward "[\u0F00-\u0FFF]+" limit t))
+
+(defun bcat-faces--tibetan-fontset ()
+  "The fontset of `bcat-tibetan-face' — the Tibetan block in the face's
+family — set on the face; nil without a graphic display.  Carsten's
+init fixes Tibetan Machine Uni 20 for U+0F00–U+0FFF in the default
+fontset, and a fontset entry beats a face's family: measured 4.11.,
+the face alone left the lines at 43 px, with its own fontset 27."
+  (when (display-graphic-p)
+    (let* ((name "-*-Menlo-regular-normal-normal-*-*-*-*-*-m-0-fontset-bcattibetan")
+           (fs (or (car (member (downcase name) (mapcar #'downcase (fontset-list))))
+                   (create-fontset-from-fontset-spec name))))
+      (set-fontset-font fs '(#x0F00 . #x0FFF)
+                        (font-spec :family (face-attribute 'bcat-tibetan-face :family nil t)))
+      (set-face-attribute 'bcat-tibetan-face nil :fontset fs)
+      fs)))
+
+(defvar-local bcat-faces--shad-remap nil
+  "The face remapping of `cp/tibetan-shad-face' in this buffer, or nil.")
+
+(defun bcat-faces--remap-shads (on)
+  "ON: the gold shads of Carsten's init (display overlays in
+`cp/tibetan-shad-face') in `bcat-tibetan-face''s family and height —
+they alone would keep the lines high; off: as before.  The height is
+absolute, else it compounds with the shad face's own 1.4."
+  (when bcat-faces--shad-remap
+    (face-remap-remove-relative bcat-faces--shad-remap)
+    (setq bcat-faces--shad-remap nil))
+  (when (and on (facep 'cp/tibetan-shad-face))
+    (let ((fs (bcat-faces--tibetan-fontset)))
+      (setq bcat-faces--shad-remap
+            (apply #'face-remap-add-relative
+                   'cp/tibetan-shad-face
+                   :family (face-attribute 'bcat-tibetan-face :family nil t)
+                   :height (round (* (face-attribute 'bcat-tibetan-face :height nil t)
+                                     (face-attribute 'default :height)))
+                   (and fs (list :fontset fs)))))))
+
 (defun bcat-faces--header-end ()
   "End of the keyword block at the top of the buffer (its last line,
 before the newline), or nil when the buffer does not begin with one."
@@ -194,7 +250,8 @@ whole, so a later chunk of jit-lock never unfolds a part of it."
     (bcat-faces--rating-matcher
      (3 'shadow prepend t)
      (2 (bcat-faces--rating-face (match-string 1)) prepend))
-    (bcat-faces--header-matcher (0 '(face nil invisible bcat-header) prepend)))
+    (bcat-faces--header-matcher (0 '(face nil invisible bcat-header) prepend))
+    (bcat-faces--tibetan-matcher (0 'bcat-tibetan-face prepend)))
   "The font-lock keywords of `bcat-faces-mode'.")
 
 ;;;###autoload
@@ -204,16 +261,19 @@ colour, blue the glosses in the line with the vocabulary and the rows
 that explain the words — formation, parts, form — in the tables
 \(Carsten 31.10.); the ratings of the comparison in green, yellow, red
 \(2.11.); the keyword lines at the top folded behind #+TITLE (4.11.,
-`bcat-faces-toggle-header')."
+`bcat-faces-toggle-header'); Tibetan in `bcat-tibetan-face' (4.11.)."
   :lighter nil
   (if bcat-faces-mode
       (progn
         (font-lock-add-keywords nil bcat-faces--keywords 'append)
         (setq-local font-lock-extra-managed-props
                     (cl-adjoin 'invisible font-lock-extra-managed-props))
-        (add-to-invisibility-spec '(bcat-header . t)))
+        (add-to-invisibility-spec '(bcat-header . t))
+        (bcat-faces--tibetan-fontset)
+        (bcat-faces--remap-shads t))
     (font-lock-remove-keywords nil bcat-faces--keywords)
-    (remove-from-invisibility-spec '(bcat-header . t)))
+    (remove-from-invisibility-spec '(bcat-header . t))
+    (bcat-faces--remap-shads nil))
   (when font-lock-mode (font-lock-flush)))
 
 (defun bcat-faces-maybe ()

@@ -170,6 +170,30 @@ the file stays as it is; `bcat-faces-toggle-header' shows them."
     (bcat-faces-toggle-header)
     (should (member '(bcat-header . t) buffer-invisibility-spec))))
 
+(ert-deftest bcat-faces-tibetan-flatter ()
+  "Carsten 4.11. (MacBook, „ziemlich viel verschenkter Platz“): Uchen
+lines were 43 px high against 19 for Latin (Tibetan Machine Uni 20);
+chosen: Kailasa 18 (≈ 23 px font height).  In a sentence file every
+Tibetan run gets `bcat-tibetan-face'; the gold shads of Carsten's init
+\(display overlays in `cp/tibetan-shad-face') are remapped to Kailasa
+too, else they alone keep the lines high."
+  (should (equal "Kailasa" (face-attribute 'bcat-tibetan-face :family nil t)))
+  (should (equal 1.3 (face-attribute 'bcat-tibetan-face :height nil t)))
+  (with-temp-buffer
+    (insert "* Text\n#+begin_verse\nདེ་ལས། །\n#+end_verse\n| དེ | ལས |\n| de | las |\n")
+    (org-mode)
+    (goto-char (point-min))
+    (should (bcat-faces--tibetan-matcher (point-max)))
+    (should (equal "དེ་ལས།" (match-string 0)))
+    (should (bcat-faces--tibetan-matcher (point-max)))
+    (should (equal "།" (match-string 0)))
+    (let ((had (facep 'cp/tibetan-shad-face)))
+      (unless had (defface cp/tibetan-shad-face '((t :foreground "#D4A843")) "test"))
+      (bcat-faces-mode 1)
+      (should (assq 'cp/tibetan-shad-face face-remapping-alist))
+      (bcat-faces-mode -1)
+      (should-not (assq 'cp/tibetan-shad-face face-remapping-alist)))))
+
 (ert-deftest bcat-faces-only-in-sentence-files ()
   "Switched on in a sentence file of a template (sent-…, comm-… with
 #+CAT_TEMPLATE:), not in other org files."
