@@ -208,6 +208,49 @@ absolute, else it compounds with the shad face's own 1.4."
                                      (face-attribute 'default :height)))
                    (and fs (list :fontset fs)))))))
 
+(defun bcat-faces--bar-columns (line)
+  "The columns of the bars of the table LINE as it is seen: org links by
+their text (whether or not font-lock has hidden the rest yet)."
+  (let ((seen (replace-regexp-in-string
+               "\\[\\[\\(?:[^]]*\\]\\[\\)?\\([^]]*\\)\\]\\]" "\\1" line))
+        (cols '()))
+    (dotimes (i (length seen))
+      (when (eq (aref seen i) ?|)
+        (push (string-width (substring seen 0 i)) cols)))
+    (nreverse cols)))
+
+(defun bcat-faces--uchen-row-matcher (limit)
+  "Font-lock matcher, applying itself: each table row before LIMIT with
+Tibetan script, followed by a table row, gets on the padding before
+each of its bars (but the first) `(space :align-to COL)' — one stretch
+to the column of that bar in the row below, plus the width of the
+line's prefix (org-indent).  Carsten 4.11.: the Uchen row did not
+line up, Tibetan glyphs are not as wide as the monospace grid counts
+them.  Returns nil."
+  (while (re-search-forward "^[ \t]*|[^-\n].*[\u0F00-\u0FFF].*$" limit t)
+    (let* ((beg (line-beginning-position)) (end (line-end-position))
+           (below (save-excursion
+                    (forward-line 1)
+                    (and (looking-at "[ \t]*|[^-\n]")
+                         (buffer-substring-no-properties (point) (line-end-position)))))
+           (prefix (let ((p (get-text-property beg 'line-prefix)))
+                     (if (stringp p) (string-width p) 0))))
+      (when below
+        (let ((cols (cdr (bcat-faces--bar-columns below))))
+          (save-excursion
+            (goto-char beg)
+            (skip-chars-forward " \t")
+            (forward-char 1)
+            (while (and cols (search-forward "|" end t))
+              (let* ((bar (1- (point)))
+                     (pad (save-excursion (goto-char bar) (skip-chars-backward " ") (point)))
+                     (col (+ prefix (pop cols))))
+                ;; The whole padding as ONE stretch (one `eq' value): the
+                ;; spaces would count in full beside the wider glyphs.
+                (when (< pad bar)
+                  (put-text-property pad bar 'display (list 'space :align-to col))))))))))
+  nil)
+
 (defun bcat-faces--header-end ()
   "End of the keyword block at the top of the buffer (its last line,
 before the newline), or nil when the buffer does not begin with one."
@@ -251,7 +294,8 @@ whole, so a later chunk of jit-lock never unfolds a part of it."
      (3 'shadow prepend t)
      (2 (bcat-faces--rating-face (match-string 1)) prepend))
     (bcat-faces--header-matcher (0 '(face nil invisible bcat-header) prepend))
-    (bcat-faces--tibetan-matcher (0 'bcat-tibetan-face prepend)))
+    (bcat-faces--tibetan-matcher (0 'bcat-tibetan-face prepend))
+    (bcat-faces--uchen-row-matcher))
   "The font-lock keywords of `bcat-faces-mode'.")
 
 ;;;###autoload
@@ -267,7 +311,7 @@ that explain the words — formation, parts, form — in the tables
       (progn
         (font-lock-add-keywords nil bcat-faces--keywords 'append)
         (setq-local font-lock-extra-managed-props
-                    (cl-adjoin 'invisible font-lock-extra-managed-props))
+                    (cl-union '(invisible display) font-lock-extra-managed-props))
         (add-to-invisibility-spec '(bcat-header . t))
         (bcat-faces--tibetan-fontset)
         (bcat-faces--remap-shads t))

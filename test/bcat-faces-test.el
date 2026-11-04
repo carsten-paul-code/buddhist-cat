@@ -194,6 +194,34 @@ too, else they alone keep the lines high."
       (bcat-faces-mode -1)
       (should-not (assq 'cp/tibetan-shad-face face-remapping-alist)))))
 
+(ert-deftest bcat-faces-uchen-row-aligned ()
+  "4.11.: the Uchen row of a table did not line up with the rows under
+it — Tibetan glyphs are not as wide as the monospace grid counts them.
+The space before each bar of the Uchen row aligns to the column of that
+bar in the row below (`:align-to', plus the line's org-indent prefix);
+other rows and tables without Uchen get nothing."
+  (with-temp-buffer
+    (insert "* Text\n| དེ                  | ལས   |\n| [[steinert:de][de]]                 | las  |\n| that/him           | from |\n\n| a | b |\n| c | d |\n")
+    (org-mode)
+    (goto-char (point-min))
+    (should-not (bcat-faces--uchen-row-matcher (point-max)))
+    (let ((cols '()) (pos (save-excursion (goto-char (point-min)) (forward-line 1) (point))))
+      (save-excursion
+        (goto-char pos)
+        (while (search-forward "|" (line-end-position) t)
+          (let ((d (get-text-property (- (point) 2) 'display)))
+            (when d
+              (push d cols)
+              ;; the whole padding of the cell is one stretch
+              (should (eq d (get-text-property
+                             (save-excursion (backward-char) (skip-chars-backward " ") (point))
+                             'display)))))))
+      (should (equal '((space :align-to 21) (space :align-to 28)) (nreverse cols))))
+    (should-not (text-property-not-all (save-excursion (goto-char (point-min)) (forward-line 2) (point))
+                                       (point-max) 'display nil))
+    (bcat-faces-mode 1)
+    (should (memq 'display font-lock-extra-managed-props))))
+
 (ert-deftest bcat-faces-only-in-sentence-files ()
   "Switched on in a sentence file of a template (sent-…, comm-… with
 #+CAT_TEMPLATE:), not in other org files."
