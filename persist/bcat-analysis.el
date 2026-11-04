@@ -60,7 +60,7 @@ concepts (glosses in LANG) — one wording for the Tibetan analysis, the
 Tibetan request of a bilingual pair and the commentary."
   (concat (bcat-analysis--words-rule lang) "\n"
           "- translation (segment): this segment's part of your translation; the parts read in order form the sentence translation. Give key terms with the Tibetan and the established Sanskrit in parentheses, e.g. \"uncompounded ('dus ma byas: asaṃskṛta)\".
-- references (segment): for every reference translation given, the part that corresponds to this segment, quoted verbatim (keep its brackets and Sanskrit; not its notes). Mark with org bold *…* ONLY passages that shift the meaning against the Tibetan or against your reading; stylistic variation is not marked.
+- references (segment): for every reference translation given, the part that corresponds to this segment, quoted verbatim (keep its brackets and Sanskrit; not its notes); name: the full name as given under Reference translations, never a siglum. Mark with org bold *…* ONLY passages that shift the meaning against the Tibetan or against your reading; stylistic variation is not marked.
 - shift: one line on what the marked passages shift, beginning with the translator name(s): \"Lindtner 1981: active, with the yogin as agent\"; \"\" when nothing is marked.
 - structure: the segment's syntax in one line, org markup — case particles =yis=, converbs ~na~, Tibetan words /italic/: \"rnal 'byor pa =yis= [agent, ERG] · de [object, ABS] · rtogs [V] ~na~ [conditional] → protasis of 41.\"
 - note: only for a grammatical peculiarity or a real ambiguity, one or two sentences; otherwise \"\".
@@ -180,7 +180,7 @@ in a prompt)."
    "\n\nSigla for the comparison: C = your translation"
    (mapconcat (lambda (s) (format ", %s = %s" (cdr s) (car s)))
               (bcat-analysis-sigla (mapcar #'car refs)) "")
-   "."
+   " — only in the units (their readings); everywhere else, references and shift included, the full names."
    (if lectures
        (concat "\n\nLectures on this sentence — only for the comparison (the findings), cite with the time mark:\n"
                (mapconcat (lambda (l) (format "=== %s ===\n%s" (car l)
@@ -284,7 +284,7 @@ Rules:
 - gloss: the meaning in THIS context, at most 30 characters, no comments or cross-references (those belong in structure or note).
 - form: a compact label — \"f. nom. sg.\", \"ppp. f. nom. sg.\", \"opt. 3 sg. P\", \"pron. n. nom. sg.\", \"adj. n. nom. sg.\", \"ind.\".
 - translation (segment): this segment's part of your translation; the parts read in order form the sentence translation. Give key terms with the Sanskrit in parentheses, e.g. \"incapable (aśakta)\".
-- references (segment): for every reference translation given, the part that corresponds to this segment, quoted verbatim (keep its brackets; not its notes). Mark with org bold *…* ONLY passages that shift the meaning against the Sanskrit or against your reading; stylistic variation is not marked.
+- references (segment): for every reference translation given, the part that corresponds to this segment, quoted verbatim (keep its brackets; not its notes); name: the full name as given under Reference translations, never a siglum. Mark with org bold *…* ONLY passages that shift the meaning against the Sanskrit or against your reading; stylistic variation is not marked.
 - shift: one line for each translator whose part has a marked passage, beginning with the translator's name: \"Dyczkowski 2023: niyantraṇa as a restriction on the reader's understanding\"; [] when nothing is marked — never a line for a translator without marks.
 - sandhi: every junction of the segment resolved as it stands in the transmitted text (yanniyantraṇam = yat niyantraṇam: t before a nasal → n; no junction or visarga that the text does not have), separated by \" · \": \"madvāg aśaktā: final -k voiced before a vowel → -g · aśaktā + api → aśaktāpi (ā + a → ā)\"; internal sandhi of a prefix where it changes the form (\"ud + laset → ullaset (d + l → ll)\").
 - forms: one entry per declined or conjugated word (none for indeclinables), word as in words. Nominals: stem with gender and stem class, vibhakti and vacana with the English (\"prathamā vibhakti ekavacana (nom. sg.)\"), function. Verbs: √root with gaṇa number, gaṇa name, pada and the 3rd sg. present (\"√las (1, bhvādi, P: lasati)\"), lakāra with the English, pada, puruṣa and vacana with the English (\"prathamapuruṣa ekavacana (3rd sg.)\" — prathama puruṣa is the 3rd person), the present stem. Participles and other kṛdanta: their name and suffix (\"bhūte kṛdanta (ppp., kta)\", \"tvānta/lyabanta (gerund)\", \"tumanta (infinitive)\"). Taddhita derivatives: base and suffix, with vṛddhi or guṇa where it occurs.
@@ -1205,6 +1205,40 @@ decisions), *** Berichtigungen zur Analyse; \"\" without units.  In
                         (mapconcat (lambda (c) (concat "- " (string-trim c))) corrections "\n")))))
        "\n\n"))))
 
+(defun bcat-analysis--full-names (parsed refs)
+  "PARSED with the sigla of REFS (`bcat-analysis-sigla') named again
+where Claude used them outside the units: the name of a segment's
+reference part, the translators at the start of a shift line
+\(„L, DM: …“ → „Lindtner 1981, DharmaMitra: …“).  4.11., bDen 16:
+since the prompt names the sigla, the parts came as „L“ — and the marks
+of Translations compared, looked up by „Lindtner 1981“, were lost."
+  (let ((names (mapcar (lambda (s) (cons (cdr s) (car s))) (bcat-analysis-sigla (mapcar #'car refs)))))
+    (if (null names)
+        parsed
+      (let ((shift-line
+             (lambda (l)
+               (if (and (stringp l)
+                        (string-match "\\`\\(\\*?\\)\\([^:„\"\n]+?\\)\\([ \t]*[:„\"]\\)" l))
+                   (let* ((star (match-string 1 l)) (rest (substring l (match-beginning 3)))
+                          (tokens (split-string (match-string 2 l) "[ \t]*,[ \t]*" t)))
+                     (if (cl-every (lambda (tk) (assoc tk names)) tokens)
+                         (concat star (mapconcat (lambda (tk) (cdr (assoc tk names))) tokens ", ") rest)
+                       l))
+                 l))))
+        (cons (cons 'segments
+                    (mapcar
+                     (lambda (seg)
+                       (let ((sh (alist-get 'shift seg)))
+                         (append
+                          `((references . ,(mapcar (lambda (r)
+                                                     (let ((full (cdr (assoc (bcat-analysis--field r 'name) names))))
+                                                       (if full (cons (cons 'name full) r) r)))
+                                                   (alist-get 'references seg)))
+                            (shift . ,(if (listp sh) (mapcar shift-line sh) (funcall shift-line sh))))
+                          seg)))
+                     (alist-get 'segments parsed)))
+              parsed)))))
+
 (defun bcat-analysis-comparison (parsed &optional refs target)
   "Translations compared of the sentence: the own translation from
 PARSED, each of REFS ((NAME . TEXT) …, the texts sent with the request)
@@ -1256,8 +1290,10 @@ words do not cover the line."
 header, segments with num and wylie, user sections) completed from
 PARSED (Claude's answer) and REFS, the reference translations sent
 with the request ((NAME . TEXT) …).  Segments are matched by number; a
-segment Claude skipped keeps its rump fields."
-  (let* ((by-num (mapcar (lambda (s) (cons (alist-get 'num s) s))
+segment Claude skipped keeps its rump fields.  Sigla used as names are
+named again (`bcat-analysis--full-names')."
+  (let* ((parsed (bcat-analysis--full-names parsed refs))
+         (by-num (mapcar (lambda (s) (cons (alist-get 'num s) s))
                          (alist-get 'segments parsed)))
          (segments
           (mapcar
@@ -1432,8 +1468,10 @@ the lines are the transmitted text, broken at its spaces; else nil.
 header, recitation, segments with num and samhita, user slots)
 completed from PARSED (Claude's answer, Sanskrit contract) and REFS,
 the reference translations sent ((NAME . TEXT) …).  A segment Claude
-skipped keeps its rump fields."
-  (let* ((by-num (mapcar (lambda (s) (cons (alist-get 'num s) s))
+skipped keeps its rump fields; sigla used as names are named again
+\(`bcat-analysis--full-names')."
+  (let* ((parsed (bcat-analysis--full-names parsed refs))
+         (by-num (mapcar (lambda (s) (cons (alist-get 'num s) s))
                          (alist-get 'segments parsed)))
          (segments
           (mapcar

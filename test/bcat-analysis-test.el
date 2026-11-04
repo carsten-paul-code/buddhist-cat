@@ -997,7 +997,7 @@ with Wylie, the reference translations of the Tibetan."
     (should (string-match-p "/italic/" sys))
     (should (string-match-p "never a backslash before an apostrophe" sys))
     (should (string-match-p "in German" sys))
-    (should (string-match-p (regexp-quote "Asaṅga, Abhidharmasamuccaya\n\nSentence 3 — Sanskrit segments:\n[22] kasmāt pañcaiva skandhāḥ.\n     Translation: Why are there just five aggregates? —\n\nTibetan segments:\n[77] Tibetan: ཅིའི་ཕྱིར། །\n     Wylie: ci'i phyir/ /\n\nReference translations:\n=== Rahula/Boin-Webb 2001 ===\nWhy are there only five aggregates?\n\nSigla for the comparison: C = your translation, R = Rahula/Boin-Webb 2001.\n\nReturn the JSON object now.") user))))
+    (should (string-match-p (regexp-quote "Asaṅga, Abhidharmasamuccaya\n\nSentence 3 — Sanskrit segments:\n[22] kasmāt pañcaiva skandhāḥ.\n     Translation: Why are there just five aggregates? —\n\nTibetan segments:\n[77] Tibetan: ཅིའི་ཕྱིར། །\n     Wylie: ci'i phyir/ /\n\nReference translations:\n=== Rahula/Boin-Webb 2001 ===\nWhy are there only five aggregates?\n\nSigla for the comparison: C = your translation, R = Rahula/Boin-Webb 2001 — only in the units (their readings); everywhere else, references and shift included, the full names.\n\nReturn the JSON object now.") user))))
 
 (defun bcat-analysis-test--base-tib-003 ()
   "The rump of the Tibetan file of AS sentence 3 (the pair's partner):
@@ -1458,6 +1458,31 @@ cell stay as they are."
     (should (string-match-p "| V pf\\. +| N · instrument base +| INST +|" (car out)))
     (let ((plain "| བརྗོད     |\n| brjod     |\n| say       |\n| V         |"))
       (should (equal (cons plain nil) (bcat-analysis-compact-tables plain))))))
+
+(ert-deftest bcat-analysis-sigla-only-in-units ()
+  "Bug (4.11., found in bDen 16 after C-c u L): since the user prompt
+names the sigla of the comparison (5905615), Claude names the segment
+parts of the references by siglum — „*L:* All of them …“, „→ L: …“ — and
+the marks of Translations compared were lost: the parts are looked up
+by the full name („Lindtner 1981“).  9 files since 2.11.  The prompt
+keeps the sigla to the units; the answer's sigla are named again."
+  (let ((user (bcat-analysis-user-prompt 9 nil '((38 "ཀ" "ka")) '(("Lindtner 1981" . "x")))))
+    (should (string-match-p "only in the units" user)))
+  (should (string-match-p "name: the full name as given" (bcat-analysis--tibetan-segment-rules "English")))
+  (let* ((refs '(("Lindtner 1981" . "It is inexpressible. When a yogi understands it he abandons.")
+                 ("DharmaMitra" . "Inexpressible. When a yogi realizes this.")))
+         (parsed (bcat-analysis-parse
+                  (concat "{\"segments\": [{\"num\": 38, \"words\": [], \"translation\": \"t\","
+                          " \"references\": [{\"name\": \"L\", \"text\": \"*When* a yogi understands it\"},"
+                          " {\"name\": \"DM\", \"text\": \"*When* a yogi realizes this.\"}],"
+                          " \"shift\": \"L, DM: temporal for conditional\"}], \"translation\": \"t\", \"grammar\": \"g\"}")))
+         (ctx (bcat-analysis-context '((segments ((num . 38) (wylie . "ka")))) parsed refs))
+         (block (alist-get 'translations (car (alist-get 'segments ctx)))))
+    (should (string-match-p (regexp-quote "*Lindtner 1981:* *When* a yogi understands it") block))
+    (should (string-match-p (regexp-quote "*DharmaMitra:* *When* a yogi realizes this.") block))
+    (should (string-match-p (regexp-quote "→ Lindtner 1981, DharmaMitra: temporal for conditional") block))
+    (should (string-match-p (regexp-quote "*Lindtner 1981:* It is inexpressible. *When* a yogi understands it")
+                            (alist-get 'comparison ctx)))))
 
 (ert-deftest bcat-analysis-footnotes-last-before-headings ()
   "The footnote definitions of the references go to the end of the text
