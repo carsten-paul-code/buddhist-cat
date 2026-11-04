@@ -226,7 +226,9 @@ sentence translation.  ASSIGNMENT from the segment headings."
                              (append
                               (and table
                                    `((gloss-table . ,(if sanskrit-file
-                                                         (bcat-analysis-uchen-table table (alist-get 'uchen o))
+                                                         ;; 4.11.: compact, as in the partner file.
+                                                         (car (bcat-analysis-compact-tables
+                                                               (bcat-analysis-uchen-table table (alist-get 'uchen o))))
                                                        table))))
                               (and (alist-get 'segment-translation f)
                                    `((segment-translation . ,(alist-get 'segment-translation f))))
@@ -270,7 +272,16 @@ segments per segment come from there (Carsten 1.11.)."
                                ;; the Uchen row (Tibetisch V).
                                (when (and uchen (alist-get 'gloss-table fields))
                                  (setf (alist-get 'gloss-table fields)
-                                       (bcat-analysis-uchen-table (alist-get 'gloss-table fields) uchen)))
+                                       (bcat-analysis-uchen-table (alist-get 'gloss-table fields) uchen))
+                                 ;; 4.11.: compact tables — a long function
+                                 ;; cut, its rest a line of Structure.
+                                 (let ((compact (bcat-analysis-compact-tables
+                                                 (alist-get 'gloss-table fields))))
+                                   (when (cdr compact)
+                                     (setf (alist-get 'gloss-table fields) (car compact))
+                                     (setf (alist-get 'structure fields)
+                                           (bcat-analysis--with-overflow (alist-get 'structure fields)
+                                                                         (cdr compact))))))
                                (append fields seg)))
                            (alist-get 'segments base)))
          (pair (and other (bcat-relayout--pair-fields template segments assignment

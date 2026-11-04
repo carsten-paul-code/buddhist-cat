@@ -105,6 +105,27 @@ line, table) read back to the new form."
     (should (string-match-p "^⟦38⟧\n| " sample))
     (should (equal sample (bcat-relayout-test--render "tibetan" (bcat-analysis-test--base) spaced)))))
 
+(ert-deftest bcat-relayout-compacts-tables ()
+  "4.11.: C-c u L sets a Tibetan file written before with compact tables
+— the long function cut, its rest a line of the segment's Structure;
+a second run changes nothing."
+  (let* ((old (concat "* Text\n⟦66⟧\n"
+                      "| དེ                  | བརྒྱུད་པའི                                                           |\n"
+                      "| [[steinert:de][de]]                 | [[steinert:brgyud pa'i][brgyud pa'i]]                                                      |\n"
+                      "| that/him           | transmitted/lineage of                                           |\n"
+                      "| DEM · oblique base | V pf. (brgyud pa) · relative clause, GEN attributive to man ngag |\n\n"
+                      "→ t\n\n* Segments\n** Segment 66\n⟦66⟧ *Translation:* t\n\n*Structure:* de [source]\n"))
+         (base '((segments ((num . 66) (uchen . "དེ་བརྒྱུད་པའི"))) (sent-num . "16")))
+         (ctx (bcat-relayout-context base old "tibetan"))
+         (seg (car (alist-get 'segments ctx))))
+    (should (string-match-p "| V pf\\. (brgyud pa) +|" (alist-get 'gloss-table seg)))
+    (should (equal "de [source] \\\\\n/brgyud pa'i/: relative clause, GEN attributive to man ngag"
+                   (alist-get 'structure seg)))
+    (let* ((again (bcat-relayout-test--render "tibetan" base
+                                               (bcat-relayout-test--render "tibetan" base old)))
+           (once (bcat-relayout-test--render "tibetan" base old)))
+      (should (equal once again)))))
+
 (ert-deftest bcat-relayout-adds-uchen ()
   "Tables of a Tibetan file written before 31.10. abends (Wylie, gloss,
 function) get the Uchen row when set anew — from the segment's Uchen;

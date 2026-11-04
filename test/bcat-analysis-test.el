@@ -1368,6 +1368,51 @@ segment's table by C-c u L."
                   (tibetan-segments ((num . 77) (shown . t) (mark . " · [[skt-22][Skt. 22]]")
                                      (segment-translation . "Why?"))))))))))
 
+(ert-deftest bcat-analysis-compact-function ()
+  "Carsten 4.11. (bDen 16 on the MacBook, „ziemlich viel verschenkter
+Platz“): a function cell like „V pf. (brgyud pa) · relative clause, GEN
+attributive to man ngag“ (64 characters) widened its column, the table
+broke at 130 and left „gis“ alone in a second table.  The prompt asks
+for at most 25 characters; the table cuts a longer function at its „·“
+\(`bcat-analysis-function-width', 30) and the rest goes to the
+segment's Structure as a line of its own."
+  (should (string-match-p "function: .*at most 25 characters" (bcat-analysis--words-rule "English")))
+  (should (string-match-p "belongs in structure" (bcat-analysis--words-rule "English")))
+  (should (equal '("V pf. (brgyud pa)" . "relative clause, GEN attributive to man ngag")
+                 (bcat-analysis--function-split "V pf. (brgyud pa) · relative clause, GEN attributive to man ngag")))
+  (should (equal '("V pf. ('pong ba) · main verb") (bcat-analysis--function-split "V pf. ('pong ba) · main verb")))
+  (should (equal '("N" . "appositive or compound complement")
+                 (bcat-analysis--function-split "N · appositive or compound complement")))
+  (let* ((parsed (bcat-analysis-parse
+                  (concat "{\"segments\": [{\"num\": 66, \"words\": ["
+                          "{\"wylie\": \"de\", \"gloss\": \"that\", \"function\": \"DEM · oblique base\"},"
+                          "{\"wylie\": \"brgyud pa'i\", \"gloss\": \"transmitted\", \"function\": \"V pf. (brgyud pa) · relative clause, GEN attributive to man ngag\"}],"
+                          " \"translation\": \"t\", \"structure\": \"de [source] · brgyud pa'i [attr.]\"}],"
+                          " \"translation\": \"t\", \"grammar\": \"g\"}")))
+         (seg (car (alist-get 'segments (bcat-analysis-context '((segments ((num . 66) (wylie . "de brgyud pa'i")))) parsed)))))
+    (should (string-match-p "| V pf\\. (brgyud pa) +|" (alist-get 'gloss-table seg)))
+    (should-not (string-match-p "relative clause" (alist-get 'gloss-table seg)))
+    (should (equal "de [source] · brgyud pa'i [attr.] \\\\\n/brgyud pa'i/: relative clause, GEN attributive to man ngag"
+                   (alist-get 'structure seg)))))
+
+(ert-deftest bcat-analysis-compact-tables ()
+  "C-c u L on a file written before 4.11.: the long function cells are
+cut, the rest comes back for Structure, and the columns are chunked
+anew — „gis“ joins the first table (bDen 16).  Tables without a long
+cell stay as they are."
+  (let* ((old (concat "| དེ                  | ལས   | བརྒྱུད་པའི                                                           | མན་ངག               |\n"
+                      "| [[steinert:de][de]]                 | las  | [[steinert:brgyud pa'i][brgyud pa'i]]                                                      | [[steinert:man ngag][man ngag]]            |\n"
+                      "| that/him           | from | transmitted/lineage of                                           | pith instructions   |\n"
+                      "| DEM · oblique base | ABL  | V pf. (brgyud pa) · relative clause, GEN attributive to man ngag | N · instrument base |\n\n"
+                      "| གིས          |\n| gis         |\n| by means of |\n| INST        |"))
+         (out (bcat-analysis-compact-tables old)))
+    (should (equal '("/brgyud pa'i/: relative clause, GEN attributive to man ngag") (cdr out)))
+    (should-not (string-match-p "\n[ \t]*\n" (car out)))
+    (should (string-match-p "\\`| དེ +| ལས +| བརྒྱུད་པའི +| མན་ངག +| གིས +|\n" (car out)))
+    (should (string-match-p "| V pf\\. (brgyud pa) +| N · instrument base +| INST +|" (car out)))
+    (let ((plain "| བརྗོད     |\n| brjod     |\n| say       |\n| V         |"))
+      (should (equal (cons plain nil) (bcat-analysis-compact-tables plain))))))
+
 (ert-deftest bcat-analysis-footnotes-last-before-headings ()
   "The footnote definitions of the references go to the end of the text
 before the first heading — the units of the comparison (*** Übersicht …)

@@ -42,7 +42,7 @@
   "The rule for the words of a Tibetan segment (glosses in LANG) — one
 wording for the Tibetan analysis and the Tibetan request of a bilingual
 sentence."
-  (format "- words: the segment's words in order, together covering every syllable of its Wylie exactly once. A lexical compound or fixed verb phrase is one word (\"brjod du med pa\"); case and converb particles are words of their own. wylie: exactly as in the given Wylie. gloss: the meaning in THIS context, at most 25 characters, in %s. function: part of speech and syntactic function, compact — \"N · agent\", \"ADJ · predicate\", \"V pf. ('pong ba) · main verb\", \"DEM · object\", \"NEG + V pf. (byed pa)\"; a case or converb particle gets only its label: ERG, GEN, ABS, TERM, LOC, ABL, COM, DAT, or \"CONV · cond.\" etc."
+  (format "- words: the segment's words in order, together covering every syllable of its Wylie exactly once. A lexical compound or fixed verb phrase is one word (\"brjod du med pa\"); case and converb particles are words of their own. wylie: exactly as in the given Wylie. gloss: the meaning in THIS context, at most 25 characters, in %s. function: part of speech and syntactic function, compact, at most 25 characters — \"N · agent\", \"ADJ · predicate\", \"V pf. ('pong ba) · main verb\", \"DEM · object\", \"NEG + V pf. (byed pa)\"; a case or converb particle gets only its label: ERG, GEN, ABS, TERM, LOC, ABL, COM, DAT, or \"CONV · cond.\" etc.; any further explanation (what it modifies, the kind of clause) belongs in structure."
           lang))
 
 (defun bcat-analysis--segment-entry (num text &optional wylie translation)
@@ -683,6 +683,100 @@ in Uchen stay as they are."
                                     collect (mapcar (lambda (col) (nth r col)) cols))))))
                      columns "\n\n"))))))
 
+(defcustom bcat-analysis-function-width 30
+  "Widest function cell in a Tibetan table: a longer function is cut at
+its „·“ and the rest goes to the segment's Structure
+\(`bcat-analysis--function-split').  Carsten 4.11. (bDen 16 on the
+MacBook, „ziemlich viel verschenkter Platz“): one function of 64
+characters widened its column, the table broke and left a word alone."
+  :type 'integer
+  :group 'buddhist-cat)
+
+(defun bcat-analysis--function-split (fn)
+  "(SHORT . REST) of the function FN of a word: FN itself and nil when
+it is no wider than `bcat-analysis-function-width'; else the leading
+„·“ parts that fit (at least the first, cut at a space with „…“ when
+even it is too wide) and the rest."
+  (let ((fn (string-trim (or fn "")))
+        (max bcat-analysis-function-width))
+    (if (<= (string-width fn) max)
+        (list fn)
+      (let* ((parts (split-string fn "[ \t]*·[ \t]*" t))
+             (short (car parts))
+             (n 1))
+        (while (and (< n (length parts))
+                    (<= (string-width (concat short " · " (nth n parts))) max))
+          (setq short (concat short " · " (nth n parts)) n (1+ n)))
+        (if (> (string-width short) max)
+            (let* ((cut (or (cl-position ?\s short :end (- max 2) :from-end t) (- max 2))))
+              (cons (concat (substring short 0 cut) " …")
+                    (string-join (cons (string-trim (substring short cut)) (nthcdr 1 parts)) " · ")))
+          (cons short (string-join (nthcdr n parts) " · ")))))))
+
+(defun bcat-analysis--function-overflow (words)
+  "The lines for Structure of the WORDS whose function was cut:
+„/wylie/: rest“ (`bcat-analysis--function-split')."
+  (delq nil (mapcar (lambda (w)
+                      (let ((rest (cdr (bcat-analysis--function-split (bcat-analysis--field w 'function)))))
+                        (and rest (format "/%s/: %s" (bcat-analysis--field w 'wylie) rest))))
+                    words)))
+
+(defun bcat-analysis--with-overflow (structure lines)
+  "STRUCTURE with LINES (`bcat-analysis--function-overflow') each on a
+line of its own (org line breaks)."
+  (if (null lines)
+      structure
+    (string-join (append (and structure (not (string-blank-p structure)) (list structure)) lines)
+                 " \\\\\n")))
+
+(defun bcat-analysis--chunk-columns (columns)
+  "COLUMNS (each a list of its cells, top to bottom) in chunks no wider
+than `bcat-analysis-tibetan-table-width' — each column charged with its
+widest cell (links by their text) plus 6."
+  (let ((chunks '()) (chunk '()) (used 1))
+    (dolist (col columns)
+      (let ((width (+ 6 (apply #'max 0 (mapcar (lambda (c) (string-width (bcat-analysis-plain-cell c)))
+                                               col)))))
+        (when (and chunk (> (+ used width) bcat-analysis-tibetan-table-width))
+          (push (nreverse chunk) chunks)
+          (setq chunk nil used 1))
+        (push col chunk)
+        (setq used (+ used width))))
+    (when chunk (push (nreverse chunk) chunks))
+    (nreverse chunks)))
+
+(defun bcat-analysis--format-chunks (chunks)
+  "CHUNKS (lists of columns) as org tables, blank lines between."
+  (mapconcat (lambda (ch)
+               (string-trim-right
+                (tibetan-gloss-table--format-rows
+                 (cl-loop for r below (length (car ch)) collect (mapcar (lambda (col) (nth r col)) ch)))))
+             chunks "\n\n"))
+
+(defun bcat-analysis-compact-tables (tables)
+  "(TABLES . OVERFLOW) for the Tibetan tables of a segment as a file
+written before 4.11. holds them: every function cell (the last row)
+wider than `bcat-analysis-function-width' cut, the rest as Structure
+lines in OVERFLOW, the columns chunked anew (a word left alone joins
+the table before when it fits).  TABLES itself and nil when no cell is
+too wide."
+  (let* ((parts (split-string (or tables "") "\n[ \t]*\n" t))
+         (columns (apply #'append (mapcar #'bcat-analysis--table-columns parts)))
+         (overflow '()))
+    (setq columns
+          (mapcar (lambda (col)
+                    (let* ((sp (bcat-analysis--function-split (bcat-analysis-plain-cell (car (last col)))))
+                           (wylie (nth (if (string-match-p "[\u0F00-\u0FFF]" (car col)) 1 0) col)))
+                      (if (null (cdr sp))
+                          col
+                        (push (format "/%s/: %s" (bcat-analysis-plain-cell wylie) (cdr sp)) overflow)
+                        (append (butlast col) (list (tibetan-gloss-table--cell (car sp)))))))
+                  columns))
+    (if (null overflow)
+        (cons tables nil)
+      (cons (bcat-analysis--format-chunks (bcat-analysis--chunk-columns columns))
+            (nreverse overflow)))))
+
 (defun bcat-analysis-gloss-table (words &optional uchen)
   "The table of WORDS (Claude's word list): row 1 Wylie (with a
 Steinert link unless a particle), row 2 gloss, row 3 function — split
@@ -694,34 +788,21 @@ function blue).  \"\" for no words."
       ""
     (let* ((uchens (and uchen (bcat-analysis--uchen-row
                                uchen (mapcar (lambda (w) (bcat-analysis--field w 'wylie)) words))))
-           (nrows (if uchens 4 3))
-           (chunks '()) (chunk '()) (used 1))
-      (cl-loop
-       for w in words
-       for u = (pop uchens)
-       do (let* ((wy (bcat-analysis--field w 'wylie))
-                 (fn (bcat-analysis--field w 'function))
-                 (gl (tibetan-gloss-table--cell
-                      (or (tibetan-gloss-table--truncate-cell (bcat-analysis--field w 'gloss)) "")))
-                 (col (append (and (= nrows 4) (list (or u "")))
-                              (list (if (bcat-analysis--particle-p w)
-                                        (tibetan-gloss-table--cell wy)
-                                      (format "[[steinert:%s][%s]]" wy (tibetan-gloss-table--cell wy)))
-                                    gl
-                                    (tibetan-gloss-table--cell fn))))
-                 (width (+ 6 (max (string-width wy) (string-width gl) (string-width fn)
-                                  (string-width (or u ""))))))
-            (when (and chunk (> (+ used width) bcat-analysis-tibetan-table-width))
-              (push (nreverse chunk) chunks)
-              (setq chunk nil used 1))
-            (push col chunk)
-            (setq used (+ used width))))
-      (when chunk (push (nreverse chunk) chunks))
-      (mapconcat (lambda (ch)
-                   (string-trim-right
-                    (tibetan-gloss-table--format-rows
-                     (cl-loop for r below nrows collect (mapcar (lambda (col) (nth r col)) ch)))))
-                 (nreverse chunks) "\n\n"))))
+           (row (and uchens t))
+           (columns
+            (cl-loop
+             for w in words
+             for u = (pop uchens)
+             collect (let ((wy (bcat-analysis--field w 'wylie)))
+                       (append (and row (list (or u "")))
+                               (list (if (bcat-analysis--particle-p w)
+                                         (tibetan-gloss-table--cell wy)
+                                       (format "[[steinert:%s][%s]]" wy (tibetan-gloss-table--cell wy)))
+                                     (tibetan-gloss-table--cell
+                                      (or (tibetan-gloss-table--truncate-cell (bcat-analysis--field w 'gloss)) ""))
+                                     (tibetan-gloss-table--cell
+                                      (car (bcat-analysis--function-split (bcat-analysis--field w 'function))))))))))
+      (bcat-analysis--format-chunks (bcat-analysis--chunk-columns columns)))))
 
 (defun bcat-analysis--bracketed (word gloss)
   "WORD followed by GLOSS in brackets.  A gloss Claude brackets itself
@@ -1159,7 +1240,9 @@ segment Claude skipped keeps its rump fields."
                     (translations . ,(bcat-analysis-translations-block
                                       (if (stringp num) (string-to-number num) num) c))
                     (segment-translation . ,(bcat-analysis--field c 'translation))
-                    (structure . ,(bcat-analysis--field c 'structure))
+                    (structure . ,(bcat-analysis--with-overflow
+                                   (bcat-analysis--field c 'structure)
+                                   (bcat-analysis--function-overflow (alist-get 'words c))))
                     (note . ,(bcat-analysis--field c 'note))
                     (concepts . ,(bcat-analysis--field c 'concepts)))
                   seg))))
