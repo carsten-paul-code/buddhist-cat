@@ -554,6 +554,26 @@ back.  Other lines before a table stay as they are."
                            "#+ATTR_LATEX: :align r\n| d |\n")
                    (buffer-string)))))
 
+(ert-deftest bcat-export-rechunk-tibetan-tables ()
+  "4.11.: the tables of a Tibetan segment fill the Emacs window in the
+file; the export copy chunks them anew for the page (6 per column,
+`bcat-export-tibetan-table-width' 130 — the width the PDF had).  Other
+tables (the comparison's, Sanskrit ones) and other segments' tables stay
+apart."
+  (with-temp-buffer
+    (insert "⟦70⟧\n"
+            "| ཆོས་ཉིད               | འདི                | ལ             | གཞོལ           | ཞིང                  | འབབ                  |\n"
+            "| chos nyid           | 'di              | la            | gzhol          | zhing               | 'bab                |\n"
+            "| nature of phenomena | this             | toward / into | incline toward | and                 | flow into / lead to |\n"
+            "| N · goal/locus      | DEM · specifying | DAT/LOC       | V pres.        | CONV · coordinative | V pres. · main verb |\n"
+            "\n→ t\n\n| Nr. | Stelle |\n|-----+--------|\n|   1 | /a/    |\n")
+    (bcat-export--rechunk-tibetan-tables)
+    (let ((text (buffer-string)))
+      ;; two tables now, the first five columns, 'bab alone
+      (should (string-match-p "\n| ཆོས་ཉིད +| འདི +| ལ +| གཞོལ +| ཞིང +|\n" text))
+      (should (string-match-p "|\n\n| འབབ +|\n| 'bab +|\n" text))
+      (should (string-match-p "\n\n→ t\n\n| Nr\\. | Stelle |\n|-----\\+--------|\n|   1 | /a/    |\n\\'" text)))))
+
 (ert-deftest bcat-export-comparison-table ()
   "2.11. (Muster vergleich-ta1-1.org): the overview table of the
 comparison — the ratings with \\cellcolor{ok|mid|bad} — needs colortbl

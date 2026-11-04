@@ -577,14 +577,15 @@ member of compound“ — several syllables, so a word all the same."
   (let ((v (alist-get key alist)))
     (if (stringp v) (string-trim v) "")))
 
-(defcustom bcat-analysis-tibetan-table-width 130
-  "Widest table for the words of a Tibetan segment, counted as the
-characters of each column's widest cell (links by their text) plus 6
-per column for the space between columns; wider segments are split into
-several tables.  30.10., Sthiramati's prose: a segment of 23 words ran
-far into the margin of the PDF.  Measured: an AS table of 6 columns and
-71 characters fills 60 % of the page; it is the number of columns that
-costs room, so each one is charged."
+(defcustom bcat-analysis-tibetan-table-width 158
+  "Widest table for the words of a Tibetan segment in the sentence file,
+in characters as it is seen (each column's widest cell, links by their
+text, plus 3 for bar and spaces); wider segments are split into several
+tables.  Carsten 4.11. (bDen 16, Segment 70, six columns of 119
+characters broken in a window of 162: „müsste eigentlich nicht
+umbrechen, oder?“): the file fills the MacBook window (162 less the
+org-indent prefix); the PDF chunks anew in the export, by its own
+measure (`bcat-export-tibetan-table-width')."
   :type 'integer
   :group 'buddhist-cat)
 
@@ -752,19 +753,22 @@ line of its own (org line breaks)."
     (string-join (append (and structure (not (string-blank-p structure)) (list structure)) lines)
                  " \\\\\n")))
 
-(defun bcat-analysis--chunk-columns (columns)
+(defun bcat-analysis--chunk-columns (columns &optional width charge)
   "COLUMNS (each a list of its cells, top to bottom) in chunks no wider
-than `bcat-analysis-tibetan-table-width' — each column charged with its
-widest cell (links by their text) plus 6."
-  (let ((chunks '()) (chunk '()) (used 1))
+than WIDTH (`bcat-analysis-tibetan-table-width') — each column charged
+with its widest cell (links by their text) plus CHARGE (3: bar and
+spaces, the table as seen; the PDF charges 6)."
+  (let ((chunks '()) (chunk '()) (used 1)
+        (width (or width bcat-analysis-tibetan-table-width))
+        (charge (or charge 3)))
     (dolist (col columns)
-      (let ((width (+ 6 (apply #'max 0 (mapcar (lambda (c) (string-width (bcat-analysis-plain-cell c)))
-                                               col)))))
-        (when (and chunk (> (+ used width) bcat-analysis-tibetan-table-width))
+      (let ((w (+ charge (apply #'max 0 (mapcar (lambda (c) (string-width (bcat-analysis-plain-cell c)))
+                                                col)))))
+        (when (and chunk (> (+ used w) width))
           (push (nreverse chunk) chunks)
           (setq chunk nil used 1))
         (push col chunk)
-        (setq used (+ used width))))
+        (setq used (+ used w))))
     (when chunk (push (nreverse chunk) chunks))
     (nreverse chunks)))
 
@@ -782,12 +786,11 @@ written before 4.11. holds them: every function cell (the last row)
 without a repeated dictionary form (`bcat-analysis--trim-lemma') and,
 wider than `bcat-analysis-function-width', cut — the rest as Structure
 lines in OVERFLOW —, the columns chunked anew (a word left alone joins
-the table before when it fits).  TABLES itself and nil when no cell
-changes."
+the table before when it fits, at the width of the file).  TABLES
+itself and nil when nothing changes."
   (let* ((parts (split-string (or tables "") "\n[ \t]*\n" t))
          (columns (apply #'append (mapcar #'bcat-analysis--table-columns parts)))
-         (overflow '())
-         (changed nil))
+         (overflow '()))
     (setq columns
           (mapcar (lambda (col)
                     (let* ((wylie (bcat-analysis-plain-cell
@@ -798,13 +801,15 @@ changes."
                         (push (format "/%s/: %s" wylie (cdr sp)) overflow))
                       (if (equal (car sp) fn)
                           col
-                        (setq changed t)
                         (append (butlast col) (list (tibetan-gloss-table--cell (car sp)))))))
                   columns))
-    (if (not changed)
-        (cons tables nil)
-      (cons (bcat-analysis--format-chunks (bcat-analysis--chunk-columns columns))
-            (nreverse overflow)))))
+    ;; Chunked anew — the width of the file changed on 4.11.; the same
+    ;; chunks with the same cells leave the text as it is.
+    (let ((chunks (bcat-analysis--chunk-columns columns)))
+      (if (or (null columns)
+              (equal chunks (mapcar #'bcat-analysis--table-columns parts)))
+          (cons tables nil)
+        (cons (bcat-analysis--format-chunks chunks) (nreverse overflow))))))
 
 (defun bcat-analysis-gloss-table (words &optional uchen)
   "The table of WORDS (Claude's word list): row 1 Wylie (with a

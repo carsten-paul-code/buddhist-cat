@@ -682,17 +682,18 @@ escaped so the table holds."
 (ert-deftest bcat-analysis-gloss-table-split ()
   "30.10., Sthiramati's prose: a segment of 23 words gave one table that
 ran far into the margin of the PDF.  The words go into several tables,
-in order, none wider than `bcat-analysis-tibetan-table-width' (each
-column its widest cell + 6); a short segment stays one table."
+in order, none wider than `bcat-analysis-tibetan-table-width' (since
+4.11. as seen in the file: each column its widest cell + 3, up to 158;
+the PDF chunks anew); a short segment stays one table."
   (let* ((words (cl-loop for i from 1 to 23
                          collect `((wylie . ,(format "rnam par shes %02d" i))
                                    (gloss . "consciousness")
                                    (function . "N · ABS"))))
          (table (bcat-analysis-gloss-table words))
          (tables (split-string table "\n\n")))
-    ;; 6 + 16 = 22 per column: five columns (111) fit in 130, six (133) do not.
-    (should (= 5 (length tables)))
-    (should (equal '(5 5 5 5 3)
+    ;; 3 + 16 = 19 per column: eight columns (153) fit in 158, nine (172) do not.
+    (should (= 3 (length tables)))
+    (should (equal '(8 8 7)
                    (mapcar (lambda (tb) (1- (length (split-string tb "steinert:")))) tables)))
     (should (equal (cl-loop for i from 1 to 23 collect (format "rnam par shes %02d" i))
                    (let ((pos 0) (out '()))
@@ -1421,6 +1422,24 @@ repeating one."
   (let ((out (bcat-analysis-compact-tables "| [[steinert:rtogs par][rtogs par]] |\n| to realise |\n| V inf. (rtogs pa) |")))
     (should (string-match-p "| V inf\\. +|" (car out)))
     (should-not (cdr out))))
+
+(ert-deftest bcat-analysis-tables-fill-the-window ()
+  "Carsten 4.11. (bDen 16, Segment 70): „müsste eigentlich nicht
+umbrechen, oder?“ — six columns, 119 characters as the table stands,
+in a window of 162; it broke because the width was the PDF's (6 per
+column, limit 130: 137).  In the file a table is as wide as it is seen
+\(cells + 3 per column), up to `bcat-analysis-tibetan-table-width'
+\(158, the MacBook window); the PDF chunks anew in the export
+\(`bcat-export--rechunk-tibetan-tables')."
+  (should (= 158 (eval (car (get 'bcat-analysis-tibetan-table-width 'standard-value)))))
+  (let* ((cols '(("ཆོས་ཉིད" "chos nyid" "nature of phenomena" "N · goal/locus")
+                 ("འདི" "'di" "this" "DEM · specifying")
+                 ("ལ" "la" "toward / into" "DAT/LOC")
+                 ("གཞོལ" "gzhol" "incline toward" "V pres.")
+                 ("ཞིང" "zhing" "and" "CONV · coordinative")
+                 ("འབབ" "'bab" "flow into / lead to" "V pres. · main verb"))))
+    (should (= 1 (length (bcat-analysis--chunk-columns cols))))
+    (should (= 2 (length (bcat-analysis--chunk-columns cols 130 6))))))
 
 (ert-deftest bcat-analysis-compact-tables ()
   "C-c u L on a file written before 4.11.: the long function cells are
