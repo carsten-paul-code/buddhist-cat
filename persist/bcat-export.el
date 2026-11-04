@@ -518,6 +518,18 @@ stay as they are; the file is not touched.  For
                                         (bcat-analysis-wrap-rows rows max)))
                     "\n")))))))
 
+(defun bcat-export--marks-apart (&rest _)
+  "In the current (export) buffer: a blank line between a ⟦N⟧ mark line
+and the table right under it.  Carsten 4.11.: in the file the mark
+stands right above its table (no line wasted while reading); in the PDF
+it would sit beside the table (ad89035).  For
+`org-export-before-processing-functions' — the file stays as it is."
+  (save-excursion
+    (goto-char (point-min))
+    (while (re-search-forward "^\\(?:<<[^>\n]*>>\\)?⟦[0-9]+⟧[^\n]*\n|" nil t)
+      (goto-char (1- (match-end 0)))
+      (insert "\n"))))
+
 (defun bcat-export--drop-machine-sections (&rest _)
   "Delete from the current (export) buffer the `** Word Analysis'
 subtree — machine data for the zettel highlighting and the padapāṭha
@@ -591,7 +603,8 @@ LuaLaTeX could not set land in `bcat-export--missing'."
                              (cons #'bcat-export--verse-filter org-export-filter-verse-block-functions))
                             (org-export-before-processing-functions
                              (append (list insert-head #'bcat-export--drop-machine-sections
-                                           #'bcat-export--wrap-wide-tables)
+                                           #'bcat-export--wrap-wide-tables
+                                           #'bcat-export--marks-apart)
                                      org-export-before-processing-functions)))
                         (expand-file-name (org-latex-export-to-pdf) (file-name-directory file))))
                  (base (file-name-sans-extension pdf))

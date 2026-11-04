@@ -130,12 +130,12 @@ more; with a table no plain Wylie under the Uchen)."
                  (regexp-quote (concat "* Text\n#+begin_verse\n"
                                        "བརྗོད་དུ་མེད་པ་བལྟར་མེད་པ། །\n"
                                        "འགྱུར་བ་མེད་པ་འདུས་མ་བྱས། །\n"
-                                       "#+end_verse\n\n⟦38⟧\n\n| བརྗོད་དུ་མེད་པ"))
+                                       "#+end_verse\n\n⟦38⟧\n| བརྗོད་དུ་མེད་པ"))
                  text))
         ;; 31.10. abends, Tibetisch V: the Uchen above the Wylie.
         (should (string-match-p "^| བརྗོད་དུ་མེད་པ +| བལྟར་མེད་པ +|\n| \\[\\[steinert:brjod du med pa\\]" text))
         (should (string-match-p (regexp-quote "| inexpressible; ineffable | invisible") text))
-        (should (string-match-p (regexp-quote "\n\n⟦39⟧\n\n| འགྱུར་བ་མེད་པ") text))
+        (should (string-match-p (regexp-quote "\n\n⟦39⟧\n| འགྱུར་བ་མེད་པ") text))
         (should-not (string-match-p "\\[inexpressible" text))
         (should (string-match-p "\n\n\\* Sentence\n" text))))))
 
@@ -217,9 +217,9 @@ AI request is made."
           ;; One Uchen line per pāda, then the tables (exact form:
           ;; create-glossed-text).
           (should (string-match-p
-                   "#\\+begin_verse\nབརྗོད་དུ་མེད་པ་བལྟར་མེད་པ། །\nའགྱུར་བ་མེད་པ་འདུས་མ་བྱས། །\n#\\+end_verse\n\n⟦38⟧\n\n| "
+                   "#\\+begin_verse\nབརྗོད་དུ་མེད་པ་བལྟར་མེད་པ། །\nའགྱུར་བ་མེད་པ་འདུས་མ་བྱས། །\n#\\+end_verse\n\n⟦38⟧\n| "
                    text))
-          (should (string-match-p "^⟦39⟧\n\n| " text))
+          (should (string-match-p "^⟦39⟧\n| " text))
           (should (string-match-p "^\\* Segments\n\\*\\* Segment 38\n\n\\*\\* Segment 39\n" text))
           (should (string-match-p "steinert:" text))
           (should (string-match-p
@@ -1016,7 +1016,7 @@ with vocabulary under * Text, tables, Forms per segment — and the hook
         ;; description; no padapāṭha under * Text, the tables instead.
         (should (string-match-p "^\\* Recitation\n#\\+begin_verse\nअत्र" text))
         (should-not (string-match-p "Śloka (Anuṣṭubh)\\|atra \\[here\\]" text))
-        (should (string-match-p (regexp-quote "* Text\n⟦685⟧\n\n| atra |") text))
+        (should (string-match-p (regexp-quote "* Text\n⟦685⟧\n| atra |") text))
         (should (string-match-p (regexp-quote "| atra | mad-vāk ") text))
         (should (string-match-p "^\\*Forms:\\*\n- /mad-vāk/ — vāc- f\\." text))
         (should (string-match-p "^⟦685⟧ \\*Translation:\\* Although my speech" text))
@@ -1209,8 +1209,8 @@ differences, the rendering; C-c u H runs once, at the end."
         ;; 1.11.: the Sanskrit part, then the Tibetan part, jump marks
         ;; both ways; the differences after the last Tibetan segment of
         ;; a group.
-        (should (string-match-p (regexp-quote "<<skt-23>>⟦23⟧ · [[tib-78][Tib. 78–79]]\n\n| ") text))
-        (should (string-match-p (regexp-quote "<<tib-77>>⟦77⟧ · [[skt-22][Skt. 22]]\n\n| ཅིའི་ཕྱིར") text))
+        (should (string-match-p (regexp-quote "<<skt-23>>⟦23⟧ · [[tib-78][Tib. 78–79]]\n| ") text))
+        (should (string-match-p (regexp-quote "<<tib-77>>⟦77⟧ · [[skt-22][Skt. 22]]\n| ཅིའི་ཕྱིར") text))
         (should (< (string-match "^\\* Tibetan$" text) (string-match "^<<tib-77>>" text)))
         ;; (78 and 79 have neither words nor translation in this answer;
         ;; 79, the last of the group, still gets its mark for the
@@ -1373,7 +1373,7 @@ The PDF is made of the Sanskrit file only („nur die zweisprachige“)."
           ;; (78 and 79 have no words in this answer: no table, so no
           ;; mark — their translations, then the group's differences.)
           (should (string-match-p (regexp-quote "→ the body with what it appropriated,\n\n*Differences:* /udbhāvanatā/") text))
-          (should (string-match-p (regexp-quote "<<skt-23>>⟦23⟧ · [[tib-78][Tib. 78–79]]\n\n| pañca-ākāra-ātma-vastu-udbhāvanatām") text))
+          (should (string-match-p (regexp-quote "<<skt-23>>⟦23⟧ · [[tib-78][Tib. 78–79]]\n| pañca-ākāra-ātma-vastu-udbhāvanatām") text))
           (should (< (string-match "^→ the body with what it appropriated,$" text) (string-match "^\\*Differences:\\*" text)))
           (should (string-match-p (regexp-quote "*Differences:* /udbhāvanatā/ is rendered /brjod pa/ („stating“).\n\n*Translation:*") text))
           (should (string-match-p (regexp-quote "** Segment 78 · Skt. 23\n⟦78⟧ *Translation:* because they state") text))

@@ -94,7 +94,9 @@ Rumpf ohne Glossen bleibt sie.  Reines Sanskrit behält den Padapāṭha.
 {{#segments}}
 {{#shown}}
 <<skt-{{num}}>>⟦{{num}}⟧{{mark}}
+{{^gloss-table}}
 
+{{/gloss-table}}
 {{/shown}}
 {{#gloss-table}}
 {{gloss-table}}
@@ -123,7 +125,9 @@ Rumpf ohne Glossen bleibt sie.  Reines Sanskrit behält den Padapāṭha.
 {{#tibetan-segments}}
 {{#shown}}
 <<tib-{{num}}>>⟦{{num}}⟧{{mark}}
+{{^gloss-table}}
 
+{{/gloss-table}}
 {{/shown}}
 {{#gloss-table}}
 {{gloss-table}}

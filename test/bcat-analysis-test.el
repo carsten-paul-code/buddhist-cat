@@ -848,14 +848,14 @@ the sentence."
          (tib (substring out (string-match "^\\* Tibetan$" out) (string-match "^\\* Sentence$" out))))
     (should (string-match-p "\\`\\* Text\n#\\+begin_verse\nकस्मात्" text))
     (should (string-match-p
-             (concat "^<<skt-23>>⟦23⟧ · \\[\\[tib-78\\]\\[Tib\\. 78\\]\\]\n\n| pañca-ākāra-ātma-vastu-udbhāvanatām .*\n\\(?:|.*\n\\)*"
+             (concat "^<<skt-23>>⟦23⟧ · \\[\\[tib-78\\]\\[Tib\\. 78\\]\\]\n| pañca-ākāra-ātma-vastu-udbhāvanatām .*\n\\(?:|.*\n\\)*"
                      "\n→ On account of their bringing to light .*\n\n<<skt-24>>")
              text))
     (should-not (string-match-p "བདག\\|Differences" text))
     (should (string-match-p "\n\\*Translation:\\* Why are there just five aggregates" text))
     (should (string-match-p "\\`\\* Tibetan\n#\\+begin_verse\nཅིའི་ཕྱིར་ཕུང་པོ་རྣམས་ལྔ་ཁོ་ན་ཞེ་ན།\nབདག་གི་གཞི་རྣམ་པ" tib))
     (should (string-match-p
-             (concat "^<<tib-78>>⟦78⟧ · \\[\\[skt-23\\]\\[Skt\\. 23\\]\\]\n\n| བདག་གི་གཞི .*\n| \\[\\[steinert:bdag gi gzhi\\].*\n\\(?:|.*\n\\)*"
+             (concat "^<<tib-78>>⟦78⟧ · \\[\\[skt-23\\]\\[Skt\\. 23\\]\\]\n| བདག་གི་གཞི .*\n| \\[\\[steinert:bdag gi gzhi\\].*\n\\(?:|.*\n\\)*"
                      "\n→ because they state the basis of self .*\n\n"
                      "\\*Differences:\\* /udbhāvanatā/.*\n\n<<tib-79>>")
              tib))
@@ -900,13 +900,13 @@ Devanāgarī over IAST, per segment mark (link to the Tibetan), tables,
          (skt (substring out (string-match "^\\* Sanskrit$" out) (string-match "^\\* Sentence$" out))))
     (should (string-match-p "\\`\\* Text\n#\\+begin_verse\nཅིའི་ཕྱིར" text))
     (should (string-match-p
-             (concat "^<<tib-78>>⟦78⟧ · \\[\\[skt-23\\]\\[Skt\\. 23\\]\\]\n\n| བདག་གི་གཞི .*\n\\(?:|.*\n\\)*"
+             (concat "^<<tib-78>>⟦78⟧ · \\[\\[skt-23\\]\\[Skt\\. 23\\]\\]\n| བདག་གི་གཞི .*\n\\(?:|.*\n\\)*"
                      "\n→ because they state the basis of self .*\n\n"
                      "\\*Differences:\\* /udbhāvanatā/")
              text))
     (should (string-match-p "\\`\\* Sanskrit\n#\\+begin_verse\nकस्मात्" skt))
     (should (string-match-p
-             (concat "^<<skt-23>>⟦23⟧ · \\[\\[tib-78\\]\\[Tib\\. 78\\]\\]\n\n| pañca-ākāra-ātma-vastu-udbhāvanatām .*\n\\(?:|.*\n\\)*"
+             (concat "^<<skt-23>>⟦23⟧ · \\[\\[tib-78\\]\\[Tib\\. 78\\]\\]\n| pañca-ākāra-ātma-vastu-udbhāvanatām .*\n\\(?:|.*\n\\)*"
                      "\n→ On account of their bringing to light ")
              skt))
     (should (string-match-p "\n\\*Translation:\\* Why are there just five aggregates\\? — On account of …" skt))
@@ -1342,6 +1342,31 @@ target comes with the rump (`target-lang') into the context."
     (should (string-match-p "^\\*\\*\\* Übersicht$"
                             (bcat-analysis-comparison
                              (bcat-analysis-parse bcat-analysis-test--units-answer) nil "en")))))
+
+(ert-deftest bcat-analysis-mark-right-above-table ()
+  "Carsten 4.11., reading on the MacBook: „ziemlich viel verschenkter
+Platz“ — the ⟦N⟧ mark stands right above its table, no blank line
+between (the PDF gets it from the export, `bcat-export--marks-apart').
+A mark shown without a table (bilingual: translation or differences
+only) keeps its blank line — „→ …“ right under it would be read as the
+segment's table by C-c u L."
+  (let* ((bcat-template-directory (expand-file-name "Templates/analysis" bcat-analysis-test--root))
+         (tib (bcat-template-render-named
+               "tibetan" (bcat-analysis-context (bcat-analysis-test--base)
+                                                (bcat-analysis-parse (bcat-analysis-test--answer))
+                                                bcat-analysis-test--refs)))
+         (bil (bcat-analysis-test--bilingual-003)))
+    (dolist (out (list tib bil))
+      (should (string-match-p "^\\(?:<<[^>\n]*>>\\)?⟦[0-9]+⟧[^\n]*\n| " out))
+      (should-not (string-match-p "^\\(?:<<[^>\n]*>>\\)?⟦[0-9]+⟧[^\n]*\n\n| " out)))
+    (let ((bcat-template-directory bcat-template-directory))
+      (should (string-match-p
+               (regexp-quote "<<tib-77>>⟦77⟧ · [[skt-22][Skt. 22]]\n\n→ ")
+               (bcat-template-render-named
+                "bilingual"
+                '((tibetan-p . t)
+                  (tibetan-segments ((num . 77) (shown . t) (mark . " · [[skt-22][Skt. 22]]")
+                                     (segment-translation . "Why?"))))))))))
 
 (ert-deftest bcat-analysis-footnotes-last-before-headings ()
   "The footnote definitions of the references go to the end of the text

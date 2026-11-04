@@ -542,6 +542,18 @@ Text bleibt in seiner Zelle."
     (should (string-match-p (regexp-quote "\n\\bcatg{R\\&D} & \\bcatg{a} & \\bcatg{b}\\\\\n") out))
     (should (string-match-p (regexp-quote "\n\\bcatg{—} & \\bcatg{—} & \\bcatg{—}\\\\\n") out))))
 
+(ert-deftest bcat-export-marks-apart ()
+  "4.11.: in the file ⟦N⟧ stands right above its table; in the PDF it
+must not sit beside it (ad89035) — the export copy gets the blank line
+back.  Other lines before a table stay as they are."
+  (with-temp-buffer
+    (insert "* Text\n⟦66⟧\n| a |\n\n| b |\n\n<<skt-44>>⟦44⟧ · [[tib-110][Tib. 110]]\n| c |\n"
+            "#+ATTR_LATEX: :align r\n| d |\n")
+    (bcat-export--marks-apart)
+    (should (equal (concat "* Text\n⟦66⟧\n\n| a |\n\n| b |\n\n<<skt-44>>⟦44⟧ · [[tib-110][Tib. 110]]\n\n| c |\n"
+                           "#+ATTR_LATEX: :align r\n| d |\n")
+                   (buffer-string)))))
+
 (ert-deftest bcat-export-comparison-table ()
   "2.11. (Muster vergleich-ta1-1.org): the overview table of the
 comparison — the ratings with \\cellcolor{ok|mid|bad} — needs colortbl

@@ -80,7 +80,6 @@ Goldman 1999).
 {{#segments}}
 {{#gloss-table}}
 ⟦{{num}}⟧
-
 {{gloss-table}}
 
 {{#segment-translation}}

@@ -94,13 +94,16 @@ for each template."
 (ert-deftest bcat-relayout-label-on-its-own-line ()
   "31.10. abends, the first PDF of TĀ 1006 in the new order: „⟦683⟧“
 directly above a table stood beside it (LaTeX took both as one
-paragraph) — the mark gets a line of its own.  Files written before
-\(mark and table without a blank line) read back the same."
+paragraph) — the mark got a blank line under it (ad89035).  4.11.
+(„ziemlich viel verschenkter Platz“): in the file the mark stands right
+above its table again, the export puts the blank line in
+\(`bcat-export--marks-apart').  Files written in between (mark, blank
+line, table) read back to the new form."
   (let* ((sample (bcat-relayout-test--file "Templates/analysis/samples/Tibetan.org"))
-         (glued (replace-regexp-in-string "^\\(⟦[0-9]+⟧\\)\n\n|" "\\1\n|" sample)))
-    (should-not (equal glued sample))
-    (should (string-match-p "^⟦38⟧\n\n| " sample))
-    (should (equal sample (bcat-relayout-test--render "tibetan" (bcat-analysis-test--base) glued)))))
+         (spaced (replace-regexp-in-string "^\\(⟦[0-9]+⟧\\)\n|" "\\1\n\n|" sample)))
+    (should-not (equal spaced sample))
+    (should (string-match-p "^⟦38⟧\n| " sample))
+    (should (equal sample (bcat-relayout-test--render "tibetan" (bcat-analysis-test--base) spaced)))))
 
 (ert-deftest bcat-relayout-adds-uchen ()
   "Tables of a Tibetan file written before 31.10. abends (Wylie, gloss,
@@ -183,7 +186,7 @@ order — My Notes, a section of its own (* Handout), #+CREATED and
       (let ((text (bcat-sentence-test--text-of file)))
         (should-not fired)
         ;; The old table gets its Uchen row (31.10. abends, Tibetisch V).
-        (should (string-match-p "#\\+end_verse\n\n⟦38⟧\n\n| བརྗོད་དུ་མེད་པ +|\n| \\[\\[steinert:brjod du med pa\\]\\[brjod du med pa\\]\\] |\n| indescribable +|" text))
+        (should (string-match-p "#\\+end_verse\n\n⟦38⟧\n| བརྗོད་དུ་མེད་པ +|\n| \\[\\[steinert:brjod du med pa\\]\\[brjod du med pa\\]\\] |\n| indescribable +|" text))
         (should (string-match-p (regexp-quote "** Concepts\n⟦39⟧ *'dus ma byas* (asaṃskṛta)\n") text))
         (should (string-match-p (regexp-quote "* Segments\n** Segment 38\n⟦38⟧ *Translation:* Indescribable and invisible,\n\n*Structure:* no finite verb\n") text))
         (should (string-match-p "^#\\+LAST_ANALYZED: 2026-10-20$" text))
@@ -265,8 +268,8 @@ pair; no request."
                  (lambda (&rest _) (setq fired t))))
         (bcat-relayout-file file))
       (should-not fired)
-      (should (string-match-p "^<<skt-22>>⟦22⟧ · \\[\\[tib-77\\]\\[Tib\\. 77\\]\\]\n\n| kasmāt" (bcat-sentence-test--text-of file)))
-      (should (string-match-p "^\\* Tibetan\n\\(?:.\\|\n\\)*\n\n| ཅིའི་ཕྱིར" (bcat-sentence-test--text-of file))))))
+      (should (string-match-p "^<<skt-22>>⟦22⟧ · \\[\\[tib-77\\]\\[Tib\\. 77\\]\\]\n| kasmāt" (bcat-sentence-test--text-of file)))
+      (should (string-match-p "^\\* Tibetan\n\\(?:.\\|\n\\)*\n| ཅིའི་ཕྱིར" (bcat-sentence-test--text-of file))))))
 
 (ert-deftest bcat-relayout-key-and-menu ()
   "C-c u L sets anew; the menu offers it next to the jumps."
