@@ -152,6 +152,40 @@ to colour, group 3 the LaTeX snippet (only in the table)."
            "\\|\\(?:^- \\*[0-9]+\\. .* — \\(?1:\\(?2:grün\\|gelb\\|rot\\|green\\|yellow\\|red\\)\\)\\*[ \t]*$\\)")
    limit t))
 
+(defun bcat-faces--header-end ()
+  "End of the keyword block at the top of the buffer (its last line,
+before the newline), or nil when the buffer does not begin with one."
+  (save-excursion
+    (save-restriction
+      (widen)
+      (goto-char (point-min))
+      (when (looking-at "#\\+[A-Z_]+:")
+        (while (and (zerop (forward-line 1)) (looking-at "#\\+[A-Z_]+:")))
+        (skip-chars-backward "\n")
+        (point)))))
+
+(defun bcat-faces--header-matcher (limit)
+  "Font-lock matcher: the keyword block at the top after its first line
+\(#+TITLE) — group 0 from the end of the first line to the end of the
+block, folded behind „…“ (Carsten 4.11.: „ziemlich viel verschenkter
+Platz“).  Matches whenever the fontified region starts inside the block,
+whole, so a later chunk of jit-lock never unfolds a part of it."
+  (ignore limit)
+  (let ((end (bcat-faces--header-end))
+        (start (save-excursion (save-restriction (widen) (goto-char (point-min)) (line-end-position)))))
+    (when (and end (< start end) (< (point) end))
+      (set-match-data (list start end))
+      (goto-char end)
+      t)))
+
+(defun bcat-faces-toggle-header ()
+  "Show or fold the keyword lines at the top of the sentence file."
+  (interactive)
+  (if (assq 'bcat-header buffer-invisibility-spec)
+      (remove-from-invisibility-spec '(bcat-header . t))
+    (add-to-invisibility-spec '(bcat-header . t)))
+  (force-window-update (current-buffer)))
+
 (defconst bcat-faces--keywords
   '((bcat-faces--unit-matcher (2 'bcat-gloss-face prepend))
     (bcat-faces--detail-row-matcher
@@ -159,7 +193,8 @@ to colour, group 3 the LaTeX snippet (only in the table)."
       (0 'bcat-gloss-face prepend)))
     (bcat-faces--rating-matcher
      (3 'shadow prepend t)
-     (2 (bcat-faces--rating-face (match-string 1)) prepend)))
+     (2 (bcat-faces--rating-face (match-string 1)) prepend))
+    (bcat-faces--header-matcher (0 '(face nil invisible bcat-header) prepend)))
   "The font-lock keywords of `bcat-faces-mode'.")
 
 ;;;###autoload
@@ -168,11 +203,17 @@ to colour, group 3 the LaTeX snippet (only in the table)."
 colour, blue the glosses in the line with the vocabulary and the rows
 that explain the words — formation, parts, form — in the tables
 \(Carsten 31.10.); the ratings of the comparison in green, yellow, red
-\(2.11.)."
+\(2.11.); the keyword lines at the top folded behind #+TITLE (4.11.,
+`bcat-faces-toggle-header')."
   :lighter nil
   (if bcat-faces-mode
-      (font-lock-add-keywords nil bcat-faces--keywords 'append)
-    (font-lock-remove-keywords nil bcat-faces--keywords))
+      (progn
+        (font-lock-add-keywords nil bcat-faces--keywords 'append)
+        (setq-local font-lock-extra-managed-props
+                    (cl-adjoin 'invisible font-lock-extra-managed-props))
+        (add-to-invisibility-spec '(bcat-header . t)))
+    (font-lock-remove-keywords nil bcat-faces--keywords)
+    (remove-from-invisibility-spec '(bcat-header . t)))
   (when font-lock-mode (font-lock-flush)))
 
 (defun bcat-faces-maybe ()

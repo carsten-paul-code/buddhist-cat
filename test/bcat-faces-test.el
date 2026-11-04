@@ -147,6 +147,29 @@ Platz“ — no line numbers in sentence files and in the cascade source
       (global-display-line-numbers-mode (if was 1 -1))
       (delete-directory dir t))))
 
+(ert-deftest bcat-faces-header-folded ()
+  "Carsten 4.11.: the ten header lines (#+TITLE … #+LAST_ANALYZED) take
+room while reading — in Emacs they fold behind the #+TITLE line („…“),
+the file stays as it is; `bcat-faces-toggle-header' shows them."
+  (with-temp-buffer
+    (insert "#+TITLE: Sentence 16 Analysis\n#+STARTUP: showall\n#+CAT_TEMPLATE: tibetan\n"
+            "#+LAST_ANALYZED: 2026-11-02\n\n* Text\n#+begin_verse\nx\n#+end_verse\n")
+    (org-mode)
+    (bcat-faces-mode 1)
+    (goto-char (point-min))
+    (should (bcat-faces--header-matcher (point-max)))
+    (should (equal (list (save-excursion (goto-char (point-min)) (line-end-position))
+                         (save-excursion (goto-char (point-min)) (forward-line 3) (line-end-position)))
+                   (list (match-beginning 0) (match-end 0))))
+    ;; Only the top block: #+begin_verse is no header.
+    (should-not (bcat-faces--header-matcher (point-max)))
+    (should (member '(bcat-header . t) buffer-invisibility-spec))
+    (should (memq 'invisible font-lock-extra-managed-props))
+    (bcat-faces-toggle-header)
+    (should-not (assq 'bcat-header buffer-invisibility-spec))
+    (bcat-faces-toggle-header)
+    (should (member '(bcat-header . t) buffer-invisibility-spec))))
+
 (ert-deftest bcat-faces-only-in-sentence-files ()
   "Switched on in a sentence file of a template (sent-…, comm-… with
 #+CAT_TEMPLATE:), not in other org files."
