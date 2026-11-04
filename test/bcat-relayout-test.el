@@ -118,7 +118,7 @@ a second run changes nothing."
          (base '((segments ((num . 66) (uchen . "དེ་བརྒྱུད་པའི"))) (sent-num . "16")))
          (ctx (bcat-relayout-context base old "tibetan"))
          (seg (car (alist-get 'segments ctx))))
-    (should (string-match-p "| V pf\\. (brgyud pa) +|" (alist-get 'gloss-table seg)))
+    (should (string-match-p "| V pf\\. +|" (alist-get 'gloss-table seg)))
     (should (equal "de [source] \\\\\n/brgyud pa'i/: relative clause, GEN attributive to man ngag"
                    (alist-get 'structure seg)))
     (let* ((again (bcat-relayout-test--render "tibetan" base

@@ -42,7 +42,7 @@
   "The rule for the words of a Tibetan segment (glosses in LANG) — one
 wording for the Tibetan analysis and the Tibetan request of a bilingual
 sentence."
-  (format "- words: the segment's words in order, together covering every syllable of its Wylie exactly once. A lexical compound or fixed verb phrase is one word (\"brjod du med pa\"); case and converb particles are words of their own. wylie: exactly as in the given Wylie. gloss: the meaning in THIS context, at most 25 characters, in %s. function: part of speech and syntactic function, compact, at most 25 characters — \"N · agent\", \"ADJ · predicate\", \"V pf. ('pong ba) · main verb\", \"DEM · object\", \"NEG + V pf. (byed pa)\"; a case or converb particle gets only its label: ERG, GEN, ABS, TERM, LOC, ABL, COM, DAT, or \"CONV · cond.\" etc.; any further explanation (what it modifies, the kind of clause) belongs in structure."
+  (format "- words: the segment's words in order, together covering every syllable of its Wylie exactly once. A lexical compound or fixed verb phrase is one word (\"brjod du med pa\"); case and converb particles are words of their own. wylie: exactly as in the given Wylie. gloss: the meaning in THIS context, at most 25 characters, in %s. function: part of speech and syntactic function, compact, at most 25 characters — \"N · agent\", \"ADJ · predicate\", \"V pf. ('pong ba) · main verb\", \"DEM · object\", \"NEG + V pf. (byed pa)\"; a case or converb particle gets only its label: ERG, GEN, ABS, TERM, LOC, ABL, COM, DAT, or \"CONV · cond.\" etc.; a verb's dictionary form in parentheses only when the word is another stem than it shows (spangs: \"V pf. ('pong ba)\"), not when it repeats the stem (brgyud pa'i: \"V pf.\"); any further explanation (what it modifies, the kind of clause) belongs in structure."
           lang))
 
 (defun bcat-analysis--segment-entry (num text &optional wylie translation)
@@ -713,11 +713,34 @@ even it is too wide) and the rest."
                     (string-join (cons (string-trim (substring short cut)) (nthcdr 1 parts)) " · ")))
           (cons short (string-join (nthcdr n parts) " · ")))))))
 
+(defun bcat-analysis--trim-lemma (fn wylie)
+  "FN, the function of the word WYLIE, without a verb's dictionary form
+in parentheses that only repeats the stem the word shows — „V pf.
+\(brgyud pa)“ under brgyud pa'i becomes „V pf.“; „V pf. ('pong ba)“
+under spangs stays.  Carsten 4.11.: „ist die Wiederholung des Verbs
+nicht redundant?“ (54 of 99 verbs in the files)."
+  (replace-regexp-in-string
+   "[ \t]*(\\([^()]+\\) [pb]a)"
+   (lambda (m)
+     (let ((stem (save-match-data
+                   (string-match "(\\([^()]+\\) [pb]a)" m)
+                   (match-string 1 m))))
+       (if (string-match-p (concat "\\(?:\\`\\| \\)" (regexp-quote stem) "\\(?:'[a-z]+\\)?\\(?: \\|\\'\\)")
+                           (or wylie ""))
+           ""
+         m)))
+   (or fn "") t t))
+
+(defun bcat-analysis--word-function (w)
+  "The function of the word W as the table shows it, before cutting:
+without a repeated dictionary form (`bcat-analysis--trim-lemma')."
+  (bcat-analysis--trim-lemma (bcat-analysis--field w 'function) (bcat-analysis--field w 'wylie)))
+
 (defun bcat-analysis--function-overflow (words)
   "The lines for Structure of the WORDS whose function was cut:
 „/wylie/: rest“ (`bcat-analysis--function-split')."
   (delq nil (mapcar (lambda (w)
-                      (let ((rest (cdr (bcat-analysis--function-split (bcat-analysis--field w 'function)))))
+                      (let ((rest (cdr (bcat-analysis--function-split (bcat-analysis--word-function w)))))
                         (and rest (format "/%s/: %s" (bcat-analysis--field w 'wylie) rest))))
                     words)))
 
@@ -756,23 +779,29 @@ widest cell (links by their text) plus 6."
 (defun bcat-analysis-compact-tables (tables)
   "(TABLES . OVERFLOW) for the Tibetan tables of a segment as a file
 written before 4.11. holds them: every function cell (the last row)
-wider than `bcat-analysis-function-width' cut, the rest as Structure
-lines in OVERFLOW, the columns chunked anew (a word left alone joins
-the table before when it fits).  TABLES itself and nil when no cell is
-too wide."
+without a repeated dictionary form (`bcat-analysis--trim-lemma') and,
+wider than `bcat-analysis-function-width', cut — the rest as Structure
+lines in OVERFLOW —, the columns chunked anew (a word left alone joins
+the table before when it fits).  TABLES itself and nil when no cell
+changes."
   (let* ((parts (split-string (or tables "") "\n[ \t]*\n" t))
          (columns (apply #'append (mapcar #'bcat-analysis--table-columns parts)))
-         (overflow '()))
+         (overflow '())
+         (changed nil))
     (setq columns
           (mapcar (lambda (col)
-                    (let* ((sp (bcat-analysis--function-split (bcat-analysis-plain-cell (car (last col)))))
-                           (wylie (nth (if (string-match-p "[\u0F00-\u0FFF]" (car col)) 1 0) col)))
-                      (if (null (cdr sp))
+                    (let* ((wylie (bcat-analysis-plain-cell
+                                   (nth (if (string-match-p "[\u0F00-\u0FFF]" (car col)) 1 0) col)))
+                           (fn (bcat-analysis-plain-cell (car (last col))))
+                           (sp (bcat-analysis--function-split (bcat-analysis--trim-lemma fn wylie))))
+                      (when (cdr sp)
+                        (push (format "/%s/: %s" wylie (cdr sp)) overflow))
+                      (if (equal (car sp) fn)
                           col
-                        (push (format "/%s/: %s" (bcat-analysis-plain-cell wylie) (cdr sp)) overflow)
+                        (setq changed t)
                         (append (butlast col) (list (tibetan-gloss-table--cell (car sp)))))))
                   columns))
-    (if (null overflow)
+    (if (not changed)
         (cons tables nil)
       (cons (bcat-analysis--format-chunks (bcat-analysis--chunk-columns columns))
             (nreverse overflow)))))
@@ -801,7 +830,7 @@ function blue).  \"\" for no words."
                                      (tibetan-gloss-table--cell
                                       (or (tibetan-gloss-table--truncate-cell (bcat-analysis--field w 'gloss)) ""))
                                      (tibetan-gloss-table--cell
-                                      (car (bcat-analysis--function-split (bcat-analysis--field w 'function))))))))))
+                                      (car (bcat-analysis--function-split (bcat-analysis--word-function w))))))))))
       (bcat-analysis--format-chunks (bcat-analysis--chunk-columns columns)))))
 
 (defun bcat-analysis--bracketed (word gloss)

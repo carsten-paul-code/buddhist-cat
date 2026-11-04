@@ -277,8 +277,8 @@ segments per segment come from there (Carsten 1.11.)."
                                  ;; cut, its rest a line of Structure.
                                  (let ((compact (bcat-analysis-compact-tables
                                                  (alist-get 'gloss-table fields))))
+                                   (setf (alist-get 'gloss-table fields) (car compact))
                                    (when (cdr compact)
-                                     (setf (alist-get 'gloss-table fields) (car compact))
                                      (setf (alist-get 'structure fields)
                                            (bcat-analysis--with-overflow (alist-get 'structure fields)
                                                                          (cdr compact))))))

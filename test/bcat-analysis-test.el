@@ -1390,10 +1390,37 @@ segment's Structure as a line of its own."
                           " \"translation\": \"t\", \"structure\": \"de [source] · brgyud pa'i [attr.]\"}],"
                           " \"translation\": \"t\", \"grammar\": \"g\"}")))
          (seg (car (alist-get 'segments (bcat-analysis-context '((segments ((num . 66) (wylie . "de brgyud pa'i")))) parsed)))))
-    (should (string-match-p "| V pf\\. (brgyud pa) +|" (alist-get 'gloss-table seg)))
+    (should (string-match-p "| V pf\\. +|" (alist-get 'gloss-table seg)))
     (should-not (string-match-p "relative clause" (alist-get 'gloss-table seg)))
     (should (equal "de [source] · brgyud pa'i [attr.] \\\\\n/brgyud pa'i/: relative clause, GEN attributive to man ngag"
                    (alist-get 'structure seg)))))
+
+(ert-deftest bcat-analysis-function-lemma-only-when-other-stem ()
+  "Carsten 4.11.: „V pf. (brgyud pa) z.B. ist die Wiederholung des
+Verbs nicht redundant?“ — under brgyud pa'i the dictionary form only
+repeats the stem (54 of 99 verbs in the files).  It stays where the
+text has another stem: spangs ('pong ba), gzung ('dzin pa), byas pa
+\(byed pa), 'gyur (gyur pa).  The prompt says so; the table drops a
+repeating one."
+  (should (string-match-p "dictionary form .*only when" (bcat-analysis--words-rule "English")))
+  (dolist (case '(("brgyud pa'i" "V pf. (brgyud pa)" "V pf.")
+                  ("rtogs par" "V inf. (rtogs pa)" "V inf.")
+                  ("mi shes" "NEG + V pres. (shes pa)" "NEG + V pres.")
+                  ("smra" "V pres. (smra ba) · main verb" "V pres. · main verb")
+                  ("'bab" "V pres. ('bab pa) · main verb" "V pres. · main verb")
+                  ("spangs" "V pf. ('pong ba) · main verb" "V pf. ('pong ba) · main verb")
+                  ("byas pa" "V pf. (byed pa)" "V pf. (byed pa)")
+                  ("bslus par" "V pf. (bslu ba)" "V pf. (bslu ba)")
+                  ("'gyur" "V pres./fut. (gyur pa)" "V pres./fut. (gyur pa)")
+                  ("rtogs par" "V inf. (rtogs pa) · TERM (purposive)" "V inf. · TERM (purposive)")))
+    (should (equal (nth 2 case) (bcat-analysis--trim-lemma (nth 1 case) (nth 0 case)))))
+  (let ((table (bcat-analysis-gloss-table
+                '(((wylie . "brgyud pa'i") (gloss . "transmitted") (function . "V pf. (brgyud pa)"))
+                  ((wylie . "spangs") (gloss . "abandoned") (function . "V pf. ('pong ba)"))))))
+    (should (string-match-p "| V pf\\. +| V pf\\. ('pong ba) |" table)))
+  (let ((out (bcat-analysis-compact-tables "| [[steinert:rtogs par][rtogs par]] |\n| to realise |\n| V inf. (rtogs pa) |")))
+    (should (string-match-p "| V inf\\. +|" (car out)))
+    (should-not (cdr out))))
 
 (ert-deftest bcat-analysis-compact-tables ()
   "C-c u L on a file written before 4.11.: the long function cells are
@@ -1409,7 +1436,7 @@ cell stay as they are."
     (should (equal '("/brgyud pa'i/: relative clause, GEN attributive to man ngag") (cdr out)))
     (should-not (string-match-p "\n[ \t]*\n" (car out)))
     (should (string-match-p "\\`| དེ +| ལས +| བརྒྱུད་པའི +| མན་ངག +| གིས +|\n" (car out)))
-    (should (string-match-p "| V pf\\. (brgyud pa) +| N · instrument base +| INST +|" (car out)))
+    (should (string-match-p "| V pf\\. +| N · instrument base +| INST +|" (car out)))
     (let ((plain "| བརྗོད     |\n| brjod     |\n| say       |\n| V         |"))
       (should (equal (cons plain nil) (bcat-analysis-compact-tables plain))))))
 
