@@ -1260,7 +1260,7 @@ rejected, yet rated yellow)."
                      (bcat-analysis-tibetan-system-prompt "en")))
     (dolist (key '("\"doubts\"" "\"who\"" "\"verdict\"" "\"reason\"" "\"better\""))
       (should (string-match-p (regexp-quote key) sys)))
-    (should (string-match-p "\"wrong\": the original excludes it" sys))
+    (should (string-match-p "\"wrong\": the grammar or the lexicon excludes it" sys))
     (should (string-match-p "\"doubtful\": " sys))
     (should (string-match-p "red as soon as one reading is wrong" sys))
     (should (string-match-p "draw the conclusion wherever the text allows one" sys))
@@ -1328,6 +1328,40 @@ of the reason is dropped."
       (should-not (string-match-p "\\(?:because\\|weil\\) \\(?:because\\|Because\\|weil\\)" out))
       (should (string-match-p "the genitive points back\\." out))
       (should (string-match-p "der Genitiv zurückweist\\." out)))))
+
+(ert-deftest bcat-analysis-comparison-grammar-certainty-impact ()
+  "Carsten 4.11. on bDen 15 (the teacher argued grammatically for
+Lindtner's and Apple's reading): „Die Frage ist einfach nur, ob beide
+Lesarten grammatikalisch möglich sind“ — and a marker „wie sicher die
+letztliche Entscheidung ist und was für Auswirkungen sie haben könnte“
+\(here none: Nāgārjuna counts as realized anyway).  Per unit: whether
+all readings are grammatically possible, how certain the decision, its
+impact; red only when grammar or lexicon excludes a reading.  For the
+class shows every yellow and red unit with them."
+  (dolist (sys (list (bcat-analysis-sanskrit-system-prompt "en")
+                     (bcat-analysis-system-prompt "en")
+                     (bcat-analysis-tibetan-system-prompt "en")))
+    (dolist (key '("\"grammatical\"" "\"grammar_note\"" "\"certainty\"" "\"impact\"" "\"impact_note\""))
+      (should (string-match-p (regexp-quote key) sys)))
+    (should (string-match-p "red only when the grammar or the lexicon excludes" sys))
+    (should (string-match-p "\"wrong\": the grammar or the lexicon excludes it" sys)))
+  (let* ((parsed (bcat-analysis-parse
+                  (concat "{\"segments\": [], \"units\": ["
+                          "{\"passage\": \"/klu sgrub slob ma zla grags yin/\", \"rating\": \"yellow\", \"core\": \"one or two persons\","
+                          " \"readings\": [], \"finding\": \"f\", \"weight\": \"w\","
+                          " \"grammatical\": \"all\", \"grammar_note\": \"/klu sgrub/ can stand as a second subject or as genitive to /slob ma/\","
+                          " \"certainty\": \"open\", \"impact\": \"low\", \"impact_note\": \"Nāgārjuna counts as realized either way\", \"doubts\": []},"
+                          "{\"passage\": \"/x/\", \"rating\": \"green\", \"core\": \"c\", \"readings\": [], \"finding\": \"f\", \"weight\": \"\"}]}")))
+         (de (bcat-analysis-comparison parsed nil "de"))
+         (en (bcat-analysis-comparison parsed nil "en")))
+    (should (string-match-p
+             (regexp-quote (concat "- *1. /klu sgrub slob ma zla grags yin/ — gelb*\n"
+                                   "  - Grammatik: alle Lesarten möglich — /klu sgrub/ can stand as a second subject or as genitive to /slob ma/.\n"
+                                   "  - Entscheidung: *offen* · Auswirkung: *gering* — Nāgārjuna counts as realized either way."))
+             de))
+    (should-not (string-match-p "2\\. /x/ — grün\\*" de))
+    (should (string-match-p (regexp-quote "  - Grammar: all readings possible — ") en))
+    (should (string-match-p (regexp-quote "  - Decision: *open* · Impact: *low* — ") en))))
 
 (ert-deftest bcat-analysis-comparison-target-language ()
   "Carsten 2.11.: „bitte im Handout auch immer alles in der

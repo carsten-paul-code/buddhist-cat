@@ -96,7 +96,7 @@ alles in der Zielsprache“ — so nil; \"de\" or \"en\" fixes one."
   :group 'buddhist-cat)
 
 (defconst bcat-analysis--comparison-schema
-  "\"units\": [{\"passage\": \"…\", \"rating\": \"green|yellow|red\", \"core\": \"…\", \"readings\": [{\"sigla\": \"…\", \"text\": \"…\"}], \"finding\": \"…\", \"weight\": \"…\", \"doubts\": [{\"who\": \"…\", \"verdict\": \"doubtful|wrong\", \"reason\": \"…\", \"better\": \"…\"}]}], \"proposal\": [{\"label\": \"…\", \"text\": \"…\"}], \"decisions\": \"…\", \"corrections\": [\"…\"]"
+  "\"units\": [{\"passage\": \"…\", \"rating\": \"green|yellow|red\", \"core\": \"…\", \"readings\": [{\"sigla\": \"…\", \"text\": \"…\"}], \"finding\": \"…\", \"weight\": \"…\", \"grammatical\": \"all|one\", \"grammar_note\": \"…\", \"certainty\": \"certain|likely|open\", \"impact\": \"low|medium|high\", \"impact_note\": \"…\", \"doubts\": [{\"who\": \"…\", \"verdict\": \"doubtful|wrong\", \"reason\": \"…\", \"better\": \"…\"}]}], \"proposal\": [{\"label\": \"…\", \"text\": \"…\"}], \"decisions\": \"…\", \"corrections\": [\"…\"]"
   "The comparison's part of the JSON contract of every sentence analysis
 \(`bcat-analysis--sentence-rules').")
 
@@ -113,16 +113,19 @@ in it are an option of the sentence (`bcat-analysis--second-request')."
   (format "- translation (sentence): your translation of the whole sentence (the segment parts joined).
 - units: the translations compared unit by unit. Divide the sentence into its units of meaning — a word, a compound or a phrase; about 4 to 12 for a verse — and set side by side what each given translation makes of each: yours (siglum C) and every reference translation, by the sigla the request gives. One entry per unit in the order of the text, a last one for the sentence as a whole only where it matters (a double sense, śleṣa, that a translation gives only in part); [] when no reference translation is given.
   - passage: the unit, words of the original in /italic/: \"/vimalakalāśrayā/\", \"/jananī/, /janakaḥ/\".
-  - rating: \"green\": no difference in meaning, only in wording; \"yellow\": a possible other interpretation, both defensible from the text; \"red\": different meanings, not both right at once — red as soon as one reading is wrong (a doubt with the verdict \"wrong\").
+  - rating: \"green\": no difference in meaning, only in wording; \"yellow\": a possible other interpretation, both defensible from the text; \"red\": different meanings, not both right at once — red only when the grammar or the lexicon excludes one reading, and red as soon as one reading is wrong (a doubt with the verdict \"wrong\"); when all readings are grammatically possible, yellow at most, however strongly the context favours one.
   - core: the point of the unit for the overview table, at most 80 characters.
   - readings: each translation's wording of the unit, verbatim in „…“ (shortened with … where long); translations reading alike in one entry (\"sigla\": \"D, DM, C\"); a second sense after a semicolon; [] for a green unit whose finding names the common reading.
   - finding: why the readings differ and what the original supports — argued from the original alone: grammar, sandhi, lexicon, the context in the work and its commentary; never from a translator's standing (there is no authority to rely on). An argument from the given lectures is cited with siglum, lecture and time mark: \"(S, I 0:15:24)\". Words of the original in /italic/. For a green unit one sentence.
   - weight: the reading the finding favours, as a rendering in „…“, with a short note where needed; \"\" for a green unit.
-  - doubts: the conclusion for the class, said aloud as „D renders it so, I am not sure that is right, because …“ — draw the conclusion wherever the text allows one. For every yellow and red unit one entry per rendering the finding questions (translations reading alike in one entry; yours too, when it is questioned); [] for a green unit. who: the sigla with their wording, „D „the hidden (protected) light“, DM „concealed within the five faces““. verdict: \"wrong\": the original excludes it (grammar, lexicon, the context); \"doubtful\": defensible, but the original speaks against it. reason: why, in one or two sentences, argued from the original as in the finding, a lecture with its time mark — a subordinate clause without the conjunction (\"because\" is set before it; in German verb last: \"gupta (√gup) zuerst ‚bewahrt‘ heißt\"). better: the rendering to prefer in „…“ with the sigla of the translations that have it, \"\" when none is better.
+  - grammatical: \"all\" when every reading is grammatically possible (the choice then rests on context, commentary, doctrine or style), \"one\" when the grammar or the lexicon excludes the others; grammar_note: one sentence why, words of the original in /italic/. Carsten: \"the question is simply whether both readings are grammatically possible\".
+  - certainty: how certain the decision of the proposal for this unit is — \"certain\" (the grammar decides), \"likely\" (context or commentary decides), \"open\" (both remain defensible).
+  - impact: what the choice changes — \"low\" (the same sense or doctrine, only the construction differs), \"medium\", \"high\" (another claim); impact_note: one sentence on the consequence for the meaning of the sentence. For a green unit grammatical, certainty and impact may be left out.
+  - doubts: the conclusion for the class, said aloud as „D renders it so, I am not sure that is right, because …“ — draw the conclusion wherever the text allows one. For every yellow and red unit one entry per rendering the finding questions (translations reading alike in one entry; yours too, when it is questioned); [] for a green unit. who: the sigla with their wording, „D „the hidden (protected) light“, DM „concealed within the five faces““. verdict: \"wrong\": the grammar or the lexicon excludes it; \"doubtful\": grammatically possible, but the context or the commentary speaks against it. reason: why, in one or two sentences, argued from the original as in the finding, a lecture with its time mark — a subordinate clause without the conjunction (\"because\" is set before it; in German verb last: \"gupta (√gup) zuerst ‚bewahrt‘ heißt\"). better: the rendering to prefer in „…“ with the sigla of the translations that have it, \"\" when none is better.
 - proposal: your translation of the sentence weighed by the units — the red units decided, for the yellow ones the chosen reading (the other belongs in a note); where the text has a double sense one entry per sense, each with its label (\"First sense (theological)\"), else one entry with the label \"\"; [] when units is [].
 - decisions: the decisions of the proposal, by unit number, in one to three sentences; \"\" when units is [].
 - corrections: errors of your own analysis above that the comparison brings to light (a form misidentified, a gloss that does not fit), one sentence each; [] when there are none.
-- Language of the comparison: core, finding, the notes in weight, reason, decisions and corrections in %s, the labels of the proposal too; readings verbatim; the renderings in weight and proposal in %s."
+- Language of the comparison: core, finding, the notes in weight, reason, decisions and corrections in %s, the labels of the proposal, grammar_note and impact_note too; readings verbatim; the renderings in weight and proposal in %s."
           (if bcat-analysis-comparison-language
               (bcat-analysis--language bcat-analysis-comparison-language)
             lang)
@@ -1005,6 +1008,9 @@ comparison below it (*** Übersicht …, 2.11.) stay where they are."
      (sigla . "Sigel") (own . "Translation (oben)")
      (class . "Für die Klasse") (wrong . "abzulehnen") (doubtful . "fraglich")
      (because . "weil") (better . "Besser")
+     (grammar . "Grammatik") (grammar-all . "alle Lesarten möglich") (grammar-one . "nur eine Lesart möglich")
+     (decision . "Entscheidung") (certain . "sicher") (likely . "wahrscheinlich") (open . "offen")
+     (impact . "Auswirkung") (low . "gering") (medium . "mittel") (high . "groß")
      (green . "grün") (yellow . "gelb") (red . "rot"))
     ("en" (overview . "Overview") (passages . "The passages")
      (proposal . "Proposed translation") (corrections . "Corrections to the analysis")
@@ -1013,6 +1019,9 @@ comparison below it (*** Übersicht …, 2.11.) stay where they are."
      (sigla . "Sigla") (own . "Translation (above)")
      (class . "For the class") (wrong . "wrong") (doubtful . "doubtful")
      (because . "because") (better . "Better")
+     (grammar . "Grammar") (grammar-all . "all readings possible") (grammar-one . "only one reading possible")
+     (decision . "Decision") (certain . "certain") (likely . "likely") (open . "open")
+     (impact . "Impact") (low . "low") (medium . "medium") (high . "high")
      (green . "green") (yellow . "yellow") (red . "red")))
   "The words of the comparison in the file, by
 `bcat-analysis-comparison-language' — the Muster's (2.11.) for German.")
@@ -1087,13 +1096,23 @@ ich bin mir nicht sicher, ob das richtig ist weil … Dafür müsste ich es
 *abzulehnen*/*fraglich*, weil …  Besser: …; nil without doubts."
   (let* ((label #'bcat-analysis--comparison-label)
          (one (lambda (s) (replace-regexp-in-string "[ \t]*\n[ \t]*" " " s)))
+         (word (lambda (key value)
+                 ;; the label of a closed value (certain, low …), or the value
+                 (let ((sym (intern-soft (downcase (string-trim (or value ""))))))
+                   (or (and sym (memq sym (if (eq key 'certainty) '(certain likely open) '(low medium high)))
+                            (funcall label sym))
+                       (string-trim (or value ""))))))
          (items
           (cl-loop for u in units for i from 1
+                   for rating = (bcat-analysis--rating (bcat-analysis--field u 'rating))
                    for doubts = (cl-remove-if (lambda (d) (string-empty-p (bcat-analysis--field d 'who)))
                                               (alist-get 'doubts u))
-                   when doubts
-                   collect (list (if (eq (bcat-analysis--rating (bcat-analysis--field u 'rating)) 'red) 0 1)
-                                 i u doubts))))
+                   for grammar = (bcat-analysis--field u 'grammatical)
+                   for decision = (or (not (string-empty-p (bcat-analysis--field u 'certainty)))
+                                      (not (string-empty-p (bcat-analysis--field u 'impact))))
+                   when (and (memq rating '(yellow red))
+                             (or doubts (not (string-empty-p grammar)) decision))
+                   collect (list (if (eq rating 'red) 0 1) i u doubts))))
     (when items
       (concat
        "*** " (funcall label 'class) "\n"
@@ -1103,6 +1122,14 @@ ich bin mir nicht sicher, ob das richtig ist weil … Dafür müsste ich es
             (concat
              (format "- *%d. %s — %s*" i (funcall one (bcat-analysis--field u 'passage))
                      (bcat-analysis--rating-word (bcat-analysis--field u 'rating)))
+             (let ((g (downcase (bcat-analysis--field u 'grammatical)))
+                   (note (string-remove-suffix "." (bcat-analysis--field u 'grammar_note))))
+               (if (not (member g '("all" "one")))
+                   ""
+                 (concat "\n  - " (funcall label 'grammar) ": "
+                         (funcall label (if (equal g "all") 'grammar-all 'grammar-one))
+                         (if (string-empty-p note) "" (concat " — " (funcall one note)))
+                         ".")))
              (mapconcat
               (lambda (d)
                 (let* ((verdict (if (equal (downcase (bcat-analysis--field d 'verdict)) "wrong")
@@ -1123,7 +1150,23 @@ ich bin mir nicht sicher, ob das richtig ist weil … Dafür müsste ich es
                             (format " %s: %s" (funcall label 'better)
                                     (string-remove-suffix "." (funcall one better))))
                           (if (string-empty-p better) "" "."))))
-              doubts ""))))
+              doubts "")
+             (let ((c (bcat-analysis--field u 'certainty))
+                   (im (bcat-analysis--field u 'impact))
+                   (note (string-remove-suffix "." (bcat-analysis--field u 'impact_note))))
+               (if (and (string-empty-p c) (string-empty-p im))
+                   ""
+                 (concat "\n  - "
+                         (string-join
+                          (delq nil (list (and (not (string-empty-p c))
+                                               (format "%s: *%s*" (funcall label 'decision)
+                                                       (funcall word 'certainty c)))
+                                          (and (not (string-empty-p im))
+                                               (format "%s: *%s*" (funcall label 'impact)
+                                                       (funcall word 'impact im)))))
+                          " · ")
+                         (if (string-empty-p note) "" (concat " — " (funcall one note)))
+                         "."))))))
         (sort items (lambda (a b) (if (= (car a) (car b)) (< (nth 1 a) (nth 1 b)) (< (car a) (car b)))))
         "\n")))))
 
