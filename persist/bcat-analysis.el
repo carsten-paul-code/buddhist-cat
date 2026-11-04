@@ -1107,7 +1107,12 @@ ich bin mir nicht sicher, ob das richtig ist weil … Dafür müsste ich es
               (lambda (d)
                 (let* ((verdict (if (equal (downcase (bcat-analysis--field d 'verdict)) "wrong")
                                     'wrong 'doubtful))
-                       (reason (string-remove-suffix "." (bcat-analysis--field d 'reason)))
+                       ;; Claude may begin with the conjunction the line
+                       ;; sets itself (4.11., bDen 15: „because because“).
+                       (reason (string-remove-suffix
+                                "." (replace-regexp-in-string
+                                     "\\`\\(?:[Bb]ecause\\|[Ss]ince\\|[Aa]s\\|[Ww]eil\\|[Dd]a\\)[ \t]+" ""
+                                     (bcat-analysis--field d 'reason))))
                        (better (bcat-analysis--field d 'better)))
                   (concat "\n  - " (funcall one (bcat-analysis--field d 'who))
                           " — *" (funcall label verdict) "*"

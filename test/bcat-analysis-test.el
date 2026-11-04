@@ -1312,6 +1312,23 @@ units without doubts, no section without any."
                                 (bcat-analysis-comparison
                                  (bcat-analysis-parse bcat-analysis-test--units-answer) nil "de")))))
 
+(ert-deftest bcat-analysis-class-reason-no-double-because ()
+  "Bug (4.11., bDen 15): „*wrong*, because because the genitive /yi/ …“
+— Claude began the reason with the conjunction although asked not to,
+and the line put its own before it.  A leading because/since/as/weil/da
+of the reason is dropped."
+  (dolist (lang '("en" "de"))
+    (let ((out (bcat-analysis-comparison
+                (bcat-analysis-parse
+                 (concat "{\"segments\": [], \"units\": [{\"passage\": \"/x/\", \"rating\": \"yellow\", \"core\": \"c\","
+                         " \"readings\": [], \"finding\": \"f\", \"weight\": \"w\", \"doubts\": ["
+                         "{\"who\": \"L „a“\", \"verdict\": \"doubtful\", \"reason\": \"Because the genitive points back\", \"better\": \"\"},"
+                         "{\"who\": \"A „b“\", \"verdict\": \"doubtful\", \"reason\": \"weil der Genitiv zurückweist\", \"better\": \"\"}]}]}"))
+                nil lang)))
+      (should-not (string-match-p "\\(?:because\\|weil\\) \\(?:because\\|Because\\|weil\\)" out))
+      (should (string-match-p "the genitive points back\\." out))
+      (should (string-match-p "der Genitiv zurückweist\\." out)))))
+
 (ert-deftest bcat-analysis-comparison-target-language ()
   "Carsten 2.11.: „bitte im Handout auch immer alles in der
 Zielsprache“ — the comparison's reasoning and its words (headings,
