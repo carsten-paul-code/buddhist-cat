@@ -209,7 +209,7 @@ kann ganz weg“), no translation line; * Sentence before * Segments."
                  (segments ((num . "687") (padapatha . "iha khalu śāstrādau …")))))))
     (should (string-match-p
              (regexp-quote (concat "#+SEGMENTS: 687\n\n* Recitation\n#+begin_verse\nइह खलु शास्त्रादौ …\n"
-                                   "#+end_verse\n\n* Text\n\n* Sentence\n** Grammar\n\n** Concepts\n"
+                                   "#+end_verse\n\n* Text\n\n* Sentence\n** Concepts\n"
                                    "** Translations compared\n\n* Segments\n** Segment 687\n\n"))
              out))
     (should-not (string-match-p "Translation:" out))))

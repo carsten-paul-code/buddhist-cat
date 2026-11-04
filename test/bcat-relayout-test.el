@@ -126,6 +126,33 @@ a second run changes nothing."
            (once (bcat-relayout-test--render "tibetan" base old)))
       (should (equal once again)))))
 
+(ert-deftest bcat-relayout-proposal-under-the-tables ()
+  "4.11.: C-c u L sets a file of the layout before (Grammar under
+* Sentence, the own translation under the tables, the proposal inside
+Translations compared) in the new one — grammar, proposal and decisions
+under the tables, the proposal's words those of its old heading; a
+second run changes nothing."
+  (let* ((old (concat "* Text\n⟦38⟧\n| a |\n| b |\n| c |\n\n→ s\n\n*Translation:* Own.\n\n"
+                      "* Sentence\n** Grammar\nTwo pādas.\n\n** Concepts\n\n** Translations compared\n"
+                      "*Translation:* Own.\n\n*Lindtner 1981:* L.\n\n"
+                      "*** Übersicht\nSigel: C = Translation (oben), L = Lindtner 1981\n\n"
+                      "*** Übersetzungsvorschlag\n*Erster Sinn:*\n#+begin_quote\nEins.\n#+end_quote\n\n"
+                      "#+begin_quote\nZwei.\n#+end_quote\n\n*Entscheidungen:* Nr. 1.\n\n"
+                      "*** Berichtigungen zur Analyse\n- k.\n\n* Segments\n** Segment 38\n⟦38⟧ *Translation:* s\n"))
+         (base '((segments ((num . 38))) (sent-num . "9")))
+         (once (bcat-relayout-test--render "tibetan" base old))
+         (twice (bcat-relayout-test--render "tibetan" base once)))
+    (should (string-match-p
+             (regexp-quote (concat "→ s\n\n*Grammar:* Two pādas.\n\n"
+                                   "*Übersetzungsvorschlag — Erster Sinn:*\n#+begin_quote\nEins.\n#+end_quote\n\n"
+                                   "*Übersetzungsvorschlag:*\n#+begin_quote\nZwei.\n#+end_quote\n\n"
+                                   "*Entscheidungen:* Nr. 1.\n\n* Sentence\n"))
+             once))
+    (should-not (string-match-p "^\\*\\*\\* Übersetzungsvorschlag" once))
+    (should (string-match-p "^\\*\\*\\* Berichtigungen zur Analyse\n- k\\." once))
+    (should (string-match-p "^\\*\\* Translations compared\n\\*Translation:\\* Own\\." once))
+    (should (equal once twice))))
+
 (ert-deftest bcat-relayout-adds-uchen ()
   "Tables of a Tibetan file written before 31.10. abends (Wylie, gloss,
 function) get the Uchen row when set anew — from the segment's Uchen;

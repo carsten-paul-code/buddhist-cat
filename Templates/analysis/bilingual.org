@@ -107,7 +107,16 @@ Rumpf ohne Glossen bleibt sie.  Reines Sanskrit behält den Padapāṭha.
 
 {{/segment-translation}}
 {{/segments}}
+{{#grammar}}
+*Grammar:* {{grammar}}
+
+{{/grammar}}
+{{#proposal}}
+{{proposal}}
+{{/proposal}}
+{{^proposal}}
 *Translation:* {{translation}}
+{{/proposal}}
 {{#second-translation}}
 
 *{{second-label}}:* {{second-translation}}
@@ -148,9 +157,6 @@ Rumpf ohne Glossen bleibt sie.  Reines Sanskrit behält den Padapāṭha.
 {{/tibetan-translation}}
 {{/tibetan-p}}
 * Sentence
-** Grammar
-{{grammar}}
-
 ** Concepts
 {{#segments}}
 {{#concepts}}

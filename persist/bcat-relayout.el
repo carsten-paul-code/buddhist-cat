@@ -175,15 +175,48 @@ the other language's blocks and differences."
               (cl-loop for tib from from to to do (push (cons tib num) out)))))))
     (nreverse out)))
 
+(defconst bcat-relayout--proposal-words
+  "\\(?:Proposed translation\\|Übersetzungsvorschlag\\)"
+  "The words of the proposal, English and German
+\(`bcat-analysis--comparison-labels').")
+
+(defun bcat-relayout--old-proposal (comparison)
+  "(COMPARISON-WITHOUT . PROPOSAL) for a Translations compared of the
+layout before 4.11.: its subsection *** Proposed translation (or ***
+Übersetzungsvorschlag) taken out and set as it stands under the tables
+now — each quote with „*WORD — LABEL:*“ or „*WORD:*“, the decisions as
+they are; (COMPARISON . nil) without one."
+  (if (not (and comparison
+                (string-match (concat "^\\*\\*\\* \\(" bcat-relayout--proposal-words "\\)[ \t]*\n")
+                              comparison)))
+      (cons comparison nil)
+    (let* ((word (match-string 1 comparison))
+           (start (match-beginning 0))
+           (body-start (match-end 0))
+           (end (if (string-match "^\\*\\*\\* " comparison body-start) (match-beginning 0) (length comparison)))
+           (paras (bcat-relayout--paragraphs (substring comparison body-start end))))
+      (cons (concat (substring comparison 0 start) (substring comparison end))
+            (string-join
+             (mapcar (lambda (p)
+                       (cond ((string-match "\\`\\*\\([^*\n]+\\):\\*\\(\n#\\+begin_quote\\)" p)
+                              (concat "*" word " — " (match-string 1 p) ":*" (substring p (match-beginning 2))))
+                             ((string-prefix-p "#+begin_quote" p) (concat "*" word ":*\n" p))
+                             (t p)))
+                     paras)
+             "\n\n")))))
+
 (defun bcat-relayout--sentence-fields (text base)
   "The sentence-level fields of the sentence file TEXT: the translation
-and the one in the second language (under * Text), grammar, comparison,
-rendering, word analysis, the hint on the bhāṣya, the date of the
-analysis — and for prose (BASE has no scansion) the recitation Claude
-divided into sense units."
+and the one in the second language, grammar, proposal (since 4.11. all
+under the tables in * Text; before, grammar under * Sentence and the
+proposal inside Translations compared — both read and moved),
+comparison, rendering, word analysis, the hint on the bhāṣya, the date
+of the analysis — and for prose (BASE has no scansion) the recitation
+Claude divided into sense units."
   (let* ((sentence (or (bcat-relayout--section text 1 "Sentence") ""))
          (field (lambda (key body) (and body (not (string-blank-p body))
                                         (cons key (string-trim body)))))
+         (grammar nil) (proposal '())
          (out '()))
     (dolist (p (bcat-relayout--paragraphs (bcat-relayout--section text 1 "Text")))
       (cond
@@ -191,7 +224,13 @@ divided into sense units."
         (push (cons 'translation (substring p (match-end 0))) out))
        ((string-match "\\`\\*\\(Deutsch\\|English\\):\\* " p)
         (push (cons 'second-label (match-string 1 p)) out)
-        (push (cons 'second-translation (substring p (match-end 0))) out))))
+        (push (cons 'second-translation (substring p (match-end 0))) out))
+       ((string-match "\\`\\*Grammar:\\* " p)
+        (setq grammar (substring p (match-end 0))))
+       ((string-match (concat "\\`\\*\\(?:" bcat-relayout--proposal-words "\\|Decisions\\|Entscheidungen\\)"
+                              "\\(?: — [^*\n]*\\)?:\\*")
+                      p)
+        (push p proposal))))
     (when (string-match "^\\*Hint:\\* \\(.*\\(?:\n.+\\)*\\)" text)
       (push (cons 'bhasya-hint (match-string 1 text)) out))
     (when (string-match "^#\\+LAST_ANALYZED:[ \t]*\\(.+\\)$" text)
@@ -201,16 +240,26 @@ divided into sense units."
                     (car (last (bcat-relayout--paragraphs
                                 (bcat-relayout--section text 1 "Recitation")))))))
         (when verse (push (cons 'recitation verse) out))))
-    (append
-     (delq nil
-           (list (funcall field 'grammar (bcat-relayout--section sentence 2 "Grammar"))
-                 (funcall field 'comparison (bcat-analysis-footnotes-last
-                                             (bcat-relayout--section sentence 2 "Translations compared")))
-                 (funcall field 'rendering (or (bcat-relayout--section text 2 "Tibetan rendering")))
-                 (funcall field 'word-analysis
-                          (bcat-relayout--section (or (bcat-relayout--section text 1 "Segments") "")
-                                                  2 "Word Analysis"))))
-     (nreverse out))))
+    (let* ((compared (bcat-relayout--old-proposal
+                      (bcat-relayout--section sentence 2 "Translations compared")))
+           (proposal (or (and proposal (string-join (nreverse proposal) "\n\n"))
+                         (cdr compared)))
+           ;; the own translation: under the tables, else (since 4.11.,
+           ;; with a proposal) the first paragraph of Translations compared
+           (own (and (car compared)
+                     (string-match "\\`[ \t\n]*\\*Translation:\\* \\(.*\\)" (car compared))
+                     (match-string 1 (car compared)))))
+      (append
+       (delq nil
+             (list (funcall field 'grammar (or grammar (bcat-relayout--section sentence 2 "Grammar")))
+                   (funcall field 'proposal proposal)
+                   (funcall field 'comparison (bcat-analysis-footnotes-last (car compared)))
+                   (funcall field 'rendering (or (bcat-relayout--section text 2 "Tibetan rendering")))
+                   (funcall field 'word-analysis
+                            (bcat-relayout--section (or (bcat-relayout--section text 1 "Segments") "")
+                                                    2 "Word Analysis"))))
+       (nreverse out)
+       (and own (not (assq 'translation out)) (list (cons 'translation own)))))))
 
 (defun bcat-relayout--pair-fields (template segments assignment other other-text base)
   "The two parts of a bilingual file of TEMPLATE (Carsten 1.11.,

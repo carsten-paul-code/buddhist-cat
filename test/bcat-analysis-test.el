@@ -1187,8 +1187,9 @@ with fixed column widths and the cell colour of the rating
 \(@@latex:\\cellcolor{ok|mid|bad}@@grün/gelb/rot), a bar in a cell
 escaped —, *** Die Stellen im Einzelnen (**** per unit: readings as a
 description list, *Befund:*, *Gewicht:*; a green unit without readings
-only its finding), *** Übersetzungsvorschlag (one quote per sense,
-*Entscheidungen:*), *** Berichtigungen zur Analyse."
+only its finding), *** Berichtigungen zur Analyse.  The proposal (a quote
+per sense, *Entscheidungen:*) stands under the tables since 4.11.
+\(`bcat-analysis-comparison-proposal')."
   (let* ((parsed (bcat-analysis-parse bcat-analysis-test--units-answer))
          (out (bcat-analysis-comparison
                parsed '(("Dyczkowski 2023" . "the glory [fn:d1]\n\n[fn:d1] Dyczkowski's note.")
@@ -1201,7 +1202,7 @@ only its finding), *** Übersetzungsvorschlag (one quote per sense,
                      "*DharmaMitra:* the great Mother\n\n"
                      "[fn:d1] Dyczkowski's note.\n\n"
                      "*** Übersicht\n"
-                     "Sigel: C = Translation (oben), D = Dyczkowski 2023, DM = DharmaMitra\n\n"
+                     "Sigel: C = Translation, D = Dyczkowski 2023, DM = DharmaMitra\n\n"
                      "#+ATTR_LATEX: :align rp{4.3cm}p{1.6cm}p{8cm} :font \\small\n")
              out))
     (should (= 4 (length table)))
@@ -1225,10 +1226,6 @@ only its finding), *** Übersetzungsvorschlag (one quote per sense,
                      "*Gewicht:* „whose radiance is ever-new creation“\n\n"
                      "**** 2. /jananī/, /janakaḥ/ — grün\n"
                      "*Befund:* Alle: Mutter, Vater.\n\n"
-                     "*** Übersetzungsvorschlag\n"
-                     "*Erster Sinn:*\n#+begin_quote\nMay my Heart flash forth in full.\n#+end_quote\n\n"
-                     "*Zweiter Sinn:*\n#+begin_quote\n… my mother Vimalā …\n#+end_quote\n\n"
-                     "*Entscheidungen:* /mahas/ statt /mahā/ (Nr. 1).\n\n"
                      "*** Berichtigungen zur Analyse\n"
                      "- Die Grammar nennt /saṃsphuratāt/ āśīrliṅ — falsch, -tāt-Imperativ.")
              out))
@@ -1237,13 +1234,21 @@ only its finding), *** Übersetzungsvorschlag (one quote per sense,
                 (append '((proposal ((label . "") (text . "One."))) (corrections))
                         parsed)
                 nil "de")))
-      (should (string-match-p "\\*\\*\\* Übersetzungsvorschlag\n#\\+begin_quote\nOne\\.\n#\\+end_quote" one))
+      (should (equal "*Übersetzungsvorschlag:*\n#+begin_quote\nOne.\n#+end_quote\n\n*Entscheidungen:* /mahas/ statt /mahā/ (Nr. 1)."
+                     (bcat-analysis-comparison-proposal
+                      (append '((proposal ((label . "") (text . "One."))) (corrections)) parsed)
+                      "de")))
+      (should (equal (concat "*Übersetzungsvorschlag — Erster Sinn:*\n#+begin_quote\nMay my Heart flash forth in full.\n#+end_quote\n\n"
+                             "*Übersetzungsvorschlag — Zweiter Sinn:*\n#+begin_quote\n… my mother Vimalā …\n#+end_quote\n\n"
+                             "*Entscheidungen:* /mahas/ statt /mahā/ (Nr. 1).")
+                     (bcat-analysis-comparison-proposal parsed "de")))
+      (should-not (string-match-p "Übersetzungsvorschlag" out))
       (should-not (string-match-p "Berichtigungen" one)))
     ;; English labels.
     (let ((en (bcat-analysis-comparison parsed nil "en")))
-      (dolist (s '("*** Overview\nSigla: C = Translation (above)" "| No. | Passage" "| Rating" "| Point"
+      (dolist (s '("*** Overview\nSigla: C = Translation" "| No. | Passage" "| Rating" "| Point"
                    "@@latex:\\cellcolor{bad}@@red" "**** 1. /abhinavasṛṣṭimahā/ — red" "*Finding:* "
-                   "*Weight:* " "*** Proposed translation" "*Decisions:* " "*** Corrections to the analysis"))
+                   "*Weight:* " "*** Corrections to the analysis"))
         (should (string-match-p (regexp-quote s) en))))))
 
 (ert-deftest bcat-analysis-comparison-doubts-contract ()
@@ -1362,6 +1367,43 @@ class shows every yellow and red unit with them."
     (should-not (string-match-p "2\\. /x/ — grün\\*" de))
     (should (string-match-p (regexp-quote "  - Grammar: all readings possible — ") en))
     (should (string-match-p (regexp-quote "  - Decision: *open* · Impact: *low* — ") en))))
+
+(ert-deftest bcat-analysis-proposal-under-the-tables ()
+  "Carsten 4.11.: „Darunter könnte ja dann die Grammar stehen und
+danach die proposed translation und die decisions. Die ursprüngliche
+\(Claude) translation dann nur in der Comparison.“  * Text: the tables,
+then *Grammar:*, the proposal (a quote per sense) and *Decisions:*; the
+own translation opens Translations compared (C); * Sentence has no
+Grammar any more.  Without a proposal (no reference translation) the
+own translation stays under the tables."
+  (let* ((bcat-template-directory (expand-file-name "Templates/analysis" bcat-analysis-test--root))
+         (answer (concat "{\"segments\": [{\"num\": 38, \"words\": [], \"translation\": \"Inexpressible\"}],"
+                         " \"grammar\": \"Two predicate pādas.\", \"translation\": \"Own translation.\","
+                         " \"units\": [{\"passage\": \"/x/\", \"rating\": \"yellow\", \"core\": \"c\", \"readings\": [],"
+                         " \"finding\": \"f\", \"weight\": \"w\"}],"
+                         " \"proposal\": [{\"label\": \"First sense\", \"text\": \"Proposed one.\"},"
+                         " {\"label\": \"Second sense\", \"text\": \"Proposed two.\"}],"
+                         " \"decisions\": \"Unit 1: kept.\", \"corrections\": []}"))
+         (base (cons '(target-lang . "en") (bcat-analysis-test--base)))
+         (out (bcat-template-render-named
+               "tibetan" (bcat-analysis-context base (bcat-analysis-parse answer) bcat-analysis-test--refs)))
+         (text (substring out (string-match "^\\* Text$" out) (string-match "^\\* Sentence$" out))))
+    (should (string-match-p
+             (regexp-quote (concat "*Grammar:* Two predicate pādas.\n\n"
+                                   "*Proposed translation — First sense:*\n#+begin_quote\nProposed one.\n#+end_quote\n\n"
+                                   "*Proposed translation — Second sense:*\n#+begin_quote\nProposed two.\n#+end_quote\n\n"
+                                   "*Decisions:* Unit 1: kept.\n\n* Sentence\n** Concepts\n"))
+             out))
+    (should-not (string-match-p "^\\*Translation:\\*" text))
+    (should-not (string-match-p "^\\*\\* Grammar$" out))
+    (should (string-match-p "^\\*\\* Translations compared\n\\*Translation:\\* Own translation\\." out))
+    (should (string-match-p "^Sigla: C = Translation, L = Lindtner 1981" out))
+    (should-not (string-match-p "^\\*\\*\\* Proposed translation" out))
+    ;; no proposal: the own translation under the tables
+    (let* ((plain (bcat-template-render-named
+                   "tibetan" (bcat-analysis-context base (bcat-analysis-parse (bcat-analysis-test--answer))
+                                                    bcat-analysis-test--refs))))
+      (should (string-match-p "^\\*Grammar:\\* .*\n\n\\*Translation:\\* Indescribable" plain)))))
 
 (ert-deftest bcat-analysis-comparison-target-language ()
   "Carsten 2.11.: „bitte im Handout auch immer alles in der

@@ -1005,7 +1005,7 @@ comparison below it (*** Übersicht …, 2.11.) stay where they are."
      (proposal . "Übersetzungsvorschlag") (corrections . "Berichtigungen zur Analyse")
      (columns "Nr." "Stelle" "Einstufung" "Kern")
      (finding . "Befund") (weight . "Gewicht") (decisions . "Entscheidungen")
-     (sigla . "Sigel") (own . "Translation (oben)")
+     (sigla . "Sigel") (own . "Translation")
      (class . "Für die Klasse") (wrong . "abzulehnen") (doubtful . "fraglich")
      (because . "weil") (better . "Besser")
      (grammar . "Grammatik") (grammar-all . "alle Lesarten möglich") (grammar-one . "nur eine Lesart möglich")
@@ -1016,7 +1016,7 @@ comparison below it (*** Übersicht …, 2.11.) stay where they are."
      (proposal . "Proposed translation") (corrections . "Corrections to the analysis")
      (columns "No." "Passage" "Rating" "Point")
      (finding . "Finding") (weight . "Weight") (decisions . "Decisions")
-     (sigla . "Sigla") (own . "Translation (above)")
+     (sigla . "Sigla") (own . "Translation")
      (class . "For the class") (wrong . "wrong") (doubtful . "doubtful")
      (because . "because") (better . "Better")
      (grammar . "Grammar") (grammar-all . "all readings possible") (grammar-one . "only one reading possible")
@@ -1170,20 +1170,46 @@ ich bin mir nicht sicher, ob das richtig ist weil … Dafür müsste ich es
         (sort items (lambda (a b) (if (= (car a) (car b)) (< (nth 1 a) (nth 1 b)) (< (car a) (car b)))))
         "\n")))))
 
+(defun bcat-analysis-comparison-proposal (parsed &optional target)
+  "The proposal of PARSED for the place under the segment tables — per
+sense „*Proposed translation — LABEL:*“ (without a label „*Proposed
+translation:*“) and its quote, then „*Decisions:* …“ — in
+`bcat-analysis-comparison-language', else in the target language
+TARGET; \"\" without a proposal.  Carsten 4.11.: „Darunter könnte ja
+dann die Grammar stehen und danach die proposed translation und die
+decisions. Die ursprüngliche (Claude) translation dann nur in der
+Comparison.“"
+  (let* ((bcat-analysis--comparison-lang (or bcat-analysis-comparison-language target "en"))
+         (word (bcat-analysis--comparison-label 'proposal))
+         (proposal (cl-remove-if (lambda (p) (string-empty-p (bcat-analysis--field p 'text)))
+                                 (alist-get 'proposal parsed)))
+         (decisions (bcat-analysis--field parsed 'decisions)))
+    (if (null proposal)
+        ""
+      (string-join
+       (append
+        (mapcar (lambda (p)
+                  (let ((l (bcat-analysis--field p 'label)))
+                    (format "*%s:*\n#+begin_quote\n%s\n#+end_quote"
+                            (if (string-empty-p l) word (concat word " — " l))
+                            (bcat-analysis--field p 'text))))
+                proposal)
+        (unless (string-empty-p decisions)
+          (list (format "*%s:* %s" (bcat-analysis--comparison-label 'decisions) decisions))))
+       "\n\n"))))
+
 (defun bcat-analysis-comparison-units (parsed &optional refs target)
   "The comparison of the translations unit by unit from PARSED (Carsten
 2.11., Muster vergleich-ta1-1.org): *** Übersicht — the sigla of REFS
 and the table Nr. | Stelle | Einstufung | Kern, each rating with its
 cell colour —, *** Die Stellen im Einzelnen (per unit the readings, the
-finding, the weight), *** Übersetzungsvorschlag (a quote per sense, the
-decisions), *** Berichtigungen zur Analyse; \"\" without units.  In
+finding, the weight), *** Berichtigungen zur Analyse; \"\" without
+units.  The proposal stands under the tables since 4.11.
+\(`bcat-analysis-comparison-proposal').  In
 `bcat-analysis-comparison-language', else in the target language TARGET
 \(Carsten 2.11.: „im Handout auch immer alles in der Zielsprache“)."
   (let ((bcat-analysis--comparison-lang (or bcat-analysis-comparison-language target "en"))
         (units (alist-get 'units parsed))
-        (proposal (cl-remove-if (lambda (p) (string-empty-p (bcat-analysis--field p 'text)))
-                                (alist-get 'proposal parsed)))
-        (decisions (bcat-analysis--field parsed 'decisions))
         (corrections (cl-remove-if-not (lambda (c) (and (stringp c) (not (string-blank-p c))))
                                        (alist-get 'corrections parsed)))
         (label #'bcat-analysis--comparison-label))
@@ -1235,19 +1261,6 @@ decisions), *** Berichtigungen zur Analyse; \"\" without units.  In
                             "\n")))
                        (cl-loop for u in units for i from 1 collect (cons i u))
                        "\n\n"))
-              (when (or proposal (not (string-empty-p decisions)))
-                (concat "*** " (funcall label 'proposal) "\n"
-                        (string-join
-                         (append
-                          (mapcar (lambda (p)
-                                    (let ((l (bcat-analysis--field p 'label)))
-                                      (concat (if (string-empty-p l) "" (format "*%s:*\n" l))
-                                              "#+begin_quote\n" (bcat-analysis--field p 'text)
-                                              "\n#+end_quote")))
-                                  proposal)
-                          (unless (string-empty-p decisions)
-                            (list (format "*%s:* %s" (funcall label 'decisions) decisions))))
-                         "\n\n")))
               (when corrections
                 (concat "*** " (funcall label 'corrections) "\n"
                         (mapconcat (lambda (c) (concat "- " (string-trim c))) corrections "\n")))))
@@ -1371,7 +1384,8 @@ named again (`bcat-analysis--full-names')."
        (glosses . ,(bcat-analysis-glosses-p segments))
        (translation . ,(bcat-analysis--field parsed 'translation))
        (grammar . ,(bcat-analysis--field parsed 'grammar))
-       (comparison . ,(bcat-analysis-comparison parsed refs (alist-get 'target-lang base))))
+       (comparison . ,(bcat-analysis-comparison parsed refs (alist-get 'target-lang base)))
+       (proposal . ,(bcat-analysis-comparison-proposal parsed (alist-get 'target-lang base))))
      base)))
 
 ;; ----------------------------------------------------------------------------
@@ -1559,6 +1573,7 @@ skipped keeps its rump fields; sigla used as names are named again
        (translation . ,(bcat-analysis--field parsed 'translation))
        (grammar . ,(bcat-analysis--field parsed 'grammar))
        (comparison . ,(bcat-analysis-comparison parsed refs (alist-get 'target-lang base)))
+       (proposal . ,(bcat-analysis-comparison-proposal parsed (alist-get 'target-lang base)))
        (word-analysis . ,(bcat-analysis-word-analysis (alist-get 'segments parsed)))
        (bhasya-hint . ,(bcat-analysis--field parsed 'bhasya_hint)))
      base)))

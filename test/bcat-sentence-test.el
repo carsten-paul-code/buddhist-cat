@@ -175,7 +175,7 @@ the reference under Translations compared, the segments empty.  No AI."
                             "| at  | ra | mad |"))
                    text))
           (should (string-match-p
-                   (regexp-quote "\n\n* Text\n\n* Sentence\n** Grammar\n")
+                   (regexp-quote "\n\n* Text\n\n* Sentence\n** Concepts\n")
                    text))
           (should-not (string-match-p "Śloka (Anuṣṭubh)" text))
           (should (string-match-p
@@ -412,7 +412,7 @@ file once."
           (should (string-match-p (regexp-quote "*DharmaMitra:* Unchanging and unconditioned—") text))
           (should (string-match-p "^\\*Structure:\\* no finite verb$" text))
           (should (string-match-p "^\\*\\* Concepts\n⟦39⟧ \\*'dus ma byas\\* (asaṃskṛta)$" text))
-          (should (string-match-p "^\\*\\* Grammar\nTwo predicate pādas\\.$" text))
+          (should (string-match-p "^\\*Grammar:\\* Two predicate pādas\\.$" text))
           (should (string-match-p "^\\*Translation:\\* Indescribable and invisible, immutable" text))
           (should (string-match-p "^\\* My Notes\nMeine Notiz zu Vers 9\\.$" text)))
         (should (equal (list (tibetan-sentence--filepath 9 folder src)) done))
@@ -1375,7 +1375,9 @@ The PDF is made of the Sanskrit file only („nur die zweisprachige“)."
           (should (string-match-p (regexp-quote "→ the body with what it appropriated,\n\n*Differences:* /udbhāvanatā/") text))
           (should (string-match-p (regexp-quote "<<skt-23>>⟦23⟧ · [[tib-78][Tib. 78–79]]\n| pañca-ākāra-ātma-vastu-udbhāvanatām") text))
           (should (< (string-match "^→ the body with what it appropriated,$" text) (string-match "^\\*Differences:\\*" text)))
-          (should (string-match-p (regexp-quote "*Differences:* /udbhāvanatā/ is rendered /brjod pa/ („stating“).\n\n*Translation:*") text))
+          (should (string-match-p (concat (regexp-quote "*Differences:* /udbhāvanatā/ is rendered /brjod pa/ („stating“).\n\n")
+                                          "\\(?:\\*Grammar:\\* [^\n]*\n\n\\)?\\*Translation:\\*")
+                                  text))
           (should (string-match-p (regexp-quote "** Segment 78 · Skt. 23\n⟦78⟧ *Translation:* because they state") text))
           (should (= 1 (with-temp-buffer (insert text) (how-many "^\\*Differences:\\*" (point-min) (point-max)))))
           (should (string-match-p "^⟦77⟧ \\*Translation:\\* Why are the aggregates only five" text))

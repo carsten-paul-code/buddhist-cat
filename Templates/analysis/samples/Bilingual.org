@@ -99,6 +99,8 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 
 → and the self-basis that is the support of these (tadāśraya).
 
+*Grammar:* One question and its answer, the catechism form of the AS.  The question (22) is a nominal sentence with an understood copula: kasmāt pañcaiva skandhāḥ.  The answer (23–28) has no finite verb: six accusatives in -udbhāvanatām, each governed by the gerund upādāya used as a postposition („on account of“).  23 states the principle — the self-basis appears in five modes —, 24–28 list the five, each a compound ending in -ātmavastūdbhāvanatām.
+
 *Translation:* Why are there just five aggregates (skandha)? — On account of their bringing to light (udbhāvanatā) the basis of self (ātmavastu) in five modes: the self-basis that is the body together with its possessions (saparigraha-deha), the self-basis that is experience (upabhoga), the self-basis that is conventional expression (vyavahāra), the self-basis that is the forming of merit and demerit (dharmādharmābhisaṃskāra), and the self-basis that is the support of these (tadāśraya).
 
 * Tibetan
@@ -179,9 +181,6 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 *Translation:* Why are the aggregates only five? — if one asks: because they state the basis of self in five modes: the basis of self that is the body together with what it has appropriated, the basis of self that is experience, the basis of self that is convention, the basis of self that is the forming of merit and demerit, and the basis of self that is their support.
 
 * Sentence
-** Grammar
-One question and its answer, the catechism form of the AS.  The question (22) is a nominal sentence with an understood copula: kasmāt pañcaiva skandhāḥ.  The answer (23–28) has no finite verb: six accusatives in -udbhāvanatām, each governed by the gerund upādāya used as a postposition („on account of“).  23 states the principle — the self-basis appears in five modes —, 24–28 list the five, each a compound ending in -ātmavastūdbhāvanatām.
-
 ** Concepts
 ⟦23⟧ *ātmavastu* — the „basis of self“: what the notion of a self is projected onto; the AS derives the number of the skandhas from the five ways such a basis appears.
 

@@ -88,16 +88,22 @@ Goldman 1999).
 {{/segment-translation}}
 {{/gloss-table}}
 {{/segments}}
+{{#grammar}}
+*Grammar:* {{grammar}}
+
+{{/grammar}}
+{{#proposal}}
+{{proposal}}
+{{/proposal}}
+{{^proposal}}
 *Translation:* {{translation}}
+{{/proposal}}
 {{#second-translation}}
 
 *{{second-label}}:* {{second-translation}}
 {{/second-translation}}
 
 * Sentence
-** Grammar
-{{grammar}}
-
 ** Concepts
 {{#segments}}
 {{#concepts}}
