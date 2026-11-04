@@ -1405,6 +1405,20 @@ own translation stays under the tables."
                                                     bcat-analysis-test--refs))))
       (should (string-match-p "^\\*Grammar:\\* .*\n\n\\*Translation:\\* Indescribable" plain)))))
 
+(ert-deftest bcat-analysis-proposal-reads-aloud ()
+  "Carsten 4.11. on the proposal of bDen 15 — „If one asks, \"By whom is
+emptiness realized?\" — [it is Candrakīrti, disciple of] Nāgārjuna,
+who … — it is Candrakīrti, disciple of Nāgārjuna.“ —: „ziemlich
+holprig, oder?“  The decisions were put into the sentence (a bracket
+to show the referent, the main clause twice).  The proposal is a
+finished translation to read aloud; the reasons go to the decisions."
+  (dolist (sys (list (bcat-analysis-sanskrit-system-prompt "en")
+                     (bcat-analysis-system-prompt "de")
+                     (bcat-analysis-tibetan-system-prompt "en")))
+    (should (string-match-p "finished translation to be read aloud" sys))
+    (should (string-match-p "every statement once" sys))
+    (should (string-match-p "never to show a construction or to repeat" sys))))
+
 (ert-deftest bcat-analysis-comparison-target-language ()
   "Carsten 2.11.: „bitte im Handout auch immer alles in der
 Zielsprache“ — the comparison's reasoning and its words (headings,
