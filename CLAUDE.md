@@ -4780,7 +4780,23 @@ vorher bei 119 Zeichen um; `5722374' BUG aus 5905615: Claude benannte
 Referenzteile mit Sigeln („*L:*“) — Markierungen in Translations
 compared wären verloren gegangen; Prompt „Sigel nur in den Einheiten“,
 `bcat-analysis--full-names' heilt die Antwort; 9 Dateien (AS 5–7, 1003,
-bDen 14–16) per Skript umbenannt.  ERT 2804.
+bDen 14–16) per Skript umbenannt.  ERT 2804.  Danach (Carsten:
+„Darunter könnte ja dann die Grammar stehen und danach die proposed
+translation und die decisions … Claude translation dann nur in der
+Comparison“; zu bDen 15: „Die Frage ist einfach nur, ob beide Lesarten
+grammatikalisch möglich sind“ + Marker „wie sicher … und was für
+Auswirkungen“): `4b70af9' kein doppeltes „because“; `5ed0ff1' je
+Einheit grammatical (all|one) + grammar_note, certainty
+\(certain|likely|open), impact (low|medium|high) + impact_note; rot
+nur bei grammatischem/lexikalischem Ausschluss, „wrong“ ebenso; Für
+die Klasse zeigt jede gelbe/rote Einheit mit „Grammatik: …“ und
+„Entscheidung: *…* · Auswirkung: *…* — …“; `75e461e' unter den
+Tabellen *Grammar:*, Vorschlag („*Proposed translation — LABEL:*“ +
+Zitat, `bcat-analysis-comparison-proposal'), *Decisions:*; ohne
+Vorschlag Claudes *Translation:*; * Sentence ohne ** Grammar;
+Translations compared beginnt mit Claudes Übersetzung („C =
+Translation“); C-c u L baut alte Dateien um
+\(`bcat-relayout--old-proposal').  48 Dateien neu gesetzt.  ERT 2808.
 
 #### Offen
 
