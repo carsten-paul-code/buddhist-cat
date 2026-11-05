@@ -38,12 +38,17 @@
   "The language name for the target code TARGET (\"de\" → German)."
   (if (equal target "de") "German" "English"))
 
+(defconst bcat-analysis--label-limit 25
+  "Longest last cell of a word the prompts ask for — a Tibetan word's
+function, a Sanskrit word's form (5.11., one rule for both); the table
+cuts a longer one at `bcat-analysis-function-width'.")
+
 (defun bcat-analysis--words-rule (lang)
   "The rule for the words of a Tibetan segment (glosses in LANG) — one
 wording for the Tibetan analysis and the Tibetan request of a bilingual
 sentence."
-  (format "- words: the segment's words in order, together covering every syllable of its Wylie exactly once. A lexical compound or fixed verb phrase is one word (\"brjod du med pa\"); case and converb particles are words of their own. wylie: exactly as in the given Wylie. gloss: the meaning in THIS context, at most 25 characters, in %s. function: part of speech and syntactic function, compact, at most 25 characters — \"N · agent\", \"ADJ · predicate\", \"V pf. ('pong ba) · main verb\", \"DEM · object\", \"NEG + V pf. (byed pa)\"; a case or converb particle gets only its label: ERG, GEN, ABS, TERM, LOC, ABL, COM, DAT, or \"CONV · cond.\" etc.; a verb's dictionary form in parentheses only when the word is another stem than it shows (spangs: \"V pf. ('pong ba)\"), not when it repeats the stem (brgyud pa'i: \"V pf.\"); any further explanation (what it modifies, the kind of clause) belongs in structure."
-          lang))
+  (format "- words: the segment's words in order, together covering every syllable of its Wylie exactly once. A lexical compound or fixed verb phrase is one word (\"brjod du med pa\"); case and converb particles are words of their own. wylie: exactly as in the given Wylie. gloss: the meaning in THIS context, at most 25 characters, in %s. function: part of speech and syntactic function, compact, at most %d characters — \"N · agent\", \"ADJ · predicate\", \"V pf. ('pong ba) · main verb\", \"DEM · object\", \"NEG + V pf. (byed pa)\"; a case or converb particle gets only its label: ERG, GEN, ABS, TERM, LOC, ABL, COM, DAT, or \"CONV · cond.\" etc.; a verb's dictionary form in parentheses only when the word is another stem than it shows (spangs: \"V pf. ('pong ba)\"), not when it repeats the stem (brgyud pa'i: \"V pf.\"); any further explanation (what it modifies, the kind of clause) belongs in structure."
+          lang bcat-analysis--label-limit))
 
 (defun bcat-analysis--segment-entry (num text &optional wylie translation)
   "One segment of a user prompt: [NUM] and TEXT — Tibetan with its
@@ -285,7 +290,7 @@ Rules:
 - formation: how the word is built — prefixes, √root, suffix: \"a-√śak-ta\", \"ni-√yantr-ana\", \"ud-√las\"; for a compound its members separated by \" · \", each with its formation (\"śrī-mat · mahā · ā-√nand-a · vi-√jṛmbh-ita\"); \"—\" for indeclinables and pronouns.
 - parts: the meaning of each part of the formation in one or two words, in the same order, separated by \" · \", a root with its gaṇa number: \"a- not · √śak (5) be able · -ta ppp\"; \"\" when formation is \"—\".
 - gloss: the meaning in THIS context, at most 30 characters, no comments or cross-references (those belong in structure or note).
-- form: a compact label — \"f. nom. sg.\", \"ppp. f. nom. sg.\", \"opt. 3 sg. P\", \"pron. n. nom. sg.\", \"adj. n. nom. sg.\", \"ind.\".
+- form: a compact label, at most %d characters — \"f. nom. sg.\", \"ppp. f. nom. sg.\", \"opt. 3 sg. P\", \"pron. n. nom. sg.\", \"adj. n. nom. sg.\", \"ind.\"; no remarks in parentheses — the compound type, what the word agrees with and any further explanation belong in compounds or structure.
 - translation (segment): this segment's part of your translation; the parts read in order form the sentence translation. Give key terms with the Sanskrit in parentheses, e.g. \"incapable (aśakta)\".
 - references (segment): for every reference translation given, the part that corresponds to this segment, quoted verbatim (keep its brackets; not its notes); name: the full name as given under Reference translations, never a siglum. Mark with org bold *…* ONLY passages that shift the meaning against the Sanskrit or against your reading; stylistic variation is not marked.
 - shift: one line for each translator whose part has a marked passage, beginning with the translator's name: \"Dyczkowski 2023: niyantraṇa as a restriction on the reader's understanding\"; [] when nothing is marked — never a line for a translator without marks.
@@ -302,6 +307,7 @@ Rules:
             bcat-analysis--comparison-schema
             (concat (if bhasya ", \"bhasya_hint\": \"…\"" "")
                     (if recitation ", \"recitation\": [\"…\"]" ""))
+            bcat-analysis--label-limit
             (bcat-analysis--sentence-rules lang)
             (concat
              (if bhasya

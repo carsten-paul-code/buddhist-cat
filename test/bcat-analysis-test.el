@@ -1136,6 +1136,18 @@ collision takes the next letters (Sanderson 2022/2025 → S, Sa)."
   (should (equal '(("Rahula/Boin-Webb 2001" . "R") ("Lindtner 1981" . "L"))
                  (bcat-analysis-sigla '("Rahula/Boin-Webb 2001" "Lindtner 1981")))))
 
+(ert-deftest bcat-analysis-label-rule-generic ()
+  "The last cell of a word — Tibetan function, Sanskrit form — has the
+same limit in both prompts, the remarks elsewhere (5.11., generic: TĀ
+1.1 had forms of 83 characters, „adj. nom. sg. (bahuvrīhi, agrees
+with …)“, though the rule asked for a compact label)."
+  (let ((sys (bcat-analysis-sanskrit-system-prompt "en")))
+    (should (string-match-p (format "form: a compact label, at most %d characters" bcat-analysis--label-limit) sys))
+    (should (string-match-p "no remarks in parentheses" sys))
+    (should (string-match-p "belong in compounds or structure" sys)))
+  (should (string-match-p (format "function: .*at most %d characters" bcat-analysis--label-limit)
+                          (bcat-analysis--words-rule "English"))))
+
 (ert-deftest bcat-analysis-sanskrit-metre-in-prompts ()
   "The metre the tool scans goes into the user prompt as a fact; the
 system prompt lets Claude name only that one.  5.11., TĀ 1.1: the
