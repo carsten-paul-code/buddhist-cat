@@ -35,8 +35,10 @@ device).  Tests that need it bind it to t and stub the upload.")
 ;; bcat-zettel bind both with a fixture Kasten.
 (defvar bcat-zettel-link-concepts nil)
 (defvar bcat-zettel-belege-auto nil)
+(defvar bcat-zettel-in-prompt nil)
 (setq bcat-zettel-link-concepts nil
-      bcat-zettel-belege-auto nil)
+      bcat-zettel-belege-auto nil
+      bcat-zettel-in-prompt nil)
 (defvar tibetan-skip-external-glossaries t
   "When non-nil, skip loading external glossaries during tests.")
 

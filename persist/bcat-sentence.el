@@ -1019,6 +1019,14 @@ nil."
                      :target-lang)
           "en"))))
 
+(defun bcat-sentence--context-with-zettels (meta segs source-file)
+  "The document's #+TIBETAN_CLAUDE_CONTEXT lines (from META) and, Carsten
+5.11., the zettels of the terms in SEGS ((NUM . TEXT) …) of SOURCE-FILE
+\(`bcat-zettel-prompt-block') — the concept notes build on them."
+  (let ((block (and (fboundp 'bcat-zettel-prompt-block)
+                    (bcat-zettel-prompt-block (mapcar #'cdr segs) source-file))))
+    (append (plist-get meta :claude-context) (and block (list block)))))
+
 (defun bcat-sentence--prompts (sentence source-file refs)
   "(SYSTEM . USER) for SENTENCE of SOURCE-FILE with the references REFS —
 the Sanskrit prompts for a Sanskrit source, the Tibetan ones else; the
@@ -1037,7 +1045,7 @@ translations — Carsten 2.11.: „Ja, nur beim Vergleich“."
                  (plist-get sentence :sent-num) (plist-get sentence :verse)
                  (mapcar (lambda (s) (list (car s) (cdr s))) segs)
                  refs
-                 (plist-get meta :claude-context)
+                 (bcat-sentence--context-with-zettels meta segs source-file)
                  (and verse-mode (bcat-sentence--bhasya-texts (plist-get sentence :sent-num)
                                                               source-file))
                  second lectures
@@ -1047,7 +1055,7 @@ translations — Carsten 2.11.: „Ja, nur beim Vergleich“."
              (plist-get sentence :sent-num) (plist-get sentence :verse)
              (mapcar (lambda (s) (list (car s) (cdr s) (bcat-sentence--wylie (cdr s)))) segs)
              refs
-             (plist-get meta :claude-context)
+             (bcat-sentence--context-with-zettels meta segs source-file)
              second lectures)))))
 
 (defun bcat-sentence--write-analysed (file sent-num segs source-file build)

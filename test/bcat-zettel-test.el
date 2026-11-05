@@ -46,6 +46,8 @@ for niyantraṇa) and its index loaded."
              (insert bcat-zettel-test--kala))
            (with-temp-file (expand-file-name "20261016T140000--visarga.org" kasten)
              (insert bcat-zettel-test--visarga))
+           (with-temp-file (expand-file-name "20261001T000000--niyantrana.org" kasten)
+             (insert "#+title: niyantraṇa\n#+description: Lenkung, Zügelung; bei Jayaratha die Ordnung des Kommentars.\n"))
            (with-temp-file index
              (insert (json-encode
                       `((generated . "x") (zk_dir . ,kasten) (count . 3)
@@ -70,14 +72,16 @@ for niyantraṇa) and its index loaded."
                                      (tags . ["tradition_saiva"])
                                      (keys . ["kula"]))
                                     ((id . "20261001T000000") (file . "20261001T000000--niyantrana.org")
-                                     (title . "niyantraṇa") (kind . "concept") (stub . t)
+                                     (title . "niyantraṇa") (kind . "concept") (stub . :json-false)
+                                     (sanskrit . "niyantraṇa") (english . "restraint, control")
                                      (keys . ["niyantrana"]))])))))
            (let ((tibetan-zettel-highlight-index-file index)
                  (tibetan-zettel-highlight--index nil)
                  (tibetan-zettel-highlight--entries nil)
                  (tibetan-zettel-highlight--index-mtime nil)
                  (tibetan-zettel-highlight--zk-dir nil)
-                 (bcat-zettel-link-concepts t))
+                 (bcat-zettel-link-concepts t)
+                 (bcat-zettel-in-prompt t))
              ,@body))
        (delete-directory kasten t))))
 
@@ -282,6 +286,28 @@ must not write into the Kasten."
         (cl-letf (((symbol-function 'tibetan-discussion-paper--temp-source-p) #'ignore))
           (bcat-zettel-after-fetch "/k/sent-001-tantralo.org")))
       (should-not calls))))
+
+(ert-deftest bcat-zettel-prompt-block ()
+  "Mitgeben (Carsten 5.11.: „beides, bitte“): the zettels of terms that
+stand in the sentence go to Claude with their short description — the
+concept note says what the term means HERE, the general sense is the
+zettel's.  Nothing when no term of the sentence has a zettel."
+  (bcat-zettel-test--with-kasten
+    (let ((block (bcat-zettel-prompt-block '("atra madvāgaśaktāpi yanniyantraṇamullaset /") nil)))
+      (should (string-match-p "Zettelkasten" block))
+      (should (string-match-p "niyantraṇa (Skt\\. niyantraṇa; restraint, control): Lenkung, Zügelung" block))
+      (should (string-match-p "what the term means in THIS passage" block)))
+    (should-not (bcat-zettel-prompt-block '("tad ubhayam") nil))))
+
+(ert-deftest bcat-zettel-fetch-sends-zettels ()
+  "C-c u G sends the block with the sentence (in the user prompt)."
+  (bcat-zettel-test--with-kasten
+    (let ((bcat-zettel-in-prompt t))
+      (bcat-sentence-test--with-sa-source
+        (bcat-sentence-test--create-n src 1007)
+        (bcat-sentence-test--with-stubs (bcat-sentence-test--sa-answer)
+          (bcat-sentence-test--fetch-n src 1007)
+          (should (string-match-p "niyantraṇa (Skt\\. niyantraṇa" (cdr (car (last prompts))))))))))
 
 (ert-deftest bcat-zettel-key ()
   "C-c u z b writes the Belege of the sentence file at point (or of the

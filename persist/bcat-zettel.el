@@ -193,6 +193,83 @@ with only *bhava* had no majority of its own)."
             context))))
 
 ;; ----------------------------------------------------------------------------
+;; Mitgeben: the zettels go with the sentence to Claude
+;; ----------------------------------------------------------------------------
+
+(defcustom bcat-zettel-in-prompt t
+  "When non-nil, C-c u G sends the zettels of the terms that stand in the
+sentence (`bcat-zettel-prompt-block'): the concept notes say what a term
+means in this passage, its general sense is the zettel's."
+  :type 'boolean
+  :group 'buddhist-cat)
+
+(defcustom bcat-zettel-prompt-max 12
+  "At most this many zettels go with one sentence (the longest terms first)."
+  :type 'integer
+  :group 'buddhist-cat)
+
+(defun bcat-zettel--filled (v)
+  "Non-nil when V is a string not blank."
+  (and (stringp v) (not (string-blank-p v))))
+
+(defun bcat-zettel--description (id)
+  "The #+description: of zettel ID, or nil."
+  (let ((path (tibetan-zettel-highlight--entry-path id)))
+    (when (and path (file-readable-p path))
+      (with-temp-buffer
+        (insert-file-contents path nil 0 4000)
+        (goto-char (point-min))
+        (when (re-search-forward "^#\\+description:[ \t]*\\(.+\\)$" nil t)
+          (string-trim (match-string 1)))))))
+
+(defun bcat-zettel-prompt-block (texts source-file)
+  "The block of zettels for a sentence whose segments are TEXTS (as
+transmitted, any script), or nil: every zettel (no stub, with a
+description) whose index key of five letters or more stands in the text
+— of the text's tradition when it has one (SOURCE-FILE's sentences,
+`bcat-zettel--tradition') —, at most `bcat-zettel-prompt-max', each
+with its labels and description; an instruction how the concept notes
+use them."
+  (when (and bcat-zettel-in-prompt (bcat-zettel--index-p))
+    (let* ((norm (mapcar (lambda (txt) (concat (tibetan-zettel-highlight--norm-latin txt) " "
+                                               (tibetan-zettel-highlight--norm-tibetan txt)))
+                         texts))
+           (tradition (bcat-zettel--tradition (bcat-zettel--text-terms source-file)))
+           (hits '()))
+      (maphash (lambda (key ids)
+                 (when (and (>= (length key) 5)
+                            (cl-some (lambda (n) (string-match-p (regexp-quote key) n)) norm))
+                   (dolist (id ids)
+                     (let ((e (tibetan-zettel-highlight-entry id)))
+                       (when (and e (not (plist-get e :stub))
+                                  (or (null tradition) (member tradition (bcat-zettel--traditions id)))
+                                  (not (assoc id hits)))
+                         (push (cons id (length key)) hits))))))
+               tibetan-zettel-highlight--index)
+      (let* ((hits (seq-take (sort hits (lambda (a b) (> (cdr a) (cdr b)))) bcat-zettel-prompt-max))
+             (lines (delq nil
+                          (mapcar (lambda (h)
+                                    (let* ((e (tibetan-zettel-highlight-entry (car h)))
+                                           (desc (bcat-zettel--description (car h)))
+                                           (labels (delq nil (list (and (bcat-zettel--filled (plist-get e :sanskrit))
+                                                                        (concat "Skt. " (plist-get e :sanskrit)))
+                                                                   (and (bcat-zettel--filled (plist-get e :wylie))
+                                                                        (concat "Tib. " (plist-get e :wylie)))
+                                                                   (and (bcat-zettel--filled (plist-get e :english))
+                                                                        (plist-get e :english))))))
+                                      (and desc
+                                           (format "- %s%s: %s" (plist-get e :title)
+                                                   (if labels (format " (%s)" (string-join labels "; ")) "")
+                                                   desc))))
+                                  hits))))
+        (when lines
+          (concat "Entries of the reader's Zettelkasten for terms of this sentence (for the field concepts: "
+                  "when a note treats one of these terms, take its general sense from the entry and say "
+                  "what the term means in THIS passage — do not repeat the entry; do not mention the "
+                  "Zettelkasten):\n"
+                  (string-join (sort lines #'string<) "\n")))))))
+
+;; ----------------------------------------------------------------------------
 ;; Belege
 ;; ----------------------------------------------------------------------------
 
