@@ -124,6 +124,18 @@ is no stub."
 ;; Belege
 ;; ----------------------------------------------------------------------------
 
+(defun bcat-zettel--bands (table)
+  "The tables of TABLE — the overview of a segment, often several tables
+one under the other (blank line) or bands (rule) — each as its own
+text, so that a column stays one word with its gloss (5.11., TĀ 1.1
+⟦2⟧: read as one, the second table's words hung under the first's)."
+  (let ((bands '()) (band '()))
+    (dolist (line (append (split-string table "\n") '("")))
+      (if (string-match-p "\\`[ \t]*\\(|-\\|\\'\\)" line)
+          (when band (push (string-join (nreverse band) "\n") bands) (setq band nil))
+        (push line band)))
+    (nreverse bands)))
+
 (defun bcat-zettel--passage (table term)
   "(WORD . GLOSS) of the column of TABLE (a segment's overview) whose word
 holds TERM, or nil: the word is the first cell — under a cell in
@@ -132,7 +144,7 @@ Only the word is searched: a term that turns up in a gloss is no word
 of the text."
   (let ((key (tibetan-zettel-highlight--norm-key term)))
     (when (and table (>= (length key) 3))
-      (cl-loop for col in (bcat-analysis--table-columns table)
+      (cl-loop for col in (cl-mapcan #'bcat-analysis--table-columns (bcat-zettel--bands table))
                for cells = (mapcar #'bcat-analysis-plain-cell col)
                for w = (if (and (cdr cells) (string-match-p "[\u0F00-\u0FFF]" (car cells))) 1 0)
                for words = (cl-subseq cells 0 (1+ w))

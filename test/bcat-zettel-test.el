@@ -186,6 +186,13 @@ under it), not in a gloss."
     (should (equal '("vimalā-kalā-āśrayā" . "whose ground is pure kalā")
                    (bcat-zettel--passage "| jananī | vimalā-kalā-āśrayā |\n| mother | whose ground is pure kalā |" "kalā")))
     (should-not (bcat-zettel--passage "| jananī |\n| mother of the visarga |" "visarga"))
+    ;; The overview of a segment in several tables (TĀ 1.1 ⟦2⟧: anuttara
+    ;; in the second one) — each table on its own, not as one column.
+    (should (equal '("anuttarā-amṛta-kulam" . "embodying the nectar of the Absolute")
+                   (bcat-zettel--passage
+                    (concat "| tad-ubhaya-mayam | hṛdayam |\n| consisting of both | heart |\n| adj. | n. |\n\n"
+                            "| anuttarā-amṛta-kulam | mama |\n| embodying the nectar of the Absolute | my |\n| adj. | pron. |")
+                    "Anuttara")))
     (should (equal '("'dus ma byas" . "uncompounded")
                    (bcat-zettel--passage "| འདུས་མ་བྱས |\n| [[steinert:'dus ma byas]['dus ma byas]] |\n| uncompounded |"
                                          "'dus ma byas")))))
