@@ -1,9 +1,9 @@
 #+TITLE: Function Reference — buddhist-cat
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-11-05T14:33:47
+#+DATE: 2026-11-05T14:46:40
 #+OPTIONS: toc:2 num:nil
 
-Source tree: ~/Users/cp/buddhist-cat~  ·  96 modules  ·  2299 forms
+Source tree: ~/Users/cp/buddhist-cat~  ·  96 modules  ·  2312 forms
 
 Regenerated automatically by:
 
@@ -68,10 +68,10 @@ python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/buddhist-c
   - [[#persist/bcat-faces.el][persist/bcat-faces.el]]  (30)
   - [[#persist/bcat-parallel.el][persist/bcat-parallel.el]]  (7)
   - [[#persist/bcat-relayout.el][persist/bcat-relayout.el]]  (16)
-  - [[#persist/bcat-sentence.el][persist/bcat-sentence.el]]  (91)
+  - [[#persist/bcat-sentence.el][persist/bcat-sentence.el]]  (92)
   - [[#persist/bcat-status.el][persist/bcat-status.el]]  (11)
   - [[#persist/bcat-template.el][persist/bcat-template.el]]  (17)
-  - [[#persist/bcat-zettel.el][persist/bcat-zettel.el]]  (18)
+  - [[#persist/bcat-zettel.el][persist/bcat-zettel.el]]  (30)
   - [[#persist/tibetan-analysis-claude.el][persist/tibetan-analysis-claude.el]]  (77)
   - [[#persist/tibetan-analysis-combine.el][persist/tibetan-analysis-combine.el]]  (14)
   - [[#persist/tibetan-analysis-combined.el][persist/tibetan-analysis-combined.el]]  (15)
@@ -8016,7 +8016,7 @@ Recognizes Tibetan syllable structure: [prefix] ROOT [subscript]
 ** ~tibetan-zettel-highlight-mode~  /minor mode/  ↗
 :PROPERTIES:
 :KIND: define-minor-mode
-:LINE: 717
+:LINE: 720
 :SIGNATURE: (tibetan-zettel-highlight-mode …)
 :AUTOLOAD: t
 :END:
@@ -8062,7 +8062,7 @@ Build the lookup tables from the JSON FILE.  Returns the entry count.
 ** ~tibetan-zettel-highlight--run-index-script~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 157
+:LINE: 160
 :SIGNATURE: (tibetan-zettel-highlight--run-index-script)
 :END:
 
@@ -8071,7 +8071,7 @@ Regenerate the index file with skos_index.py; non-nil on success.
 ** ~tibetan-zettel-highlight--ensure-index~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 166
+:LINE: 169
 :SIGNATURE: (tibetan-zettel-highlight--ensure-index)
 :END:
 
@@ -8081,7 +8081,7 @@ Returns non-nil when an index is available.
 ** ~tibetan-zettel-highlight-lookup~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 185
+:LINE: 188
 :SIGNATURE: (tibetan-zettel-highlight-lookup key)
 :END:
 
@@ -8090,7 +8090,7 @@ Zettel ids under the normalized KEY, or nil.
 ** ~tibetan-zettel-highlight-entry~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 190
+:LINE: 193
 :SIGNATURE: (tibetan-zettel-highlight-entry id)
 :END:
 
@@ -8099,7 +8099,7 @@ The index plist of zettel ID.
 ** ~tibetan-zettel-highlight--entry-path~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 194
+:LINE: 197
 :SIGNATURE: (tibetan-zettel-highlight--entry-path id)
 :END:
 
@@ -8108,7 +8108,7 @@ Absolute path of zettel ID, from the index.
 ** ~tibetan-zettel-highlight--ids-for-term~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 201
+:LINE: 204
 :SIGNATURE: (tibetan-zettel-highlight--ids-for-term term)
 :END:
 
@@ -8117,7 +8117,7 @@ Ids for TERM as written (any script), or nil.
 ** ~tibetan-zettel-highlight--strip-lemma~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 206
+:LINE: 209
 :SIGNATURE: (tibetan-zettel-highlight--strip-lemma lemma)
 :END:
 
@@ -8126,7 +8126,7 @@ LEMMA without a leading root sign.
 ** ~tibetan-zettel-highlight--stem-in-lemma-ids~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 210
+:LINE: 213
 :SIGNATURE: (tibetan-zettel-highlight--stem-in-lemma-ids member fused)
 :END:
 
@@ -8142,7 +8142,7 @@ longest first; nothing is guessed across sandhi.
 ** ~tibetan-zettel-highlight--member-hits~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 237
+:LINE: 240
 :SIGNATURE: (tibetan-zettel-highlight--member-hits surface lemma-map)
 :END:
 
@@ -8155,7 +8155,7 @@ compound whose lemma is fused resolves by its stem inside that lemma
 ** ~tibetan-zettel-highlight--analysis-name-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 271
+:LINE: 274
 :SIGNATURE: (tibetan-zettel-highlight--analysis-name-p filename)
 :END:
 
@@ -8164,7 +8164,7 @@ compound whose lemma is fused resolves by its stem inside that lemma
 ** ~tibetan-zettel-highlight--buffer-kind~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 277
+:LINE: 280
 :SIGNATURE: (tibetan-zettel-highlight--buffer-kind &optional filename)
 :END:
 
@@ -8175,7 +8175,7 @@ source, so the name decides first.  FILENAME defaults to the buffer's.
 ** ~tibetan-zettel-highlight--section-body~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 300
+:LINE: 303
 :SIGNATURE: (tibetan-zettel-highlight--section-body heading-re)
 :END:
 
@@ -8184,7 +8184,7 @@ Body text of the level-2 section whose heading matches HEADING-RE, or nil.
 ** ~tibetan-zettel-highlight--word-analysis-body~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 313
+:LINE: 316
 :SIGNATURE: (tibetan-zettel-highlight--word-analysis-body)
 :END:
 
@@ -8193,7 +8193,7 @@ Body text of the level-2 section whose heading matches HEADING-RE, or nil.
 ** ~tibetan-zettel-highlight--lemma-pairs~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 316
+:LINE: 319
 :SIGNATURE: (tibetan-zettel-highlight--lemma-pairs body)
 :END:
 
@@ -8202,7 +8202,7 @@ Body text of the level-2 section whose heading matches HEADING-RE, or nil.
 ** ~tibetan-zettel-highlight--lemma-map~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 330
+:LINE: 333
 :SIGNATURE: (tibetan-zettel-highlight--lemma-map)
 :END:
 
@@ -8211,7 +8211,7 @@ Hash surface → lemma for the current analysis buffer (cached per edit tick).
 ** ~tibetan-zettel-highlight--l2-section-at-line~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 342
+:LINE: 345
 :SIGNATURE: (tibetan-zettel-highlight--l2-section-at-line)
 :END:
 
@@ -8221,7 +8221,7 @@ Symbol of the enclosing level-1/2 section: `word-analysis',
 ** ~tibetan-zettel-highlight--table-row1-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 355
+:LINE: 358
 :SIGNATURE: (tibetan-zettel-highlight--table-row1-p)
 :END:
 
@@ -8230,7 +8230,7 @@ Non-nil when the current line is the first word row of a table band.
 ** ~tibetan-zettel-highlight--analysis-line-hits~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 365
+:LINE: 368
 :SIGNATURE: (tibetan-zettel-highlight--analysis-line-hits bol eol)
 :END:
 
@@ -8239,7 +8239,7 @@ Hits (BEG END IDS) on the analysis line BOL..EOL, sorted by BEG.
 ** ~tibetan-zettel-highlight--run-matcher~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 411
+:LINE: 414
 :SIGNATURE: (tibetan-zettel-highlight--run-matcher limit line-hits-fn)
 :END:
 
@@ -8249,7 +8249,7 @@ LINE-HITS-FN gets (BOL EOL) and returns sorted hits (BEG END IDS).
 ** ~tibetan-zettel-highlight--analysis-matcher~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 433
+:LINE: 436
 :SIGNATURE: (tibetan-zettel-highlight--analysis-matcher limit)
 :END:
 
@@ -8258,7 +8258,7 @@ Font-lock matcher for analysis buffers.
 ** ~tibetan-zettel-highlight--needle~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 444
+:LINE: 447
 :SIGNATURE: (tibetan-zettel-highlight--needle member)
 :END:
 
@@ -8267,7 +8267,7 @@ MEMBER without its first and last character (sandhi happens at the edges).
 ** ~tibetan-zettel-highlight--projection-from-body~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 450
+:LINE: 453
 :SIGNATURE: (tibetan-zettel-highlight--projection-from-body body)
 :END:
 
@@ -8278,7 +8278,7 @@ written form.
 ** ~tibetan-zettel-highlight--analysis-folder~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 471
+:LINE: 474
 :SIGNATURE: (tibetan-zettel-highlight--analysis-folder)
 :END:
 
@@ -8287,7 +8287,7 @@ written form.
 ** ~tibetan-zettel-highlight--sentence-word-analysis~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 475
+:LINE: 478
 :SIGNATURE: (tibetan-zettel-highlight--sentence-word-analysis sent-num)
 :END:
 
@@ -8296,7 +8296,7 @@ The `** Word Analysis' body of the analysis file of sentence SENT-NUM, or nil.
 ** ~tibetan-zettel-highlight--projection~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 487
+:LINE: 490
 :SIGNATURE: (tibetan-zettel-highlight--projection sent-num)
 :END:
 
@@ -8305,7 +8305,7 @@ Cached projection for SENT-NUM (nil when the sentence has no Word Analysis).
 ** ~tibetan-zettel-highlight--segment-line-sentence~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 501
+:LINE: 504
 :SIGNATURE: (tibetan-zettel-highlight--segment-line-sentence)
 :END:
 
@@ -8315,7 +8315,7 @@ heading, else nil.
 ** ~tibetan-zettel-highlight--source-line-hits~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 516
+:LINE: 519
 :SIGNATURE: (tibetan-zettel-highlight--source-line-hits bol eol)
 :END:
 
@@ -8324,7 +8324,7 @@ Hits (BEG END IDS) on the source line BOL..EOL from the sentence's projection.
 ** ~tibetan-zettel-highlight--source-matcher~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 538
+:LINE: 541
 :SIGNATURE: (tibetan-zettel-highlight--source-matcher limit)
 :END:
 
@@ -8333,7 +8333,7 @@ Font-lock matcher for CAT source buffers.
 ** ~tibetan-zettel-highlight--invalidate-projections~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 542
+:LINE: 545
 :SIGNATURE: (tibetan-zettel-highlight--invalidate-projections &rest _)
 :END:
 
@@ -8342,7 +8342,7 @@ Forget cached projections in every source buffer and refontify.
 ** ~tibetan-zettel-highlight-ids-at-point~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 555
+:LINE: 558
 :SIGNATURE: (tibetan-zettel-highlight-ids-at-point)
 :END:
 
@@ -8351,7 +8351,7 @@ Zettel ids of the marked word at point, or nil.
 ** ~tibetan-zettel-highlight--choose-id~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 559
+:LINE: 562
 :SIGNATURE: (tibetan-zettel-highlight--choose-id ids)
 :END:
 
@@ -8360,7 +8360,7 @@ One id from IDS — asked by title when there are several (homonyms).
 ** ~tibetan-zettel-highlight--research-reachable-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 567
+:LINE: 570
 :SIGNATURE: (tibetan-zettel-highlight--research-reachable-p)
 :END:
 
@@ -8369,7 +8369,7 @@ Non-nil when the Research instance's server socket exists.
 ** ~tibetan-zettel-highlight--open-id~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 575
+:LINE: 578
 :SIGNATURE: (tibetan-zettel-highlight--open-id id)
 :END:
 
@@ -8378,7 +8378,7 @@ Open zettel ID: shared-route (Research), else research socket, else here.
 ** ~tibetan-zettel-highlight-open~  /function/  ⚡
 :PROPERTIES:
 :KIND: defun
-:LINE: 588
+:LINE: 591
 :SIGNATURE: (tibetan-zettel-highlight-open &optional ids)
 :INTERACTIVE: t
 :END:
@@ -8388,7 +8388,7 @@ Open the zettel of the marked word at point (IDS when given).
 ** ~tibetan-zettel-highlight-return~  /function/  ⚡
 :PROPERTIES:
 :KIND: defun
-:LINE: 595
+:LINE: 598
 :SIGNATURE: (tibetan-zettel-highlight-return)
 :INTERACTIVE: t
 :END:
@@ -8398,7 +8398,7 @@ RET on a marked word opens its zettel; elsewhere behaves like `org-return'.
 ** ~tibetan-zettel-highlight-mouse-open~  /function/  ⚡
 :PROPERTIES:
 :KIND: defun
-:LINE: 603
+:LINE: 606
 :SIGNATURE: (tibetan-zettel-highlight-mouse-open event)
 :INTERACTIVE: t
 :END:
@@ -8408,7 +8408,7 @@ Open the zettel of the word clicked in EVENT.
 ** ~tibetan-zettel-highlight--open-at-point-function~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 609
+:LINE: 612
 :SIGNATURE: (tibetan-zettel-highlight--open-at-point-function)
 :END:
 
@@ -8417,7 +8417,7 @@ For `org-open-at-point-functions': open the marked word, non-nil when done.
 ** ~tibetan-zettel-highlight--entry-line~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 623
+:LINE: 626
 :SIGNATURE: (tibetan-zettel-highlight--entry-line id)
 :END:
 
@@ -8426,7 +8426,7 @@ For `org-open-at-point-functions': open the marked word, non-nil when done.
 ** ~tibetan-zettel-highlight--etymology~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 636
+:LINE: 639
 :SIGNATURE: (tibetan-zettel-highlight--etymology id)
 :END:
 
@@ -8435,7 +8435,7 @@ The Wortbildung of zettel ID (`:ETYMOLOGY:` in the drawer), or nil when empty.
 ** ~tibetan-zettel-highlight--help-echo~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 641
+:LINE: 644
 :SIGNATURE: (tibetan-zettel-highlight--help-echo ids)
 :END:
 
@@ -8444,7 +8444,7 @@ Tooltip for IDS: one `title — de / en' per zettel, its Wortbildung underneath.
 ** ~tibetan-zettel-highlight-etymology~  /function/  ⚡
 :PROPERTIES:
 :KIND: defun
-:LINE: 649
+:LINE: 652
 :SIGNATURE: (tibetan-zettel-highlight-etymology &optional kill)
 :INTERACTIVE: t
 :END:
@@ -8458,7 +8458,7 @@ to the kill ring.  Without a zettel at point: /term creates one.
 ** ~tibetan-zettel-highlight--facespec~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 671
+:LINE: 674
 :SIGNATURE: (tibetan-zettel-highlight--facespec)
 :END:
 
@@ -8467,7 +8467,7 @@ Facespec for the match just found: face plus the clickable properties.
 ** ~tibetan-zettel-highlight--enable~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 693
+:LINE: 696
 :SIGNATURE: (tibetan-zettel-highlight--enable kind)
 :END:
 
@@ -8476,7 +8476,7 @@ Install matcher and properties for buffer KIND (`analysis' or `source').
 ** ~tibetan-zettel-highlight--disable~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 706
+:LINE: 709
 :SIGNATURE: (tibetan-zettel-highlight--disable)
 :END:
 
@@ -8485,7 +8485,7 @@ Install matcher and properties for buffer KIND (`analysis' or `source').
 ** ~tibetan-zettel-highlight--maybe-enable~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 729
+:LINE: 732
 :SIGNATURE: (tibetan-zettel-highlight--maybe-enable)
 :END:
 
@@ -8494,7 +8494,7 @@ Turn the mode on in CAT source and analysis buffers (org-mode-hook).
 ** ~tibetan-zettel-highlight-reload~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 742
+:LINE: 745
 :SIGNATURE: (tibetan-zettel-highlight-reload)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -8597,7 +8597,7 @@ Hash: normalized key → list of zettel ids (file order).
 :END:
 
 Hash: zettel id → plist (:id :file :title :kind :stub :sanskrit :wylie
-:tibetan :german :english :etymology).
+:tibetan :german :english :etymology :tags :schemes).
 
 ** ~tibetan-zettel-highlight--index-mtime~  /variable/
 :PROPERTIES:
@@ -8629,7 +8629,7 @@ Zettelkasten directory the index was built from.
 ** ~tibetan-zettel-highlight--source-header-re~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 267
+:LINE: 270
 :DEFAULT: "^#\\+\\(?:TIBETAN_LAYOUT\\|SOURCE_LANG\\|TIBETAN_TARGET_LANG\\|TIBETAN_TEXT_TYPE\\):"
 :END:
 
@@ -8638,7 +8638,7 @@ A CAT source document header (within the first 4 KB).
 ** ~tibetan-zettel-highlight--lemma-map-cache~  /variable (buffer-local)/
 :PROPERTIES:
 :KIND: defvar-local
-:LINE: 297
+:LINE: 300
 :DEFAULT: nil
 :END:
 
@@ -8647,7 +8647,7 @@ A CAT source document header (within the first 4 KB).
 ** ~tibetan-zettel-highlight--current-ids~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 408
+:LINE: 411
 :DEFAULT: nil
 :END:
 
@@ -8656,7 +8656,7 @@ Ids of the match the facespec is being evaluated for.
 ** ~tibetan-zettel-highlight--projections~  /variable (buffer-local)/
 :PROPERTIES:
 :KIND: defvar-local
-:LINE: 441
+:LINE: 444
 :DEFAULT: nil
 :END:
 
@@ -8665,7 +8665,7 @@ Hash sentence number → list of (NEEDLE . IDS), or `none'.
 ** ~tibetan-zettel-highlight--iast-char~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 513
+:LINE: 516
 :DEFAULT: "[[:alpha:]āīūṛṝḷḹṃḥśṣṭḍṇñṅ']"
 :END:
 
@@ -8674,7 +8674,7 @@ One IAST letter (incl. avagraha).
 ** ~tibetan-zettel-highlight-map~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 615
+:LINE: 618
 :DEFAULT: (let ((map (make-sparse-keymap)))
     (define-key map (kbd "RET") #'tibetan-zettel-highlight-return)
     (define-key map
@@ -8685,7 +8685,7 @@ Keymap active on a marked word.
 ** ~tibetan-zettel-highlight--props~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 667
+:LINE: 670
 :DEFAULT: '
 :END:
 
@@ -8694,7 +8694,7 @@ Keymap active on a marked word.
 ** ~tibetan-zettel-highlight--analysis-keywords~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 685
+:LINE: 688
 :DEFAULT: '
 :END:
 
@@ -8703,7 +8703,7 @@ Keymap active on a marked word.
 ** ~tibetan-zettel-highlight--source-keywords~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 687
+:LINE: 690
 :DEFAULT: '
 :END:
 
@@ -8712,7 +8712,7 @@ Keymap active on a marked word.
 ** ~tibetan-zettel-highlight--keywords~  /variable (buffer-local)/
 :PROPERTIES:
 :KIND: defvar-local
-:LINE: 690
+:LINE: 693
 :DEFAULT: nil
 :END:
 
@@ -16923,10 +16923,21 @@ source's #+CAT_SECOND_LANGUAGE (Carsten 1.11.: „nicht als default …,
 sondern nur als Option (wahrscheinlich sogar auf Satzebene)“) —, else
 nil.
 
-** ~bcat-sentence--prompts~  /function/
+** ~bcat-sentence--context-with-zettels~  /function/
 :PROPERTIES:
 :KIND: defun
 :LINE: 1022
+:SIGNATURE: (bcat-sentence--context-with-zettels meta segs source-file)
+:END:
+
+The document's #+TIBETAN_CLAUDE_CONTEXT lines (from META) and, Carsten
+5.11., the zettels of the terms in SEGS ((NUM . TEXT) …) of SOURCE-FILE
+(`bcat-zettel-prompt-block') — the concept notes build on them.
+
+** ~bcat-sentence--prompts~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 1030
 :SIGNATURE: (bcat-sentence--prompts sentence source-file refs)
 :END:
 
@@ -16938,7 +16949,7 @@ translations — Carsten 2.11.: „Ja, nur beim Vergleich“.
 ** ~bcat-sentence--write-analysed~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1053
+:LINE: 1061
 :SIGNATURE: (bcat-sentence--write-analysed file sent-num segs source-file build)
 :END:
 
@@ -16950,7 +16961,7 @@ during a request survives); LAST_ANALYZED is today.
 ** ~bcat-sentence--fetched-context~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1067
+:LINE: 1075
 :SIGNATURE: (bcat-sentence--fetched-context base sentence source-file refs parsed &optional tibetan)
 :END:
 
@@ -16961,7 +16972,7 @@ Tibetan request; REFS the references sent with the request.
 ** ~bcat-sentence--answers-file~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1081
+:LINE: 1089
 :SIGNATURE: (bcat-sentence--answers-file file)
 :END:
 
@@ -16970,7 +16981,7 @@ Where the answers for the sentence FILE are kept: .answers/ beside it.
 ** ~bcat-sentence--keep-answers~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1086
+:LINE: 1094
 :SIGNATURE: (bcat-sentence--keep-answers file record)
 :END:
 
@@ -16983,7 +16994,7 @@ signals: keeping is no reason to lose a landing.
 ** ~bcat-sentence--answers~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1107
+:LINE: 1115
 :SIGNATURE: (bcat-sentence--answers file)
 :END:
 
@@ -16993,7 +17004,7 @@ or nil.
 ** ~bcat-sentence--write-fetched~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1118
+:LINE: 1126
 :SIGNATURE: (bcat-sentence--write-fetched file sentence source-file refs parsed &optional tibetan)
 :END:
 
@@ -17005,7 +17016,7 @@ compared are REFS as sent, marked from the answer's segment parts.
 ** ~bcat-sentence--write-partner~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1128
+:LINE: 1136
 :SIGNATURE: (bcat-sentence--write-partner sentence source-file tibetan trefs sanskrit &optional hint assignment sanskrit-translation)
 :END:
 
@@ -17021,7 +17032,7 @@ Returns the file.
 ** ~bcat-sentence--land~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1153
+:LINE: 1161
 :SIGNATURE: (bcat-sentence--land file sentence source-file refs response)
 :END:
 
@@ -17033,7 +17044,7 @@ finishes the file; any other ends here (C-c u H).
 ** ~bcat-sentence--tibetan-prompts~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1170
+:LINE: 1178
 :SIGNATURE: (bcat-sentence--tibetan-prompts sentence source-file parsed trefs)
 :END:
 
@@ -17046,7 +17057,7 @@ reference translations of the Tibetan, the Tibetan source's
 ** ~bcat-sentence--tibetan-land~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1193
+:LINE: 1201
 :SIGNATURE: (bcat-sentence--tibetan-land file sentence source-file refs parsed trefs response)
 :END:
 
@@ -17059,7 +17070,7 @@ FILE as the Sanskrit answer left it when the answer is unreadable.
 ** ~bcat-sentence--tibetan-one~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1215
+:LINE: 1223
 :SIGNATURE: (bcat-sentence--tibetan-one file sentence source-file refs parsed)
 :END:
 
@@ -17073,7 +17084,7 @@ the Tibetan.
 ** ~bcat-sentence--prepare-partner~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1239
+:LINE: 1247
 :SIGNATURE: (bcat-sentence--prepare-partner sentence source-file)
 :END:
 
@@ -17083,7 +17094,7 @@ paired SOURCE-FILE; nil when the Tibetan lacks the sentence.
 ** ~bcat-sentence--pair-state~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1249
+:LINE: 1257
 :SIGNATURE: (bcat-sentence--pair-state file sentence source-file)
 :END:
 
@@ -17095,7 +17106,7 @@ two requests.
 ** ~bcat-sentence--add-compared~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1264
+:LINE: 1272
 :SIGNATURE: (bcat-sentence--add-compared file name text)
 :END:
 
@@ -17105,7 +17116,7 @@ in FILE (before the next heading).
 ** ~bcat-sentence--dm-one~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1278
+:LINE: 1286
 :SIGNATURE: (bcat-sentence--dm-one file sentence source-file)
 :END:
 
@@ -17118,7 +17129,7 @@ why and nothing goes to Claude.
 ** ~bcat-sentence--fetch-one~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1301
+:LINE: 1309
 :SIGNATURE: (bcat-sentence--fetch-one file sentence source-file)
 :END:
 
@@ -17129,7 +17140,7 @@ request through the queue.
 ** ~bcat-sentence-fetch~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1330
+:LINE: 1338
 :SIGNATURE: (bcat-sentence-fetch scope &optional force)
 :END:
 
@@ -17550,49 +17561,149 @@ A standalone section closing line.
 Non-nil when the zettel index exists and is loaded — never builds it
 (a test, or a machine without the Kasten, links nothing).
 
-** ~bcat-zettel--id-for~  /function/
+** ~bcat-zettel--candidates~  /function/
 :PROPERTIES:
 :KIND: defun
 :LINE: 71
-:SIGNATURE: (bcat-zettel--id-for term)
+:SIGNATURE: (bcat-zettel--candidates term)
+:END:
+
+The zettel ids for TERM as written (index key of three letters or
+more), or nil.
+
+** ~bcat-zettel--traditions~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 77
+:SIGNATURE: (bcat-zettel--traditions id)
+:END:
+
+The traditions of zettel ID (its tags tradition_…).
+
+** ~bcat-zettel--tradition~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 82
+:SIGNATURE: (bcat-zettel--tradition terms)
+:END:
+
+The tradition most of TERMS (with a zettel) share — more than half of
+them —, or nil.
+
+** ~bcat-zettel--id-for~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 95
+:SIGNATURE: (bcat-zettel--id-for term &optional tradition)
 :END:
 
 The zettel id for TERM as written, or nil: of several the first that
-is no stub.
+is no stub.  With TRADITION (the text's, `bcat-zettel--tradition') only
+zettels of that tradition — 5.11., TĀ 1.1: jñāna, a Śaiva power, went
+to the only zettel of that name, Kramer's epistemology.
+
+** ~bcat-zettel--unlink~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 111
+:SIGNATURE: (bcat-zettel--unlink text)
+:END:
+
+TEXT with the tool's links in bold back to the bare term:
+*[[denote:ID][term]]* → *term* (linking anew decides again).
+
+** ~bcat-zettel--bold-terms~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 116
+:SIGNATURE: (bcat-zettel--bold-terms text)
+:END:
+
+The terms in bold of TEXT (not linked), in order.
 
 ** ~bcat-zettel-link~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 83
-:SIGNATURE: (bcat-zettel-link text)
+:LINE: 124
+:SIGNATURE: (bcat-zettel-link text &optional tradition)
 :END:
 
 TEXT with every term in bold that has a zettel linked to it:
-*[[denote:ID][term]]*.  Unchanged without index or when
-`bcat-zettel-link-concepts' is nil; linking again changes nothing.
+*[[denote:ID][term]]* — with TRADITION only to zettels of it
+(`bcat-zettel--id-for').  The tool's links are decided anew (a term
+linked before is unlinked first), so linking again changes nothing.
+Unchanged without index or when `bcat-zettel-link-concepts' is nil.
 
 ** ~bcat-zettel-ids~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 102
+:LINE: 145
 :SIGNATURE: (bcat-zettel-ids text)
 :END:
 
 The zettel ids TEXT links to (denote:ID), in order, each once.
 
+** ~bcat-zettel--text-terms~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 153
+:SIGNATURE: (bcat-zettel--text-terms source-file)
+:END:
+
+The terms in bold of the concept notes of every sentence file of
+SOURCE-FILE's text (its analysis/ folder) — what decides the text's
+tradition.
+
 ** ~bcat-zettel-link-context~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 110
-:SIGNATURE: (bcat-zettel-link-context context)
+:LINE: 171
+:SIGNATURE: (bcat-zettel-link-context context &optional source-file)
 :END:
 
-CONTEXT with the concept notes of its segments linked (`bcat-zettel-link').
+CONTEXT with the concept notes of its segments linked
+(`bcat-zettel-link'), homonyms decided by the tradition most of the
+terms share (`bcat-zettel--tradition') — of this sentence and, with
+SOURCE-FILE, of every sentence of the text (5.11.: a Viveka sentence
+with only *bhava* had no majority of its own).
+
+** ~bcat-zettel--filled~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 211
+:SIGNATURE: (bcat-zettel--filled v)
+:END:
+
+Non-nil when V is a string not blank.
+
+** ~bcat-zettel--description~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 215
+:SIGNATURE: (bcat-zettel--description id)
+:END:
+
+The #+description: of zettel ID, or nil.
+
+** ~bcat-zettel-prompt-block~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 225
+:SIGNATURE: (bcat-zettel-prompt-block texts source-file)
+:END:
+
+The block of zettels for a sentence whose segments are TEXTS (as
+transmitted, any script), or nil: every zettel (no stub, with a
+description) whose index key of five letters or more stands in the text
+— of the text's tradition when it has one (SOURCE-FILE's sentences,
+`bcat-zettel--tradition') —, at most `bcat-zettel-prompt-max', each
+with its labels and description; an instruction how the concept notes
+use them.
 
 ** ~bcat-zettel--bands~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 127
+:LINE: 276
 :SIGNATURE: (bcat-zettel--bands table)
 :END:
 
@@ -17604,7 +17715,7 @@ text, so that a column stays one word with its gloss (5.11., TĀ 1.1
 ** ~bcat-zettel--passage~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 139
+:LINE: 288
 :SIGNATURE: (bcat-zettel--passage table term)
 :END:
 
@@ -17617,7 +17728,7 @@ of the text.
 ** ~bcat-zettel--terms~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 157
+:LINE: 306
 :SIGNATURE: (bcat-zettel--terms text)
 :END:
 
@@ -17626,21 +17737,21 @@ of the text.
 ** ~bcat-zettel--write-line~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 165
-:SIGNATURE: (bcat-zettel--write-line zettel line label place file-mark)
+:LINE: 314
+:SIGNATURE: (bcat-zettel--write-line zettel line label mark file-mark)
 :END:
 
 Put LINE into ZETTEL under `bcat-zettel-belege-heading': replace the
-tool's line of PLACE ("TĀ 1.1 ⟦1⟧") from the same sentence file
-(FILE-MARK, the start of its link), else — unless a line by hand
-begins with LABEL, the same verse — add it after the last line of the
-section (made before * Verweise when missing).  Non-nil when ZETTEL
-changed.
+tool's line of the segment MARK ("⟦1⟧") from the same sentence
+file (FILE-MARK, the start of its link) whatever its label, else —
+unless a line by hand begins with LABEL, the same verse — add it after
+the last line of the section (made before * Verweise when missing).
+Non-nil when ZETTEL changed.
 
 ** ~bcat-zettel--append~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 192
+:LINE: 343
 :SIGNATURE: (bcat-zettel--append line)
 :END:
 
@@ -17650,7 +17761,7 @@ Belege section, making the section when missing.
 ** ~bcat-zettel-write-belege~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 213
+:LINE: 364
 :SIGNATURE: (bcat-zettel-write-belege file context label link-label)
 :END:
 
@@ -17660,10 +17771,22 @@ zettels its concept notes link to: per segment and linked term that
 stands in the segment's text the line „- LABEL ⟦N⟧: /word/ — what it
 means there (CAT: link)“.  Returns the zettel files changed.
 
+** ~bcat-zettel--label~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 387
+:SIGNATURE: (bcat-zettel--label info)
+:END:
+
+The place of a Beleg from INFO (`bcat-export-info'): the verse, else
+the work — its title up to the first comma or bracket — and „Satz N“
+(5.11.: „Satz 1003“ alone is in the Abhidharmasamuccaya and in the
+Tantrāloka).
+
 ** ~bcat-zettel-belege-file~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 236
+:LINE: 397
 :SIGNATURE: (bcat-zettel-belege-file file)
 :END:
 
@@ -17673,7 +17796,7 @@ its fields read back like C-c u L does; returns the zettels changed.
 ** ~bcat-zettel-after-fetch~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 249
+:LINE: 411
 :SIGNATURE: (bcat-zettel-after-fetch file)
 :END:
 
@@ -17684,7 +17807,7 @@ Belege (when `bcat-zettel-belege-auto').  Never for a FILE under
 ** ~bcat-zettel-belege~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 264
+:LINE: 426
 :SIGNATURE: (bcat-zettel-belege)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -17730,10 +17853,34 @@ linked concept goes into its zettel (`bcat-zettel-belege-file').
 The heading (level 1) of the zettel the Belege go under — the one of
 the Termzettel (/term); created before * Verweise when missing.
 
+** ~bcat-zettel-in-prompt~  /customize variable/
+:PROPERTIES:
+:KIND: defcustom
+:LINE: 199
+:TYPE: 'boolean
+:GROUP: buddhist-cat
+:DEFAULT: t
+:END:
+
+When non-nil, C-c u G sends the zettels of the terms that stand in the
+sentence (`bcat-zettel-prompt-block'): the concept notes say what a term
+means in this passage, its general sense is the zettel's.
+
+** ~bcat-zettel-prompt-max~  /customize variable/
+:PROPERTIES:
+:KIND: defcustom
+:LINE: 206
+:TYPE: 'integer
+:GROUP: buddhist-cat
+:DEFAULT: 12
+:END:
+
+At most this many zettels go with one sentence (the longest terms first).
+
 ** ~bcat-zettel--bold-re~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 79
+:LINE: 107
 :DEFAULT: "\\(^\\|[[:space:](\"'„“‚/]\\)\\*\\([^*\n[]+?\\)\\*\\([[:space:].,;:!?)\"'“”‘’—–-]\\|$\\)"
 :END:
 

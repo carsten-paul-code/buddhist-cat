@@ -4923,16 +4923,30 @@ sind keine Belege — jñāna traf sogar den Kramer-Zettel; zurückgenommen.
 TĀ 1.1 jetzt: anuttara, hṛdaya, yāmala, visarga je eine Zeile; kalā hat
 seinen Beleg von Hand.
 
+Danach (Carsten: „beides, bitte“, alle Dateien „ja, bitte“):
+Homonyme (`eb239aa', `d628b02'): die Tradition des TEXTS (Tags
+tradition_… der Zettel aller Concept Notes im analysis/-Ordner, Mehrheit
+> 50 %) entscheidet; ohne Zettel dieser Tradition kein Link (jñāna in
+TĀ 1.1); die Links des Werkzeugs werden bei jedem Setzen neu
+entschieden (von Hand umgebogene würden zurückgesetzt).  Ort eines
+Belegs: Vers, sonst „<Werk> Satz N“ (`bcat-zettel--label'); eigene
+Zeile über ⟦N⟧ + Datei gefunden.  Mitgeben (`c57ca90'): C-c u G schickt
+die Zettel (Kennung + #+description) der Begriffe, die im Text stehen
+(`bcat-zettel-prompt-block', ≤ 12, Tradition des Texts), an den
+Kontextzeilen; die Notiz soll sagen, was der Begriff HIER bedeutet.
+Durchgang: alle 48 Satzdateien mit C-c u L neu gesetzt (nur Links
+geändert, 130), Belege: 68 Zeilen in 43 Zetteln (Kasten nicht
+committet).
+
 #### Offen
 
-- Concept Notes MITGEBEN (Schritt 2 des Vorschlags vom 5.11.): C-c u G
-  schickt Claude den Konzept-Teil der Zettel, die im Satz vorkommen;
-  die Notiz sagt dann, was der Begriff an DIESER Stelle bedeutet.
-  Ändert den Prompt — noch nicht gebaut.
-- Homonyme beim Verlinken: der erste Zettel, der kein Stub ist (jñāna →
-  Kramer-Glossar statt Trika); Vorzug nach Hub/Scheme des Texts fehlt.
-- Belege/Links nur für TĀ 1.1 ausgeführt; die übrigen Satzdateien
-  bekommen die Links mit C-c u L, die Belege mit C-c u z b (auf Zuruf).
+- Mitgeben noch nicht im tibetischen Abruf eines Paars
+  (`bcat-sentence--tibetan-prompts'); Schlüssel ohne Wortgrenzen
+  (TĀ 1.1: akula aus amṛtakulam).
+- Further Reading (Sanderson-Transkript, TĀ 1.1 60 000 Zeichen, 11 von
+  24 PDF-Seiten): Carsten sah Wiederholungen — im Transkript kein Satz
+  doppelt; was gemeint ist, klären.  Kürzen mit Claude verbietet die
+  OCHS-Regel (Transkripte nur für den Vergleich im Prompt).
 
 - Kommentardokument (comm-…, Vorlage commentary) noch in alter Ordnung;
   dieselbe Reihenfolge je Satz steht aus (Carsten: „Hier habe ich noch
