@@ -434,6 +434,43 @@ view (`bcat-export-views')."
                      (funcall part "further-reading") (funcall part "notes")
                      (if notes (concat "* " bcat-dossier--notes "\n:PROPERTIES:\n:CUSTOM_ID: dossier-notes\n:END:\n" notes "\n") "")))))))
 
+(defvar bcat-commentary--runs)
+(declare-function bcat-sentence-fetch-state "bcat-sentence" (file seg-nums))
+
+(defvar bcat-dossier--awaiting (make-hash-table :test #'equal)
+  "Verse file → the commentary document C-c u G fetches with it.  Set
+before the verse is sent, cleared when the commentary lands: until
+then the verse's own landing does not export the dossier — whichever
+lands first (5.11.).")
+
+(defun bcat-dossier-await (verse-file doc)
+  "Note that C-c u G fetches the commentary document DOC with the verse
+VERSE-FILE (see `bcat-dossier--awaiting')."
+  (puthash (expand-file-name verse-file) doc bcat-dossier--awaiting))
+
+(defun bcat-dossier-export-pending-p (file)
+  "Non-nil when the PDF of FILE's dossier should wait — Carsten 5.11.:
+„doppelten Upload weg“.  One C-c u G on a verse with commentary lands
+twice; the first to land waits for the other: a verse file while its
+commentary document is still being fetched (`bcat-commentary--runs'),
+the commentary document while its verse has not landed
+\(`bcat-sentence-fetch-state' of the verse file non-nil).  The landing
+of the commentary clears the verse's note (`bcat-dossier-await')."
+  (require 'bcat-commentary)
+  (if (equal (bcat-sentence-file-p file) "commentary")
+      (let* ((lead (bcat-dossier--lead-of file))
+             (_ (when lead (remhash (expand-file-name lead) bcat-dossier--awaiting)))
+             (source (and lead (tibetan-sentence--source-file-from-analysis lead)))
+             (n (and lead (tibetan-sentence--sent-id-from-filename lead)))
+             (verse (and source n (bcat-sentence--sentence n source))))
+        (and verse (file-exists-p lead)
+             (bcat-sentence-fetch-state lead (mapcar #'car (plist-get verse :segs)))
+             t))
+    (or (and (gethash (expand-file-name file) bcat-dossier--awaiting) t)
+        (let* ((ctx (ignore-errors (bcat-dossier-context file)))
+               (doc (alist-get 'commentary-doc ctx)))
+          (and doc (gethash doc bcat-commentary--runs) t)))))
+
 (defun bcat-dossier-after-fetch (file)
   "Hook for `bcat-sentence-after-fetch-functions': C-c u G ends with the
 dossier (`bcat-dossier-auto'); never for a fixture in the temp folder;

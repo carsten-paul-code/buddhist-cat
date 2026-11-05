@@ -443,6 +443,7 @@ footnote definitions in them at the end (`bcat-analysis-footnotes-last')."
 (declare-function bcat-commentary-section "bcat-commentary" (label lead commentary-source))
 (declare-function bcat-commentary-incomplete-p "bcat-commentary" (section commentary-source))
 (declare-function bcat-commentary-fetch "bcat-commentary" (section commentary-source &optional status-file))
+(declare-function bcat-dossier-await "bcat-dossier" (verse-file doc))
 (declare-function bcat-commentary-verse-links "bcat-commentary" (sent-num source-file assignment))
 (declare-function bcat-commentary-ensure-file "bcat-commentary" (sent-num commentary-source))
 
@@ -1448,6 +1449,12 @@ from the same requests.  Returns (:sentences N :fired N :complete N
         (when go
           (let ((sections '()))
             (dolist (c todo)
+              ;; 5.11.: a commentary that comes with the verse — the
+              ;; verse's landing leaves the dossier's PDF to it.
+              (let ((sec (funcall section-of (car c))))
+                (when (and sec (fboundp 'bcat-dossier-await)
+                           (or force (bcat-commentary-incomplete-p sec commentary)))
+                  (bcat-dossier-await (funcall file-of (car c)) (bcat-commentary-file sec commentary))))
               (when (eq 'fired
                         (pcase (cdr c)
                           ('align (bcat-sentence--align-one (funcall file-of (car c)) (car c) src))

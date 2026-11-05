@@ -236,6 +236,22 @@ verse — no PDF of its own for the commentary document any more."
           (should (string-match-p "^\\* Sthiramati$" exported))
           (should (equal '(("msa-IX.16.pdf" . "MSA IX.16")) uploaded)))))))
 
+(ert-deftest bcat-dossier-one-upload ()
+  "Carsten 5.11.: „doppelten Upload weg“.  One C-c u G on a verse with
+commentary lands twice — the verse pair, then the commentary (or the
+other way round); each ended with C-c u H, and both exported the same
+dossier.  Now the first to land waits for the other: one export, when
+both are in."
+  (bcat-commentary-test--with-msa
+    (let ((exports '()))
+      (cl-letf (((symbol-function 'bcat-export-file) (lambda (f) (push f exports) nil))
+                ((symbol-function 'tibetan-discussion-paper--temp-source-p) #'ignore))
+        (let ((bcat-export-auto t))
+          (bcat-sentence-test--with-stubs #'bcat-commentary-test--answers
+            (add-hook 'bcat-sentence-after-fetch-functions #'bcat-export-after-fetch)
+            (bcat-sentence-test--fetch-n src 36))))
+      (should (= 1 (length exports))))))
+
 (ert-deftest bcat-dossier-key ()
   "C-c u V writes and shows the dossier of the verse at point."
   (require 'tibetan-keybindings)
