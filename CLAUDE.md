@@ -4833,7 +4833,51 @@ und MSA-Paare) mit C-c u L neu gesetzt, Spalten vorher/nachher geprüft
 (gleich bis auf die gekappte letzte Zelle); TĀ 1.1 Segment 1: zwei
 Tabellen (je Halbvers) statt fünf.  ERT 2821.
 
+5.11.2026 mittags, SANSKRIT: UNTERTABELLEN STATT REDUNDANZ (Carsten, TĀ
+1.1: „Können wir beim Sanskrit irgendwie mit Untertabellen arbeiten und
+die Redundanzen rausnehmen?  So wie es jetzt ist ist es für mich schwer
+nachvollziehbar“; drei Entwürfe am Beispiel, Wahl: „B, Übersetzung
+unter die Übersicht, einzeilig, kursiv“).  Je Sanskrit-Segment jetzt:
+⟦N⟧, die Übersicht (Wort / Bedeutung / Form — drei Zeilen,
+`bcat-analysis-sanskrit-tables'), „→“ die Segmentübersetzung, darunter
+`formation-tables' (`bcat-analysis-formation-tables'): je Kompositum
+eine kleine Tabelle — die Glieder (aus dem Wort selbst, an seinen
+Bindestrichen) als Kopfzeile + hline, darunter die Teile, einer je
+Zeile, die Sanskrit-Form kursiv vor ihrer Bedeutung; ein Glied, das nur
+sein Stamm ist, zeigt nur die Bedeutung (kalā), eine Wurzel bleibt
+(√cit); je Wort aus einem Glied eine Zeile „/jananī/: /√jan/ (1) be
+born · /-anī/ f. agent“; nichts, wo die Teile nur das Wort
+wiederholen.  Die Wortbildungszeile ist weg (sie steckte ganz in den
+Teilen).  Die Teile kommen über „;“ zu den Gliedern (nur TĀ 1.1 hat
+das), sonst per DP über ihre Formen (`bcat-analysis--part-groups':
+Buchstaben der Form im Glied 10/Buchstabe, Diakritika gefaltet; leeres
+Glied −20; Suffix am Gliedanfang / Glied nach Präfix −5; bloße
+Bedeutung vor den Formen ihres Glieds −1; Gleichstand: Suffix bleibt
+vorn, sonst geht der Teil nach hinten) — über alle 395 Wörter der
+Dateien kein leeres Glied, Stichproben geprüft.  C-c u L liest die
+alten Tabellen mit fünf Zeilen zurück und setzt beides neu
+(`bcat-analysis-split-word-tables'), liest die Teile einer neuen Datei
+nach „→“ zurück (Handkorrektur bleibt), auch im Sanskrit-Teil der
+tibetischen Paardatei.  Farben (`60b7a05'): Tabelle mit Kopfzeile ohne
+\cellcolor = Teile-Tabelle, alles unter den Gliedern blau, in Emacs
+(`bcat-faces--parts-table-p', `--parts-line-matcher') und im PDF
+(`bcat-export--detail-rows', Absatzfilter
+`bcat-export--parts-line-filter').  Commits `de4cc85' (Bausteine),
+`091c9d2' (Verdrahtung, Vorlagen, Muster), `60b7a05' (Farben).  36
+Satzdateien neu gesetzt: 67 Sanskrit-Segmente, Übersicht und Teile je
+Segment gegen die alten Tabellen geprüft, außerhalb * Text / * Sanskrit
+nichts geändert, 13 Paardateien gleich ihrem Sanskrit-Partner, zweiter
+Lauf ändert nichts.  ERT 2833.
+
 #### Offen
+
+- PDF-Tabellen werden verkleinert (gemessen 5.11., LuaLaTeX, Textbreite
+  360 pt): ab Maß ~88 (je Spalte breiteste Zeile + 6, + 1) ist eine
+  Tabelle breiter als die Zeile und adjustbox skaliert sie — bei
+  `bcat-export-table-width' 130 fast jede Segmenttabelle, auf 70–90 %.
+  Volle Schriftgröße hieße Grenze ~80 (Sanskrit: Breite ≈ 4,5 pt/Zeichen
+  + 18 pt/Spalte; Tibetisch ≈ 5,5 + 14) und spürbar mehr, kleinere
+  Tabellen je PDF.  Carstens Entscheidung; nichts geändert.
 
 - Kommentardokument (comm-…, Vorlage commentary) noch in alter Ordnung;
   dieselbe Reihenfolge je Satz steht aus (Carsten: „Hier habe ich noch
