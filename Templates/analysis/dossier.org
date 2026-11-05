@@ -8,7 +8,8 @@ die den Vers aufgreifen, fett, → die Übersetzung, das Lemma) — und
 „* Meine Notizen“, die jeden Neubau übersteht.  Felder: label,
 analysis (Links auf die Analysedateien), layers (heading, verses
 (text), translation, note, items (head, lines, item-translation,
-lemma)), my-notes.  Geschrieben von C-c u V und nach C-c u G
+lemma, item-link)), link), my-notes.  link / item-link: in die Analyse — in Emacs
+die Datei, im PDF die Sprungmarke (#segments, #comm-N).  Geschrieben von C-c u V und nach C-c u G
 (bcat-dossier.el); die Analysedateien bleiben, wie sie sind.
 #+end_comment
 #+TITLE: {{label}} — Lesedossier
@@ -19,6 +20,10 @@ lemma)), my-notes.  Geschrieben von C-c u V und nach C-c u G
 
 {{#layers}}
 * {{heading}}
+{{#link}}
+{{link}}
+
+{{/link}}
 {{#verses}}
 #+begin_verse
 {{text}}
@@ -35,6 +40,9 @@ lemma)), my-notes.  Geschrieben von C-c u V und nach C-c u G
 {{/note}}
 {{#items}}
 ** {{head}}
+{{#item-link}}
+{{item-link}}
+{{/item-link}}
 #+begin_verse
 {{lines}}
 #+end_verse

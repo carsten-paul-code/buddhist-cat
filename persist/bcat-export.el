@@ -997,15 +997,26 @@ reMarkable (`bcat-export-upload').  Exported is the view (Carsten
 5.11.: one document with jump marks, `bcat-export-view'), written
 beside FILE as .pdfview-<name>.org — a name no folder scan takes for a
 sentence file — and removed after the export; without a view the file
-itself.  Returns the PDF path."
-  (let* ((info (bcat-export-info file))
+itself.  A file of a verse with more than one layer (bhāṣya,
+commentary — Carsten 5.11.: the reading dossier) exports the dossier's
+PDF instead (`bcat-dossier-pdf-text'), under the name and label of the
+verse — from any of its files, the commentary document too.  Returns
+the PDF path."
+  (let* ((status-file file)
+         (dossier (and (fboundp 'bcat-dossier-pdf-text)
+                       (condition-case err (bcat-dossier-pdf-text file)
+                         (error (message "Lesedossier-PDF von %s nicht gesetzt (%s)"
+                                         (file-name-nondirectory file) (error-message-string err))
+                                nil))))
+         (file (or (plist-get dossier :lead) file))
+         (info (bcat-export-info file))
          (head (bcat-export-head-lines (plist-get info :folder) (plist-get info :work)
                                        (plist-get info :sent-num) (plist-get info :verse)))
          (views (condition-case err (bcat-export-views file)
                   (error (message "PDF-Ansicht von %s nicht gesetzt (%s) — die Datei selbst"
                                   (file-name-nondirectory file) (error-message-string err))
                          nil)))
-         (view (plist-get views :view))
+         (view (or (plist-get dossier :text) (plist-get views :view)))
          (lectures (bcat-export--lectures-pdf file views head (plist-get info :handout)))
          (view-file (and view (expand-file-name (concat ".pdfview-" (file-name-nondirectory file))
                                                 (file-name-directory file))))
@@ -1028,26 +1039,26 @@ itself.  Returns the PDF path."
                    (setq pdf target))
           (error (message "PDF nicht nach handouts/ verschoben (%s): %s"
                           (file-name-nondirectory target) (error-message-string err))))))
-    (bcat-status-step file :pdf (if bcat-export--missing
+    (bcat-status-step status-file :pdf (if bcat-export--missing
                                     (concat "PDF ✓ · fehlende Zeichen: "
                                             (bcat-export--missing-text bcat-export--missing))
                                   "PDF ✓"))
     (if bcat-export-upload
         (progn
           (require 'tibetan-discussion-paper)
-          (bcat-status-step file :upload "reMarkable …")
+          (bcat-status-step status-file :upload "reMarkable …")
           (tibetan-discussion-paper--upload
            pdf (plist-get info :work) (plist-get info :label)
            (lambda (ok what)
              (let ((done (if ok (concat "reMarkable ✓ " what) (concat "reMarkable: Fehler — " what))))
-               (bcat-status-step file :upload done)
+               (bcat-status-step status-file :upload done)
                ;; The lectures after the PDF — rmapi one at a time.
                (when (and ok lectures)
                  (tibetan-discussion-paper--upload
                   lectures (plist-get info :work)
                   (format "%s %s" (plist-get info :label) (plist-get views :lecturer))
                   (lambda (ok2 what2)
-                    (bcat-status-step file :upload
+                    (bcat-status-step status-file :upload
                                       (concat done (if ok2 " · Vortrag ✓" (concat " · Vortrag: Fehler — " what2)))))))))))
       (message "PDF: %s" pdf))
     pdf))

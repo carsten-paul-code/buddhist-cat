@@ -19,6 +19,7 @@
 (require 'bcat-dossier)
 (require 'bcat-export)
 (require 'bcat-sentence-test)
+(require 'bcat-commentary-test)
 
 (defconst bcat-dossier-test--context
   '((segments . (((num . 286) (devanagari . "स्वाभाविको ऽथ") (samhita . "svābhāviko 'tha"))))
@@ -140,6 +141,100 @@ the dossier of the root sentence before it."
           (should-not (bcat-dossier--asbh-p 2 src))
           (should-not (bcat-dossier--asbh-p 3 src)))
       (delete-directory dir t))))
+
+(defun bcat-dossier-test--parts (text)
+  "The level-1 headings of TEXT."
+  (let ((out '()) (start 0))
+    (while (string-match "^\\* \\(.+\\)$" text start)
+      (push (match-string 1 text) out)
+      (setq start (match-end 0)))
+    (nreverse out)))
+
+(defun bcat-dossier-test--links-resolve (text)
+  "Non-nil when every [[#ID] link of TEXT has its :CUSTOM_ID: ID."
+  (let ((start 0) (ok t))
+    (while (string-match "\\[\\[#\\([^]]+\\)\\]" text start)
+      (setq start (match-end 0))
+      (unless (string-match-p (concat "^:CUSTOM_ID: " (regexp-quote (match-string 1 text)) "$") text)
+        (setq ok nil)))
+    ok))
+
+(ert-deftest bcat-dossier-pdf-msa ()
+  "The PDF of the dossier (Carsten 5.11., step 3): one document — the
+reading page (the layers, as in the org file) first, then the analysis
+of the verse (Segments, Grammar …), the commentary (each sentence a
+jump target, comm-N, reached from its place on the reading page), the
+concepts and the discussion; no part twice (the verse file's own
+Commentary and Reading out), every jump with its target.  From each
+file of the verse: the verse files and the commentary document."
+  (bcat-commentary-test--with-msa
+    (bcat-sentence-test--with-stubs #'bcat-commentary-test--answers
+      (bcat-sentence-test--fetch-n src 36))
+    (let* ((file (tibetan-sentence--filepath 36 folder src))
+           (doc (expand-file-name "comm-IX.16-savbh.org" cfolder))
+           (pdf (bcat-dossier-pdf-text file))
+           (text (plist-get pdf :text))
+           (parts (bcat-dossier-test--parts text)))
+      (should (equal file (plist-get pdf :lead)))
+      (should (equal '("Reading" "Segments" "Grammar") (cl-subseq parts 0 3)))
+      (should (member "Sthiramati" parts))
+      (should-not (cl-intersection '("Commentary" "Meine Notizen") parts :test #'equal))
+      (should (string-match-p "^\\*\\* 01 Vers" text))
+      (should (string-match-p "^\\*\\* Sentence 258\n:PROPERTIES:\n:CUSTOM_ID: comm-258\n:END:$" text))
+      (should (string-match-p "^\\*\\*\\* 258\\b.*\n\\[\\[#comm-258\\]" text))
+      (should (bcat-dossier-test--links-resolve text))
+      (should (equal file (plist-get (bcat-dossier-pdf-text doc) :lead)))
+      (should (equal file (plist-get (bcat-dossier-pdf-text (tibetan-sentence--filepath 64 tfolder tsrc)) :lead))))))
+
+(ert-deftest bcat-dossier-pdf-none ()
+  "A sentence with one layer (no bhāṣya, no commentary) has no dossier
+PDF — C-c u H keeps its own view."
+  (bcat-sentence-test--with-source
+    (bcat-sentence-test--create src)
+    (bcat-sentence-test--with-stubs bcat-sentence-test--answer
+      (bcat-sentence-test--fetch src))
+    (should-not (bcat-dossier-pdf-text (tibetan-sentence--filepath 9 folder src)))))
+
+(ert-deftest bcat-dossier-nest-view ()
+  "A second sentence file in the dossier (AS: the bhāṣya sentence):
+its view's parts one level down under a part of its own, its jump
+targets and links renamed so that they cannot meet the first file's."
+  (should (equal (concat "* Bhāṣya\n:PROPERTIES:\n:CUSTOM_ID: bhasya\n:END:\n"
+                         "** Segments\n:PROPERTIES:\n:CUSTOM_ID: bhasya-segments\n:END:\n"
+                         "⟦40⟧ · [[#bhasya-grammar-40][Grammar]]\n| x |\n\n"
+                         "** Grammar\n:PROPERTIES:\n:CUSTOM_ID: bhasya-grammar\n:END:\n"
+                         "*** ⟦40⟧\n:PROPERTIES:\n:CUSTOM_ID: bhasya-grammar-40\n:END:\n*Note:* n\n")
+                 (bcat-dossier--nest-view
+                  (concat "* Reading\n:PROPERTIES:\n:CUSTOM_ID: reading\n:END:\nR\n"
+                          "* Segments\n:PROPERTIES:\n:CUSTOM_ID: segments\n:END:\n"
+                          "⟦40⟧ · [[#grammar-40][Grammar]]\n| x |\n\n"
+                          "* Grammar\n:PROPERTIES:\n:CUSTOM_ID: grammar\n:END:\n"
+                          "** ⟦40⟧\n:PROPERTIES:\n:CUSTOM_ID: grammar-40\n:END:\n*Note:* n\n")
+                  "Bhāṣya" "bhasya" '("segments" "grammar")))))
+
+(ert-deftest bcat-dossier-export ()
+  "C-c u H on any file of a verse with commentary exports the dossier:
+the PDF under the verse's name (msa-IX.16.pdf), uploaded once as the
+verse — no PDF of its own for the commentary document any more."
+  (bcat-commentary-test--with-msa
+    (bcat-sentence-test--with-stubs #'bcat-commentary-test--answers
+      (bcat-sentence-test--fetch-n src 36))
+    (let ((doc (expand-file-name "comm-IX.16-savbh.org" cfolder))
+          (exported nil) (uploaded '()))
+      (cl-letf (((symbol-function 'bcat-export-pdf)
+                 (lambda (f &rest _)
+                   (setq exported (with-temp-buffer (insert-file-contents f) (buffer-string)))
+                   (let ((pdf (concat (file-name-sans-extension f) ".pdf")))
+                     (with-temp-file pdf (insert "PDF")) pdf)))
+                ((symbol-function 'tibetan-discussion-paper--upload)
+                 (lambda (pdf _title label &optional done)
+                   (push (cons (file-name-nondirectory pdf) label) uploaded)
+                   (when done (funcall done t label)) t)))
+        (let ((bcat-export-upload t))
+          (bcat-export-file doc)
+          (should (string-match-p "^\\* Reading$" exported))
+          (should (string-match-p "^\\* Sthiramati$" exported))
+          (should (equal '(("msa-IX.16.pdf" . "MSA IX.16")) uploaded)))))))
 
 (ert-deftest bcat-dossier-key ()
   "C-c u V writes and shows the dossier of the verse at point."
