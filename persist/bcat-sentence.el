@@ -1134,7 +1134,7 @@ compared are REFS as sent, marked from the answer's segment parts."
    (lambda (base)
      (bcat-sentence--fetched-context base sentence source-file refs parsed tibetan))))
 
-(defun bcat-sentence--write-partner (sentence source-file tibetan trefs sanskrit &optional hint assignment sanskrit-translation)
+(defun bcat-sentence--write-partner (sentence source-file tibetan trefs sanskrit &optional hint assignment sanskrit-translation bhasya-translation)
   "Write the Tibetan file of the bilingual SENTENCE of the paired
 SOURCE-FILE (Carsten 30.10.: „das volle Programm“): the Tibetan analysis
 from TIBETAN, the answer of the Tibetan request (TREFS the references
@@ -1152,11 +1152,12 @@ Returns the file."
      tfile (plist-get other :sent-num) (plist-get other :segs) parallel
      (lambda (base)
        (cons (cons 'bhasya-hint hint)
+             (cons (cons 'bhasya-translation bhasya-translation)
              (bcat-sentence--commentary-fields
               (plist-get other :sent-num) parallel
               (bcat-analysis-partner-context (bcat-analysis-context base tibetan trefs)
                                              tibetan sanskrit sanskrit-translation)
-              assignment))))
+              assignment)))))
     tfile))
 
 (defun bcat-sentence--land (file sentence source-file refs response)
@@ -1222,7 +1223,8 @@ FILE as the Sanskrit answer left it when the answer is unreadable."
                                         (alist-get 'segments context)
                                         (alist-get 'bhasya-hint context)
                                         (alist-get 'assignment context)
-                                        (alist-get 'translation context))))
+                                        (alist-get 'translation context)
+                                        (alist-get 'bhasya-translation context))))
       (bcat-status-step file :tibetan "Tibetisch ✓")
       (run-hook-with-args 'bcat-sentence-after-fetch-functions file)
       file)))

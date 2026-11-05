@@ -237,6 +237,10 @@ Claude divided into sense units."
         (push p proposal))))
     (when (string-match "^\\*Hint:\\* \\(.*\\(?:\n.+\\)*\\)" text)
       (push (cons 'bhasya-hint (match-string 1 text)) out))
+    ;; 5.11.: Vasubandhu's translation, under ** Bhāṣya only.
+    (let ((bhasya (bcat-relayout--section (or (bcat-relayout--section text 1 "Commentary") "") 2 "Bhāṣya")))
+      (when (and bhasya (string-match "^\\*Translation:\\* \\(.*\\(?:\n.+\\)*\\)" bhasya))
+        (push (cons 'bhasya-translation (match-string 1 bhasya)) out)))
     (when (string-match "^#\\+LAST_ANALYZED:[ \t]*\\(.+\\)$" text)
       (push (cons 'last-analyzed (string-trim (match-string 1 text))) out))
     (unless (alist-get 'scansion base)

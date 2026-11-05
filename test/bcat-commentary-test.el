@@ -16,6 +16,8 @@
 (require 'cl-lib)
 (require 'bcat-sentence-test)
 (require 'bcat-commentary)
+(require 'bcat-dossier)
+(require 'bcat-relayout)
 (require 'bcat-export)
 
 (defconst bcat-commentary-test--sanskrit
@@ -275,6 +277,34 @@ keeps its prompt unchanged."
         (should (string-match-p "^\\*Hint:\\* The bhāṣya reads the broken pot"
                                 (bcat-sentence-test--text-of f))))))
   (should-not (string-match-p "bhasya" (bcat-analysis-sanskrit-system-prompt "en"))))
+
+(ert-deftest bcat-verse-bhasya-translation ()
+  "Carsten 5.11.: Vasubandhu translated (the reading dossier shows the
+bhāṣya with its translation).  The Sanskrit request of a verse asks for
+`bhasya_translation' beside the hint; it stands under ** Bhāṣya in both
+verse files as *Translation:*, C-c u L keeps it, the dossier shows it."
+  (bcat-commentary-test--with-msa
+    (bcat-sentence-test--with-stubs
+        (lambda (kind)
+          (if (equal kind "bcat-tibetan") bcat-commentary-test--verse-answer-bo
+            (replace-regexp-in-string
+             "\"bhasya_hint\": " "\"bhasya_translation\": \"Now the fifth verse: by this fifth one …\", \"bhasya_hint\": "
+             bcat-commentary-test--verse-answer-sa t t)))
+      (bcat-sentence-test--fetch-n src 36)
+      (should (string-match-p "\"bhasya_translation\"" (car (nth (1- (length prompts)) prompts))))
+      (dolist (f (list (tibetan-sentence--filepath 36 folder src)
+                       (tibetan-sentence--filepath 64 tfolder tsrc)))
+        (let ((text (bcat-sentence-test--text-of f)))
+          (should (string-match "^\\*\\* Bhāṣya\n" text))
+          (should (string-match-p "^\\*Translation:\\* Now the fifth verse: by this fifth one …$"
+                                  (substring text (match-end 0))))))
+      (let ((file (tibetan-sentence--filepath 36 folder src)))
+        (bcat-relayout-file file)
+        (should (string-match-p "^\\*Translation:\\* Now the fifth verse" (bcat-sentence-test--text-of file)))
+        (should (equal "*Translation:* Now the fifth verse: by this fifth one …"
+                       (alist-get 'translation
+                                  (bcat-dossier-bhasya-layer
+                                   (plist-get (bcat-relayout-file-context file) :context)))))))))
 
 ;; ----------------------------------------------------------------------------
 ;; Lemmata: which pāda a commentary segment quotes

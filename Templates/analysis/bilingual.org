@@ -229,6 +229,8 @@ Rumpf ohne Glossen bleibt sie.  Reines Sanskrit behält den Padapāṭha.
 #+end_verse
 
 {{/bhasya-tibetan-p}}
+*Translation:* {{bhasya-translation}}
+
 *Hint:* {{bhasya-hint}}
 
 {{/bhasya-p}}

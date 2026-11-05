@@ -306,13 +306,14 @@ Rules:
 %s- JSON escaping: only \\\" and \\\\ — never a backslash before an apostrophe.
 - Write glosses, notes and explanations in %s. Never mention yourself."
             bcat-analysis--comparison-schema
-            (concat (if bhasya ", \"bhasya_hint\": \"…\"" "")
+            (concat (if bhasya ", \"bhasya_translation\": \"…\", \"bhasya_hint\": \"…\"" "")
                     (if recitation ", \"recitation\": [\"…\"]" ""))
             bcat-analysis--label-limit
             (bcat-analysis--sentence-rules lang)
             (concat
              (if bhasya
-                 "- bhasya_hint: the bhāṣya on this verse is given as context; one to three sentences on what in it matters for reading the verse — how it takes a word or the verse's function, a reading it presupposes, where its Tibetan says something else; Sanskrit and Tibetan words in /italic/; \"\" when nothing.\n"
+                 (concat "- bhasya_translation: the bhāṣya on this verse translated whole — close to the Sanskrit as given, the key terms with the original in parentheses; the Tibetan only where it reads otherwise.\n"
+                 "- bhasya_hint: the bhāṣya on this verse is given as context; one to three sentences on what in it matters for reading the verse — how it takes a word or the verse's function, a reading it presupposes, where its Tibetan says something else; Sanskrit and Tibetan words in /italic/; \"\" when nothing.\n")
                "")
              (if recitation
                  "- recitation: for prose only (for a verse []): the transmitted text of the whole sentence exactly as given — same spelling and sandhi, nothing added or left out —, divided for reading aloud into lines, one array entry per line, each a sense unit of a few words ending at a clause or phrase boundary (break only where the text has a space); inside a line mark a short breath pause with ¦.\n"
@@ -1992,7 +1993,8 @@ skipped keeps its rump fields; sigla used as names are named again
        (comparison . ,(bcat-analysis-comparison parsed refs (alist-get 'target-lang base)))
        (proposal . ,(bcat-analysis-comparison-proposal parsed (alist-get 'target-lang base)))
        (word-analysis . ,(bcat-analysis-word-analysis (alist-get 'segments parsed)))
-       (bhasya-hint . ,(bcat-analysis--field parsed 'bhasya_hint)))
+       (bhasya-hint . ,(bcat-analysis--field parsed 'bhasya_hint))
+       (bhasya-translation . ,(bcat-analysis--field parsed 'bhasya_translation)))
      base)))
 
 ;; ----------------------------------------------------------------------------
