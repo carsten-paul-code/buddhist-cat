@@ -22,7 +22,8 @@ samples/Bilingual.org.
 Felder: sent-num source-link segment-list hash created last-analyzed;
 parallel-link parallel-segment-list (die tibetische Quelle);
 segments (Sanskrit): num devanagari samhita (die Zeile wie überliefert)
-glossed (Padapāṭha mit Vokabeln; nach C-c u G) gloss-table sandhi forms compounds
+glossed (Padapāṭha mit Vokabeln; nach C-c u G) gloss-table formation-tables
+(wie in sanskrit.org: unter „→“ die Teile der Wörter) sandhi forms compounds
 structure note concepts — parallel („ · Tib. 40–44“: die tibetischen
 Segmente, die Claude diesem Segment zuordnet) tibetan-block (deren
 Uchen über Wylie mit Vokabeln) differences (was das Tibetische anders
@@ -106,6 +107,10 @@ Rumpf ohne Glossen bleibt sie.  Reines Sanskrit behält den Padapāṭha.
 → {{segment-translation}}
 
 {{/segment-translation}}
+{{#formation-tables}}
+{{formation-tables}}
+
+{{/formation-tables}}
 {{/segments}}
 {{#grammar}}
 *Grammar:* {{grammar}}

@@ -1625,22 +1625,23 @@ named again (`bcat-analysis--full-names')."
 ;; ----------------------------------------------------------------------------
 
 (defun bcat-analysis-sanskrit-tables (words)
-  "The tables of a Sanskrit segment's WORDS (Claude's padapāṭha: word,
-formation, parts, gloss, form — five rows) in the layout of every
-language (5.11., Carsten: „generisch machen und mit anwenden“;
-`bcat-analysis--layout-tables'): split into tables of the file's width,
-a wide cell broken at its members into further lines (31.10., TĀ 1008:
-a one-word table cannot get narrower by columns), the form cut like a
-Tibetan function — its rest goes to Structure
-\(`bcat-analysis--function-overflow').  \"\" for no words."
+  "The overview of a Sanskrit segment's WORDS (Claude's padapāṭha): three
+rows — word, gloss, form — in the layout of every language (5.11.,
+Carsten: „generisch machen und mit anwenden“;
+`bcat-analysis--layout-tables'), the form cut like a Tibetan function —
+its rest goes to Structure (`bcat-analysis--function-overflow').  The
+formation and the parts are no rows of it any more (Carsten 5.11., TĀ
+1.1: „die Redundanzen rausnehmen“): they have tables of their own under
+the segment's translation (`bcat-analysis-formation-tables').  \"\" for
+no words."
   (if (null words)
       ""
     (bcat-analysis--layout-tables
      (mapcar (lambda (w)
-               (append (mapcar (lambda (k) (tibetan-gloss-table--cell (bcat-analysis--field w k)))
-                               '(word formation parts gloss))
-                       (list (tibetan-gloss-table--cell
-                              (car (bcat-analysis--function-split (bcat-analysis--word-function w) "sa"))))))
+               (list (tibetan-gloss-table--cell (bcat-analysis--field w 'word))
+                     (tibetan-gloss-table--cell (bcat-analysis--field w 'gloss))
+                     (tibetan-gloss-table--cell
+                      (car (bcat-analysis--function-split (bcat-analysis--word-function w) "sa")))))
              words)
      "sa")))
 
@@ -1693,12 +1694,15 @@ nor its members).  The assignment in order that finds the most of the
 forms in their members wins (10 a letter); a member left empty costs
 20 — every member has parts —, a suffix (-a) starting a member or a
 member starting after a prefix (vi-) 5: Claude writes members with a
-hyphen too (śrīmat-mahā-…: „mahā- great“)."
+hyphen too (śrīmat-mahā-…: „mahā- great“), a bare meaning before the
+forms of its member 1; on a tie a suffix stays with the part before it,
+anything else goes with the part after it."
   (let* ((n (length items)) (m (length keys))
          (nkeys (vconcat (mapcar #'bcat-analysis--part-norm keys)))
          (forms (vconcat (mapcar (lambda (i) (bcat-analysis--part-norm (car i))) items)))
          (suffix (vconcat (mapcar (lambda (i) (string-prefix-p "-" (car i))) items)))
          (prefix (vconcat (mapcar (lambda (i) (string-suffix-p "-" (car i))) items)))
+         (meaning (vconcat (mapcar (lambda (i) (not (bcat-analysis--part-form-p (car i) keys))) items)))
          (score (lambda (k j)
                   (let ((f (aref forms k)))
                     (if (and (> (length f) 0) (string-search f (aref nkeys j))) (* 10 (length f)) 0))))
@@ -1712,12 +1716,20 @@ hyphen too (śrīmat-mahā-…: „mahā- great“)."
        for k from 1 below n do
        (let ((cost (+ (if (aref suffix k) 5 0) (if (aref prefix (1- k)) 5 0))))
          (dotimes (j m)
-           (let ((same (aref best (+ (* (1- k) m) j))) (prev j))
-             ;; A new member from an earlier one; on a tie the later
-             ;; start (the member before keeps the part).
+           (let ((same (- (aref best (+ (* (1- k) m) j))
+                          ;; a bare meaning before the forms that name
+                          ;; the member (AS 3: „merit“ before abhi-)
+                          (if (and (aref meaning (1- k)) (> (funcall score k j) 0)) 1 0)))
+                 (prev j))
+             ;; A new member from an earlier one.  On a tie the part
+             ;; before decides: a suffix stays with what precedes it
+             ;; (a-dva-ya · maya), anything else goes with what follows
+             ;; (AS 3, „merit · not · merit“ for dharma-adharma: „not“
+             ;; opens adharma).
              (dotimes (j2 j)
                (let ((adv (- (+ (aref best (+ (* (1- k) m) j2)) 20) cost)))
-                 (when (>= adv same) (setq same adv prev j2))))
+                 (when (or (> adv same) (and (= adv same) (aref suffix (1- k))))
+                   (setq same adv prev j2))))
              (aset best (+ (* k m) j) (+ (funcall score k j) same))
              (aset from (+ (* k m) j) prev)))))
       (let* ((j (cl-loop with bj = 0 for j from 1 below m
@@ -1840,6 +1852,27 @@ broke a compound across lines — now each word that has parts gets its
 own small table."
   (mapconcat #'identity (delq nil (mapcar #'bcat-analysis--formation-block words)) "\n\n"))
 
+(defun bcat-analysis-split-word-tables (tables)
+  "(OVERVIEW FORMATION OVERFLOW) for TABLES, the tables of a Sanskrit
+segment as files held them before 5.11. — five rows: word, formation,
+parts, gloss, form —: read back into words and set as the overview
+\(`bcat-analysis-sanskrit-tables'), the parts tables
+\(`bcat-analysis-formation-tables') and the lines for Structure of a
+form cell cut (`bcat-analysis--function-overflow').  nil for other
+tables — Tibetan, an overview already.  C-c u L."
+  (let ((columns (apply #'append (mapcar #'bcat-analysis--table-columns
+                                         (split-string (or tables "") "\n[ \t]*\n" t)))))
+    (when (and columns
+               (cl-every (lambda (col) (= 5 (length col))) columns)
+               (not (string-match-p "[\u0F00-\u0FFF]" (caar columns))))
+      (let ((words (mapcar (lambda (col)
+                             (cl-mapcar (lambda (key cell) (cons key (bcat-analysis-plain-cell cell)))
+                                        '(word formation parts gloss form) col))
+                           columns)))
+        (list (bcat-analysis-sanskrit-tables words)
+              (bcat-analysis-formation-tables words)
+              (bcat-analysis--function-overflow words "sa"))))))
+
 (defun bcat-analysis-padapatha-line (samhita words &optional plain)
   "The padapāṭha line of a segment for * Text: WORDS (Claude's
 padapāṭha) each with its gloss in brackets, then the daṇḍas closing the
@@ -1932,6 +1965,7 @@ skipped keeps its rump fields; sigla used as names are named again
                     (glossed . ,(bcat-analysis-padapatha-line
                                  (or (alist-get 'samhita seg) "") words))
                     (gloss-table . ,(bcat-analysis-sanskrit-tables words))
+                    (formation-tables . ,(bcat-analysis-formation-tables words))
                     (translations . ,(bcat-analysis-translations-block n c))
                     (segment-translation . ,(bcat-analysis--field c 'translation))
                     (sandhi . ,(bcat-analysis--field c 'sandhi))

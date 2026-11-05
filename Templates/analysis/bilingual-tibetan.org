@@ -42,7 +42,8 @@ structure note concepts — parallel („ · Skt. 17“: das Sanskrit-Segment,
 das Claude ihm zuordnet) sanskrit-block (beim ersten Segment einer
 Gruppe: Devanāgarī über dem Padapāṭha mit Vokabeln) differences (ebenda,
 nur wo es welche gibt); glosses; sanskrit (die Sanskrit-Segmente: num
-devanagari samhita glossed) sanskrit-p sanskrit-glosses; translation
+devanagari samhita glossed; unter * Sanskrit mit gloss-table,
+formation-tables wie in sanskrit.org) sanskrit-p sanskrit-glosses; translation
 grammar rendering comparison bhasya-p bhasya-sanskrit (num devanagari samhita) bhasya-tibetan (num
 uchen wylie) bhasya-sanskrit-p bhasya-tibetan-p bhasya-hint — im
 Versmodus (MSA, :VERSE:) die übrigen Sätze der Section, Carsten 30.10.:
@@ -138,6 +139,10 @@ Rumpf ohne Glossen bleibt sie.  Reines Sanskrit behält den Padapāṭha.
 → {{segment-translation}}
 
 {{/segment-translation}}
+{{#formation-tables}}
+{{formation-tables}}
+
+{{/formation-tables}}
 {{/sanskrit-segments}}
 {{#sanskrit-translation}}
 *Translation:* {{sanskrit-translation}}

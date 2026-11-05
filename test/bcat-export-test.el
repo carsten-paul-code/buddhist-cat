@@ -592,7 +592,9 @@ file — Sanskrit as well since 5.11. —; the export copy lays them out
 anew for the page, whatever the language: the run of tables under a
 ⟦N⟧ mark, wide cells broken as far as it saves lines.  Nothing lost:
 read back, the columns are those of the file."
-  (let* ((file-tables (bcat-analysis-sanskrit-tables bcat-analysis-test--ta-1-1-words))
+  (let* ((file-tables (bcat-analysis-sanskrit-tables ; 5.11.: one table in the file, too wide for the page
+                       (append (seq-take bcat-analysis-test--ta-1-1-words 5)
+                               (last bcat-analysis-test--ta-1-1-words))))
          (columns (apply #'append (mapcar #'bcat-analysis--table-columns (split-string file-tables "\n\n")))))
     (should-not (cl-every #'bcat-export-test--fits-page (split-string file-tables "\n\n")))
     (with-temp-buffer

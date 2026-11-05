@@ -105,6 +105,23 @@ line, table) read back to the new form."
     (should (string-match-p "^⟦38⟧\n| " sample))
     (should (equal sample (bcat-relayout-test--render "tibetan" (bcat-analysis-test--base) spaced)))))
 
+(ert-deftest bcat-relayout-sanskrit-subtables ()
+  "5.11.: C-c u L sets a Sanskrit file written before (tables of five
+rows) with the overview, „→“, and the parts tables; read back, the parts
+tables stay as they are — a second run changes nothing."
+  (let* ((words bcat-analysis-test--ta-1-1-words)
+         (old (concat "* Text\n⟦1⟧\n" (bcat-analysis-test--old-sanskrit-tables words)
+                      "\n\n→ t\n\n* Segments\n** Segment 1\n\n*Structure:* s\n"))
+         (base '((segments ((num . 1) (samhita . "vimala…"))) (sent-num . "1")))
+         (seg (car (alist-get 'segments (bcat-relayout-context base old "sanskrit")))))
+    (should (equal (bcat-analysis-sanskrit-tables words) (alist-get 'gloss-table seg)))
+    (should (string-prefix-p "| vimala " (alist-get 'formation-tables seg)))
+    (should (string-match-p "^/janakaḥ/: /√jan/ (1) beget" (alist-get 'formation-tables seg)))
+    (let* ((once (bcat-relayout-test--render "sanskrit" base old))
+           (again (bcat-relayout-test--render "sanskrit" base once)))
+      (should (string-match-p "^→ t\n\n| vimala " once))
+      (should (equal once again)))))
+
 (ert-deftest bcat-relayout-compacts-tables ()
   "4.11.: C-c u L sets a Tibetan file written before with compact tables
 — the long function cut, its rest a line of the segment's Structure;

@@ -195,6 +195,23 @@ Compounds — the Note of segment 686 dropped."
     (should (equal expected
                    (bcat-template-render-named "sanskrit" bcat-template-test--sent-1007)))))
 
+(ert-deftest bcat-template-translation-under-the-overview ()
+  "Carsten 5.11.: „Übersetzung unter die Übersicht“ — per Sanskrit
+segment the overview, „→“ its translation, then the parts tables; in
+the Sanskrit file, the bilingual one and the Sanskrit part of the
+Tibetan file of a pair."
+  (let ((bcat-template-directory
+         (expand-file-name "Templates/analysis" bcat-template-test--root))
+        (seg '((num . "1") (shown . t) (mark . "") (gloss-table . "| a |")
+               (segment-translation . "t") (formation-tables . "| b |\n|---|\n| c |"))))
+    (should (string-match-p (regexp-quote "⟦1⟧\n| a |\n\n→ t\n\n| b |\n|---|\n| c |\n\n")
+                            (bcat-template-render-named "sanskrit" `((segments ,seg)))))
+    (should (string-match-p (regexp-quote "⟦1⟧\n| a |\n\n→ t\n\n| b |\n|---|\n| c |\n\n")
+                            (bcat-template-render-named "bilingual" `((segments ,seg)))))
+    (should (string-match-p (regexp-quote "⟦1⟧\n| a |\n\n→ t\n\n| b |\n|---|\n| c |\n\n")
+                            (bcat-template-render-named "bilingual-tibetan"
+                                                        `((sanskrit-p . t) (sanskrit-segments ,seg)))))))
+
 (ert-deftest bcat-template-sanskrit-prose ()
   "Viveka prose (no metre): the Recitation holds only the Devanāgarī
 original (no metre line, no scansion); in the rump * Text is empty — no

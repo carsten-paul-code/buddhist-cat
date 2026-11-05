@@ -107,27 +107,31 @@ the other language's blocks and differences."
     ;; ⟦N⟧ under * Text: the tables — the mark on a line of its own
     ;; (with „ · Tib. …“ in a bilingual file), or (files of 31.10. before
     ;; the PDF showed it beside the table) right above the first one —
-    ;; then „→“ the segment's translation.  What follows in a bilingual
-    ;; file (1.11.: the other language's tables and translations) comes
-    ;; from the partner file (`bcat-relayout-context'); the differences
-    ;; belong to the segment.
-    (let ((current nil) (own nil))
+    ;; then „→“ the segment's translation, and (Sanskrit, 5.11.) the
+    ;; tables and lines of the words' parts, as they are.  What follows
+    ;; in a bilingual file (1.11.: the other language's tables and
+    ;; translations) comes from the partner file (`bcat-relayout-context');
+    ;; the differences belong to the segment.
+    (let ((current nil) (own nil) (parts nil))
       (dolist (p (bcat-relayout--paragraphs (bcat-relayout--section text 1 "Text")))
         (cond
          ((string-match "\\`\\(?:<<[^>\n]*>>\\)?⟦\\([0-9]+\\)⟧[^\n]*\\'" p)
-          (setq current (string-to-number (match-string 1 p)) own t))
+          (setq current (string-to-number (match-string 1 p)) own t parts nil))
          ((string-match "\\`\\(?:<<[^>\n]*>>\\)?⟦\\([0-9]+\\)⟧[^\n]*\n" p)
-          (setq current (string-to-number (match-string 1 p)) own t)
+          (setq current (string-to-number (match-string 1 p)) own t parts nil)
           (bcat-relayout--put table current 'gloss-table (substring p (match-end 0))))
          ((and current (string-prefix-p "|" p))
-          (when own (bcat-relayout--put table current 'gloss-table p t)))
+          (cond (own (bcat-relayout--put table current 'gloss-table p t))
+                (parts (bcat-relayout--put table current 'formation-tables p t))))
+         ((and current parts (string-match-p "\\`/[^/\n]+/: " p))
+          (bcat-relayout--put table current 'formation-tables p t))
          ((and current (string-match "\\`→ " p))
           (when own
             (bcat-relayout--put table current 'segment-translation (substring p (match-end 0)))
-            (setq own nil)))
+            (setq own nil parts t)))
          ((and current (string-match "\\`\\*Differences:\\* " p))
           (bcat-relayout--put table current 'differences (substring p (match-end 0))))
-         (t (setq current nil)))))
+         (t (setq current nil parts nil)))))
     ;; ⟦N⟧ under Concepts.
     (let ((current nil))
       (dolist (p (bcat-relayout--paragraphs
@@ -271,7 +275,12 @@ sentence translation.  ASSIGNMENT from the segment headings."
   (let* ((sanskrit-file (equal template "bilingual"))
          (others (mapcar (lambda (o)
                            (let* ((f (gethash (bcat-analysis--num o) other))
-                                  (table (alist-get 'gloss-table f)))
+                                  (table (alist-get 'gloss-table f))
+                                  ;; 5.11.: Sanskrit tables of five rows →
+                                  ;; overview and parts tables.
+                                  (split (and table (bcat-analysis-split-word-tables table)))
+                                  (table (if split (nth 0 split) table))
+                                  (formation (or (alist-get 'formation-tables f) (nth 1 split))))
                              (append
                               (and table
                                    ;; 4.11./5.11.: compact, as in the partner file.
@@ -279,6 +288,8 @@ sentence translation.  ASSIGNMENT from the segment headings."
                                                            (if sanskrit-file
                                                                (bcat-analysis-uchen-table table (alist-get 'uchen o))
                                                              table))))))
+                              (and formation (not (string-empty-p formation))
+                                   `((formation-tables . ,formation)))
                               (and (alist-get 'segment-translation f)
                                    `((segment-translation . ,(alist-get 'segment-translation f))))
                               (and (alist-get 'differences f)
@@ -323,6 +334,19 @@ segments per segment come from there (Carsten 1.11.)."
                                  (when uchen
                                    (setf (alist-get 'gloss-table fields)
                                          (bcat-analysis-uchen-table (alist-get 'gloss-table fields) uchen)))
+                                 ;; 5.11.: Sanskrit tables of five rows →
+                                 ;; the overview, the parts tables (under
+                                 ;; the translation), a cut form's rest a
+                                 ;; line of Structure.
+                                 (let ((split (bcat-analysis-split-word-tables (alist-get 'gloss-table fields))))
+                                   (when split
+                                     (setf (alist-get 'gloss-table fields) (nth 0 split))
+                                     (unless (alist-get 'formation-tables fields)
+                                       (setf (alist-get 'formation-tables fields) (nth 1 split)))
+                                     (when (nth 2 split)
+                                       (setf (alist-get 'structure fields)
+                                             (bcat-analysis--with-overflow (alist-get 'structure fields)
+                                                                           (nth 2 split))))))
                                  ;; 4.11.: compact tables — a long function
                                  ;; cut, its rest a line of Structure; 5.11.
                                  ;; every language (Sanskrit: the form, wide

@@ -5,8 +5,9 @@ los“; seit 31.10. ohne die Beschreibung des Metrums) / Segmenttabellen
 und Übersetzung (* Text) / ganzer Satz / Segmente.
 Reihenfolge seit 31.10. abends (Carsten, TĀ 1006, „die Anpassungen sind
 aber generisch“): erst lesen und übersetzen — * Text: die Segmenttabellen
-untereinander (⟦N⟧ vor den Tabellen eines Segments; Wörter und Glossen
-schwarz, Wortbildung, Teile, Form blau; nach den Tabellen „→“ die
+untereinander (⟦N⟧ vor den Tabellen eines Segments; seit 5.11. die
+Übersicht mit Wort, Bedeutung, Form — Wörter und Bedeutungen schwarz,
+die Form blau; nach der Übersicht „→“ die
 Übersetzung des Segments, segment-translation — nur die eigene, in der
 Zielsprache, Carsten 1.11.: „nach der Segmenttabelle eine Übersetzung
 (nur Zielsprache) des Segments wäre wahrscheinlich doch hilfreich
@@ -42,7 +43,12 @@ Silbenfolge je Zeile, IAST);
 segments: num samhita (die Zeile wie überliefert) padapatha (die Zeile
 in IAST mit aufgelösten Sandhis; im Rumpf noch die überlieferte)
 glossed (Padapāṭha,
-Sandhis aufgelöst, Vokabeln in Klammern) gloss-table translations
+Sandhis aufgelöst, Vokabeln in Klammern) gloss-table (die Übersicht)
+formation-tables (unter „→“ je Wort mit Teilen eine kleine Tabelle —
+die Glieder als Spalten, darunter die Teile, die Sanskrit-Form kursiv —,
+ein Wort aus einem Glied als Zeile „/jananī/: …“; Carsten 5.11., TĀ 1.1:
+„die Redundanzen rausnehmen“, „B, Übersetzung unter die Übersicht,
+einzeilig, kursiv“) translations
 sandhi forms compounds structure note concepts; second-translation
 second-label;
 glosses (gesetzt, wenn es einen Padapāṭha gibt) translation grammar
@@ -86,6 +92,10 @@ Goldman 1999).
 → {{segment-translation}}
 
 {{/segment-translation}}
+{{#formation-tables}}
+{{formation-tables}}
+
+{{/formation-tables}}
 {{/gloss-table}}
 {{/segments}}
 {{#grammar}}
