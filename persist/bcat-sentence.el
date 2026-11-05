@@ -578,7 +578,7 @@ section the template writes itself (* Bhāṣya, a commentary's * Sentence
   (let* ((text (bcat-template-render-named
                 ;; 5.11.: the terms of the concept notes link to their
                 ;; zettels (bcat-zettel.el) — fetch and relayout alike.
-                name (if (fboundp 'bcat-zettel-link-context) (bcat-zettel-link-context context) context)
+                name (if (fboundp 'bcat-zettel-link-context) (bcat-zettel-link-context context source-file) context)
                 source-file))
          (tool (bcat-sentence--template-sections name source-file))
          (own (cl-remove-if (lambda (s) (cl-some (lambda (re) (string-match-p re (car s))) tool))

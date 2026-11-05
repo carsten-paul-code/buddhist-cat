@@ -150,18 +150,39 @@ Unchanged without index or when `bcat-zettel-link-concepts' is nil."
       (setq start (match-end 0)))
     (nreverse ids)))
 
-(defun bcat-zettel-link-context (context)
+(defun bcat-zettel--text-terms (source-file)
+  "The terms in bold of the concept notes of every sentence file of
+SOURCE-FILE's text (its analysis/ folder) — what decides the text's
+tradition."
+  (let ((folder (and source-file (expand-file-name "analysis" (file-name-directory source-file)))))
+    (when (and folder (file-directory-p folder))
+      (apply #'append
+             (mapcar (lambda (f)
+                       (with-temp-buffer
+                         (insert-file-contents f)
+                         (goto-char (point-min))
+                         (when (re-search-forward "^\\*\\* Concepts[ \t]*\n" nil t)
+                           (let* ((beg (point))
+                                  (end (if (re-search-forward "^\\*" nil t) (match-beginning 0) (point-max))))
+                             (bcat-zettel--bold-terms
+                              (bcat-zettel--unlink (buffer-substring-no-properties beg end)))))))
+                     (directory-files folder t "\\`sent-[0-9].*\\.org\\'"))))))
+
+(defun bcat-zettel-link-context (context &optional source-file)
   "CONTEXT with the concept notes of its segments linked
 \(`bcat-zettel-link'), homonyms decided by the tradition most of the
-sentence's terms share (`bcat-zettel--tradition')."
+terms share (`bcat-zettel--tradition') — of this sentence and, with
+SOURCE-FILE, of every sentence of the text (5.11.: a Viveka sentence
+with only *bhava* had no majority of its own)."
   (if (not (and bcat-zettel-link-concepts (assq 'segments context) (bcat-zettel--index-p)))
       context
     (let* ((notes (cl-remove-if-not (lambda (c) (and (stringp c) (not (string-blank-p c))))
                                     (mapcar (lambda (s) (alist-get 'concepts s))
                                             (alist-get 'segments context))))
            (tradition (bcat-zettel--tradition
-                       (apply #'append (mapcar (lambda (c) (bcat-zettel--bold-terms (bcat-zettel--unlink c)))
-                                               notes)))))
+                       (append (apply #'append (mapcar (lambda (c) (bcat-zettel--bold-terms (bcat-zettel--unlink c)))
+                                                       notes))
+                               (bcat-zettel--text-terms source-file)))))
       (cons (cons 'segments
                   (mapcar (lambda (s)
                             (let ((c (alist-get 'concepts s)))
@@ -213,20 +234,22 @@ of the text."
       (setq start (match-end 0)))
     (nreverse out)))
 
-(defun bcat-zettel--write-line (zettel line label place file-mark)
+(defun bcat-zettel--write-line (zettel line label mark file-mark)
   "Put LINE into ZETTEL under `bcat-zettel-belege-heading': replace the
-tool's line of PLACE (\"TĀ 1.1 ⟦1⟧\") from the same sentence file
-\(FILE-MARK, the start of its link), else — unless a line by hand
-begins with LABEL, the same verse — add it after the last line of the
-section (made before * Verweise when missing).  Non-nil when ZETTEL
-changed."
+tool's line of the segment MARK (\"⟦1⟧\") from the same sentence
+file (FILE-MARK, the start of its link) whatever its label, else —
+unless a line by hand begins with LABEL, the same verse — add it after
+the last line of the section (made before * Verweise when missing).
+Non-nil when ZETTEL changed."
   (let ((before (with-temp-buffer (insert-file-contents zettel) (buffer-string)))
         (case-fold-search nil))
     (with-temp-buffer
       (insert before)
       (goto-char (point-min))
       (cond
-       ((re-search-forward (concat "^- " (regexp-quote place) "[: ].*"
+       ;; the tool's line of this segment (MARK, „⟦N⟧“) from this file —
+       ;; whatever its label was
+       ((re-search-forward (concat "^- .* " (regexp-quote mark) "[: ].*"
                                    (regexp-quote file-mark) ".*$")
                            nil t)
         (replace-match line t t))
@@ -280,9 +303,19 @@ means there (CAT: link)“.  Returns the zettel files changed."
           ;; Only where the term stands in the text of the segment — a
           ;; term the note merely names is no Beleg (5.11., TĀ 1.1).
           (when (and line path (file-exists-p path) (file-writable-p path)
-                     (bcat-zettel--write-line path line label place file-mark))
+                     (bcat-zettel--write-line path line label (format "⟦%s⟧" (alist-get 'num s)) file-mark))
             (cl-pushnew path changed :test #'equal)))))
     (nreverse changed)))
+
+(defun bcat-zettel--label (info)
+  "The place of a Beleg from INFO (`bcat-export-info'): the verse, else
+the work — its title up to the first comma or bracket — and „Satz N“
+\(5.11.: „Satz 1003“ alone is in the Abhidharmasamuccaya and in the
+Tantrāloka)."
+  (or (plist-get info :verse)
+      (format "%s Satz %s"
+              (string-trim (car (split-string (or (plist-get info :work) "") "[,(]")))
+              (plist-get info :sent-num))))
 
 (defun bcat-zettel-belege-file (file)
   "Write the Belege of the sentence FILE (`bcat-zettel-write-belege'),
@@ -292,10 +325,11 @@ its fields read back like C-c u L does; returns the zettels changed."
   (when (bcat-zettel--index-p)
     (let ((read (bcat-relayout-file-context file)))
       (unless (plist-get read :error)
-        (let* ((info (bcat-export-info file))
-               (label (plist-get info :label)))
-          (bcat-zettel-write-belege file (bcat-zettel-link-context (plist-get read :context))
-                                    label (format "Satz %s" (plist-get info :sent-num))))))))
+        (let ((info (bcat-export-info file)))
+          (bcat-zettel-write-belege file (bcat-zettel-link-context (plist-get read :context)
+                                                                   (plist-get read :source))
+                                    (bcat-zettel--label info)
+                                    (format "Satz %s" (plist-get info :sent-num))))))))
 
 (defun bcat-zettel-after-fetch (file)
   "Hook for `bcat-sentence-after-fetch-functions': C-c u G ends with the

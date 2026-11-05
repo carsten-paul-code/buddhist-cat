@@ -119,6 +119,33 @@ first that is no stub)."
       (should (string-match-p (regexp-quote "*[[denote:20250822T092830][jñāna]]*") c))
       (should (string-match-p (regexp-quote "*[[denote:20250101T000001][kula]]*") c)))))
 
+(ert-deftest bcat-zettel-link-tradition-of-the-text ()
+  "The tradition comes from the concept notes of every sentence of the
+text, not of one sentence alone (5.11.: a Viveka sentence with only
+*bhava* had no majority and went to the Buddhist zettel)."
+  (bcat-zettel-test--with-kasten
+    (let* ((dir (make-temp-file "bcat-text-" t))
+           (src (expand-file-name "tantraloka-1.org" dir)))
+      (unwind-protect
+          (progn
+            (make-directory (expand-file-name "analysis" dir))
+            (with-temp-file (expand-file-name "analysis/sent-001-tantralo.org" dir)
+              (insert "* Sentence\n** Concepts\n⟦1⟧ *kalā* — power; *visarga* — emission.\n\n** Translations compared\n"))
+            (let* ((ctx '((segments . (((num . 5) (concepts . "*kula* — body."))))))
+                   (c (alist-get 'concepts (car (alist-get 'segments (bcat-zettel-link-context ctx src))))))
+              (should (string-match-p (regexp-quote "*[[denote:20261012T123039][kula]]*") c))))
+        (delete-directory dir t)))))
+
+(ert-deftest bcat-zettel-label ()
+  "The place of a Beleg: the verse, else the work (its title up to the
+first comma or bracket) and the sentence — „Satz 1003“ alone is in the
+Abhidharmasamuccaya and in the Tantrāloka."
+  (should (equal "SDA 9" (bcat-zettel--label '(:verse "SDA 9" :work "bDen" :sent-num 9))))
+  (should (equal "Tantrāloka Satz 1003"
+                 (bcat-zettel--label '(:work "Tantrāloka, Kapitel 1 (vijñānabhid)" :sent-num 1003))))
+  (should (equal "Abhidharmasamuccaya Satz 2"
+                 (bcat-zettel--label '(:work "Abhidharmasamuccaya" :sent-num 2)))))
+
 (ert-deftest bcat-zettel-link-without-index ()
   "No index (or linking switched off): the notes stay as they are."
   (let ((tibetan-zettel-highlight-index-file "/nonexistent/bcat-zettel-index.json")
@@ -196,6 +223,12 @@ passage replaces its line; a Beleg of the same verse by hand wins."
             (let ((before (bcat-zettel-test--read kala)))
               (bcat-zettel-write-belege file bcat-zettel-test--context "TĀ 1.1" "Satz 1")
               (should (equal before (bcat-zettel-test--read kala))))
+            ;; Another label for the same place and file: replaced, not added.
+            (bcat-zettel-write-belege file bcat-zettel-test--context "Tantrāloka Satz 1" "Satz 1")
+            (let ((text (bcat-zettel-test--read kala)))
+              (should (string-match-p "^- Tantrāloka Satz 1 ⟦1⟧: " text))
+              (should-not (string-match-p "^- TĀ 1\\.1 ⟦1⟧" text)))
+            (bcat-zettel-write-belege file bcat-zettel-test--context "TĀ 1.1" "Satz 1")
             ;; A changed passage replaces its line.
             (bcat-zettel-write-belege
              file `((segments . (((num . 1)
