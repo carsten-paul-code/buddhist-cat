@@ -117,7 +117,7 @@
   "Hash: normalized key → list of zettel ids (file order).")
 (defvar tibetan-zettel-highlight--entries nil
   "Hash: zettel id → plist (:id :file :title :kind :stub :sanskrit :wylie
-:tibetan :german :english :etymology).")
+:tibetan :german :english :etymology :tags :schemes).")
 (defvar tibetan-zettel-highlight--index-mtime nil
   "Modification time of the index file the tables were built from.")
 (defvar tibetan-zettel-highlight--zk-dir nil
@@ -142,7 +142,10 @@
                           :sanskrit (alist-get 'sanskrit e) :wylie (alist-get 'wylie e)
                           :tibetan (alist-get 'tibetan e) :german (alist-get 'german e)
                           :english (alist-get 'english e)
-                          :etymology (alist-get 'etymology e))
+                          :etymology (alist-get 'etymology e)
+                          ;; 5.11.: the tradition of a zettel decides
+                          ;; between homonyms (bcat-zettel.el)
+                          :tags (alist-get 'tags e) :schemes (alist-get 'schemes e))
                  entries)
         (dolist (k (alist-get 'keys e))
           (puthash k (append (gethash k index) (list id)) index))))

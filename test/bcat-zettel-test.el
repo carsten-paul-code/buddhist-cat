@@ -51,10 +51,24 @@ for niyantraṇa) and its index loaded."
                       `((generated . "x") (zk_dir . ,kasten) (count . 3)
                         (entries . [((id . "20261027T135714") (file . "20261027T135714--kala.org")
                                      (title . "kalā") (kind . "concept") (stub . :json-false)
+                                     (tags . ["type_concept" "tradition_saiva"])
                                      (keys . ["kala" "vimalakala"]))
                                     ((id . "20261016T140000") (file . "20261016T140000--visarga.org")
                                      (title . "visarga") (kind . "concept") (stub . :json-false)
+                                     (tags . ["tradition_saiva"])
                                      (keys . ["visarga"]))
+                                    ((id . "20250822T092830") (file . "20250822T092830--jnana.org")
+                                     (title . "jñāna") (kind . "concept") (stub . :json-false)
+                                     (tags . ["type_concept" "domain_epistemology"])
+                                     (keys . ["jnana"]))
+                                    ((id . "20250101T000001") (file . "20250101T000001--kula.org")
+                                     (title . "kula") (kind . "concept") (stub . :json-false)
+                                     (tags . ["tradition_yogacara"])
+                                     (keys . ["kula"]))
+                                    ((id . "20261012T123039") (file . "20261012T123039--kula.org")
+                                     (title . "kula") (kind . "concept") (stub . :json-false)
+                                     (tags . ["tradition_saiva"])
+                                     (keys . ["kula"]))
                                     ((id . "20261001T000000") (file . "20261001T000000--niyantrana.org")
                                      (title . "niyantraṇa") (kind . "concept") (stub . t)
                                      (keys . ["niyantrana"]))])))))
@@ -83,6 +97,27 @@ is; linking again changes nothing."
                      linked))
       (should (equal linked (bcat-zettel-link linked)))
       (should (equal '("20261027T135714" "20261016T140000") (bcat-zettel-ids linked))))))
+
+(ert-deftest bcat-zettel-link-tradition ()
+  "Homonyms (Carsten 5.11.: „beides, bitte“): the tradition most of a
+sentence's linked terms share decides — TĀ 1.1 linked jñāna to the
+zettel of Kramer's glossary (epistemology), the only one of that name;
+in a Śaiva sentence a term without a Śaiva zettel stays unlinked, of
+two zettels the Śaiva one.  Without such a majority: as before (the
+first that is no stub)."
+  (bcat-zettel-test--with-kasten
+    (let* ((ctx '((segments . (((num . 1) (concepts . "*kalā* — power; the five: *jñāna* …"))
+                               ((num . 2) (concepts . "*visarga* — emission; *kula* — body."))))))
+           (linked (bcat-zettel-link-context ctx))
+           (c1 (alist-get 'concepts (car (alist-get 'segments linked))))
+           (c2 (alist-get 'concepts (cadr (alist-get 'segments linked)))))
+      (should (string-match-p (regexp-quote "*[[denote:20261027T135714][kalā]]*") c1))
+      (should (string-match-p (regexp-quote "the five: *jñāna* …") c1))
+      (should (string-match-p (regexp-quote "*[[denote:20261012T123039][kula]]*") c2)))
+    (let* ((ctx '((segments . (((num . 1) (concepts . "*jñāna* — knowledge; *kula* — family."))))))
+           (c (alist-get 'concepts (car (alist-get 'segments (bcat-zettel-link-context ctx))))))
+      (should (string-match-p (regexp-quote "*[[denote:20250822T092830][jñāna]]*") c))
+      (should (string-match-p (regexp-quote "*[[denote:20250101T000001][kula]]*") c)))))
 
 (ert-deftest bcat-zettel-link-without-index ()
   "No index (or linking switched off): the notes stay as they are."

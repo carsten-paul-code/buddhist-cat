@@ -68,11 +68,39 @@ the Termzettel (/term); created before * Verweise when missing."
   (and (file-exists-p tibetan-zettel-highlight-index-file)
        (tibetan-zettel-highlight--ensure-index)))
 
-(defun bcat-zettel--id-for (term)
+(defun bcat-zettel--candidates (term)
+  "The zettel ids for TERM as written (index key of three letters or
+more), or nil."
+  (and (>= (length (tibetan-zettel-highlight--norm-key term)) 3)
+       (tibetan-zettel-highlight--ids-for-term term)))
+
+(defun bcat-zettel--traditions (id)
+  "The traditions of zettel ID (its tags tradition_…)."
+  (cl-remove-if-not (lambda (tag) (string-prefix-p "tradition_" tag))
+                    (append (plist-get (tibetan-zettel-highlight-entry id) :tags) nil)))
+
+(defun bcat-zettel--tradition (terms)
+  "The tradition most of TERMS (with a zettel) share — more than half of
+them —, or nil."
+  (let ((counts (make-hash-table :test 'equal)) (n 0) (best nil) (top 0))
+    (dolist (term (delete-dups (mapcar #'tibetan-zettel-highlight--norm-key terms)))
+      (let ((ids (bcat-zettel--candidates term)))
+        (when ids
+          (cl-incf n)
+          (dolist (tr (delete-dups (apply #'append (mapcar #'bcat-zettel--traditions ids))))
+            (puthash tr (1+ (gethash tr counts 0)) counts)))))
+    (maphash (lambda (k v) (when (> v top) (setq best k top v))) counts)
+    (and best (> (* 2 top) n) best)))
+
+(defun bcat-zettel--id-for (term &optional tradition)
   "The zettel id for TERM as written, or nil: of several the first that
-is no stub."
-  (let ((ids (and (>= (length (tibetan-zettel-highlight--norm-key term)) 3)
-                  (tibetan-zettel-highlight--ids-for-term term))))
+is no stub.  With TRADITION (the text's, `bcat-zettel--tradition') only
+zettels of that tradition — 5.11., TĀ 1.1: jñāna, a Śaiva power, went
+to the only zettel of that name, Kramer's epistemology."
+  (let* ((ids (bcat-zettel--candidates term))
+         (ids (if tradition
+                  (cl-remove-if-not (lambda (id) (member tradition (bcat-zettel--traditions id))) ids)
+                ids)))
     (or (cl-find-if-not (lambda (id) (plist-get (tibetan-zettel-highlight-entry id) :stub)) ids)
         (car ids))))
 
@@ -80,19 +108,34 @@ is no stub."
   "\\(^\\|[[:space:](\"'„“‚/]\\)\\*\\([^*\n[]+?\\)\\*\\([[:space:].,;:!?)\"'“”‘’—–-]\\|$\\)"
   "A term in bold (org emphasis) not yet linked.")
 
-(defun bcat-zettel-link (text)
+(defun bcat-zettel--unlink (text)
+  "TEXT with the tool's links in bold back to the bare term:
+*[[denote:ID][term]]* → *term* (linking anew decides again)."
+  (replace-regexp-in-string "\\*\\[\\[denote:[^]\n]+\\]\\[\\([^]\n]+\\)\\]\\]\\*" "*\\1*" text t))
+
+(defun bcat-zettel--bold-terms (text)
+  "The terms in bold of TEXT (not linked), in order."
+  (let ((start 0) (out '()))
+    (while (string-match bcat-zettel--bold-re text start)
+      (push (match-string 2 text) out)
+      (setq start (match-beginning 3)))
+    (nreverse out)))
+
+(defun bcat-zettel-link (text &optional tradition)
   "TEXT with every term in bold that has a zettel linked to it:
-*[[denote:ID][term]]*.  Unchanged without index or when
-`bcat-zettel-link-concepts' is nil; linking again changes nothing."
+*[[denote:ID][term]]* — with TRADITION only to zettels of it
+\(`bcat-zettel--id-for').  The tool's links are decided anew (a term
+linked before is unlinked first), so linking again changes nothing.
+Unchanged without index or when `bcat-zettel-link-concepts' is nil."
   (if (not (and bcat-zettel-link-concepts (stringp text) (bcat-zettel--index-p)))
       text
-    (let ((start 0) (out '()))
+    (let ((text (bcat-zettel--unlink text)) (start 0) (out '()))
       (while (string-match bcat-zettel--bold-re text start)
         ;; the positions first: the lookup matches strings of its own
         (let* ((lead (match-end 1))
                (next (match-beginning 3))
                (term (match-string 2 text))
-               (id (bcat-zettel--id-for term)))
+               (id (bcat-zettel--id-for term tradition)))
           (push (substring text start lead) out)
           (push (if id (format "*[[denote:%s][%s]]*" id term) (concat "*" term "*")) out)
           (setq start next)))
@@ -108,17 +151,25 @@ is no stub."
     (nreverse ids)))
 
 (defun bcat-zettel-link-context (context)
-  "CONTEXT with the concept notes of its segments linked (`bcat-zettel-link')."
-  (if (not (and bcat-zettel-link-concepts (assq 'segments context)))
+  "CONTEXT with the concept notes of its segments linked
+\(`bcat-zettel-link'), homonyms decided by the tradition most of the
+sentence's terms share (`bcat-zettel--tradition')."
+  (if (not (and bcat-zettel-link-concepts (assq 'segments context) (bcat-zettel--index-p)))
       context
-    (cons (cons 'segments
-                (mapcar (lambda (s)
-                          (let ((c (alist-get 'concepts s)))
-                            (if (and (stringp c) (not (string-blank-p c)))
-                                (cons (cons 'concepts (bcat-zettel-link c)) s)
-                              s)))
-                        (alist-get 'segments context)))
-          context)))
+    (let* ((notes (cl-remove-if-not (lambda (c) (and (stringp c) (not (string-blank-p c))))
+                                    (mapcar (lambda (s) (alist-get 'concepts s))
+                                            (alist-get 'segments context))))
+           (tradition (bcat-zettel--tradition
+                       (apply #'append (mapcar (lambda (c) (bcat-zettel--bold-terms (bcat-zettel--unlink c)))
+                                               notes)))))
+      (cons (cons 'segments
+                  (mapcar (lambda (s)
+                            (let ((c (alist-get 'concepts s)))
+                              (if (and (stringp c) (not (string-blank-p c)))
+                                  (cons (cons 'concepts (bcat-zettel-link c tradition)) s)
+                                s)))
+                          (alist-get 'segments context)))
+            context))))
 
 ;; ----------------------------------------------------------------------------
 ;; Belege
