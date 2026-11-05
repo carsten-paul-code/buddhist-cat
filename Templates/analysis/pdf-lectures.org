@@ -6,6 +6,7 @@ für Carstens eigenes Studium (OCHS-Transkripte), wie das Satz-PDF.
 #+end_comment
 #+TITLE: Sentence {{sent-num}} — lectures
 #+OPTIONS: toc:nil num:nil title:nil author:nil date:nil
+#+CAT_NAVBAR: t
 
 {{#lectures}}
 * {{lecture-name}}

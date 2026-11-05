@@ -1025,6 +1025,79 @@ copy per export would crowd the device."
           (should (equal '(("bden-9.pdf" . "SDA 9")) uploaded))
           (should-not (directory-files folder nil "\\.pdf\\'\\|\\`\\.pdfview")))))))
 
+(ert-deftest bcat-export-auto-parts ()
+  "Carsten 5.11.: the bar of links „überall“ — in the documents of the
+readings.  A document without parts of its own (Einführung,
+Schlüsselbegriffe, the lectures) gets jump targets for its headings of
+level 1 (nav-1 …, a drawer of its own or the one it has) and the bar
+— but no new page per heading (short sections would leave half pages).
+One heading, or ten and more: no bar (useless, or too long)."
+  (with-temp-buffer
+    (insert "#+LATEX_HEADER: \\fancyhead[L]{X}\n"
+            "* Einleitung\nE.\n"
+            "* Text und Kommentar\n:PROPERTIES:\n:FOLIO: 1\n:END:\nT.\n"
+            "** Unterabschnitt\nU.\n"
+            "* Literatur\nL.\n")
+    (let ((bcat-export-navbar-auto t))
+      (bcat-export--auto-parts)
+      (bcat-export--parts-pages))
+    (let ((text (buffer-string)))
+      (should (string-match-p "^\\* Einleitung\n:PROPERTIES:\n:CUSTOM_ID: nav-1\n:END:\nE\\.$" text))
+      (should (string-match-p "^\\* Text und Kommentar\n:PROPERTIES:\n:CUSTOM_ID: nav-2\n:FOLIO: 1\n:END:$" text))
+      (should (string-match-p (regexp-quote "\\hyperref[nav-3]{Literatur}") text))
+      (should-not (string-match-p "clearpage" text))
+      (should-not (string-match-p "CUSTOM_ID: nav-[0-9]+\n:END:\nU" text))))
+  (with-temp-buffer
+    (insert "* Nur einer\nE.\n")
+    (let ((bcat-export-navbar-auto t))
+      (bcat-export--auto-parts)
+      (bcat-export--parts-pages))
+    (should-not (string-match-p "fancyfoot" (buffer-string))))
+  (with-temp-buffer
+    (insert "* A\n* B\n")
+    (bcat-export--auto-parts)
+    (should (equal "* A\n* B\n" (buffer-string)))))
+
+(ert-deftest bcat-export-reading-document ()
+  "C-c u H in a document of the readings that is no cascade source and
+no sentence file (Einführung-MSA-9.org): its own page — Carsten 5.11.:
+„in Handouts A4 ist sehr fein“, no Paper Pro page here —, the bar of
+its headings, into handouts/ beside the text, onto the reMarkable under
+its title; the file untouched."
+  (let* ((dir (make-temp-file "bcat-reading-" t))
+         (text-dir (expand-file-name "WS26-27/Mahayanasutralamkara" dir))
+         (file (expand-file-name "Einfuehrung-MSA-9.org" text-dir))
+         (exported nil) (uploaded nil) (page 'unset))
+    (unwind-protect
+        (progn
+          (make-directory text-dir t)
+          (with-temp-file file
+            (insert "#+TITLE: Mahāyānasūtrālaṃkāra IX — Einführung\n"
+                    "#+LATEX_CLASS_OPTIONS: [11pt,a4paper]\n"
+                    "#+LATEX_HEADER: \\usepackage[a4paper,left=2.5cm]{geometry}\n"
+                    "#+LATEX_HEADER: \\usepackage{libertinus}\n\n"
+                    "* Der Text\nT.\n* Die Klasse\nK.\n"))
+          (let ((before (with-temp-buffer (insert-file-contents file) (buffer-string))))
+            (cl-letf (((symbol-function 'bcat-export-pdf)
+                       (lambda (f &rest _)
+                         (setq exported (with-temp-buffer (insert-file-contents f) (buffer-string))
+                               page bcat-export-page)
+                         (let ((pdf (concat (file-name-sans-extension f) ".pdf")))
+                           (with-temp-file pdf (insert "PDF")) pdf)))
+                      ((symbol-function 'tibetan-discussion-paper--upload)
+                       (lambda (pdf _title label &optional _done) (setq uploaded (cons pdf label)) t)))
+              (let ((bcat-export-upload t))
+                (with-current-buffer (find-file-noselect file)
+                  (unwind-protect (bcat-export) (kill-buffer)))
+                (should-not page)))
+            (should (equal before (with-temp-buffer (insert-file-contents file) (buffer-string)))))
+          (should (string-match-p "a4paper" exported))
+          (should (string-match-p "libertinus" exported))
+          (should (string-match-p "^#\\+CAT_NAVBAR: t$" exported))
+          (should (equal (expand-file-name "handouts/Einfuehrung-MSA-9.pdf" text-dir) (car uploaded)))
+          (should (equal "Mahāyānasūtrālaṃkāra IX — Einführung" (cdr uploaded))))
+      (delete-directory dir t))))
+
 (ert-deftest bcat-export-pdf-smoke ()
   "Real LuaLaTeX run (only where lualatex is installed): the reviewed
 Tibetan sample becomes a PDF and the .tex is cleared away; kept on

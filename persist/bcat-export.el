@@ -725,6 +725,11 @@ bar of parts at the foot."
   :type 'integer
   :group 'buddhist-cat)
 
+(defvar bcat-export-page t
+  "Non-nil: `bcat-export-pdf' sets the page of the Paper Pro
+\(`bcat-export-page-lines'); nil: the document keeps its own (Carsten
+5.11., the documents of the readings: „in Handouts A4 ist sehr fein“).")
+
 (defun bcat-export-page-lines ()
   "The lines setting the page of the PDF (`bcat-export-paper',
 `bcat-export-margins', `bcat-export-font-size') — for the export copy,
@@ -889,8 +894,11 @@ For `org-export-before-processing-functions'."
       (when parts
         (setq parts (nreverse parts))
         (dolist (p (cdr parts))
-          (goto-char (nth 2 p))
-          (insert "#+LATEX: \\clearpage\n"))
+          ;; a part of a view starts a page; a heading of a document
+          ;; (nav-N, `bcat-export--auto-parts') does not
+          (unless (string-prefix-p "nav-" (nth 0 p))
+            (goto-char (nth 2 p))
+            (insert "#+LATEX: \\clearpage\n")))
         (goto-char (point-min))
         (let ((last nil))
           (while (re-search-forward "^#\\+LATEX_HEADER:.*$" nil t)
@@ -902,6 +910,39 @@ For `org-export-before-processing-functions'."
                            parts "\\enspace·\\enspace ")
                 "}\n")
         (dolist (p parts) (set-marker (nth 2 p) nil))))))
+
+(defvar bcat-export-navbar-auto nil
+  "Non-nil: `bcat-export--auto-parts' gives a document without parts of
+its own the bar of links (as #+CAT_NAVBAR: t in the document does).")
+
+(defun bcat-export--auto-parts (&rest _)
+  "In the current (export) buffer of a document of the readings without
+parts of its own (Carsten 5.11.: the bar „überall“ — Einführung,
+Schlüsselbegriffe, the lectures; #+CAT_NAVBAR: t or
+`bcat-export-navbar-auto'): its headings of level 1 get the jump
+targets nav-1 … (into the drawer they have, or one of their own), so
+that `bcat-export--parts-pages' sets the bar — without a new page per
+heading.  Only with 2 to 9 headings: one needs no bar, ten and more
+make it too long.  For `org-export-before-processing-functions'."
+  (save-excursion
+    (goto-char (point-min))
+    (when (and (or bcat-export-navbar-auto
+                   (re-search-forward "^#\\+CAT_NAVBAR:[ \t]*t[ \t]*$" nil t))
+               (progn (goto-char (point-min))
+                      (not (re-search-forward "^[ \t]*:CUSTOM_ID:" nil t))))
+      (goto-char (point-min))
+      (let ((heads '()))
+        (while (re-search-forward "^\\* " nil t)
+          (push (copy-marker (line-end-position)) heads))
+        (setq heads (nreverse heads))
+        (when (<= 2 (length heads) 9)
+          (cl-loop for m in heads for i from 1
+                   do (goto-char m)
+                   (forward-line 1)
+                   (if (looking-at "[ \t]*:PROPERTIES:[ \t]*$")
+                       (progn (forward-line 1) (insert (format ":CUSTOM_ID: nav-%d\n" i)))
+                     (insert (format ":PROPERTIES:\n:CUSTOM_ID: nav-%d\n:END:\n" i)))))
+        (dolist (m heads) (set-marker m nil))))))
 
 (defcustom bcat-export-keep-tex nil
   "Keep the .tex beside the PDF — only for looking into the LaTeX.
@@ -935,7 +976,8 @@ LuaLaTeX could not set land in `bcat-export--missing'."
          (remove-logs org-latex-remove-logfiles)
          (insert-head (lambda (&rest _)
                         (goto-char (point-min))
-                        (insert (bcat-export--font-lines) (bcat-export-page-lines) (or head "")))))
+                        (insert (bcat-export--font-lines) (if bcat-export-page (bcat-export-page-lines) "")
+                                (or head "")))))
     (unwind-protect
         (with-current-buffer buf
           (when (buffer-modified-p) (save-buffer))
@@ -972,6 +1014,7 @@ LuaLaTeX could not set land in `bcat-export--missing'."
                                            #'bcat-export--rechunk-header-tables
                                            #'bcat-export--wrap-wide-tables
                                            #'bcat-export--marks-apart
+                                           #'bcat-export--auto-parts
                                            #'bcat-export--parts-pages)
                                      org-export-before-processing-functions)))
                         (expand-file-name (org-latex-export-to-pdf) (file-name-directory file))))
@@ -1087,6 +1130,38 @@ change; a copy per export would crowd the device)."
                 (and new out)))
           (when (file-exists-p src) (delete-file src)))))))
 
+(defun bcat-export-reading-document (file)
+  "C-c u H in a document of the readings that is neither a cascade source
+nor a sentence file (Carsten 5.11.: Einführung, Schlüsselbegriffe —
+„nur die Dokumente für die Readings“): the PDF on its own page (A4 —
+„in Handouts A4 ist sehr fein“; `bcat-export-page' nil) with the bar of
+its headings (#+CAT_NAVBAR: t, in an export copy; FILE stays as it
+is) — into handouts/ of its text, onto the reMarkable under its title.
+Returns the PDF."
+  (let* ((text (with-temp-buffer (insert-file-contents file) (buffer-string)))
+         (title (or (bcat-export--title file) (file-name-base file)))
+         (full (or (bcat-sentence--header-value file "TITLE") title))
+         (folder (file-name-nondirectory (directory-file-name (file-name-directory file))))
+         (copy (expand-file-name (concat ".pdfview-" (file-name-nondirectory file)) (file-name-directory file)))
+         (target (bcat-export--handout file (file-name-base file)))
+         (pdf (unwind-protect
+                  (progn
+                    (let ((coding-system-for-write 'utf-8-unix))
+                      (with-temp-file copy
+                        (insert "#+CAT_NAVBAR: t\n" text)))
+                    (let ((bcat-export-page nil))
+                      (bcat-export-pdf copy (bcat-export-head-lines folder title nil nil))))
+                (when (file-exists-p copy) (delete-file copy)))))
+    (when (and target pdf (file-exists-p pdf))
+      (make-directory (file-name-directory target) t)
+      (rename-file pdf target t)
+      (setq pdf target))
+    (if bcat-export-upload
+        (progn (require 'tibetan-discussion-paper)
+               (tibetan-discussion-paper--upload pdf folder full))
+      (message "PDF: %s" pdf))
+    pdf))
+
 (defun bcat-export-after-fetch (file)
   "Hook for `bcat-sentence-after-fetch-functions': C-c u G ends with
 C-c u H (when `bcat-export-auto').  Never for a FILE under
@@ -1124,6 +1199,13 @@ old handout."
       (bcat-status-begin "C-c u H" (file-name-base file)
                          (list (cons file (plist-get (bcat-export-info file) :label))))
       (bcat-export-file file))
+     ;; 5.11.: a document of the readings (Einführung …), no cascade
+     ;; source, no sentence file — its copy for the device.
+     ((and file (string-match-p "\\.org\\'" file)
+           (not (string-match-p "\\`sent-[0-9]" (file-name-nondirectory file)))
+           (not (equal "cascade" (bcat-sentence--header-value file "TIBETAN_LAYOUT"))))
+      (when (buffer-modified-p) (save-buffer))
+      (bcat-export-reading-document file))
      ((and file (string-match-p "\\`sent-[0-9]" (file-name-nondirectory file)))
       (let ((src (tibetan-sentence--source-file-from-analysis file)))
         (if (bcat-sentence-template-name src)
