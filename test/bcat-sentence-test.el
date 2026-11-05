@@ -801,6 +801,28 @@ next L1 heading after it (since 31.10. * Segments or * Tibetan follows)."
     (insert (format "*%s:* %s\n\n" name text))
     (write-region (point-min) (point-max) file nil 0)))
 
+(ert-deftest bcat-sentence-compared-stops-at-the-units ()
+  "The references under Translations compared are the *NAME:* paragraphs
+above the units of the comparison (*** Overview …, 2.11.).  5.11., TĀ
+1.1: the decisions of an earlier comparison (*Entscheidungen:* in its
+*** Übersetzungsvorschlag) were read as a reference — sent to Claude as
+„E = Entscheidungen“, in TĀ 1006 placed per segment."
+  (let ((file (make-temp-file "bcat-compared" nil ".org")))
+    (unwind-protect
+        (progn
+          (with-temp-file file
+            (insert "* Sentence\n** Translations compared\n"
+                    "*Translation:* Own.\n\n*Dyczkowski 2023:* D.\n\n*DharmaMitra:* DM.\n\n"
+                    "*** Übersicht\nSigel: C = Translation (oben)\n\n"
+                    "*** Übersetzungsvorschlag\n*Vorschlag:*\n#+begin_quote\nP.\n#+end_quote\n\n"
+                    "*Entscheidungen:* Einheit 5: gupta „bewahrt“.\n\n"
+                    "*** Die Stellen im Einzelnen\n**** 1. /x/ — gelb\n*Befund:* b\n\n"
+                    "*Gewicht:* g\n\n"
+                    "* Segments\n"))
+          (should (equal '(("Translation" . "Own.") ("Dyczkowski 2023" . "D.") ("DharmaMitra" . "DM."))
+                         (bcat-sentence--compared file))))
+      (delete-file file))))
+
 (ert-deftest bcat-sentence-own-translations-labelled ()
   "The own translation of a segment is read with or without its
 „*Translation:*“ label (29.10.; the files of 28.10. have none) — the

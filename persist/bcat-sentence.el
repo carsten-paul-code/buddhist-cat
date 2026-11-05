@@ -652,11 +652,15 @@ old layout dropped the AS/MSA * Handout)."
 
 (defun bcat-sentence--compared (file)
   "The paragraphs under `** Translations compared' of the template FILE
-as ((NAME . TEXT) …) — every `*NAME:* TEXT' paragraph, in order."
+as ((NAME . TEXT) …) — every `*NAME:* TEXT' paragraph above the units of
+the comparison (its first *** subsection, 2.11.), in order.  5.11., TĀ
+1.1: read down to the next L1/L2 heading, the decisions of an earlier
+comparison (*Entscheidungen:* in its *** Übersetzungsvorschlag) became
+a reference — sent to Claude as „E = Entscheidungen“."
   (let ((text (bcat-sentence--text file)))
     (when (string-match "^\\*\\* Translations compared\n" text)
       (let* ((start (match-end 0))
-             (end (if (string-match "^\\*\\{1,2\\} " text start)
+             (end (if (string-match "^\\*\\{1,3\\} " text start)
                       (match-beginning 0)
                     (length text))))
         (delq nil
