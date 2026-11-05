@@ -4971,6 +4971,18 @@ Exporte desselben Dossiers.  Titel der
 Bhāṣya-Schicht generisch „Bhāṣya“ (der Autor steht nicht in den
 Daten); Siglen aus #+TIBETAN_SIGLUM (MSA: L · D4026, D4034; AS keine).
 
+5.11.2026 spät, LEISTE IN DEN READING-DOKUMENTEN (Carsten: „die Links
+unten im PDF … überall“ — „nur die Dokumente für die Readings“, „in
+Handouts A4 ist sehr fein“): `bcat-export--auto-parts' gibt einem
+Dokument ohne eigene Teile (#+CAT_NAVBAR: t) die Marken nav-N und die
+Leiste, ohne neue Seite je Überschrift, nur bei 2–9 Überschriften;
+C-c u H in einem org-Dokument, das weder Kaskadenquelle noch Satzdatei
+ist (Einführung, Schlüsselbegriffe) → `bcat-export-reading-document':
+A4 (`bcat-export-page' nil), Leiste, handouts/, Upload unter dem Titel
+(`aeafcf7'); das Vortragsdokument trägt #+CAT_NAVBAR.  Leiste einzeilig
+(Nummer bzw. erstes Wort, wenn die Titel > 90 Zeichen) und auch auf der
+Titelseite (\bcatbar in fancy und plain, `ac14fdf').
+
 #### Offen
 
 - Mitgeben: seit 5.11. auch im tibetischen Abruf eines Paars.  Schlüssel

@@ -1,9 +1,9 @@
 #+TITLE: Function Reference — buddhist-cat
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-11-05T16:08:48
+#+DATE: 2026-11-05T16:17:57
 #+OPTIONS: toc:2 num:nil
 
-Source tree: ~/Users/cp/buddhist-cat~  ·  97 modules  ·  2351 forms
+Source tree: ~/Users/cp/buddhist-cat~  ·  97 modules  ·  2357 forms
 
 Regenerated automatically by:
 
@@ -65,7 +65,7 @@ python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/buddhist-c
   - [[#persist/bcat-analysis.el][persist/bcat-analysis.el]]  (122)
   - [[#persist/bcat-commentary.el][persist/bcat-commentary.el]]  (56)
   - [[#persist/bcat-dossier.el][persist/bcat-dossier.el]]  (33)
-  - [[#persist/bcat-export.el][persist/bcat-export.el]]  (73)
+  - [[#persist/bcat-export.el][persist/bcat-export.el]]  (79)
   - [[#persist/bcat-faces.el][persist/bcat-faces.el]]  (30)
   - [[#persist/bcat-parallel.el][persist/bcat-parallel.el]]  (7)
   - [[#persist/bcat-relayout.el][persist/bcat-relayout.el]]  (16)
@@ -15524,7 +15524,7 @@ sentence files (Carsten 30.10.: not in the PDF).  For
 ** ~bcat-export-page-lines~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 728
+:LINE: 733
 :SIGNATURE: (bcat-export-page-lines)
 :END:
 
@@ -15535,7 +15535,7 @@ never the file.
 ** ~bcat-export--filled-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 736
+:LINE: 741
 :SIGNATURE: (bcat-export--filled-p value)
 :END:
 
@@ -15545,7 +15545,7 @@ other non-nil value.
 ** ~bcat-export--lecture-paragraphs~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 745
+:LINE: 750
 :SIGNATURE: (bcat-export--lecture-paragraphs body)
 :END:
 
@@ -15556,7 +15556,7 @@ time of the one before.
 ** ~bcat-export--lecture-excerpt~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 758
+:LINE: 763
 :SIGNATURE: (bcat-export--lecture-excerpt body name cited)
 :END:
 
@@ -15570,7 +15570,7 @@ not count.  Mechanical — the transcript goes to no one.
 ** ~bcat-export--split-proposal~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 782
+:LINE: 787
 :SIGNATURE: (bcat-export--split-proposal proposal)
 :END:
 
@@ -15581,7 +15581,7 @@ first, and from *Decisions:* (*Entscheidungen:*) on what justifies them
 ** ~bcat-export--view-context~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 791
+:LINE: 796
 :SIGNATURE: (bcat-export--view-context context)
 :END:
 
@@ -15596,7 +15596,7 @@ Notes have anything (`grammar-p', `concepts-p', `discussion-p',
 ** ~bcat-export-view~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 836
+:LINE: 841
 :SIGNATURE: (bcat-export-view file)
 :END:
 
@@ -15610,7 +15610,7 @@ of a template — C-c u H then exports the file itself.
 ** ~bcat-export-views~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 845
+:LINE: 850
 :SIGNATURE: (bcat-export-views file)
 :END:
 
@@ -15622,10 +15622,22 @@ the document of the whole lectures (template pdf-lectures, Carsten
 Extradokument“), NAME the lecturer (the first lecture's name up to its
 comma).  nil without a pdf template.
 
+** ~bcat-export--bar-labels~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 880
+:SIGNATURE: (bcat-export--bar-labels titles)
+:END:
+
+The labels of the bar for TITLES: the titles themselves, or — when
+together longer than `bcat-export-bar-width' (5.11., Einführung MSA IX:
+eight titles over three lines) — for a numbered title its number
+(„1.“, „IX.60“), for another its first word.
+
 ** ~bcat-export--parts-pages~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 869
+:LINE: 893
 :SIGNATURE: (bcat-export--parts-pages &rest _)
 :END:
 
@@ -15636,10 +15648,26 @@ follows internal links since 2.6), placed after the running head
 (whose \fancyhf{} would clear it).  Without parts nothing changes.
 For `org-export-before-processing-functions'.
 
+** ~bcat-export--auto-parts~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 940
+:SIGNATURE: (bcat-export--auto-parts &rest _)
+:END:
+
+In the current (export) buffer of a document of the readings without
+parts of its own (Carsten 5.11.: the bar „überall“ — Einführung,
+Schlüsselbegriffe, the lectures; #+CAT_NAVBAR: t or
+`bcat-export-navbar-auto'): its headings of level 1 get the jump
+targets nav-1 … (into the drawer they have, or one of their own), so
+that `bcat-export--parts-pages' sets the bar — without a new page per
+heading.  Only with 2 to 9 headings: one needs no bar, ten and more
+make it too long.  For `org-export-before-processing-functions'.
+
 ** ~bcat-export-remove-tex~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 914
+:LINE: 977
 :SIGNATURE: (bcat-export-remove-tex pdf)
 :END:
 
@@ -15650,7 +15678,7 @@ old handout, discussion paper).
 ** ~bcat-export-pdf~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 923
+:LINE: 986
 :SIGNATURE: (bcat-export-pdf file &optional head)
 :END:
 
@@ -15665,7 +15693,7 @@ LuaLaTeX could not set land in `bcat-export--missing'.
 ** ~bcat-export-file~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 993
+:LINE: 1058
 :SIGNATURE: (bcat-export-file file)
 :END:
 
@@ -15685,7 +15713,7 @@ the PDF path.
 ** ~bcat-export--lectures-pdf~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1067
+:LINE: 1132
 :SIGNATURE: (bcat-export--lectures-pdf file views head target)
 :END:
 
@@ -15695,10 +15723,25 @@ or nil.  Returns its path only when it is NEW — then C-c u H puts it on
 the reMarkable; later it is only written anew (the transcript does not
 change; a copy per export would crowd the device).
 
+** ~bcat-export-reading-document~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 1155
+:SIGNATURE: (bcat-export-reading-document file)
+:END:
+
+C-c u H in a document of the readings that is neither a cascade source
+nor a sentence file (Carsten 5.11.: Einführung, Schlüsselbegriffe —
+„nur die Dokumente für die Readings“): the PDF on its own page (A4 —
+„in Handouts A4 ist sehr fein“; `bcat-export-page' nil) with the bar of
+its headings (#+CAT_NAVBAR: t, in an export copy; FILE stays as it
+is) — into handouts/ of its text, onto the reMarkable under its title.
+Returns the PDF.
+
 ** ~bcat-export-after-fetch~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1090
+:LINE: 1187
 :SIGNATURE: (bcat-export-after-fetch file)
 :END:
 
@@ -15711,7 +15754,7 @@ rmapi failure must not spoil the landed analysis.
 ** ~bcat-export~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 1112
+:LINE: 1209
 :SIGNATURE: (bcat-export)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -15884,10 +15927,22 @@ bar of parts at the foot.
 
 Font size of the PDF in pt — the page is shown at its size.
 
+** ~bcat-export-bar-width~  /customize variable/
+:PROPERTIES:
+:KIND: defcustom
+:LINE: 874
+:TYPE: 'integer
+:GROUP: buddhist-cat
+:DEFAULT: 90
+:END:
+
+Characters the titles of the bar may take together before they are
+shortened (`bcat-export--bar-labels') — one line at the foot.
+
 ** ~bcat-export-keep-tex~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 906
+:LINE: 969
 :TYPE: 'boolean
 :GROUP: buddhist-cat
 :DEFAULT: nil
@@ -16003,14 +16058,35 @@ removed).
 
 The missing characters of the last `bcat-export-pdf', ((CHAR . FONT) …).
 
+** ~bcat-export-page~  /variable/
+:PROPERTIES:
+:KIND: defvar
+:LINE: 728
+:DEFAULT: t
+:END:
+
+Non-nil: `bcat-export-pdf' sets the page of the Paper Pro
+(`bcat-export-page-lines'); nil: the document keeps its own (Carsten
+5.11., the documents of the readings: „in Handouts A4 ist sehr fein“).
+
 ** ~bcat-export--detail-fields~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 741
+:LINE: 746
 :DEFAULT: '
 :END:
 
 /(no docstring)/
+
+** ~bcat-export-navbar-auto~  /variable/
+:PROPERTIES:
+:KIND: defvar
+:LINE: 936
+:DEFAULT: nil
+:END:
+
+Non-nil: `bcat-export--auto-parts' gives a document without parts of
+its own the bar of links (as #+CAT_NAVBAR: t in the document does).
 
 
 * persist/bcat-faces.el
