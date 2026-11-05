@@ -4798,6 +4798,41 @@ Translations compared beginnt mit Claudes Übersetzung („C =
 Translation“); C-c u L baut alte Dateien um
 \(`bcat-relayout--old-proposal').  48 Dateien neu gesetzt.  ERT 2808.
 
+5.11.2026, SANSKRIT NACHGEZOGEN — GENERISCH ZUERST (Carsten, TĀ 1.1 auf
+dem MacBook: „so prinzipiell anwendbare Pattern von dem was wir gestern
+für Tibetisch gemacht haben generisch machen und mit anwenden.  Es
+sollte immer so sein, dass alles erstmal generisch ist und dann durch
+Ausnahmen überschrieben werden kann“ — als Arbeitsregel festgehalten).
+Zwei Fehler vorneweg: `a980c51' Referenzen sind nur die `*NAME:*'-
+Absätze ÜBER den Vergleichseinheiten (`bcat-sentence--compared' las die
+alten deutschen *Entscheidungen:* aus *** Übersetzungsvorschlag als
+Referenz „E“ — Claude zitierte sie, TĀ 1006 bekam je Segment
+„Entscheidungen (EN)/(DE)“; TĀ 001/1006/1007 per Skript bereinigt);
+`3622f6c' der Sanskrit-Prompt bekommt das skandierte Metrum
+(`bcat-sentence--metre-name'; Claude hatte für den Nardaṭaka von TĀ 1.1
+„Śālinī“ geschrieben), Regel „Name a metre only as given“.  Dann das
+eine Tabellenlayout: `4d48bbb' letzte Zelle generisch kappen (Klammern
+raus, sonst am Komma — `bcat-analysis--cut-label'); `feaeef5' breite
+Zellen brechen zwischen den Gliedern („;“), erst ein zu langes Glied an
+„ · “, `bcat-analysis--table-columns' fügt die Zeilen beim Lesen wieder
+(`--join-continuations'); `52e42d7' Platz für das Trennzeichen;
+`fe02cef' `bcat-analysis-table-width' (158, alter tibetischer Name
+Alias), `bcat-analysis-cell-width' (45), `bcat-analysis-layout-overrides'
+((LANG (KEY . VALUE))) über `bcat-analysis--layout'; ein Weg
+`bcat-analysis--layout-tables' für Tibetisch und Sanskrit, umbrochen nur
+soweit es Zeilen spart (`bcat-analysis--best-chunks' — mit fester 45
+wuchs AS 3 von 5 auf 8 Zeilen); Sanskrit-Form gekappt, Rest in die
+*Structure:*; C-c u L kompaktiert jede Sprache; `296e5b9' das PDF teilt
+die Tabellen jedes Segments (an der ⟦N⟧-Marke erkannt) neu auf
+(`bcat-export--rechunk-gloss-tables', `bcat-export-table-width' 130,
+`bcat-export-wide-table-width' für den Rest); `168b2c8'
+`bcat-analysis--label-limit' 25 für Funktion UND Form im Prompt.
+Ausnahmen bleiben Ausnahmen: tibetische Glossenkürzung (§5.56),
+pa/ba-Wörterbuchform, Uchen-Zeile, Kailasa.  36 Satzdateien (TĀ, AS-
+und MSA-Paare) mit C-c u L neu gesetzt, Spalten vorher/nachher geprüft
+(gleich bis auf die gekappte letzte Zelle); TĀ 1.1 Segment 1: zwei
+Tabellen (je Halbvers) statt fünf.  ERT 2821.
+
 #### Offen
 
 - Kommentardokument (comm-…, Vorlage commentary) noch in alter Ordnung;
@@ -4820,6 +4855,13 @@ Translation“); C-c u L baut alte Dateien um
   `tibetan-discussion--submit' und der rmapi-Upload ziehen dann in
   bcat-Module.
 - §5.73-Restschritt: `#+CAT_*' neben `#+TIBETAN_*' lesen.
+- TĀ 1.1 (5.11.): Inhaltsfehler aus Claudes Antwort, nicht von Hand
+  geändert — /vimala-kalā-āśrayā/ „adj. f. inst. sg. (used as nom.)“
+  (richtig nom. sg. f., Bahuvrīhi zu /jananī/), Grammatik „Śālinī“
+  (Nardaṭaka).  Ein C-u C-c u G holt beides neu (dann mit Metrum,
+  Formregel und den Vergleichsmarkern vom 4.11.).
+- Devanāgarī-Zeilen der Rezitation sind 22 px hoch statt 19 (Noto Sans
+  Devanagari); bei Bedarf ein Fontset wie für Uchen (§5.74, 4.11.).
 
 ### 5.73 Umbenennung in Buddhist CAT — erster Schritt: die Hülle (done, 2026-10-28)
 
