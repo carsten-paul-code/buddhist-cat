@@ -21,6 +21,7 @@
 (require 'org)
 (require 'bcat-export)
 (require 'bcat-sentence-test)
+(require 'bcat-analysis-test)
 
 (ert-deftest bcat-export-running-head ()
   "The running head: folder of the source · work title (from the
@@ -107,7 +108,7 @@ file stays as it is); a table without a long cell is left alone."
       (bcat-export--wrap-wide-tables)
       (let ((lines (split-string (buffer-string) "\n")))
         (should (cl-every (lambda (l) (or (not (string-prefix-p "|" l))
-                                          (<= (string-width l) bcat-analysis-sanskrit-table-width)))
+                                          (<= (string-width l) bcat-export-wide-table-width)))
                           lines))
         (should (member "| iha | khalu |" lines))
         (should (string-match-p "-a action noun" (buffer-string)))
@@ -567,12 +568,43 @@ apart."
             "| nature of phenomena | this             | toward / into | incline toward | and                 | flow into / lead to |\n"
             "| N · goal/locus      | DEM · specifying | DAT/LOC       | V pres.        | CONV · coordinative | V pres. · main verb |\n"
             "\n→ t\n\n| Nr. | Stelle |\n|-----+--------|\n|   1 | /a/    |\n")
-    (bcat-export--rechunk-tibetan-tables)
+    (bcat-export--rechunk-gloss-tables)
     (let ((text (buffer-string)))
       ;; two tables now, the first five columns, 'bab alone
       (should (string-match-p "\n| ཆོས་ཉིད +| འདི +| ལ +| གཞོལ +| ཞིང +|\n" text))
       (should (string-match-p "|\n\n| འབབ +|\n| 'bab +|\n" text))
       (should (string-match-p "\n\n→ t\n\n| Nr\\. | Stelle |\n|-----\\+--------|\n|   1 | /a/    |\n\\'" text)))))
+
+(defun bcat-export-test--fits-page (table)
+  "Non-nil when the org TABLE fits the PDF page by the export's measure:
+each column's widest line plus 6, within `bcat-export-table-width'."
+  (<= (1+ (apply #'+ (mapcar (lambda (col)
+                               (+ 6 (apply #'max (mapcar #'string-width (split-string (string-join col "\n") "\n")))))
+                             (let* ((rows (mapcar (lambda (l) (mapcar #'string-trim (butlast (cdr (split-string l "|")))))
+                                                  (split-string table "\n" t))))
+                               (cl-loop for j below (length (car rows))
+                                        collect (mapcar (lambda (r) (nth j r)) rows))))))
+      bcat-export-table-width))
+
+(ert-deftest bcat-export-rechunk-sanskrit-tables ()
+  "5.11. (generic): the tables of a segment fill the Emacs window in the
+file — Sanskrit as well since 5.11. —; the export copy lays them out
+anew for the page, whatever the language: the run of tables under a
+⟦N⟧ mark, wide cells broken as far as it saves lines.  Nothing lost:
+read back, the columns are those of the file."
+  (let* ((file-tables (bcat-analysis-sanskrit-tables bcat-analysis-test--ta-1-1-words))
+         (columns (apply #'append (mapcar #'bcat-analysis--table-columns (split-string file-tables "\n\n")))))
+    (should-not (cl-every #'bcat-export-test--fits-page (split-string file-tables "\n\n")))
+    (with-temp-buffer
+      (insert "* Text\n⟦1⟧\n" file-tables "\n\n→ t\n\n| Nr. | Stelle |\n|-----+--------|\n|   1 | /a/    |\n")
+      (bcat-export--rechunk-gloss-tables)
+      (let* ((text (buffer-string))
+             (run (progn (string-match "⟦1⟧\n\\(\\(?:|.*\n\\|\n\\)+\\)\n→ t" text)
+                         (string-trim (match-string 1 text))))
+             (tables (split-string run "\n\n")))
+        (should (cl-every #'bcat-export-test--fits-page tables))
+        (should (equal columns (apply #'append (mapcar #'bcat-analysis--table-columns tables))))
+        (should (string-match-p "\n→ t\n\n| Nr\\. | Stelle |\n|-----\\+--------|\n|   1 | /a/    |\n\\'" text))))))
 
 (ert-deftest bcat-export-comparison-table ()
   "2.11. (Muster vergleich-ta1-1.org): the overview table of the

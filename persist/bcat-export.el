@@ -492,15 +492,28 @@ by its code („U+009A“)."
              (delete-dups (mapcar #'cdr missing))
              ", "))
 
+(define-obsolete-variable-alias 'bcat-analysis-sanskrit-table-width
+  'bcat-export-wide-table-width "5.11.2026")
+
+(defcustom bcat-export-wide-table-width 120
+  "Widest cell (plus 4) of any table in the PDF that the export does not
+lay out anew (`bcat-export--rechunk-gloss-tables' takes the tables of
+the segments): a wider cell is broken (`bcat-export--wrap-wide-tables').
+120 (30.10., then the width of the Sanskrit tables): in the PDF of AS
+sentence 3 a table of 115 characters fits the page, one of 134 runs
+into the margin.  5.11.: every language, its old name an alias."
+  :type 'integer
+  :group 'buddhist-cat)
+
 (defun bcat-export--wrap-wide-tables (&rest _)
   "In the current (export) buffer: every org table with a cell wider than
-`bcat-analysis-sanskrit-table-width' gets that cell broken at its „·“
+`bcat-export-wide-table-width' gets that cell broken at its „·“
 into further lines (`bcat-analysis-wrap-rows') — 31.10., TĀ 1008 and
 five more files written before: a one-column table wider than the page,
 shrunk unreadable in the PDF.  Tables with rules (|---) and narrow ones
 stay as they are; the file is not touched.  For
 `org-export-before-processing-functions'."
-  (let ((max (- bcat-analysis-sanskrit-table-width 4)))
+  (let ((max (- bcat-export-wide-table-width 4)))
     (save-excursion
       (goto-char (point-min))
       (while (re-search-forward "^|" nil t)
@@ -518,43 +531,71 @@ stay as they are; the file is not touched.  For
                                         (bcat-analysis-wrap-rows rows max)))
                     "\n")))))))
 
-(defcustom bcat-export-tibetan-table-width 130
-  "Widest Tibetan table in the PDF, counted as each column's widest cell
-plus 6 (in LaTeX a column costs more than its characters).  30.10.,
+(define-obsolete-variable-alias 'bcat-export-tibetan-table-width
+  'bcat-export-table-width "5.11.2026")
+
+(defcustom bcat-export-table-width 130
+  "Widest table of a segment's words in the PDF — every language (5.11.;
+before, Tibetan only) —, counted as each column's widest line plus 6
+\(in LaTeX a column costs more than its characters).  30.10.,
 Sthiramati's prose: a segment of 23 words ran far into the margin;
 measured: an AS table of 6 columns and 71 characters fills 60 % of the
-page.  The sentence file is wider (`bcat-analysis-tibetan-table-width'),
-the export chunks anew (`bcat-export--rechunk-tibetan-tables')."
+page (and a Sanskrit table of 115 characters, 120 by this measure,
+fits).  The sentence file is wider (`bcat-analysis-table-width'), the
+export lays the tables out anew (`bcat-export--rechunk-gloss-tables')."
   :type 'integer
   :group 'buddhist-cat)
 
-(defun bcat-export--rechunk-tibetan-tables (&rest _)
-  "In the current (export) buffer: the tables of each Tibetan segment —
-a run of tables whose first row is in Tibetan script, only blank lines
-between — chunked anew for the page (`bcat-export-tibetan-table-width',
-6 per column).  4.11.: the file fills the Emacs window, the PDF keeps
-its width.  For `org-export-before-processing-functions' — the file
-stays as it is."
-  (let ((first-row "|[^-\n].*[\u0F00-\u0FFF]"))
-    (save-excursion
-      (goto-char (point-min))
-      (while (re-search-forward (concat "^" first-row) nil t)
-        (goto-char (line-beginning-position))
-        (if (save-excursion (and (zerop (forward-line -1)) (looking-at "[ \t]*|")))
-            (forward-line 1)
-          (let ((start (point)) (end nil) (tables '()))
-            (while (looking-at first-row)
-              (let ((tb (point)))
-                (while (looking-at "|") (forward-line 1))
-                (push (buffer-substring-no-properties tb (point)) tables)
-                (setq end (point))
-                (skip-chars-forward "\n")))
-            (let ((columns (apply #'append (mapcar #'bcat-analysis--table-columns (nreverse tables)))))
+(defun bcat-export--gloss-run-start-p ()
+  "Non-nil when the table at point begins the tables of a segment: the
+line above it — blank lines skipped — is a ⟦N⟧ mark, or its first row
+is in Tibetan script (files without marks)."
+  (or (looking-at "|[^-\n].*[\u0F00-\u0FFF]")
+      (save-excursion
+        (and (zerop (forward-line -1))
+             (progn (while (and (looking-at "[ \t]*$") (zerop (forward-line -1))))
+                    (looking-at "\\(?:<<[^>\n]*>>\\)?⟦[0-9]+⟧[^\n]*$"))))))
+
+(defun bcat-export--rechunk-gloss-tables (&rest _)
+  "In the current (export) buffer: the tables of each segment — a run of
+tables under a ⟦N⟧ mark (or with a first row in Tibetan script), only
+blank lines between, none with a rule — laid out anew for the page in
+the generic layout (`bcat-export-table-width', 6 per column, wide cells
+broken as far as that saves lines, `bcat-analysis--best-chunks').
+4.11. Tibetan, 5.11. every language: the file fills the Emacs window,
+the PDF keeps its width.  For `org-export-before-processing-functions'
+— the file stays as it is."
+  (save-excursion
+    (goto-char (point-min))
+    (while (re-search-forward "^|" nil t)
+      (goto-char (line-beginning-position))
+      (if (or (save-excursion (and (zerop (forward-line -1)) (looking-at "[ \t]*|")))
+              (not (bcat-export--gloss-run-start-p)))
+          (forward-line 1)
+        (let ((start (point)) (end nil) (tables '()))
+          (while (and (looking-at "|")
+                      (not (save-excursion
+                             (let ((rule nil))
+                               (while (and (not rule) (looking-at "|"))
+                                 (setq rule (looking-at "|-"))
+                                 (forward-line 1))
+                               rule))))
+            (let ((tb (point)))
+              (while (looking-at "|") (forward-line 1))
+              (push (buffer-substring-no-properties tb (point)) tables)
+              (setq end (point))
+              (skip-chars-forward "\n")))
+          (if (null tables)
+              (forward-line 1)
+            (let* ((columns (apply #'append (mapcar #'bcat-analysis--table-columns (nreverse tables))))
+                   (best (bcat-analysis--best-chunks columns bcat-export-table-width 6
+                                                     bcat-analysis-cell-width)))
               (delete-region start end)
               (goto-char start)
-              (insert (bcat-analysis--format-chunks
-                       (bcat-analysis--chunk-columns columns bcat-export-tibetan-table-width 6))
-                      "\n"))))))))
+              (insert (bcat-analysis--format-chunks (car best) (cdr best)) "\n"))))))))
+
+(define-obsolete-function-alias 'bcat-export--rechunk-tibetan-tables
+  #'bcat-export--rechunk-gloss-tables "5.11.2026")
 
 (defun bcat-export--marks-apart (&rest _)
   "In the current (export) buffer: a blank line between a ⟦N⟧ mark line
@@ -641,7 +682,7 @@ LuaLaTeX could not set land in `bcat-export--missing'."
                              (cons #'bcat-export--verse-filter org-export-filter-verse-block-functions))
                             (org-export-before-processing-functions
                              (append (list insert-head #'bcat-export--drop-machine-sections
-                                           #'bcat-export--rechunk-tibetan-tables
+                                           #'bcat-export--rechunk-gloss-tables
                                            #'bcat-export--wrap-wide-tables
                                            #'bcat-export--marks-apart)
                                      org-export-before-processing-functions)))

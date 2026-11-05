@@ -1617,16 +1617,6 @@ named again (`bcat-analysis--full-names')."
 ;; Sanskrit (§5.74, Carsten 29.10.)
 ;; ----------------------------------------------------------------------------
 
-(defcustom bcat-analysis-sanskrit-table-width 120
-  "Widest Sanskrit table in the PDF (the export breaks a wider cell,
-`bcat-export--wrap-wide-tables').  Since 5.11. the sentence file has the
-width of every language (`bcat-analysis-table-width').  120 (30.10.,
-was 95): in the PDF of AS sentence 3 a table of 115 characters fits the
-page, one of 134 runs into the margin; Carsten wanted compound and
-upādāya side by side as in the preview."
-  :type 'integer
-  :group 'buddhist-cat)
-
 (defun bcat-analysis-sanskrit-tables (words)
   "The tables of a Sanskrit segment's WORDS (Claude's padapāṭha: word,
 formation, parts, gloss, form — five rows) in the layout of every

@@ -1689,7 +1689,7 @@ in a window of 162; it broke because the width was the PDF's (6 per
 column, limit 130: 137).  In the file a table is as wide as it is seen
 \(cells + 3 per column), up to `bcat-analysis-table-width'
 \(158, the MacBook window; 5.11. every language); the PDF chunks anew in the export
-\(`bcat-export--rechunk-tibetan-tables')."
+\(`bcat-export--rechunk-gloss-tables')."
   (should (= 158 (eval (car (get 'bcat-analysis-table-width 'standard-value)))))
   (let* ((cols '(("ཆོས་ཉིད" "chos nyid" "nature of phenomena" "N · goal/locus")
                  ("འདི" "'di" "this" "DEM · specifying")
