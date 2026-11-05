@@ -105,6 +105,9 @@
      ["Zwischen Vers und Kommentar (C-c u K)" bcat-commentary-jump
       :help "Vers ↔ Kommentar: von der Versdatei zum Kommentarsegment, das das Segment an Punkt zitiert; vom Lemma zum Pāda; in einer Quelle zur anderen"
       :active (fboundp 'bcat-commentary-jump)]
+     ["Belege in die Zettel (C-c u z b)" bcat-zettel-belege
+      :help "Die Stellen der Concept Notes als markierte Belege (CAT) in ihre Zettel — Satzdatei an Punkt bzw. die Sätze unter der Überschrift; C-c u G tut es von selbst"
+      :active (fboundp 'bcat-zettel-belege)]
      ["Neu setzen ohne Abruf (C-c u L)" bcat-relayout
       :help "Die Satzdatei an Punkt bzw. die Sätze unter der Überschrift aus ihrer Vorlage neu setzen — ohne Abruf, nach einer Änderung der Vorlage"
       :active (fboundp 'bcat-relayout)]

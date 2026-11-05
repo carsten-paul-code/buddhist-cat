@@ -110,5 +110,93 @@ shows the term without the link (the reMarkable cannot open the Kasten)."
           (bcat-export--plain-zettel-links)
           (should (equal "⟦685⟧ *niyantraṇa* — control.\n" (buffer-string))))))))
 
+(defun bcat-zettel-test--sentence (dir)
+  "A sentence file in DIR as the write-back reads it: TĀ 1.1 ⟦1⟧ with
+kalā and visarga in its concept notes and the overview of its words."
+  (let ((file (expand-file-name "sent-001-tantralo.org" dir)))
+    (with-temp-file file (insert "* Text\n"))
+    file))
+
+(defconst bcat-zettel-test--context
+  '((segments . (((num . 1)
+                  (gloss-table . "| vimalā-kalā-āśrayā        | jananī |\n| whose ground is pure kalā | mother |\n| adj. f. nom. sg.          | f. nom. sg. |")
+                  (concepts . "*[[denote:20261027T135714][kalā]]* — power. *[[denote:20261016T140000][visarga]]* — emission."))
+                 ((num . 2)
+                  (gloss-table . "| tad-ubhaya-visarga-mayam |\n| consisting of the emission of both |\n| adj. |")
+                  (concepts . "*[[denote:20261016T140000][Visarga]]* — the emission.")))))
+  "The fields of the fixture sentence the write-back reads.")
+
+(ert-deftest bcat-zettel-belege ()
+  "The passage goes into each linked zettel as a marked Beleg (Carsten
+5.11.: automatically, „ja, bitte“): under * Belegstellen …, after the
+last one — the place (verse or Satz N, ⟦N⟧), the word of the passage
+and what it means there, (CAT: link to the sentence file).  No such
+section: one before * Verweise.  Again: nothing doubled; a changed
+passage replaces its line; a Beleg of the same verse by hand wins."
+  (bcat-zettel-test--with-kasten
+    (let* ((dir (make-temp-file "bcat-sent-" t))
+           (file (bcat-zettel-test--sentence dir))
+           (kala (expand-file-name "20261027T135714--kala.org" kasten))
+           (visarga (expand-file-name "20261016T140000--visarga.org" kasten))
+           (link (format "(CAT: [[file:%s::*Concepts][Satz 1]])" (abbreviate-file-name file))))
+      (unwind-protect
+          (progn
+            (bcat-zettel-write-belege file bcat-zettel-test--context "TĀ 1.1" "Satz 1")
+            (should (string-match-p
+                     (regexp-quote (concat "- TĀ 1.78: /kalātattva…/ — von Hand\n"
+                                           "- TĀ 1.1 ⟦1⟧: /vimalā-kalā-āśrayā/ — whose ground is pure kalā "
+                                           link "\n\n* Abgrenzungen"))
+                     (bcat-zettel-test--read kala)))
+            (should (string-match-p
+                     (regexp-quote (concat "* Belegstellen in der Literatur\n"
+                                           "- TĀ 1.1 ⟦1⟧ " link "\n"
+                                           "- TĀ 1.1 ⟦2⟧: /tad-ubhaya-visarga-mayam/ — consisting of the emission of both "
+                                           link "\n\n* Verweise"))
+                     (bcat-zettel-test--read visarga)))
+            ;; Again: nothing doubled.
+            (let ((before (bcat-zettel-test--read kala)))
+              (bcat-zettel-write-belege file bcat-zettel-test--context "TĀ 1.1" "Satz 1")
+              (should (equal before (bcat-zettel-test--read kala))))
+            ;; A changed passage replaces its line.
+            (bcat-zettel-write-belege
+             file `((segments . (((num . 1)
+                                  (gloss-table . "| vimalā-kalā-āśrayā |\n| grounded in pure ideation |")
+                                  (concepts . "*[[denote:20261027T135714][kalā]]* — power.")))))
+             "TĀ 1.1" "Satz 1")
+            (let ((text (bcat-zettel-test--read kala)))
+              (should (string-match-p "grounded in pure ideation" text))
+              (should-not (string-match-p "whose ground is pure kalā" text)))
+            ;; A Beleg of the same verse by hand: no line of the tool.
+            (with-temp-file kala
+              (insert (replace-regexp-in-string "^- TĀ 1\\.1 ⟦1⟧.*\n" "- TĀ 1.1: von Hand\n"
+                                                (bcat-zettel-test--read kala))))
+            (bcat-zettel-write-belege file bcat-zettel-test--context "TĀ 1.1" "Satz 1")
+            (should-not (string-match-p "(CAT:" (bcat-zettel-test--read kala))))
+        (delete-directory dir t)))))
+
+(ert-deftest bcat-zettel-belege-after-fetch ()
+  "C-c u G ends with the Belege (when `bcat-zettel-belege-auto'); never
+for a fixture under the temp directory — an ERT run in a live Emacs
+must not write into the Kasten."
+  (let ((calls '()))
+    (cl-letf (((symbol-function 'bcat-zettel-belege-file) (lambda (f) (push f calls))))
+      (let ((bcat-zettel-belege-auto t))
+        (bcat-zettel-after-fetch (expand-file-name "x/sent-001-tantralo.org" temporary-file-directory))
+        (should-not calls)
+        (cl-letf (((symbol-function 'tibetan-discussion-paper--temp-source-p) #'ignore))
+          (bcat-zettel-after-fetch "/k/sent-001-tantralo.org"))
+        (should (equal '("/k/sent-001-tantralo.org") calls)))
+      (setq calls nil)
+      (let ((bcat-zettel-belege-auto nil))
+        (cl-letf (((symbol-function 'tibetan-discussion-paper--temp-source-p) #'ignore))
+          (bcat-zettel-after-fetch "/k/sent-001-tantralo.org")))
+      (should-not calls))))
+
+(ert-deftest bcat-zettel-key ()
+  "C-c u z b writes the Belege of the sentence file at point (or of the
+sentences under the heading at point in the source)."
+  (require 'tibetan-keybindings)
+  (should (eq (key-binding (kbd "C-c u z b")) 'bcat-zettel-belege)))
+
 (provide 'bcat-zettel-test)
 ;;; bcat-zettel-test.el ends here

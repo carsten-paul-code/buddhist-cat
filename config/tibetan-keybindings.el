@@ -446,6 +446,9 @@
 ;; refontifies every mode buffer.
 (define-key tibetan-thesaurus-prefix-map (kbd "h") 'tibetan-zettel-highlight-mode)
 (define-key tibetan-thesaurus-prefix-map (kbd "H") 'tibetan-zettel-highlight-reload)
+;; `b' (Carsten 5.11.2026): the passages of the concept notes into their
+;; zettels as marked Belege (bcat-zettel.el); C-c u G does it on its own.
+(define-key tibetan-thesaurus-prefix-map (kbd "b") 'bcat-zettel-belege)
 ;; `w' (Wortbildung, 2026-10-21): the Sanskrit decomposition of the marked
 ;; word (prefix → meaning, root → meaning) from its zettel's :ETYMOLOGY:,
 ;; in the echo area; C-u copies it.
