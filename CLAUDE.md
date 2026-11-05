@@ -4954,6 +4954,13 @@ Lemma-Zeilen fett, → Übersetzung, Lemma-Verweis · Meine Notizen
 bleiben), C-c u V, nach C-c u G neu; AS: Grundsatz + :asbh:-Satz.
 (2) Vasubandhu-Übersetzung als Teil von C-c u G (nur Mechanismus).
 (3) PDF des Dossiers: Leseseite + je Schicht die Analyse, Sprungmarken.
+Stand: (1) gebaut (`5ba5a88', persist/bcat-dossier.el, Vorlage
+dossier.org, C-c u V, nach C-c u G; <Text>/dossier/<name>.org; MSA
+IX.60 und AS Satz 5 geschrieben, nicht committet); (2) gebaut
+(`bf1a860', `bhasya_translation' im Sanskrit-Abruf, *Translation:*
+unter ** Bhāṣya, wirkt beim nächsten C-c u G); (3) offen.  Titel der
+Bhāṣya-Schicht generisch „Bhāṣya“ (der Autor steht nicht in den
+Daten); Siglen aus #+TIBETAN_SIGLUM (MSA: L · D4026, D4034; AS keine).
 
 #### Offen
 
