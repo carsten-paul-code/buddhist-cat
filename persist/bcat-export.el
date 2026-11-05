@@ -615,6 +615,45 @@ the PDF keeps its width.  For `org-export-before-processing-functions'
               (goto-char start)
               (insert (bcat-analysis--format-chunks (car best) (cdr best)) "\n"))))))))
 
+(defun bcat-export--rechunk-header-tables (&rest _)
+  "In the current (export) buffer: every table of the parts of a word —
+a header row, its rule, rows below, no other rule — wider than
+`bcat-export-table-width' (measured as the tables of the words: each
+column's widest line plus 6) split into tables of its own, each with
+the header and rule of its columns; a row empty in one of them is left
+out (it holds parts of members in another).  5.11., TĀ 1.1 ⟦2⟧: seven
+members side by side were 558 pt on a line of 466 and shrunk to 84 %.
+A table under #+ATTR_… (the comparison's overview, fixed columns)
+stays as it is; the file is not touched.  For
+`org-export-before-processing-functions'."
+  (save-excursion
+    (goto-char (point-min))
+    (while (re-search-forward "^|" nil t)
+      (let* ((beg (line-beginning-position))
+             (end (progn (while (and (zerop (forward-line 1)) (looking-at "|"))) (point)))
+             (lines (split-string (buffer-substring-no-properties beg end) "\n" t))
+             (attr (save-excursion (goto-char beg)
+                                   (and (zerop (forward-line -1)) (looking-at-p "[ \t]*#\\+ATTR_")))))
+        (when (and (not attr) (> (length lines) 2)
+                   (string-prefix-p "|-" (nth 1 lines))
+                   (not (cl-some (lambda (l) (string-prefix-p "|-" l)) (cddr lines))))
+          (let* ((rows (mapcar (lambda (l) (mapcar #'string-trim (butlast (cdr (split-string l "|")))))
+                               (cons (car lines) (cddr lines))))
+                 (columns (apply #'cl-mapcar #'list rows))
+                 (chunks (bcat-analysis--chunk-columns columns bcat-export-table-width 6
+                                                       bcat-export-table-width)))
+            (when (cdr chunks)
+              (delete-region beg end)
+              (goto-char beg)
+              (insert (mapconcat (lambda (chunk)
+                                   (bcat-analysis--header-table
+                                    (cl-loop for r below (length rows)
+                                             for row = (mapcar (lambda (col) (nth r col)) chunk)
+                                             unless (and (> r 0) (cl-every #'string-empty-p row))
+                                             collect row)))
+                                 chunks "\n\n")
+                      "\n"))))))))
+
 (define-obsolete-function-alias 'bcat-export--rechunk-tibetan-tables
   #'bcat-export--rechunk-gloss-tables "5.11.2026")
 
@@ -851,6 +890,7 @@ LuaLaTeX could not set land in `bcat-export--missing'."
                             (org-export-before-processing-functions
                              (append (list insert-head #'bcat-export--drop-machine-sections
                                            #'bcat-export--rechunk-gloss-tables
+                                           #'bcat-export--rechunk-header-tables
                                            #'bcat-export--wrap-wide-tables
                                            #'bcat-export--marks-apart
                                            #'bcat-export--parts-pages)

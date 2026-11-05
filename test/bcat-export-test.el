@@ -614,6 +614,45 @@ read back, the columns are those of the file."
         (should (equal columns (apply #'append (mapcar #'bcat-analysis--table-columns tables))))
         (should (string-match-p "\n→ t\n\n| Nr\\. | Stelle |\n|-----\\+--------|\n|   1 | /a/    |\n\\'" text))))))
 
+(ert-deftest bcat-export-rechunk-header-tables ()
+  "The tables of the parts of a word (a header row, its rule, the parts
+below) are laid out for the page too (5.11., TĀ 1.1 ⟦2⟧: seven members
+side by side, 558 pt on a line of 466, shrunk to 84 %): wider than
+`bcat-export-table-width', split into tables of their own, each with its
+header and rule, a row empty in a part left out.  A narrow one, and the
+overview of a comparison (#+ATTR_LATEX, fixed columns), stay as they
+are."
+  (with-temp-buffer
+    (insert "** ⟦2⟧\n"
+            "| tad  | ubhaya | yāmala      | sphurita                 |\n"
+            "|------+--------+-------------+--------------------------|\n"
+            "| that | both   | pair, union | /√sphur/ (6) flash forth |\n"
+            "|      |        |             | /-ita/ ppp               |\n"
+            "\n"
+            "| hṛd |\n|-----|\n| heart |\n\n"
+            "#+ATTR_LATEX: :align rp{4cm}\n"
+            "| No. | Passage that is long enough to be wide |\n"
+            "|-----+----------------------------------------|\n"
+            "|   1 | /vimalā-kalā-āśrayā/ and more words here |\n")
+    (let ((bcat-export-table-width 40))
+      (bcat-export--rechunk-header-tables))
+    (should (equal (concat "** ⟦2⟧\n"
+                           "| tad  | ubhaya | yāmala      |\n"
+                           "|------+--------+-------------|\n"
+                           "| that | both   | pair, union |\n"
+                           "\n"
+                           "| sphurita                 |\n"
+                           "|--------------------------|\n"
+                           "| /√sphur/ (6) flash forth |\n"
+                           "| /-ita/ ppp               |\n"
+                           "\n"
+                           "| hṛd |\n|-----|\n| heart |\n\n"
+                           "#+ATTR_LATEX: :align rp{4cm}\n"
+                           "| No. | Passage that is long enough to be wide |\n"
+                           "|-----+----------------------------------------|\n"
+                           "|   1 | /vimalā-kalā-āśrayā/ and more words here |\n")
+                   (buffer-string)))))
+
 (ert-deftest bcat-export-parts-tables-blue ()
   "5.11. (Carsten, draft B): in the PDF the tables of the words' parts —
 a header row (the members, black), \\hline, the parts — have the parts
