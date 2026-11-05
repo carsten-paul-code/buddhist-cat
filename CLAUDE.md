@@ -4963,8 +4963,11 @@ jeder Datei eines mehrschichtigen Verses exportiert EIN PDF
 (`bcat-dossier-pdf-text': Reading · Segments · Grammar · Bhāṣya (AS) ·
 <Autor> · Concepts · Discussion …; Sprünge #segments, #bhasya, #comm-N),
 das Kommentardokument kein eigenes mehr; MSA IX.60 30 Seiten, AS 5 15.
-Offen: ein C-c u G mit Kommentar lädt das Dossier zweimal hoch (nach
-dem Vers und nach dem Kommentar) — wie vorher zwei PDFs.  Titel der
+Ein Upload je Vers (5.11., „doppelten Upload weg“): die erste Landung
+(Vers oder Kommentar) wartet auf die zweite (`bcat-dossier-await',
+`bcat-dossier-export-pending-p').  Offen: AS, wenn Grund- und
+Bhāṣya-Satz in EINEM C-c u G (Abschnitt) abgerufen werden — zwei
+Exporte desselben Dossiers.  Titel der
 Bhāṣya-Schicht generisch „Bhāṣya“ (der Autor steht nicht in den
 Daten); Siglen aus #+TIBETAN_SIGLUM (MSA: L · D4026, D4034; AS keine).
 
