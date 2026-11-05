@@ -4941,9 +4941,8 @@ committet).
 #### Offen
 
 - Mitgeben: seit 5.11. auch im tibetischen Abruf eines Paars.  Schlüssel
-  ohne Wortgrenzen (TĀ 1.1: akula aus amṛtakulam); Glossar-Rümpfe
-  („nur Aliasse, nicht ausgearbeitet“) gehen mit, obwohl sie Claude
-  wenig sagen.
+  ohne Wortgrenzen (TĀ 1.1: akula aus amṛtakulam).  Glossar-Rümpfe („nicht
+  ausgearbeitet“) bleiben seit 5.11. weg (`bcat-zettel-prompt-skip-regexp').
 - Further Reading geteilt (5.11., Carsten: „Im Reading PDF nur ein
   Exzerpt … Extradokument“): im Satz-PDF nur die zitierten Absätze
   (`bcat-export--lecture-excerpt', mechanisch über die Zeitmarken), der

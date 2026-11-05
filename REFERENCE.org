@@ -1,9 +1,9 @@
 #+TITLE: Function Reference — buddhist-cat
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-11-05T15:19:19
+#+DATE: 2026-11-05T15:26:34
 #+OPTIONS: toc:2 num:nil
 
-Source tree: ~/Users/cp/buddhist-cat~  ·  96 modules  ·  2316 forms
+Source tree: ~/Users/cp/buddhist-cat~  ·  96 modules  ·  2317 forms
 
 Regenerated automatically by:
 
@@ -71,7 +71,7 @@ python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/buddhist-c
   - [[#persist/bcat-sentence.el][persist/bcat-sentence.el]]  (92)
   - [[#persist/bcat-status.el][persist/bcat-status.el]]  (11)
   - [[#persist/bcat-template.el][persist/bcat-template.el]]  (17)
-  - [[#persist/bcat-zettel.el][persist/bcat-zettel.el]]  (30)
+  - [[#persist/bcat-zettel.el][persist/bcat-zettel.el]]  (31)
   - [[#persist/tibetan-analysis-claude.el][persist/tibetan-analysis-claude.el]]  (77)
   - [[#persist/tibetan-analysis-combine.el][persist/tibetan-analysis-combine.el]]  (14)
   - [[#persist/tibetan-analysis-combined.el][persist/tibetan-analysis-combined.el]]  (15)
@@ -16980,17 +16980,18 @@ nil.
 :PROPERTIES:
 :KIND: defun
 :LINE: 1022
-:SIGNATURE: (bcat-sentence--context-with-zettels meta segs source-file)
+:SIGNATURE: (bcat-sentence--context-with-zettels meta segs source-file &optional lines)
 :END:
 
-The document's #+TIBETAN_CLAUDE_CONTEXT lines (from META) and, Carsten
-5.11., the zettels of the terms in SEGS ((NUM . TEXT) …) of SOURCE-FILE
-(`bcat-zettel-prompt-block') — the concept notes build on them.
+The document's #+TIBETAN_CLAUDE_CONTEXT lines (from META, or LINES)
+and, Carsten 5.11., the zettels of the terms in SEGS ((NUM . TEXT) …) of
+SOURCE-FILE (`bcat-zettel-prompt-block') — the concept notes build on
+them.
 
 ** ~bcat-sentence--prompts~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1030
+:LINE: 1031
 :SIGNATURE: (bcat-sentence--prompts sentence source-file refs)
 :END:
 
@@ -17002,7 +17003,7 @@ translations — Carsten 2.11.: „Ja, nur beim Vergleich“.
 ** ~bcat-sentence--write-analysed~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1061
+:LINE: 1062
 :SIGNATURE: (bcat-sentence--write-analysed file sent-num segs source-file build)
 :END:
 
@@ -17014,7 +17015,7 @@ during a request survives); LAST_ANALYZED is today.
 ** ~bcat-sentence--fetched-context~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1075
+:LINE: 1076
 :SIGNATURE: (bcat-sentence--fetched-context base sentence source-file refs parsed &optional tibetan)
 :END:
 
@@ -17025,7 +17026,7 @@ Tibetan request; REFS the references sent with the request.
 ** ~bcat-sentence--answers-file~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1089
+:LINE: 1090
 :SIGNATURE: (bcat-sentence--answers-file file)
 :END:
 
@@ -17034,7 +17035,7 @@ Where the answers for the sentence FILE are kept: .answers/ beside it.
 ** ~bcat-sentence--keep-answers~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1094
+:LINE: 1095
 :SIGNATURE: (bcat-sentence--keep-answers file record)
 :END:
 
@@ -17047,7 +17048,7 @@ signals: keeping is no reason to lose a landing.
 ** ~bcat-sentence--answers~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1115
+:LINE: 1116
 :SIGNATURE: (bcat-sentence--answers file)
 :END:
 
@@ -17057,7 +17058,7 @@ or nil.
 ** ~bcat-sentence--write-fetched~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1126
+:LINE: 1127
 :SIGNATURE: (bcat-sentence--write-fetched file sentence source-file refs parsed &optional tibetan)
 :END:
 
@@ -17069,7 +17070,7 @@ compared are REFS as sent, marked from the answer's segment parts.
 ** ~bcat-sentence--write-partner~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1136
+:LINE: 1137
 :SIGNATURE: (bcat-sentence--write-partner sentence source-file tibetan trefs sanskrit &optional hint assignment sanskrit-translation)
 :END:
 
@@ -17085,7 +17086,7 @@ Returns the file.
 ** ~bcat-sentence--land~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1161
+:LINE: 1162
 :SIGNATURE: (bcat-sentence--land file sentence source-file refs response)
 :END:
 
@@ -17097,7 +17098,7 @@ finishes the file; any other ends here (C-c u H).
 ** ~bcat-sentence--tibetan-prompts~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1178
+:LINE: 1179
 :SIGNATURE: (bcat-sentence--tibetan-prompts sentence source-file parsed trefs)
 :END:
 
@@ -17105,12 +17106,13 @@ finishes the file; any other ends here (C-c u H).
 SOURCE-FILE: the Sanskrit segments with the translations of the
 Sanskrit answer PARSED, the Tibetan ones with Wylie, TREFS the
 reference translations of the Tibetan, the Tibetan source's
-#+TIBETAN_CLAUDE_CONTEXT.
+#+TIBETAN_CLAUDE_CONTEXT and the zettels of the Tibetan terms
+(`bcat-sentence--context-with-zettels').
 
 ** ~bcat-sentence--tibetan-land~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1201
+:LINE: 1208
 :SIGNATURE: (bcat-sentence--tibetan-land file sentence source-file refs parsed trefs response)
 :END:
 
@@ -17123,7 +17125,7 @@ FILE as the Sanskrit answer left it when the answer is unreadable.
 ** ~bcat-sentence--tibetan-one~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1223
+:LINE: 1230
 :SIGNATURE: (bcat-sentence--tibetan-one file sentence source-file refs parsed)
 :END:
 
@@ -17137,7 +17139,7 @@ the Tibetan.
 ** ~bcat-sentence--prepare-partner~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1247
+:LINE: 1254
 :SIGNATURE: (bcat-sentence--prepare-partner sentence source-file)
 :END:
 
@@ -17147,7 +17149,7 @@ paired SOURCE-FILE; nil when the Tibetan lacks the sentence.
 ** ~bcat-sentence--pair-state~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1257
+:LINE: 1264
 :SIGNATURE: (bcat-sentence--pair-state file sentence source-file)
 :END:
 
@@ -17159,7 +17161,7 @@ two requests.
 ** ~bcat-sentence--add-compared~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1272
+:LINE: 1279
 :SIGNATURE: (bcat-sentence--add-compared file name text)
 :END:
 
@@ -17169,7 +17171,7 @@ in FILE (before the next heading).
 ** ~bcat-sentence--dm-one~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1286
+:LINE: 1293
 :SIGNATURE: (bcat-sentence--dm-one file sentence source-file)
 :END:
 
@@ -17182,7 +17184,7 @@ why and nothing goes to Claude.
 ** ~bcat-sentence--fetch-one~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1309
+:LINE: 1316
 :SIGNATURE: (bcat-sentence--fetch-one file sentence source-file)
 :END:
 
@@ -17193,7 +17195,7 @@ request through the queue.
 ** ~bcat-sentence-fetch~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1338
+:LINE: 1345
 :SIGNATURE: (bcat-sentence-fetch scope &optional force)
 :END:
 
@@ -17723,7 +17725,7 @@ with only *bhava* had no majority of its own).
 ** ~bcat-zettel--filled~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 211
+:LINE: 218
 :SIGNATURE: (bcat-zettel--filled v)
 :END:
 
@@ -17732,7 +17734,7 @@ Non-nil when V is a string not blank.
 ** ~bcat-zettel--description~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 215
+:LINE: 222
 :SIGNATURE: (bcat-zettel--description id)
 :END:
 
@@ -17741,7 +17743,7 @@ The #+description: of zettel ID, or nil.
 ** ~bcat-zettel-prompt-block~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 225
+:LINE: 232
 :SIGNATURE: (bcat-zettel-prompt-block texts source-file)
 :END:
 
@@ -17756,7 +17758,7 @@ use them.
 ** ~bcat-zettel--bands~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 276
+:LINE: 288
 :SIGNATURE: (bcat-zettel--bands table)
 :END:
 
@@ -17768,7 +17770,7 @@ text, so that a column stays one word with its gloss (5.11., TĀ 1.1
 ** ~bcat-zettel--passage~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 288
+:LINE: 300
 :SIGNATURE: (bcat-zettel--passage table term)
 :END:
 
@@ -17781,7 +17783,7 @@ of the text.
 ** ~bcat-zettel--terms~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 306
+:LINE: 318
 :SIGNATURE: (bcat-zettel--terms text)
 :END:
 
@@ -17790,7 +17792,7 @@ of the text.
 ** ~bcat-zettel--write-line~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 314
+:LINE: 326
 :SIGNATURE: (bcat-zettel--write-line zettel line label mark file-mark)
 :END:
 
@@ -17804,7 +17806,7 @@ Non-nil when ZETTEL changed.
 ** ~bcat-zettel--append~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 343
+:LINE: 355
 :SIGNATURE: (bcat-zettel--append line)
 :END:
 
@@ -17814,7 +17816,7 @@ Belege section, making the section when missing.
 ** ~bcat-zettel-write-belege~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 364
+:LINE: 376
 :SIGNATURE: (bcat-zettel-write-belege file context label link-label)
 :END:
 
@@ -17827,7 +17829,7 @@ means there (CAT: link)“.  Returns the zettel files changed.
 ** ~bcat-zettel--label~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 387
+:LINE: 399
 :SIGNATURE: (bcat-zettel--label info)
 :END:
 
@@ -17839,7 +17841,7 @@ Tantrāloka).
 ** ~bcat-zettel-belege-file~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 397
+:LINE: 409
 :SIGNATURE: (bcat-zettel-belege-file file)
 :END:
 
@@ -17849,7 +17851,7 @@ its fields read back like C-c u L does; returns the zettels changed.
 ** ~bcat-zettel-after-fetch~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 411
+:LINE: 423
 :SIGNATURE: (bcat-zettel-after-fetch file)
 :END:
 
@@ -17860,7 +17862,7 @@ Belege (when `bcat-zettel-belege-auto').  Never for a FILE under
 ** ~bcat-zettel-belege~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 426
+:LINE: 438
 :SIGNATURE: (bcat-zettel-belege)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -17929,6 +17931,19 @@ means in this passage, its general sense is the zettel's.
 :END:
 
 At most this many zettels go with one sentence (the longest terms first).
+
+** ~bcat-zettel-prompt-skip-regexp~  /customize variable/
+:PROPERTIES:
+:KIND: defcustom
+:LINE: 211
+:TYPE: '(choice regexp (const nil
+:GROUP: buddhist-cat
+:DEFAULT: "nicht ausgearbeitet"
+:END:
+
+A zettel whose #+description matches this does not go to Claude — a
+glossary rump (5.11., AS 5: „Glossar-Rumpf … nur Aliasse, nicht
+ausgearbeitet“) tells it nothing.  nil: every zettel with a description.
 
 ** ~bcat-zettel--bold-re~  /constant/
 :PROPERTIES:
