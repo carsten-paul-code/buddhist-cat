@@ -656,11 +656,14 @@ a word is not found —, or nil when none is (then no row at all)."
 (defun bcat-analysis--table-columns (table)
   "The columns of the org TABLE — each a list of its cells, top to
 bottom — in reading order: bands (rows between hlines, the older form of
-a wide table) one after the other, their empty padding dropped."
+a wide table) one after the other, their empty padding dropped; the
+lines of a broken cell joined again (`bcat-analysis--join-continuations',
+5.11.)."
   (let ((bands '()) (band '()))
     (dolist (line (append (split-string table "\n" t) '("|-")))
       (if (string-match-p "\\`[ \t]*|-" line)
-          (progn (when band (push (nreverse band) bands)) (setq band nil))
+          (progn (when band (push (bcat-analysis--join-continuations (nreverse band)) bands))
+                 (setq band nil))
         (push (mapcar #'string-trim (butlast (cdr (split-string line "|")))) band)))
     (cl-loop for b in (nreverse bands)
              append (cl-loop for j below (length (car b))
@@ -1449,19 +1452,70 @@ wanted compound and upādāya side by side as in the preview."
   :type 'integer
   :group 'buddhist-cat)
 
+(defun bcat-analysis--wrap-pieces (pieces sep mark max)
+  "PIECES joined by SEP into lines of at most MAX characters, greedily;
+every line but the last ends in MARK.  A piece longer than MAX stays
+whole."
+  (let ((lines '()) (line nil))
+    (dolist (piece pieces)
+      (let ((cand (if line (concat line sep piece) piece)))
+        (if (and line (> (string-width cand) max))
+            (progn (push (concat line mark) lines) (setq line piece))
+          (setq line cand))))
+    (nreverse (cons line lines))))
+
 (defun bcat-analysis--wrap-cell (text max)
-  "TEXT as lines of at most MAX characters, broken after a „ ·“ — the
-parts of a long compound (31.10., TĀ 1008: 160 characters in one cell);
-a piece longer than MAX stays whole."
-  (if (<= (string-width text) max)
+  "TEXT as lines of at most MAX characters (any table, 5.11. generic):
+broken between the members of a compound („;“ — whole members kept on
+a line) and a member still wider at its „ · “ (31.10., TĀ 1008: 160
+characters in one cell); the separator stays at the end of the line —
+`bcat-analysis--table-columns' joins the lines again by it.  A piece
+longer than MAX stays whole; a cell with a link is never broken."
+  (if (or (<= (string-width (bcat-analysis-plain-cell text)) max)
+          (string-match-p "\\[\\[" text))
       (list text)
-    (let ((lines '()) (line nil))
-      (dolist (piece (split-string text " · "))
-        (let ((cand (if line (concat line " · " piece) piece)))
-          (if (and line (> (string-width cand) max))
-              (progn (push (concat line " ·") lines) (setq line piece))
-            (setq line cand))))
-      (nreverse (cons line lines)))))
+    (let* ((members (split-string text "; "))
+           (n (length members))
+           (lines '()) (line nil))
+      (cl-loop for m in members
+               for i from 1
+               for end = (if (< i n) ";" "")
+               do (cond
+                   ((> (string-width m) max)
+                    ;; A member wider than MAX: lines of its own.
+                    (when line (push (concat line ";") lines) (setq line nil))
+                    (let ((parts (bcat-analysis--wrap-pieces (split-string m " · ") " · " " ·" max)))
+                      (dolist (l (butlast parts)) (push l lines))
+                      (push (concat (car (last parts)) end) lines)))
+                   ((and line (> (string-width (concat line "; " m)) max))
+                    (push (concat line ";") lines)
+                    (setq line m))
+                   (t (setq line (if line (concat line "; " m) m)))))
+      (when line (push line lines))
+      (nreverse lines))))
+
+(defun bcat-analysis--continued-p (cell)
+  "Non-nil when CELL, a line of a broken cell, goes on in the row
+below: it ends in a separator (`bcat-analysis--wrap-cell')."
+  (string-match-p "\\(?: ·\\|;\\)\\'" cell))
+
+(defun bcat-analysis--join-continuations (rows)
+  "ROWS (lists of cells) with the lines of broken cells joined: a row
+whose filled cells all stand under a cell that goes on
+\(`bcat-analysis--continued-p') belongs to the row above."
+  (let ((out '()))
+    (dolist (row rows (nreverse out))
+      (let ((prev (car out)))
+        (if (and prev
+                 (cl-some (lambda (c) (not (string-empty-p c))) row)
+                 (cl-every (lambda (j)
+                             (or (string-empty-p (or (nth j row) ""))
+                                 (bcat-analysis--continued-p (or (nth j prev) ""))))
+                           (number-sequence 0 (1- (length row)))))
+            (setcar out (cl-loop for j below (max (length prev) (length row))
+                                 collect (let ((a (or (nth j prev) "")) (b (or (nth j row) "")))
+                                           (if (string-empty-p b) a (concat a " " b)))))
+          (push row out))))))
 
 (defun bcat-analysis-wrap-rows (rows max)
   "ROWS (lists of cells) with every cell wider than MAX broken at its „·“

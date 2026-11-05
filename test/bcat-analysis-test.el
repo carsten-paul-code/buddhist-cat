@@ -1563,6 +1563,40 @@ with jananī)“ (83 characters) made its column the widest of the table."
   (should (equal '("V pf. (brgyud pa)" . "relative clause, GEN attributive to man ngag")
                  (bcat-analysis--function-split "V pf. (brgyud pa) · relative clause, GEN attributive to man ngag"))))
 
+(ert-deftest bcat-analysis-wrap-cell-members ()
+  "A cell wider than the limit breaks between the members of a compound
+(„;“) — a member wider still at its „ · “ —, whole members kept on a
+line; the separator stays at the end of the line (5.11., TĀ 1.1: the
+parts row of pañca-mukha-gupta-ruciḥ).  A cell with a link is never
+broken."
+  (should (equal '("pañca five; mukha face, power;" "√gup (1) protect, maintain · -ta ppp;" "ruci light, radiance")
+                 (bcat-analysis--wrap-cell
+                  "pañca five; mukha face, power; √gup (1) protect, maintain · -ta ppp; ruci light, radiance" 45)))
+  (should (equal '("vi- apart · √mal (1) be impure · -a adj;" "kalā part, power;"
+                   "ā- unto · √śri (1) resort · -a whose basis")
+                 (bcat-analysis--wrap-cell
+                  "vi- apart · √mal (1) be impure · -a adj; kalā part, power; ā- unto · √śri (1) resort · -a whose basis" 45)))
+  (should (equal '("an- not · uttara higher, surpassed ·" "(comparative);" "kula body")
+                 (bcat-analysis--wrap-cell "an- not · uttara higher, surpassed · (comparative); kula body" 38)))
+  (should (equal '("short") (bcat-analysis--wrap-cell "short" 45)))
+  (let ((link "[[steinert:a b c][a b c]] · d · e · f · g · h · i · j · k · l · m · n"))
+    (should (equal (list link) (bcat-analysis--wrap-cell link 20)))))
+
+(ert-deftest bcat-analysis-table-columns-continuations ()
+  "Reading a table back joins the lines a wide cell was broken into:
+a line ending in „ ·“ or „;“ goes on in the row below where that row
+has nothing else — the cells as they were before the break (C-c u L,
+the export)."
+  (let* ((rows '(("tad-ubhaya" "hṛdayam")
+                 ("tad · ubhaya · yāmala · vi-√sphur-ita · bhāva · maya" "hṛd-aya")
+                 ("tad those; ubhaya both; yāmala pair, union; vi- forth · √sphur (6) flash · -ita ppp; bhāva state" "hṛd heart · -aya m. noun")
+                 ("consisting of the emission" "heart")
+                 ("adj. n. nom. sg." "n. nom. sg.")))
+         (table (tibetan-gloss-table--format-rows (bcat-analysis-wrap-rows rows 45))))
+    (should (> (length (split-string table "\n" t)) 5))
+    (should (equal (list (mapcar #'car rows) (mapcar #'cadr rows))
+                   (bcat-analysis--table-columns table)))))
+
 (ert-deftest bcat-analysis-tables-fill-the-window ()
   "Carsten 4.11. (bDen 16, Segment 70): „müsste eigentlich nicht
 umbrechen, oder?“ — six columns, 119 characters as the table stands,
