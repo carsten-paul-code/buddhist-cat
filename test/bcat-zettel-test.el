@@ -46,6 +46,8 @@ for niyantraṇa) and its index loaded."
              (insert bcat-zettel-test--kala))
            (with-temp-file (expand-file-name "20261016T140000--visarga.org" kasten)
              (insert bcat-zettel-test--visarga))
+           (with-temp-file (expand-file-name "20250522T150000--skandha.org" kasten)
+             (insert "#+title: skandha\n#+description: Die fünf Gruppen, aus denen die Person besteht.\n"))
            (with-temp-file (expand-file-name "20261001T000000--niyantrana.org" kasten)
              (insert "#+title: niyantraṇa\n#+description: Lenkung, Zügelung; bei Jayaratha die Ordnung des Kommentars.\n"))
            (with-temp-file index
@@ -59,6 +61,10 @@ for niyantraṇa) and its index loaded."
                                      (title . "visarga") (kind . "concept") (stub . :json-false)
                                      (tags . ["tradition_saiva"])
                                      (keys . ["visarga"]))
+                                    ((id . "20250522T150000") (file . "20250522T150000--skandha.org")
+                                     (title . "skandha") (kind . "concept") (stub . :json-false)
+                                     (sanskrit . "skandha") (wylie . "phung po")
+                                     (keys . ["skandha" "phungpo" "ཕུངཔོ"]))
                                     ((id . "20250822T092830") (file . "20250822T092830--jnana.org")
                                      (title . "jñāna") (kind . "concept") (stub . :json-false)
                                      (tags . ["type_concept" "domain_epistemology"])
@@ -308,6 +314,19 @@ zettel's.  Nothing when no term of the sentence has a zettel."
         (bcat-sentence-test--with-stubs (bcat-sentence-test--sa-answer)
           (bcat-sentence-test--fetch-n src 1007)
           (should (string-match-p "niyantraṇa (Skt\\. niyantraṇa" (cdr (car (last prompts))))))))))
+
+(ert-deftest bcat-zettel-pair-sends-zettels ()
+  "A bilingual pair: the Tibetan request (Claude writes the Tibetan
+concept notes too) gets the zettels of the terms in the Tibetan
+segments — Uchen matched against the Tibetan keys of the index."
+  (bcat-zettel-test--with-kasten
+    (bcat-sentence-test--with-pair
+      (bcat-sentence-test--create-n src 3)
+      (bcat-sentence-test--with-stubs #'bcat-sentence-test--pair-answers
+        (bcat-sentence-test--fetch-n src 3)
+        (let ((tib (nth (cl-position "bcat-tibetan" kinds :test #'equal) prompts)))
+          (should tib)
+          (should (string-match-p "- skandha (Skt\\. skandha; Tib\\. phung po): Die fünf Gruppen" (cdr tib))))))))
 
 (ert-deftest bcat-zettel-key ()
   "C-c u z b writes the Belege of the sentence file at point (or of the

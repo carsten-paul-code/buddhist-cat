@@ -1019,13 +1019,14 @@ nil."
                      :target-lang)
           "en"))))
 
-(defun bcat-sentence--context-with-zettels (meta segs source-file)
-  "The document's #+TIBETAN_CLAUDE_CONTEXT lines (from META) and, Carsten
-5.11., the zettels of the terms in SEGS ((NUM . TEXT) …) of SOURCE-FILE
-\(`bcat-zettel-prompt-block') — the concept notes build on them."
+(defun bcat-sentence--context-with-zettels (meta segs source-file &optional lines)
+  "The document's #+TIBETAN_CLAUDE_CONTEXT lines (from META, or LINES)
+and, Carsten 5.11., the zettels of the terms in SEGS ((NUM . TEXT) …) of
+SOURCE-FILE (`bcat-zettel-prompt-block') — the concept notes build on
+them."
   (let ((block (and (fboundp 'bcat-zettel-prompt-block)
                     (bcat-zettel-prompt-block (mapcar #'cdr segs) source-file))))
-    (append (plist-get meta :claude-context) (and block (list block)))))
+    (append (or lines (plist-get meta :claude-context)) (and block (list block)))))
 
 (defun bcat-sentence--prompts (sentence source-file refs)
   "(SYSTEM . USER) for SENTENCE of SOURCE-FILE with the references REFS —
@@ -1180,11 +1181,13 @@ finishes the file; any other ends here (C-c u H)."
 SOURCE-FILE: the Sanskrit segments with the translations of the
 Sanskrit answer PARSED, the Tibetan ones with Wylie, TREFS the
 reference translations of the Tibetan, the Tibetan source's
-#+TIBETAN_CLAUDE_CONTEXT."
+#+TIBETAN_CLAUDE_CONTEXT and the zettels of the Tibetan terms
+\(`bcat-sentence--context-with-zettels')."
   (let* ((n (plist-get sentence :sent-num))
          (meta (ignore-errors (tibetan-analysis--read-source-metadata source-file)))
-         (pmeta (ignore-errors (tibetan-analysis--read-source-metadata
-                                (bcat-sentence-parallel-source source-file))))
+         (partner (bcat-sentence-parallel-source source-file))
+         (pmeta (ignore-errors (tibetan-analysis--read-source-metadata partner)))
+         (tsegs (bcat-sentence--parallel-segs n source-file))
          (own (mapcar (lambda (c) (cons (bcat-analysis--num c) (bcat-analysis--field c 'translation)))
                       (alist-get 'segments parsed))))
     (cons (bcat-analysis-tibetan-system-prompt (or (plist-get meta :target-lang) "en"))
@@ -1193,9 +1196,13 @@ reference translations of the Tibetan, the Tibetan source's
            (mapcar (lambda (s) (list (car s) (cdr s) (cdr (assq (car s) own))))
                    (plist-get sentence :segs))
            (mapcar (lambda (s) (list (car s) (cdr s) (bcat-sentence--wylie (cdr s))))
-                   (bcat-sentence--parallel-segs n source-file))
+                   tsegs)
            trefs
-           (or (plist-get pmeta :claude-context) (plist-get meta :claude-context))
+           ;; 5.11.: the zettels of the Tibetan terms too — Claude writes
+           ;; the Tibetan concept notes; the tradition from the Tibetan text.
+           (bcat-sentence--context-with-zettels
+            nil tsegs partner
+            (or (plist-get pmeta :claude-context) (plist-get meta :claude-context)))
            (bcat-sentence--second-language sentence source-file)))))
 
 (defun bcat-sentence--tibetan-land (file sentence source-file refs parsed trefs response)
