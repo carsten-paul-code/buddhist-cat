@@ -1,9 +1,9 @@
 #+TITLE: Function Reference — buddhist-cat
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-11-05T15:54:44
+#+DATE: 2026-11-05T16:02:04
 #+OPTIONS: toc:2 num:nil
 
-Source tree: ~/Users/cp/buddhist-cat~  ·  97 modules  ·  2341 forms
+Source tree: ~/Users/cp/buddhist-cat~  ·  97 modules  ·  2347 forms
 
 Regenerated automatically by:
 
@@ -64,7 +64,7 @@ python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/buddhist-c
   - [[#doc-prep/tibetan-wylie-ingest.el][doc-prep/tibetan-wylie-ingest.el]]  (26)
   - [[#persist/bcat-analysis.el][persist/bcat-analysis.el]]  (122)
   - [[#persist/bcat-commentary.el][persist/bcat-commentary.el]]  (56)
-  - [[#persist/bcat-dossier.el][persist/bcat-dossier.el]]  (23)
+  - [[#persist/bcat-dossier.el][persist/bcat-dossier.el]]  (29)
   - [[#persist/bcat-export.el][persist/bcat-export.el]]  (73)
   - [[#persist/bcat-faces.el][persist/bcat-faces.el]]  (30)
   - [[#persist/bcat-parallel.el][persist/bcat-parallel.el]]  (7)
@@ -14782,7 +14782,7 @@ Commentary document → the plist of its running C-c u G.
 ** ~bcat-dossier--filled~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 58
+:LINE: 59
 :SIGNATURE: (bcat-dossier--filled v)
 :END:
 
@@ -14791,7 +14791,7 @@ V when it is a string not blank, else nil.
 ** ~bcat-dossier--block~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 66
+:LINE: 67
 :SIGNATURE: (bcat-dossier--block pairs)
 :END:
 
@@ -14801,7 +14801,7 @@ left out — or nil.
 ** ~bcat-dossier--tibetan-pairs~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 74
+:LINE: 75
 :SIGNATURE: (bcat-dossier--tibetan-pairs items line-key)
 :END:
 
@@ -14811,7 +14811,7 @@ Wylie made from the Uchen.
 ** ~bcat-dossier--translation~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 83
+:LINE: 84
 :SIGNATURE: (bcat-dossier--translation context)
 :END:
 
@@ -14821,7 +14821,7 @@ proposal without its decisions, else „*Translation:* …“; nil without.
 ** ~bcat-dossier-text-layer~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 91
+:LINE: 92
 :SIGNATURE: (bcat-dossier-text-layer context)
 :END:
 
@@ -14832,7 +14832,7 @@ the file itself or of its partner) — and (translation . TEXT).
 ** ~bcat-dossier-bhasya-layer~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 108
+:LINE: 109
 :SIGNATURE: (bcat-dossier-bhasya-layer context)
 :END:
 
@@ -14843,7 +14843,7 @@ else the note that it comes with the next fetch), the hint.
 ** ~bcat-dossier--folios~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 122
+:LINE: 123
 :SIGNATURE: (bcat-dossier--folios commentary-source)
 :END:
 
@@ -14852,7 +14852,7 @@ Hash: segment number → :FOLIO: of COMMENTARY-SOURCE.
 ** ~bcat-dossier--relink~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 133
+:LINE: 134
 :SIGNATURE: (bcat-dossier--relink text from to)
 :END:
 
@@ -14862,20 +14862,22 @@ FROM) as seen from the folder TO.
 ** ~bcat-dossier-commentary-items~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 144
-:SIGNATURE: (bcat-dossier-commentary-items doc folios to)
+:LINE: 145
+:SIGNATURE: (bcat-dossier-commentary-items doc folios to &optional pdf)
 :END:
 
 The sentences of the commentary document DOC as items: (head . „N ·
 folio“) with FOLIOS (`bcat-dossier--folios'), (lines . the Uchen and
 Wylie lines, a line of a segment that takes up the verse — *Lemma:* or
 „(lemma)“ in its analysis — in bold), (item-translation . …), (lemma .
-the *Lemma:* line, its links seen from the folder TO).
+the *Lemma:* line, its links seen from the folder TO), (item-link . into
+the analysis of the sentence — the document, or with PDF its jump
+target comm-N).
 
 ** ~bcat-dossier--asbh-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 189
+:LINE: 194
 :SIGNATURE: (bcat-dossier--asbh-p n source)
 :END:
 
@@ -14884,7 +14886,7 @@ Non-nil when sentence N of SOURCE is a bhāṣya sentence (tag :asbh:).
 ** ~bcat-dossier--neighbour~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 196
+:LINE: 201
 :SIGNATURE: (bcat-dossier--neighbour n source direction)
 :END:
 
@@ -14894,7 +14896,7 @@ SOURCE, or nil.
 ** ~bcat-dossier-files~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 203
+:LINE: 208
 :SIGNATURE: (bcat-dossier-files file)
 :END:
 
@@ -14905,7 +14907,7 @@ file of a pair and the root sentence of an AS bhāṣya sentence.
 ** ~bcat-dossier--siglum~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 227
+:LINE: 232
 :SIGNATURE: (bcat-dossier--siglum source)
 :END:
 
@@ -14914,7 +14916,7 @@ The #+TIBETAN_SIGLUM of SOURCE, or nil.
 ** ~bcat-dossier--heading~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 231
+:LINE: 236
 :SIGNATURE: (bcat-dossier--heading no title sigla)
 :END:
 
@@ -14923,7 +14925,7 @@ The #+TIBETAN_SIGLUM of SOURCE, or nil.
 ** ~bcat-dossier-path~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 236
+:LINE: 241
 :SIGNATURE: (bcat-dossier-path lead)
 :END:
 
@@ -14933,17 +14935,20 @@ named like its PDF in handouts/.
 ** ~bcat-dossier-context~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 245
-:SIGNATURE: (bcat-dossier-context file)
+:LINE: 250
+:SIGNATURE: (bcat-dossier-context file &optional pdf)
 :END:
 
 The fields of the dossier the sentence FILE belongs to, or nil:
-label, path, links to the analyses, layers (text, bhāṣya, commentary).
+label, path, links to the analyses, layers (text, bhāṣya, commentary),
+each with its link into the analysis — the file, or with PDF the jump
+target of the dossier's PDF (#segments, #bhasya, #commentary, #comm-N);
+`commentary-doc' and `commentary-author' for the PDF.
 
 ** ~bcat-dossier--keep-notes~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 297
+:LINE: 313
 :SIGNATURE: (bcat-dossier--keep-notes path)
 :END:
 
@@ -14952,17 +14957,85 @@ The body of „* Meine Notizen“ in the dossier PATH, or nil.
 ** ~bcat-dossier-write~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 303
+:LINE: 319
 :SIGNATURE: (bcat-dossier-write file)
 :END:
 
 Write the dossier the sentence FILE belongs to (template dossier,
 cascade of its source); the notes stay.  Returns its path, or nil.
 
+** ~bcat-dossier--split-parts~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 339
+:SIGNATURE: (bcat-dossier--split-parts view)
+:END:
+
+VIEW (org text) as ((ID TITLE TEXT) …) per heading of level 1 — ID
+its CUSTOM_ID or nil, TEXT from the heading on; what stands before the
+first heading is left out.
+
+** ~bcat-dossier--demote~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 355
+:SIGNATURE: (bcat-dossier--demote text)
+:END:
+
+TEXT with every heading one level down.
+
+** ~bcat-dossier--nest-view~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 359
+:SIGNATURE: (bcat-dossier--nest-view view title id parts)
+:END:
+
+The parts PARTS (CUSTOM_IDs, in VIEW's order) of the PDF view VIEW of
+a second sentence file one level down under „* TITLE“ (CUSTOM_ID ID),
+their CUSTOM_IDs and jumps prefixed „ID-“ so that they cannot meet the
+first file's (AS: the bhāṣya sentence).
+
+** ~bcat-dossier--commentary-part~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 372
+:SIGNATURE: (bcat-dossier--commentary-part doc author)
+:END:
+
+The sentences of the commentary document DOC as the part „* AUTHOR“
+of the PDF (CUSTOM_ID commentary), one level down, each a jump target
+comm-N.
+
+** ~bcat-dossier--lead-of~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 389
+:SIGNATURE: (bcat-dossier--lead-of file)
+:END:
+
+The sentence file whose dossier FILE belongs to: for a commentary
+document the first verse of its #+CAT_VERSE, else FILE.
+
+** ~bcat-dossier-pdf-text~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 398
+:SIGNATURE: (bcat-dossier-pdf-text file)
+:END:
+
+The PDF of the dossier FILE belongs to (Carsten 5.11.): (:lead LEAD
+:text ORG) — the reading page first (the layers as in the dossier, each
+with its jump into the analysis), then the verse's Segments and Grammar,
+the bhāṣya sentence's analysis (AS), the commentary's sentences, the
+verse's Concepts, Discussion, Further Reading, Notes; the dossier's
+notes at the end.  nil for a sentence with one layer — it keeps its own
+view (`bcat-export-views').
+
 ** ~bcat-dossier-after-fetch~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 319
+:LINE: 437
 :SIGNATURE: (bcat-dossier-after-fetch file)
 :END:
 
@@ -14973,7 +15046,7 @@ never signals.
 ** ~bcat-dossier~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 332
+:LINE: 450
 :SIGNATURE: (bcat-dossier)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -14986,7 +15059,7 @@ files and shown.
 ** ~bcat-dossier-auto~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 46
+:LINE: 47
 :TYPE: 'boolean
 :GROUP: buddhist-cat
 :DEFAULT: t
@@ -14997,7 +15070,7 @@ When non-nil, C-c u G ends with the dossier of the verse.
 ** ~bcat-dossier--notes~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 51
+:LINE: 52
 :DEFAULT: "Meine Notizen"
 :END:
 
@@ -15006,7 +15079,7 @@ The heading of the user's notes in a dossier — kept across rebuilds.
 ** ~bcat-dossier--missing-translation~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 54
+:LINE: 55
 :DEFAULT: "[noch nicht übersetzt — kommt mit dem nächsten C-c u G]"
 :END:
 
@@ -15558,12 +15631,16 @@ reMarkable (`bcat-export-upload').  Exported is the view (Carsten
 5.11.: one document with jump marks, `bcat-export-view'), written
 beside FILE as .pdfview-<name>.org — a name no folder scan takes for a
 sentence file — and removed after the export; without a view the file
-itself.  Returns the PDF path.
+itself.  A file of a verse with more than one layer (bhāṣya,
+commentary — Carsten 5.11.: the reading dossier) exports the dossier's
+PDF instead (`bcat-dossier-pdf-text'), under the name and label of the
+verse — from any of its files, the commentary document too.  Returns
+the PDF path.
 
 ** ~bcat-export--lectures-pdf~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1055
+:LINE: 1066
 :SIGNATURE: (bcat-export--lectures-pdf file views head target)
 :END:
 
@@ -15576,7 +15653,7 @@ change; a copy per export would crowd the device).
 ** ~bcat-export-after-fetch~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1078
+:LINE: 1089
 :SIGNATURE: (bcat-export-after-fetch file)
 :END:
 
@@ -15589,7 +15666,7 @@ rmapi failure must not spoil the landed analysis.
 ** ~bcat-export~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 1096
+:LINE: 1107
 :SIGNATURE: (bcat-export)
 :INTERACTIVE: t
 :AUTOLOAD: t
