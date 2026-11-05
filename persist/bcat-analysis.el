@@ -21,6 +21,7 @@
 
 (require 'cl-lib)
 (require 'subr-x)
+(require 'ucs-normalize)
 (require 'json)
 (require 'seq)
 (require 'ol)
@@ -1642,6 +1643,202 @@ Tibetan function — its rest goes to Structure
                               (car (bcat-analysis--function-split (bcat-analysis--word-function w) "sa"))))))
              words)
      "sa")))
+
+;; The parts of a word in tables of their own (Carsten 5.11., TĀ 1.1:
+;; „Können wir beim Sanskrit irgendwie mit Untertabellen arbeiten und die
+;; Redundanzen rausnehmen?“ — of three drafts „B … einzeilig, kursiv“).
+
+(defun bcat-analysis--part-norm (s)
+  "S as a part's form is compared with the word: lower case, without √,
+hyphens, spaces, digits, brackets and diacritics — tantra is a piece of
+tantrālokaḥ, sva of svātantrya."
+  (replace-regexp-in-string
+   "[\u0300-\u036F]" ""
+   (ucs-normalize-NFD-string (downcase (replace-regexp-in-string "[√·+()0-9 \t-]" "" (or s ""))))))
+
+(defun bcat-analysis--part-item (text)
+  "(FORM . REST) of one part TEXT of a word: its first word and the rest
+— „√mal (1) be impure“ → („√mal“ . „(1) be impure“)."
+  (let ((text (string-trim text)))
+    (if (string-match "\\`\\(\\S-+\\)[ \t]+\\(.+\\)\\'" text)
+        (cons (match-string 1 text) (match-string 2 text))
+      (cons text ""))))
+
+(defun bcat-analysis--part-form-p (form keys)
+  "Non-nil when FORM, the first word of a part, is Sanskrit — a root
+\(√), a hyphenated form (vi-, -ta, vi-bhu), a word with diacritics, a
+piece of one of KEYS (the members of the word, its formation) or with
+its first three letters in one (mahas, the stem of mahāḥ) —, not the
+start of a meaning: TĀ 1007 gives the parts of mad-vāk as „my ·
+speech“."
+  (let ((n (bcat-analysis--part-norm form)))
+    (or (string-match-p "√" form)
+        (string-search "-" form)
+        (string-match-p "[^[:ascii:]]" form)
+        (and (>= (length n) 2)
+             (cl-some (lambda (k)
+                        (let ((nk (bcat-analysis--part-norm k)))
+                          (or (string-search n nk)
+                              (and (>= (length n) 3) (string-search (substring n 0 3) nk)))))
+                      keys)
+             t))))
+
+(defun bcat-analysis--part-groups (items keys)
+  "ITEMS ((FORM . REST) …), the parts of a word in order, by its members
+KEYS (what each member is written as): a list with the items of each
+member, in order.  Most answers separate every part by „ · “, so the
+members cannot be read from the parts (5.11.: of 395 words in the files
+6 have „;“ between the members, 37 match neither the formation's pieces
+nor its members).  The assignment in order that finds the most of the
+forms in their members wins (10 a letter); a member left empty costs
+20 — every member has parts —, a suffix (-a) starting a member or a
+member starting after a prefix (vi-) 5: Claude writes members with a
+hyphen too (śrīmat-mahā-…: „mahā- great“)."
+  (let* ((n (length items)) (m (length keys))
+         (nkeys (vconcat (mapcar #'bcat-analysis--part-norm keys)))
+         (forms (vconcat (mapcar (lambda (i) (bcat-analysis--part-norm (car i))) items)))
+         (suffix (vconcat (mapcar (lambda (i) (string-prefix-p "-" (car i))) items)))
+         (prefix (vconcat (mapcar (lambda (i) (string-suffix-p "-" (car i))) items)))
+         (score (lambda (k j)
+                  (let ((f (aref forms k)))
+                    (if (and (> (length f) 0) (string-search f (aref nkeys j))) (* 10 (length f)) 0))))
+         (best (make-vector (* n m) 0))
+         (from (make-vector (* n m) -1)))
+    (if (or (zerop n) (< m 2))
+        (list items)
+      (dotimes (j m)
+        (aset best j (+ (funcall score 0 j) 20)))
+      (cl-loop
+       for k from 1 below n do
+       (let ((cost (+ (if (aref suffix k) 5 0) (if (aref prefix (1- k)) 5 0))))
+         (dotimes (j m)
+           (let ((same (aref best (+ (* (1- k) m) j))) (prev j))
+             ;; A new member from an earlier one; on a tie the later
+             ;; start (the member before keeps the part).
+             (dotimes (j2 j)
+               (let ((adv (- (+ (aref best (+ (* (1- k) m) j2)) 20) cost)))
+                 (when (>= adv same) (setq same adv prev j2))))
+             (aset best (+ (* k m) j) (+ (funcall score k j) same))
+             (aset from (+ (* k m) j) prev)))))
+      (let* ((j (cl-loop with bj = 0 for j from 1 below m
+                         when (>= (aref best (+ (* (1- n) m) j)) (aref best (+ (* (1- n) m) bj)))
+                         do (setq bj j)
+                         finally return bj))
+             (groups (make-vector m nil)))
+        (cl-loop for k downfrom (1- n) to 0 do
+                 (push (nth k items) (aref groups j))
+                 (setq j (aref from (+ (* k m) j))))
+        (append groups nil)))))
+
+(defun bcat-analysis--word-parts (w)
+  "The parts of the Sanskrit word W by its members, (HEADS . GROUPS): the
+members as the word writes them (split at its hyphens) and for each its
+parts, (FORM . REST) …; nil without parts.  „;“ between the parts
+separates the members when there are as many as the word has (TĀ 1.1),
+else the parts go to the members by their forms
+\(`bcat-analysis--part-groups'; the formation helps when it has as many
+members)."
+  (let* ((parts (bcat-analysis--field w 'parts))
+         (heads (split-string (bcat-analysis--field w 'word) "-" t "[ \t]*"))
+         (formation (bcat-analysis--field w 'formation))
+         (fms (and (not (member formation '("" "—" "-")))
+                   (split-string formation "[ \t]*·[ \t]*" t)))
+         (keys (cl-loop for h in heads for i from 0
+                        collect (if (= (length fms) (length heads)) (concat h " " (nth i fms)) h)))
+         (members (split-string parts "[ \t]*;[ \t]+" t))
+         (items (lambda (text sep) (mapcar #'bcat-analysis--part-item (split-string text sep t)))))
+    (unless (or (string-empty-p parts) (null heads))
+      (cons heads
+            (cond ((= 1 (length heads)) (list (funcall items parts "[ \t]*·[ \t]*")))
+                  ((= (length members) (length heads))
+                   (mapcar (lambda (mem) (funcall items mem "[ \t]*·[ \t]*")) members))
+                  (t (bcat-analysis--part-groups (funcall items parts "[ \t]*[·;][ \t]*") keys)))))))
+
+(defun bcat-analysis--part-cell (item keys)
+  "The part ITEM (FORM . REST) as it stands in the table: the Sanskrit
+form in italics before its meaning (Carsten 5.11.: „kursiv“); a part
+that only gives a meaning, or a form with a slash, as it is.  KEYS:
+the word's members (`bcat-analysis--part-form-p')."
+  (let ((form (car item)) (rest (cdr item)))
+    (string-trim
+     (if (and (bcat-analysis--part-form-p form keys) (not (string-search "/" form)))
+         (concat "/" form "/ " rest)
+       (concat form " " rest)))))
+
+(defun bcat-analysis--bare-part-p (items head keys)
+  "Non-nil when ITEMS, the parts of the member HEAD, are only the member
+itself — one part whose form is HEAD (kalā: „kalā part, power“), not a
+root (cit: „√cit (1) consciousness“ stays), or only a meaning (kāya:
+„body“): then its meaning stands alone."
+  (and (= 1 (length items))
+       (or (not (bcat-analysis--part-form-p (caar items) keys))
+           (and (not (string-search "√" (caar items)))
+                (equal (bcat-analysis--part-norm (caar items)) (bcat-analysis--part-norm head))))))
+
+(defun bcat-analysis--header-rule (line)
+  "The hline under the table row LINE: dashes as wide as each cell."
+  (concat "|" (mapconcat (lambda (cell) (make-string (string-width cell) ?-))
+                         (butlast (cdr (split-string line "|")))
+                         "+")
+          "|"))
+
+(defun bcat-analysis--header-table (rows)
+  "ROWS (lists of cells) as an org table whose first row is its header —
+an hline under it."
+  (let ((lines (split-string (string-trim-right (tibetan-gloss-table--format-rows rows)) "\n")))
+    (string-join (cons (car lines) (cons (bcat-analysis--header-rule (car lines)) (cdr lines))) "\n")))
+
+(defun bcat-analysis--formation-block (w)
+  "What the parts of the Sanskrit word W add to the overview, or nil: for
+a compound a table — a column per member, its parts below (one per
+row), split like the overview when wider than the file
+\(`bcat-analysis--layout'); for a word of one member a line, „/jananī/:
+/√jan/ (1) be born · /-anī/ f. agent“; nothing when the parts only
+repeat the word."
+  (let ((wp (bcat-analysis--word-parts w)))
+    (when wp
+      (let* ((heads (car wp)) (groups (cdr wp))
+             (word (bcat-analysis--field w 'word))
+             (keys (cons (bcat-analysis--field w 'formation) heads))
+             (cell (lambda (item) (tibetan-gloss-table--cell (bcat-analysis--part-cell item keys)))))
+        (if (= 1 (length heads))
+            (unless (bcat-analysis--bare-part-p (car groups) word keys)
+              (format "/%s/: %s" word (mapconcat cell (car groups) " · ")))
+          (let* ((cells (cl-mapcar (lambda (head items)
+                                     (cond ((not (bcat-analysis--bare-part-p items head keys))
+                                            (mapcar cell items))
+                                           ;; the member itself: its meaning
+                                           ((bcat-analysis--part-form-p (caar items) keys)
+                                            (list (tibetan-gloss-table--cell (cdar items))))
+                                           ;; only a meaning (mad-vāk: „my“)
+                                           (t (mapcar cell items))))
+                                   heads groups))
+                 (depth (apply #'max 1 (mapcar #'length cells)))
+                 (width (bcat-analysis--layout 'table-width "sa"))
+                 (columns (cl-mapcar (lambda (head cs)
+                                       (cons (tibetan-gloss-table--cell head)
+                                             (append cs (make-list (- depth (length cs)) ""))))
+                                     heads cells)))
+            (unless (cl-every (lambda (col) (cl-every #'string-empty-p (cdr col))) columns)
+              (mapconcat (lambda (chunk)
+                           ;; a row empty in this chunk holds parts of
+                           ;; members in another one
+                           (bcat-analysis--header-table
+                            (cl-loop for r below (1+ depth)
+                                     for row = (mapcar (lambda (col) (nth r col)) chunk)
+                                     unless (and (> r 0) (cl-every #'string-empty-p row))
+                                     collect row)))
+                         (bcat-analysis--chunk-columns columns width 3 width)
+                         "\n\n"))))))))
+
+(defun bcat-analysis-formation-tables (words)
+  "The parts of a Sanskrit segment's WORDS under its overview, in the
+order of the words (`bcat-analysis--formation-block'), blank lines
+between; \"\" when none adds anything.  Carsten 5.11., TĀ 1.1: the
+formation and the parts rows of the old table said every part twice and
+broke a compound across lines — now each word that has parts gets its
+own small table."
+  (mapconcat #'identity (delq nil (mapcar #'bcat-analysis--formation-block words)) "\n\n"))
 
 (defun bcat-analysis-padapatha-line (samhita words &optional plain)
   "The padapāṭha line of a segment for * Text: WORDS (Claude's

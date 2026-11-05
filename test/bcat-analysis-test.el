@@ -1675,6 +1675,131 @@ per word — as for a Tibetan function (4.11.)."
     (should (string-prefix-p "/jananī/ [subject 1] \\\\\n/vimala-kalā-āśrayā/: bahuvrīhi"
                              (alist-get 'structure seg)))))
 
+(defun bcat-analysis-test--rows (table)
+  "The rows of the org TABLE as lists of trimmed cells, hlines skipped."
+  (cl-loop for line in (split-string table "\n" t)
+           unless (string-match-p "\\`|-" line)
+           collect (mapcar #'string-trim (butlast (cdr (split-string line "|"))))))
+
+(ert-deftest bcat-analysis-formation-tables-ta-1-1 ()
+  "Carsten 5.11. on TĀ 1.1 („So wie es jetzt ist ist es für mich schwer
+nachvollziehbar“; of three drafts: „B … einzeilig, kursiv“): under the
+overview each word with parts gets its own table — a column per member
+of the compound, its parts below, one per row, the Sanskrit form in
+italics before its meaning; a member that is one bare stem shows only
+its meaning.  The formation row is gone: every part was in the table
+twice.  A word of one member is a line, „/jananī/: …“; a word without
+parts (ca) nothing.  Expected text drawn up apart from the code, from
+the agreed draft."
+  (should (equal "| vimala               | kalā        | āśrayā            |
+|----------------------+-------------+-------------------|
+| /vi-/ apart          | part, power | /ā-/ unto         |
+| /√mal/ (1) be impure |             | /√śri/ (1) resort |
+| /-a/ adj             |             | /-a/ whose basis  |
+
+| abhinava             | sṛṣṭi           | mahāḥ                   |
+|----------------------+-----------------+-------------------------|
+| /abhi-/ toward       | creation (√sṛj) | /mahas/ radiance, glory |
+| /nava/ new, ever-new |                 |                         |
+
+/jananī/: /√jan/ (1) be born · /-anī/ f. agent
+
+| bharita                  | tanuḥ               |
+|--------------------------+---------------------|
+| /√bhṛ/ (1) bear, be full | /tanu/ body, nature |
+| /-ita/ ppp               |                     |
+
+| pañca | mukha       | gupta                        | ruciḥ                  |
+|-------+-------------+------------------------------+------------------------|
+| five  | face, power | /√gup/ (1) protect, maintain | /ruci/ light, radiance |
+|       |             | /-ta/ ppp                    |                        |
+
+/janakaḥ/: /√jan/ (1) beget · /-aka/ m. agent"
+                 (bcat-analysis-formation-tables bcat-analysis-test--ta-1-1-words))))
+
+(ert-deftest bcat-analysis-formation-tables-members-from-the-word ()
+  "Most answers separate every part by „ · “ — the members of a compound
+cannot be read from the parts (395 words in the files on 5.11.: 6 with
+„;“ between the members, 82 whose parts match the formation's pieces,
+37 that match neither).  The members come from the word as written
+\(„śrotra-dhātuḥ“), each part goes to the member its form is a piece of,
+in order; a suffix stays with the part before it, a prefix with the one
+after.  Parts that are only meanings („my · speech“, TĀ 1007) stand as
+they are."
+  (let ((rows (lambda (word formation parts)
+                (bcat-analysis-test--rows
+                 (bcat-analysis-formation-tables
+                  `(((word . ,word) (formation . ,formation) (parts . ,parts) (gloss . "g") (form . "f"))))))))
+    (should (equal '(("śrotra" "dhātuḥ") ("/√śru/ (5) hear" "/dhātu/ element") ("/-tra/ n.instr." ""))
+                   (funcall rows "śrotra-dhātuḥ" "śrotra · dhātu" "√śru (5) hear · -tra n.instr. · dhātu element")))
+    (should (equal '(("uddhura" "śakti" "vaibhavam")
+                     ("/ud-/ up/forth" "power" "/vi-bhu/ greatness")
+                     ("/√dhur/ (1) uphold, overflow" "" "/-a/ action noun")
+                     ("/-a/ adj." "" ""))
+                   (funcall rows "uddhura-śakti-vaibhavam" "ud-√dhur · śakti · vai-√bhav-a"
+                            "ud- up/forth · √dhur (1) uphold, overflow · -a adj. · śakti power · vi-bhu greatness · -a action noun")))
+    (should (equal '(("śrīmat" "mahā" "māheśvara" "ācārya" "varya" "śrīmat" "abhinavagupta" "viracitaḥ")
+                     ("/śrī-/ fortune" "great" "/māha-/ of Maheśvara" "teacher" "best" "/śrī-/ fortune"
+                      "/abhinava/ new" "/vi-/")
+                     ("/-mat/ possessing" "" "/-īśvara/ lord" "" "" "/-mat/ possessing" "/gupta/ protected"
+                      "/√rac/ (10) compose")
+                     ("" "" "/-a/ adj." "" "" "" "" "/-ita/ ppp."))
+                   (funcall rows "śrīmat-mahā-māheśvara-ācārya-varya-śrīmat-abhinavagupta-viracitaḥ"
+                            "śrī-mat · mahā · māha-īśvara · ācārya · varya · śrī-mat · abhinava-gupta · vi-√rac-ita"
+                            "śrī- fortune · -mat possessing · mahā- great · māha- of Maheśvara · -īśvara lord · -a adj. · ācārya teacher · varya best · śrī- fortune · -mat possessing · abhinava new · gupta protected · vi- · √rac (10) compose · -ita ppp.")))
+    (should (equal '(("mad" "vāk") ("my" "speech"))
+                   (funcall rows "mad-vāk" "mad · vāc" "my · speech")))
+    ;; Forms are found without their diacritics (tantra in tantrālokaḥ,
+    ;; sva in svātantrya); a root is never the bare member (√cit).
+    (should (equal '(("śrī" "tantrālokaḥ") ("auspicious" "/tantra/ tantra") ("" "/ā-/ toward")
+                     ("" "/√lok/ (1) see") ("" "/-a/ action noun"))
+                   (funcall rows "śrī-tantrālokaḥ" "śrī · tantra · ā-√lok-a"
+                            "śrī- auspicious · tantra tantra · ā- toward · √lok (1) see · -a action noun")))
+    (should (equal '(("ānanda" "cit" "bhūmayaḥ")
+                     ("/ā-/ toward" "/√cit/ (1) consciousness" "/bhūmi/ ground/plane")
+                     ("/√nand/ (1) rejoice" "" "") ("/-a/ action noun" "" ""))
+                   (funcall rows "ānanda-cit-bhūmayaḥ" "ā-√nand-a · √cit · bhūmi"
+                            "ā- toward · √nand (1) rejoice · -a action noun · √cit (1) consciousness · bhūmi ground/plane")))
+    (should (equal '(("svātantrya" "pūrṇa" "pratham")
+                     ("/sva/ own" "full" "/√prath/ (1) spread/expand")
+                     ("/tantra/ system/self" "" "/-a/ action noun") ("/-ya/ abstract noun" "" ""))
+                   (funcall rows "svātantrya-pūrṇa-pratham" "sva-tantra-ya · pūrṇa · √prath-a"
+                            "sva own · tantra system/self · -ya abstract noun · pūrṇa full · √prath (1) spread/expand · -a action noun")))))
+
+(ert-deftest bcat-analysis-formation-tables-nothing-to-add ()
+  "No table or line where it would only repeat the overview: no parts
+\(ca), one part that is the word itself (kalā) or only a meaning (kāya:
+„body“).  A stem other than the word stays (mahaḥ ← mahas)."
+  (let ((block (lambda (word parts)
+                 (bcat-analysis-formation-tables
+                  `(((word . ,word) (formation . "—") (parts . ,parts) (gloss . "g") (form . "f")))))))
+    (should (equal "" (funcall block "ca" "")))
+    (should (equal "" (funcall block "kalā" "kalā part, power")))
+    (should (equal "" (funcall block "kāya" "body")))
+    (should (equal "/mahaḥ/: /mahas/ radiance" (funcall block "mahaḥ" "mahas radiance")))
+    (should (equal "" (bcat-analysis-formation-tables nil)))))
+
+(ert-deftest bcat-analysis-formation-tables-chunked ()
+  "A compound wider than the table width is split into several tables,
+each with the members it holds as its header row — none wider than the
+width (`bcat-analysis--layout')."
+  (let* ((bcat-analysis-layout-overrides '(("sa" (table-width . 40))))
+         (out (bcat-analysis-formation-tables
+               '(((word . "tad-ubhaya-yāmala-sphurita-bhāva-visarga-mayam") (formation . "—")
+                  (parts . "tad those; ubhaya both; yāmala pair, union; vi- forth · √sphur (6) flash · -ita ppp; bhāva state; vi- forth · √sṛj (6) emit · -a m. emission; maya- full of, consisting of")
+                  (gloss . "g") (form . "f")))))
+         (tables (split-string out "\n\n")))
+    (should (> (length tables) 1))
+    (dolist (tb tables)
+      (should (string-match-p "\\`|[^\n]*\n|-" tb))
+      (dolist (line (split-string tb "\n"))
+        (should (<= (string-width line) 40)))
+      ;; no row of a table empty — the parts of members in another one
+      (dolist (row (cdr (bcat-analysis-test--rows tb)))
+        (should-not (cl-every #'string-empty-p row))))
+    (should (equal '("tad" "ubhaya" "yāmala" "sphurita" "bhāva" "visarga" "mayam")
+                   (cl-loop for tb in tables append (car (bcat-analysis-test--rows tb)))))))
+
 (ert-deftest bcat-analysis-layout-generic-with-exceptions ()
   "One width for every language, an exception per source language over
 it (`bcat-analysis-layout-overrides') — Carsten 5.11.: „alles erstmal
