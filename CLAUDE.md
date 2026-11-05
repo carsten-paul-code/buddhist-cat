@@ -4869,15 +4869,70 @@ Segment gegen die alten Tabellen geprüft, außerhalb * Text / * Sanskrit
 nichts geändert, 13 Paardateien gleich ihrem Sanskrit-Partner, zweiter
 Lauf ändert nichts.  ERT 2833.
 
+5.11.2026 nachmittags, DAS PDF ALS EIN DOKUMENT MIT SPRUNGMARKEN
+(Carsten: „Es könnte ja auch ein PDF bleiben, wenn ich Sprungmarken
+hätte … erste Seite Reading und Rezitation, zweite die
+Segmentübersichten, 3. die Grammatik, 4. die Konzepte usw.“; Gerät:
+reMarkable Paper Pro).  Seite (`18309c9'): 180 × 240 mm = der Bildschirm
+des Paper Pro (vorher A4/11 pt, auf dem Gerät ~70 %), Ränder 8 mm,
+10 pt — `bcat-export-paper', `-margins', `-font-size',
+`bcat-export-page-lines' (nur Exportkopie).  In LaTeX nachgemessen
+(Zeile 466 pt): Glossentabellen vom Maß 130 füllen 96–103 % — die
+Frage „130 verkleinert oder ~80 voll“ ist erledigt.  Dokument
+(`52cd4d5'): C-c u H exportiert eine ANSICHT, nicht die Datei — die
+Vorlage `pdf-<Vorlage>' (Templates/analysis/pdf-sanskrit, -tibetan,
+-bilingual, -bilingual-tibetan; Teile `pdf-part-grammar', -concepts,
+-discussion, -further-reading, -notes; Kaskade wie jede Vorlage),
+gesetzt aus `bcat-relayout-file-context' (`15370d1', dasselbe
+Zurücklesen wie C-c u L — Handkorrekturen erscheinen) +
+`bcat-export--view-context' (Entscheidungen aus dem Vorschlag gelöst →
+Diskussion; je Segment `detail-p'/`grammar-link'; `grammar-p',
+`concepts-p', `discussion-p', `translations-p', `notes-p').  Teile:
+Reading (Rezitation bzw. Uchen über Wylie, Übersetzung) · Segments
+(Übersicht + →; „⟦N⟧ · Grammar“ springt) · Grammar (Grammatik, je
+Segment ⟦N⟧ = CUSTOM_ID grammar-N: Teile-Tabellen, Sandhi, Forms,
+Compounds, Structure, Note) · Concepts · Discussion · Commentary ·
+Further Reading · Notes (nur mit Text).  Leerer Teil fällt weg.
+`bcat-export--parts-pages': jeder Teil (Ebene 1 mit CUSTOM_ID) ab dem
+zweiten auf neuer Seite, am Fuß jeder Seite die Leiste mit Links
+(`\hyperref', `org-latex-prefer-user-labels' t; das reMarkable folgt
+internen Links seit 2.6).  Ansicht als `.pdfview-<name>.org' neben der
+Datei, nach dem Export gelöscht; ohne pdf-Vorlage (Kommentardokument)
+die Datei selbst.  Teile-Tabellen breiter als die Seite geteilt
+(`20e8270', `bcat-export--rechunk-header-tables').  TĀ 1.1: 24 Seiten
+(davon 11 Sanderson unter Further Reading), bDen 14: 8, AS 5: 9.
+
+5.11.2026 nachmittags, CONCEPT NOTES ↔ ZETTEL (Carsten: „concept Notes
+sollten doch eigentlich immer auch in Zetteln repräsentiert werden“;
+Belege automatisch als markierte Zeile: „ja, bitte“).  Neues Modul
+persist/bcat-zettel.el.  Verlinken (`83610d2'): ein fetter Begriff einer
+Concept Note mit Zettel im Index der Hervorhebung (skos_index.py) wird
+*[[denote:ID][Begriff]]* — beim Rendern jeder Satzdatei
+(`bcat-sentence--render'), also C-c u G und C-c u L; ohne Indexdatei
+nichts; im PDF ohne Link (`bcat-export--plain-zettel-links').  Belege
+(`fdb1a98', `e7b9642', `3d5f9e4'): je verlinktem Begriff, der im TEXT
+des Segments steht (Wortzeile der Übersicht, bei Tibetisch Uchen/Umschrift;
+jede Tabelle der Übersicht für sich), eine Zeile unter * Belegstellen in
+der Literatur: „- TĀ 1.1 ⟦2⟧: /hṛdayam/ — heart, core of consciousness
+(CAT: [[file:…::*Concepts][Satz 1]])“; eigene Zeile wird ersetzt, eine
+Zeile von Hand zum selben Vers gewinnt, fehlender Abschnitt vor
+* Verweise.  Nach C-c u G (`bcat-zettel-belege-auto', nie für
+Temp-Fixtures), C-c u z b, Menü.  Nichts im Kasten committet.  Erster
+Lauf zeigte: Begriffe nur in der Erklärung (prakāśa, cit, icchā, jñāna)
+sind keine Belege — jñāna traf sogar den Kramer-Zettel; zurückgenommen.
+TĀ 1.1 jetzt: anuttara, hṛdaya, yāmala, visarga je eine Zeile; kalā hat
+seinen Beleg von Hand.
+
 #### Offen
 
-- PDF-Tabellen werden verkleinert (gemessen 5.11., LuaLaTeX, Textbreite
-  360 pt): ab Maß ~88 (je Spalte breiteste Zeile + 6, + 1) ist eine
-  Tabelle breiter als die Zeile und adjustbox skaliert sie — bei
-  `bcat-export-table-width' 130 fast jede Segmenttabelle, auf 70–90 %.
-  Volle Schriftgröße hieße Grenze ~80 (Sanskrit: Breite ≈ 4,5 pt/Zeichen
-  + 18 pt/Spalte; Tibetisch ≈ 5,5 + 14) und spürbar mehr, kleinere
-  Tabellen je PDF.  Carstens Entscheidung; nichts geändert.
+- Concept Notes MITGEBEN (Schritt 2 des Vorschlags vom 5.11.): C-c u G
+  schickt Claude den Konzept-Teil der Zettel, die im Satz vorkommen;
+  die Notiz sagt dann, was der Begriff an DIESER Stelle bedeutet.
+  Ändert den Prompt — noch nicht gebaut.
+- Homonyme beim Verlinken: der erste Zettel, der kein Stub ist (jñāna →
+  Kramer-Glossar statt Trika); Vorzug nach Hub/Scheme des Texts fehlt.
+- Belege/Links nur für TĀ 1.1 ausgeführt; die übrigen Satzdateien
+  bekommen die Links mit C-c u L, die Belege mit C-c u z b (auf Zuruf).
 
 - Kommentardokument (comm-…, Vorlage commentary) noch in alter Ordnung;
   dieselbe Reihenfolge je Satz steht aus (Carsten: „Hier habe ich noch
