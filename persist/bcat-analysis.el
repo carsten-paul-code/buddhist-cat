@@ -295,7 +295,7 @@ Rules:
 - structure: the segment's syntax in one line, org markup — Sanskrit words /italic/, functions in brackets: \"/yat niyantraṇam/ [subject] /ullaset/ [V opt.] → relative clause, taken up by /tat/ in 686\".
 - note: only for a grammatical peculiarity or a real ambiguity, one or two sentences; otherwise \"\".
 - concepts: technical concepts (Buddhist, Śaiva, philosophical) occurring in THIS segment — the term in *bold*, a short encyclopedic note of two or three sentences; \"\" when there is none.
-- grammar: an overview of the whole sentence — the clauses and how they are linked, the verbs, subjects, elisions (an understood copula).
+- grammar: an overview of the whole sentence — the clauses and how they are linked, the verbs, subjects, elisions (an understood copula). Name a metre only as given under Metre in the request; none when none is given.
 %s
 %s- JSON escaping: only \\\" and \\\\ — never a backslash before an apostrophe.
 - Write glosses, notes and explanations in %s. Never mention yourself."
@@ -312,17 +312,22 @@ Rules:
                ""))
             lang)))
 
-(defun bcat-analysis-sanskrit-user-prompt (sent-num verse segs refs &optional context bhasya second lectures)
+(defun bcat-analysis-sanskrit-user-prompt (sent-num verse segs refs &optional context bhasya second lectures metre)
   "The user prompt for the Sanskrit sentence SENT-NUM (VERSE its :VERSE:
 or nil): SEGS ((NUM TEXT) …) the segments as transmitted, REFS ((NAME .
 TEXT) …) the reference translations, CONTEXT the document's
 #+TIBETAN_CLAUDE_CONTEXT lines, BHASYA (SANSKRIT . TIBETAN) the bhāṣya
 on the verse — lines as transmitted, the Tibetan in Wylie; SECOND and
-LECTURES as in `bcat-analysis-user-prompt'."
+LECTURES as in `bcat-analysis-user-prompt'; METRE the name of the metre
+the tool scans (`bcat-sentence--metre-name') — 5.11., TĀ 1.1: without
+it Claude named Śālinī for a Nardaṭaka."
   (concat
    (if context (concat (mapconcat #'identity context "\n") "\n\n") "")
    (format "Sentence %d%s — segments:\n" sent-num (if verse (format " (%s)" verse) ""))
    (mapconcat (lambda (s) (bcat-analysis--segment-entry (nth 0 s) (nth 1 s))) segs "\n")
+   (if metre
+       (format "\n\nMetre (scanned by the tool from the syllable quantities): %s" metre)
+     "")
    (if bhasya
        (concat "\n\nBhāṣya on this verse (context):"
                (if (car bhasya) (concat "\nSanskrit: " (string-join (car bhasya) " ")) "")

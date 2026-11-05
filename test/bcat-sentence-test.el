@@ -562,6 +562,17 @@ compared)."
           (should (string-match-p "^\\* My Notes\nAlte Notiz\\.$" text))
           (should (string-match-p "^\\*Eigene 2026:\\* My own rendering of verse nine\\.$" text)))))))
 
+(ert-deftest bcat-sentence-metre-name ()
+  "The metre of a Sanskrit verse as the tool scans it — for the prompt
+\(5.11., TĀ 1.1: Claude named Śālinī, the verse is a Nardaṭaka); nil
+for prose and an unknown metre."
+  (should (equal "Nardaṭaka"
+                 (bcat-sentence--metre-name
+                  '((1 . "vimalakalāśrayābhinavasṛṣṭimahā jananī bharitatanuśca pañcamukhaguptarucirjanakaḥ /")
+                    (2 . "tadubhayayāmalasphuritabhāvavisargamayaṃ hṛdayamanuttarāmṛtakulaṃ mama saṃsphuratāt // 1")))))
+  (should-not (bcat-sentence--metre-name
+               '((1 . "iha khalu sakalasya jagataḥ sthitir anena kriyate tasya ca mūlam")))))
+
 (ert-deftest bcat-sentence-lectures ()
   "Carsten 30.10.: Sanderson's lectures on TĀ 1.1–15 (transcripts with
 time stamps) belong in the sentence file of their verse — „als

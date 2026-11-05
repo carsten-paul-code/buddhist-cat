@@ -1137,6 +1137,19 @@ collision takes the next letters (Sanderson 2022/2025 → S, Sa)."
   (should (equal '(("Rahula/Boin-Webb 2001" . "R") ("Lindtner 1981" . "L"))
                  (bcat-analysis-sigla '("Rahula/Boin-Webb 2001" "Lindtner 1981")))))
 
+(ert-deftest bcat-analysis-sanskrit-metre-in-prompts ()
+  "The metre the tool scans goes into the user prompt as a fact; the
+system prompt lets Claude name only that one.  5.11., TĀ 1.1: the
+grammar said „in the Śālinī metre“ — the verse has 17 syllables a pāda,
+the tool scans Nardaṭaka; the prompt had said nothing about the metre."
+  (let ((segs '((1 "vimalakalāśrayābhinavasṛṣṭimahā jananī bharitatanuśca pañcamukhaguptarucirjanakaḥ /"))))
+    (should (string-match-p
+             (regexp-quote "Metre (scanned by the tool from the syllable quantities): Nardaṭaka")
+             (bcat-analysis-sanskrit-user-prompt 1 nil segs nil nil nil nil nil "Nardaṭaka")))
+    (should-not (string-match-p "Metre (scanned" (bcat-analysis-sanskrit-user-prompt 1 nil segs nil)))
+    (should (string-match-p "Name a metre only as given under Metre"
+                            (bcat-analysis-sanskrit-system-prompt "en")))))
+
 (ert-deftest bcat-analysis-comparison-prompt-sigla-lectures ()
   "The user prompt of every sentence analysis names the sigla of the
 comparison; Sanderson's lectures on the sentence (#+CAT_LECTURES) go

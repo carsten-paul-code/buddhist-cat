@@ -412,6 +412,13 @@ without the pāda letters)."
        `((metre . ,(mapconcat #'identity (plist-get r :header) " \\\\\n"))
          (scansion . ,(plist-get r :table)))))))
 
+(defun bcat-sentence--metre-name (segs)
+  "The name of the metre the tool scans in the Sanskrit verse SEGS
+\((NUM . TEXT) …) — for the prompt (5.11., TĀ 1.1: told nothing, Claude
+named Śālinī for a Nardaṭaka); nil for prose and an unknown metre."
+  (require 'tibetan-sanskrit-metre)
+  (plist-get (tibetan-metre-identify (mapcar (lambda (s) (string-trim (cdr s))) segs)) :name))
+
 (defun bcat-sentence--references (sent-num source-file)
   "The reference translations of sentence SENT-NUM: ((NAME . BODY) …)
 from the §-references of its Section and the sentence references —
@@ -1028,7 +1035,8 @@ translations — Carsten 2.11.: „Ja, nur beim Vergleich“."
                  (plist-get meta :claude-context)
                  (and verse-mode (bcat-sentence--bhasya-texts (plist-get sentence :sent-num)
                                                               source-file))
-                 second lectures)))
+                 second lectures
+                 (bcat-sentence--metre-name segs))))
       (cons (bcat-analysis-system-prompt target)
             (bcat-analysis-user-prompt
              (plist-get sentence :sent-num) (plist-get sentence :verse)
