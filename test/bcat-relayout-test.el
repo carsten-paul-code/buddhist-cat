@@ -336,6 +336,38 @@ pair; no request."
       (should (string-match-p "^<<skt-22>>⟦22⟧ · \\[\\[tib-77\\]\\[Tib\\. 77\\]\\]\n| kasmāt" (bcat-sentence-test--text-of file)))
       (should (string-match-p "^\\* Tibetan\n\\(?:.\\|\n\\)*\n| ཅིའི་ཕྱིར" (bcat-sentence-test--text-of file))))))
 
+(ert-deftest bcat-relayout-file-context ()
+  "What C-c u L sets a file anew from, on its own (Carsten 5.11.: the
+PDF of C-c u H is rendered from the same fields): the template, the
+source and the fields read back from the file — a hand correction
+included; no request.  Not a sentence file of a template: an error text,
+no fields."
+  (bcat-sentence-test--with-source
+    (bcat-sentence-test--create src)
+    (bcat-sentence-test--with-stubs bcat-sentence-test--answer
+      (bcat-sentence-test--fetch src))
+    (let ((file (tibetan-sentence--filepath 9 folder src))
+          (fired nil))
+      (with-temp-file file
+        (insert (replace-regexp-in-string "^\\*Structure:\\* no finite verb$"
+                                          "*Structure:* corrected by hand"
+                                          (bcat-sentence-test--text-of file) t t)))
+      (let ((read (cl-letf (((symbol-function 'tibetan-discussion--submit)
+                             (lambda (&rest _) (setq fired t))))
+                    (bcat-relayout-file-context file))))
+        (should-not fired)
+        (should (equal "tibetan" (plist-get read :template)))
+        (should (equal (expand-file-name src) (expand-file-name (plist-get read :source))))
+        (should (equal "corrected by hand"
+                       (alist-get 'structure (cl-find 38 (alist-get 'segments (plist-get read :context))
+                                                      :key #'bcat-analysis--num))))
+        (should-not (plist-get read :error))))
+    (let ((other (expand-file-name "notes.org" folder)))
+      (with-temp-file other (insert "* Notes\n"))
+      (let ((read (bcat-relayout-file-context other)))
+        (should (stringp (plist-get read :error)))
+        (should-not (plist-get read :context))))))
+
 (ert-deftest bcat-relayout-key-and-menu ()
   "C-c u L sets anew; the menu offers it next to the jumps."
   (require 'tibetan-keybindings)

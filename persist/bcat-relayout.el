@@ -371,24 +371,23 @@ segments per segment come from there (Carsten 1.11.)."
 ;; C-c u L
 ;; ----------------------------------------------------------------------------
 
-(defun bcat-relayout-file (file)
-  "Set the template sentence FILE anew from its template, without a
-fetch (`bcat-relayout-context'): user slots, the file's own sections,
-#+CREATED and #+LAST_ANALYZED stay; the answer kept at the fetch
-\(`bcat-sentence--answers') fills what the file does not show.
-Returns FILE, or nil (with a message) when its source has another
-template now — C-c u G rebuilds it."
+(defun bcat-relayout-file-context (file)
+  "What the template sentence FILE is set anew from, without a fetch
+\(`bcat-relayout-context'): (:template :source :context) — user slots,
+#+CREATED and #+LAST_ANALYZED included; the answer kept at the fetch
+\(`bcat-sentence--answers') fills what the file does not show.  C-c u L
+renders the file from it, C-c u H the PDF (Carsten 5.11.).  When FILE is
+no sentence file of a template, or its source has another template now
+\(C-c u G rebuilds it): (:error TEXT), nothing read."
   (let* ((source (tibetan-sentence--source-file-from-analysis file))
          (template (bcat-sentence-file-p file))
          (sent-num (tibetan-sentence--sent-id-from-filename file)))
     (cond
      ((not (and source template sent-num))
-      (message "C-c u L: %s ist keine Satzdatei einer Vorlage" (file-name-nondirectory file))
-      nil)
+      (list :error (format "%s ist keine Satzdatei einer Vorlage" (file-name-nondirectory file))))
      ((not (equal template (bcat-sentence-template-name source)))
-      (message "C-c u L: %s hat die Vorlage %s, die Quelle %s — C-c u G baut sie neu"
-               (file-name-nondirectory file) template (bcat-sentence-template-name source))
-      nil)
+      (list :error (format "%s hat die Vorlage %s, die Quelle %s — C-c u G baut sie neu"
+                           (file-name-nondirectory file) template (bcat-sentence-template-name source))))
      (t
       (bcat-sentence--save-visit file)
       (let* ((text (bcat-sentence--text file))
@@ -412,8 +411,21 @@ template now — C-c u G rebuilds it."
              (context (if assignment
                           (bcat-sentence--commentary-fields sent-num source context assignment)
                         context)))
-        (bcat-sentence--write file (bcat-sentence--render template context source))
-        file)))))
+        (list :template template :source source :context context))))))
+
+(defun bcat-relayout-file (file)
+  "Set the template sentence FILE anew from its template, without a
+fetch (`bcat-relayout-file-context'): user slots, the file's own
+sections, #+CREATED and #+LAST_ANALYZED stay.  Returns FILE, or nil
+\(with a message) when its source has another template now — C-c u G
+rebuilds it."
+  (let ((read (bcat-relayout-file-context file)))
+    (if (plist-get read :error)
+        (progn (message "C-c u L: %s" (plist-get read :error)) nil)
+      (bcat-sentence--write file (bcat-sentence--render (plist-get read :template)
+                                                        (plist-get read :context)
+                                                        (plist-get read :source)))
+      file)))
 
 ;;;###autoload
 (defun bcat-relayout ()
