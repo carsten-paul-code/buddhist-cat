@@ -1543,6 +1543,26 @@ repeating one."
     (should (string-match-p "| V inf\\. +|" (car out)))
     (should-not (cdr out))))
 
+(ert-deftest bcat-analysis-function-split-generic ()
+  "The last row of every table — Tibetan function, Sanskrit form — is cut
+at `bcat-analysis-function-width' the same way (Carsten 5.11.: „alles
+erstmal generisch“): at its „·“ parts, else without the remarks in
+parentheses, else at a comma; the rest for Structure.  TĀ 1.1:
+„adj. nom. sg. (bahuvrīhi, agrees with janakaḥ; by kākākṣi-nyāya also
+with jananī)“ (83 characters) made its column the widest of the table."
+  (should (equal '("adj. nom. sg." . "bahuvrīhi, agrees with janakaḥ; by kākākṣi-nyāya also with jananī")
+                 (bcat-analysis--function-split
+                  "adj. nom. sg. (bahuvrīhi, agrees with janakaḥ; by kākākṣi-nyāya also with jananī)")))
+  (should (equal '("āśiṣi 3 sg. P" . "precative/benedictive; prathamapuruṣa ekavacana; 3rd sg.")
+                 (bcat-analysis--function-split
+                  "āśiṣi (precative/benedictive) 3 sg. P, prathamapuruṣa ekavacana (3rd sg.)")))
+  (should (equal '("pron. gen. sg." . "ṣaṣṭhī vibhakti")
+                 (bcat-analysis--function-split "pron. gen. sg. (ṣaṣṭhī vibhakti)")))
+  (should (equal '("adj. f. nom. sg. (bahuvrīhi)") (bcat-analysis--function-split "adj. f. nom. sg. (bahuvrīhi)")))
+  ;; Tibetan as before: the „·“ parts first.
+  (should (equal '("V pf. (brgyud pa)" . "relative clause, GEN attributive to man ngag")
+                 (bcat-analysis--function-split "V pf. (brgyud pa) · relative clause, GEN attributive to man ngag"))))
+
 (ert-deftest bcat-analysis-tables-fill-the-window ()
   "Carsten 4.11. (bDen 16, Segment 70): „müsste eigentlich nicht
 umbrechen, oder?“ — six columns, 119 characters as the table stands,

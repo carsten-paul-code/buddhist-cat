@@ -701,11 +701,51 @@ characters widened its column, the table broke and left a word alone."
   :type 'integer
   :group 'buddhist-cat)
 
+(defun bcat-analysis--cut-label (text max)
+  "(SHORT . PIECES) for a label TEXT wider than MAX: without its remarks
+in parentheses when that fits, else that cut at its last fitting comma,
+else at a space with „…“; PIECES what SHORT leaves out, in the order of
+TEXT (the remarks without their parentheses).  TĀ 1.1 (5.11.): „āśiṣi
+\(precative/benedictive) 3 sg. P, prathamapuruṣa ekavacana (3rd sg.)“
+→ „āśiṣi 3 sg. P“."
+  (let* ((pieces '()) (pos 0))
+    (while (string-match "(\\([^()]*\\))" text pos)
+      (push (cons (match-beginning 0) (string-trim (match-string 1 text))) pieces)
+      (setq pos (match-end 0)))
+    (let* ((bare (string-trim (replace-regexp-in-string
+                               "  +" " " (replace-regexp-in-string "[ \t]*([^()]*)" "" text))))
+           (bare (if (string-empty-p bare) text bare))
+           (cut-at (lambda (str end)
+                     ;; (SHORT . REMAINDER) of STR cut before END.
+                     (cons (string-trim (substring str 0 end))
+                           (string-trim (substring str end) "[ \t,]+")))))
+      (if (and pieces (<= (string-width bare) max))
+          (cons bare (mapcar #'cdr (nreverse pieces)))
+        (let* ((comma (and (string-match-p ", " bare)
+                           (cl-loop for i downfrom (min (length bare) (1+ max)) to 1
+                                    when (and (< (1+ i) (length bare))
+                                              (eq (aref bare i) ?,) (eq (aref bare (1+ i)) ?\s))
+                                    return i)))
+               (split (if comma
+                          (funcall cut-at bare comma)
+                        (let ((sp (or (cl-position ?\s bare :end (- max 2) :from-end t) (- max 2))))
+                          (cons (concat (string-trim (substring bare 0 sp)) " …")
+                                (string-trim (substring bare sp))))))
+               (rest (cdr split))
+               (at (or (and (not (string-empty-p rest)) (string-search rest text)) (length text))))
+          (cons (car split)
+                (mapcar #'cdr
+                        (sort (append (and (not (string-empty-p rest)) (list (cons at rest)))
+                                      (nreverse pieces))
+                              (lambda (a b) (< (car a) (car b)))))))))))
+
 (defun bcat-analysis--function-split (fn)
-  "(SHORT . REST) of the function FN of a word: FN itself and nil when
-it is no wider than `bcat-analysis-function-width'; else the leading
-„·“ parts that fit (at least the first, cut at a space with „…“ when
-even it is too wide) and the rest."
+  "(SHORT . REST) of the last cell of a word's column — the function of a
+Tibetan word, the form of a Sanskrit one (5.11., generic): FN itself
+and nil when it is no wider than `bcat-analysis-function-width'; else
+the leading „·“ parts that fit and the rest; a first part wider than
+that cut by `bcat-analysis--cut-label' (remarks in parentheses out, else
+at a comma, else at a space with „…“), what it leaves out in REST."
   (let ((fn (string-trim (or fn "")))
         (max bcat-analysis-function-width))
     (if (<= (string-width fn) max)
@@ -717,9 +757,11 @@ even it is too wide) and the rest."
                     (<= (string-width (concat short " · " (nth n parts))) max))
           (setq short (concat short " · " (nth n parts)) n (1+ n)))
         (if (> (string-width short) max)
-            (let* ((cut (or (cl-position ?\s short :end (- max 2) :from-end t) (- max 2))))
-              (cons (concat (substring short 0 cut) " …")
-                    (string-join (cons (string-trim (substring short cut)) (nthcdr 1 parts)) " · ")))
+            (let ((cut (bcat-analysis--cut-label short max)))
+              (cons (car cut)
+                    (string-join (delq nil (list (and (cdr cut) (string-join (cdr cut) "; "))
+                                                 (and (cdr parts) (string-join (cdr parts) " · "))))
+                                 " · ")))
           (cons short (string-join (nthcdr n parts) " · ")))))))
 
 (defun bcat-analysis--trim-lemma (fn wylie)
