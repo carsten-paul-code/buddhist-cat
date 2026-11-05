@@ -643,6 +643,38 @@ sentence files (Carsten 30.10.: not in the PDF).  For
         (delete-region beg (point))
         (goto-char beg)))))
 
+;; ----------------------------------------------------------------------------
+;; The page of the reMarkable Paper Pro (Carsten 5.11.2026)
+;; ----------------------------------------------------------------------------
+
+(defcustom bcat-export-paper '(180 . 240)
+  "Width and height of the PDF page in mm.  Carsten 5.11.: reMarkable
+Paper Pro — its screen (2160 × 1620 px at 229 ppi) is 180 × 240 mm, so
+the page is shown at its size (an A4 page was shown at 70 %, its wide
+margins wasted 40 % of the screen's width)."
+  :type '(cons integer integer)
+  :group 'buddhist-cat)
+
+(defcustom bcat-export-margins "left=8mm,right=8mm,top=13mm,bottom=13mm,headsep=3mm,footskip=7mm"
+  "Margins of the PDF page (options of \\geometry): narrow — the
+reMarkable's frame is margin enough; room for the running head and the
+bar of parts at the foot."
+  :type 'string
+  :group 'buddhist-cat)
+
+(defcustom bcat-export-font-size 10
+  "Font size of the PDF in pt — the page is shown at its size."
+  :type 'integer
+  :group 'buddhist-cat)
+
+(defun bcat-export-page-lines ()
+  "The lines setting the page of the PDF (`bcat-export-paper',
+`bcat-export-margins', `bcat-export-font-size') — for the export copy,
+never the file."
+  (concat (format "#+LATEX_CLASS_OPTIONS: [%dpt]\n" bcat-export-font-size)
+          (format "#+LATEX_HEADER: \\geometry{paperwidth=%dmm,paperheight=%dmm,%s}\n"
+                  (car bcat-export-paper) (cdr bcat-export-paper) bcat-export-margins)))
+
 (defcustom bcat-export-keep-tex nil
   "Keep the .tex beside the PDF — only for looking into the LaTeX.
 Carsten 30.10.: „das .tex können wir an sich auch wegräumen, wenn das
@@ -675,7 +707,7 @@ LuaLaTeX could not set land in `bcat-export--missing'."
          (remove-logs org-latex-remove-logfiles)
          (insert-head (lambda (&rest _)
                         (goto-char (point-min))
-                        (insert (bcat-export--font-lines) (or head "")))))
+                        (insert (bcat-export--font-lines) (bcat-export-page-lines) (or head "")))))
     (unwind-protect
         (with-current-buffer buf
           (when (buffer-modified-p) (save-buffer))

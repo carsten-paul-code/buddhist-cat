@@ -710,6 +710,14 @@ ersten).  Ein Dokument mit interner Verknüpfung gibt keine Warnung."
       (let ((buf (get-file-buffer file))) (when buf (kill-buffer buf)))
       (delete-directory dir t))))
 
+(ert-deftest bcat-export-page-format ()
+  "Carsten 5.11.: reMarkable Paper Pro — the page is its screen (180 ×
+240 mm, 3:4), shown at its size; narrow margins, 10 pt.  The format
+goes into the export copy only."
+  (let ((lines (bcat-export-page-lines)))
+    (should (string-match-p "^#\\+LATEX_CLASS_OPTIONS: \\[10pt\\]$" lines))
+    (should (string-match-p "\\\\geometry{paperwidth=180mm,paperheight=240mm," lines))))
+
 (ert-deftest bcat-export-pdf-smoke ()
   "Real LuaLaTeX run (only where lualatex is installed): the reviewed
 Tibetan sample becomes a PDF and the .tex is cleared away; kept on
