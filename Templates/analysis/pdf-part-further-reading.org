@@ -1,6 +1,10 @@
 #+begin_comment
-TEIL Further Reading der PDF-Vorlagen (Carsten 5.11.2026): wie unter
-* Further Reading der Datei.
+TEIL Further Reading der PDF-Vorlagen (Carsten 5.11.2026): je Vortrag
+nur ein Auszug — die Absätze, die die Analyse mit Zeitmarke zitiert
+(excerpt, bcat-export--lecture-excerpt; mechanisch, das Transkript geht
+an niemanden) —; der ganze Vortrag zum Satz steht im eigenen Dokument
+(Vorlage pdf-lectures): „Im Reading PDF nur ein Exzerpt und dann das
+was einen konkreten Vers betrifft in einem Extradokument“.
 #+end_comment
 {{#lectures-p}}
 * Further Reading
@@ -9,7 +13,11 @@ TEIL Further Reading der PDF-Vorlagen (Carsten 5.11.2026): wie unter
 :END:
 {{#lectures}}
 ** {{lecture-name}}
-{{lecture-body}}
+{{#excerpt}}
+{{excerpt}}
+
+{{/excerpt}}
+/The passages cited above; the whole lecture on this sentence is a document of its own./
 
 {{/lectures}}
 {{/lectures-p}}

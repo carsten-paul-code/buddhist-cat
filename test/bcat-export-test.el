@@ -956,9 +956,74 @@ speaking name.  Without a view: the file itself, as before."
           (should-not (file-exists-p exported))
           (should-not (directory-files folder nil "\\.pdf\\'"))
           ;; No view: the file itself.
-          (cl-letf (((symbol-function 'bcat-export-view) #'ignore))
+          (cl-letf (((symbol-function 'bcat-export-views) #'ignore))
             (bcat-export-file file)
             (should (equal file exported))))))))
+
+(defconst bcat-export-test--lecture
+  (concat "[[https://www.youtube.com/watch?v=x&t=0s][0:00:00]] Opening words.\n\n"
+          "[[https://www.youtube.com/watch?v=x&t=180s][0:03:00]] Benedictory verses.\n\n"
+          "[[https://www.youtube.com/watch?v=x&t=1453s][0:24:13]] The heart is the seat of the emotions.\n\n"
+          "[[https://www.youtube.com/watch?v=x&t=1527s][0:25:27]] So the heart of I, the core.\n\n"
+          "[[https://www.youtube.com/watch?v=x&t=1650s][0:27:30]] Whoops!")
+  "A lecture body as #+CAT_LECTURES gives it: paragraphs with time marks.")
+
+(ert-deftest bcat-export-lecture-excerpt ()
+  "Carsten 5.11.: in the reading PDF only an excerpt of the lecture, the
+whole in a document of its own.  The excerpt: the paragraphs the
+analysis cites by time mark — „(S, I 0:24:13)“; a mark inside a
+paragraph takes that paragraph — in their order, each once; a mark of
+another lecture (II) not.  Mechanical: the transcript goes to no one."
+  (let* ((ctx (bcat-export--view-context
+               `((comparison . "Sanderson (S, I 0:24:13) rejects heart; (S, I 0:26:00); (S, II 0:03:00).")
+                 (segments . (((num . 1) (concepts . "*hṛdaya* (S, I 0:24:13)"))))
+                 (lectures-p . t)
+                 (lectures . (((lecture-name . "Sanderson, Readings in the Tantrāloka I")
+                               (lecture-body . ,bcat-export-test--lecture)))))))
+         (lecture (car (alist-get 'lectures ctx))))
+    (should (equal (concat "[[https://www.youtube.com/watch?v=x&t=1453s][0:24:13]] The heart is the seat of the emotions.\n\n"
+                           "[[https://www.youtube.com/watch?v=x&t=1527s][0:25:27]] So the heart of I, the core.")
+                   (alist-get 'excerpt lecture)))
+    (let ((view (bcat-template-render-named "pdf-part-further-reading" ctx)))
+      (should (string-match-p "^\\*\\* Sanderson, Readings in the Tantrāloka I$" view))
+      (should (string-match-p "0:24:13\\]\\] The heart" view))
+      (should-not (string-match-p "Opening words\\|Whoops" view))
+      (should (string-match-p "a document of its own" view)))
+    (let ((doc (bcat-template-render-named "pdf-lectures" ctx)))
+      (should (string-match-p "^\\* Sanderson, Readings in the Tantrāloka I$" doc))
+      (should (string-match-p "Opening words" doc))
+      (should (string-match-p "Whoops!" doc)))))
+
+(ert-deftest bcat-export-file-lecture-document ()
+  "C-c u H with a lecture: a second PDF beside the first in handouts/
+\(<name>-lectures.pdf), onto the reMarkable after the first (rmapi one
+at a time) — only when it is new: the transcript does not change, a
+copy per export would crowd the device."
+  (bcat-sentence-test--with-source
+    (bcat-sentence-test--create src)
+    (let* ((file (tibetan-sentence--filepath 9 folder src))
+           (lectures (expand-file-name "handouts/bden-9-lectures.pdf" dir))
+           (uploaded '()))
+      (cl-letf (((symbol-function 'bcat-export-views)
+                 (lambda (_f) (list :view "* Reading\nR.\n" :lectures "* Sanderson\nS.\n"
+                                   :lecturer "Sanderson")))
+                ((symbol-function 'bcat-export-pdf)
+                 (lambda (f &rest _)
+                   (let ((pdf (concat (file-name-sans-extension f) ".pdf")))
+                     (with-temp-file pdf (insert "PDF")) pdf)))
+                ((symbol-function 'tibetan-discussion-paper--upload)
+                 (lambda (pdf _title label &optional done)
+                   (push (cons (file-name-nondirectory pdf) label) uploaded)
+                   (when done (funcall done t label)) t)))
+        (let ((bcat-export-upload t))
+          (bcat-export-file file)
+          (should (file-exists-p lectures))
+          (should (equal '(("bden-9.pdf" . "SDA 9") ("bden-9-lectures.pdf" . "SDA 9 Sanderson"))
+                         (reverse uploaded)))
+          (setq uploaded nil)
+          (bcat-export-file file)
+          (should (equal '(("bden-9.pdf" . "SDA 9")) uploaded))
+          (should-not (directory-files folder nil "\\.pdf\\'\\|\\`\\.pdfview")))))))
 
 (ert-deftest bcat-export-pdf-smoke ()
   "Real LuaLaTeX run (only where lualatex is installed): the reviewed

@@ -741,6 +741,43 @@ other non-nil value."
   '(formation-tables sandhi forms compounds structure note)
   "The fields of a segment that go into the part Grammar of the PDF.")
 
+(defun bcat-export--lecture-paragraphs (body)
+  "The paragraphs of the lecture BODY as ((SECONDS . PARAGRAPH) …) — each
+begins with its time mark, [[url][H:MM:SS]]; one without keeps the
+time of the one before."
+  (let ((time 0))
+    (mapcar (lambda (p)
+              (when (string-match "\\`\\[\\[[^]\n]*\\]\\[\\([0-9]+\\):\\([0-9][0-9]\\):\\([0-9][0-9]\\)\\]\\]" p)
+                (setq time (+ (* 3600 (string-to-number (match-string 1 p)))
+                              (* 60 (string-to-number (match-string 2 p)))
+                              (string-to-number (match-string 3 p)))))
+              (cons time p))
+            (split-string (or body "") "\n[ \t]*\n" t "[ \t\n]+"))))
+
+(defun bcat-export--lecture-excerpt (body name cited)
+  "The excerpt of the lecture NAME (BODY) for the reading PDF (Carsten
+5.11.: „Im Reading PDF nur ein Exzerpt“): the paragraphs whose time the
+text CITED cites — „(S, I 0:24:13)“; a mark inside a paragraph takes
+that paragraph — in order, each once, blank-line separated.  A mark of
+another lecture (its numeral, „II“, not the one NAME ends with) does
+not count.  Mechanical — the transcript goes to no one."
+  (let* ((numeral (and name (string-match "\\b\\([IVXL]+\\)[ \t]*\\'" name) (match-string 1 name)))
+         (paras (bcat-export--lecture-paragraphs body))
+         (times '()) (start 0))
+    (while (string-match "\\(?:\\b\\([IVXL]+\\) \\)?\\([0-9]+\\):\\([0-9][0-9]\\):\\([0-9][0-9]\\)" cited start)
+      (setq start (match-end 0))
+      (unless (and numeral (match-string 1 cited) (not (equal numeral (match-string 1 cited))))
+        (push (+ (* 3600 (string-to-number (match-string 2 cited)))
+                 (* 60 (string-to-number (match-string 3 cited)))
+                 (string-to-number (match-string 4 cited)))
+              times)))
+    (string-join
+     (cl-loop for (p . rest) on paras
+              for next = (if rest (car (car rest)) most-positive-fixnum)
+              when (cl-some (lambda (tm) (and (>= tm (car p)) (< tm next))) times)
+              collect (cdr p))
+     "\n\n")))
+
 (defun bcat-export--view-context (context)
   "CONTEXT (`bcat-relayout-file-context') with the fields of the PDF view:
 the proposed translation without its decisions — they belong to the
@@ -768,6 +805,13 @@ Notes have anything (`grammar-p', `concepts-p', `discussion-p',
          (any (lambda (key items) (cl-some (lambda (s) (bcat-export--filled-p (alist-get key s))) items))))
     (append
      `((segments . ,segments)
+       (lectures . ,(let ((cited (prin1-to-string (cl-remove 'lectures context :key #'car))))
+                      (mapcar (lambda (l)
+                                (cons (cons 'excerpt (bcat-export--lecture-excerpt
+                                                      (alist-get 'lecture-body l)
+                                                      (alist-get 'lecture-name l) cited))
+                                      l))
+                              (alist-get 'lectures context))))
        (proposal . ,proposal)
        (decisions . ,decisions)
        (grammar-p . ,(or (funcall filled 'grammar)
@@ -788,6 +832,16 @@ L reads back from FILE (`bcat-relayout-file-context', completed by
 `bcat-export--view-context').  The file stays as it is.  nil when there
 is no such template (a commentary document) or FILE is no sentence file
 of a template — C-c u H then exports the file itself."
+  (plist-get (bcat-export-views file) :view))
+
+(defun bcat-export-views (file)
+  "The views of the sentence FILE (`bcat-export-view'): (:view TEXT
+:lectures TEXT :lecturer NAME) — the reading PDF (template
+pdf-<template>) and, when the sentence has lectures (#+CAT_LECTURES),
+the document of the whole lectures (template pdf-lectures, Carsten
+5.11.: „das was einen konkreten Vers betrifft in einem
+Extradokument“), NAME the lecturer (the first lecture's name up to its
+comma).  nil without a pdf template."
   (require 'bcat-relayout)
   (let* ((template (bcat-sentence-file-p file))
          (source (and template (tibetan-sentence--source-file-from-analysis file)))
@@ -795,8 +849,14 @@ of a template — C-c u H then exports the file itself."
     (when (and name (bcat-template-find name source))
       (let ((read (bcat-relayout-file-context file)))
         (unless (plist-get read :error)
-          (bcat-template-render-named name (bcat-export--view-context (plist-get read :context))
-                                      (plist-get read :source)))))))
+          (let* ((context (bcat-export--view-context (plist-get read :context)))
+                 (lectures (alist-get 'lectures context)))
+            (list :view (bcat-template-render-named name context (plist-get read :source))
+                  :lectures (and lectures (bcat-template-find "pdf-lectures" source)
+                                 (bcat-template-render-named "pdf-lectures" context (plist-get read :source)))
+                  :lecturer (and lectures
+                                 (string-trim (car (split-string (alist-get 'lecture-name (car lectures))
+                                                                 "[,(]")))))))))))
 
 (defun bcat-export--parts-pages (&rest _)
   "In the current (export) buffer: every part — a heading of level 1 with
@@ -934,10 +994,12 @@ itself.  Returns the PDF path."
   (let* ((info (bcat-export-info file))
          (head (bcat-export-head-lines (plist-get info :folder) (plist-get info :work)
                                        (plist-get info :sent-num) (plist-get info :verse)))
-         (view (condition-case err (bcat-export-view file)
-                 (error (message "PDF-Ansicht von %s nicht gesetzt (%s) — die Datei selbst"
-                                 (file-name-nondirectory file) (error-message-string err))
-                        nil)))
+         (views (condition-case err (bcat-export-views file)
+                  (error (message "PDF-Ansicht von %s nicht gesetzt (%s) — die Datei selbst"
+                                  (file-name-nondirectory file) (error-message-string err))
+                         nil)))
+         (view (plist-get views :view))
+         (lectures (bcat-export--lectures-pdf file views head (plist-get info :handout)))
          (view-file (and view (expand-file-name (concat ".pdfview-" (file-name-nondirectory file))
                                                 (file-name-directory file))))
          (pdf (if (not view)
@@ -970,10 +1032,41 @@ itself.  Returns the PDF path."
           (tibetan-discussion-paper--upload
            pdf (plist-get info :work) (plist-get info :label)
            (lambda (ok what)
-             (bcat-status-step file :upload (if ok (concat "reMarkable ✓ " what)
-                                              (concat "reMarkable: Fehler — " what))))))
+             (let ((done (if ok (concat "reMarkable ✓ " what) (concat "reMarkable: Fehler — " what))))
+               (bcat-status-step file :upload done)
+               ;; The lectures after the PDF — rmapi one at a time.
+               (when (and ok lectures)
+                 (tibetan-discussion-paper--upload
+                  lectures (plist-get info :work)
+                  (format "%s %s" (plist-get info :label) (plist-get views :lecturer))
+                  (lambda (ok2 what2)
+                    (bcat-status-step file :upload
+                                      (concat done (if ok2 " · Vortrag ✓" (concat " · Vortrag: Fehler — " what2)))))))))))
       (message "PDF: %s" pdf))
     pdf))
+
+(defun bcat-export--lectures-pdf (file views head target)
+  "The document of the lectures of the sentence FILE (:lectures of VIEWS,
+Carsten 5.11.) as PDF beside TARGET (the handout: <name>-lectures.pdf),
+or nil.  Returns its path only when it is NEW — then C-c u H puts it on
+the reMarkable; later it is only written anew (the transcript does not
+change; a copy per export would crowd the device)."
+  (let ((text (plist-get views :lectures)))
+    (when (and text target)
+      (let* ((out (concat (file-name-sans-extension target) "-lectures.pdf"))
+             (new (not (file-exists-p out)))
+             (src (expand-file-name (concat ".pdfview-" (file-name-base file) "-lectures.org")
+                                    (file-name-directory file))))
+        (unwind-protect
+            (let ((pdf (progn (let ((coding-system-for-write 'utf-8-unix))
+                                (with-temp-file src (insert text)))
+                              (bcat-export-pdf src head))))
+              (when (and pdf (file-exists-p pdf)
+                         (file-equal-p (file-name-directory pdf) (file-name-directory file)))
+                (make-directory (file-name-directory out) t)
+                (rename-file pdf out t)
+                (and new out)))
+          (when (file-exists-p src) (delete-file src)))))))
 
 (defun bcat-export-after-fetch (file)
   "Hook for `bcat-sentence-after-fetch-functions': C-c u G ends with

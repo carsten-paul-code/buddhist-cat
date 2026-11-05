@@ -1,0 +1,14 @@
+#+begin_comment
+VORLAGE des Extradokuments eines Satzes (C-c u H, Carsten 5.11.2026):
+die Vorträge zum Satz (#+CAT_LECTURES) ganz, je Vortrag ein Teil — im
+PDF des Satzes steht nur der Auszug (pdf-part-further-reading).  Nur
+für Carstens eigenes Studium (OCHS-Transkripte), wie das Satz-PDF.
+#+end_comment
+#+TITLE: Sentence {{sent-num}} — lectures
+#+OPTIONS: toc:nil num:nil title:nil author:nil date:nil
+
+{{#lectures}}
+* {{lecture-name}}
+{{lecture-body}}
+
+{{/lectures}}
