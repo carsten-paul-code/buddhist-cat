@@ -608,6 +608,32 @@ read back, the columns are those of the file."
         (should (equal columns (apply #'append (mapcar #'bcat-analysis--table-columns tables))))
         (should (string-match-p "\n→ t\n\n| Nr\\. | Stelle |\n|-----\\+--------|\n|   1 | /a/    |\n\\'" text))))))
 
+(ert-deftest bcat-export-parts-tables-blue ()
+  "5.11. (Carsten, draft B): in the PDF the tables of the words' parts —
+a header row (the members, black), \\hline, the parts — have the parts
+in \\bcatg, as the formation and parts rows before; the comparison's
+overview, also a table with a header row, keeps its \\cellcolor and no
+\\bcatg (`bcat-export-comparison-table')."
+  (should (equal (concat "\\begin{tabular}{ll}\nvimala & kalā\\\\\n\\hline\n"
+                         "\\bcatg{\\emph{vi-} apart} & \\bcatg{part, power}\\\\\n"
+                         "\\bcatg{\\emph{-a} adj} & \\\\\n\\end{tabular}")
+                 (bcat-export--detail-rows
+                  (concat "\\begin{tabular}{ll}\nvimala & kalā\\\\\n\\hline\n"
+                          "\\emph{vi-} apart & part, power\\\\\n"
+                          "\\emph{-a} adj & \\\\\n\\end{tabular}")))))
+
+(ert-deftest bcat-export-parts-line-blue ()
+  "5.11.: the line of a word of one member — the word black, its parts in
+\\bcatg.  Only a paragraph that is that one line: a Structure paragraph
+with lines of the same shape stays as it is, as does every other
+backend."
+  (should (equal "\\emph{jananī}: \\bcatg{\\emph{√jan} (1) be born · \\emph{-anī} f. agent}\n"
+                 (bcat-export--parts-line-filter
+                  "\\emph{jananī}: \\emph{√jan} (1) be born · \\emph{-anī} f. agent\n" 'latex nil)))
+  (let ((structure "\\textbf{Structure:} x \\\\\n\\emph{a}: b\n"))
+    (should (equal structure (bcat-export--parts-line-filter structure 'latex nil))))
+  (should (equal "\\emph{a}: b\n" (bcat-export--parts-line-filter "\\emph{a}: b\n" 'html nil))))
+
 (ert-deftest bcat-export-comparison-table ()
   "2.11. (Muster vergleich-ta1-1.org): the overview table of the
 comparison — the ratings with \\cellcolor{ok|mid|bad} — needs colortbl

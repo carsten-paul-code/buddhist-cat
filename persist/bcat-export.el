@@ -43,6 +43,7 @@
 (defvar org-latex-tables-centered)
 (defvar org-export-filter-table-functions)
 (defvar org-export-filter-verse-block-functions)
+(defvar org-export-filter-paragraph-functions)
 (defvar org-export-before-processing-functions)
 (defvar org-export-headline-levels)
 (defvar tibetan-cascade-subtree-confirm-threshold)
@@ -414,6 +415,17 @@ the space-greedy separator ate the room before the second &."
         (setq pos (1+ i))))
     (nreverse (cons (substring row start) cells))))
 
+(defun bcat-export--parts-line-filter (text backend _info)
+  "`org-export-filter-paragraph-functions' entry: a paragraph that is
+the line of a word of one member — „\\emph{jananī}: \\emph{√jan} (1) be
+born · …“ (Carsten 5.11., the parts under a Sanskrit segment's
+translation) — with its parts in \\bcatg, the word black.  A Structure
+paragraph with lines of that shape stays as it is."
+  (if (and (org-export-derived-backend-p backend 'latex)
+           (string-match "\\`\\(\\\\emph{[^}\n]+}:\\) \\([^\n]+\\)\\(\n*\\)\\'" text))
+      (concat (match-string 1 text) " \\bcatg{" (match-string 2 text) "}" (match-string 3 text))
+    text))
+
 (defun bcat-export--detail-rows (tabular)
   "TABULAR (LaTeX) with the cells of the rows that explain the words —
 formation, parts, form — in \\bcatg: in each band of the table (rows
@@ -422,28 +434,35 @@ the first is Uchen (its Wylie) and the one next to last (the gloss).
 Carsten 31.10.: words black, the rest blue; the same evening, TĀ 1006:
 the gloss black too — „dann sehe ich gleich was wichtig ist“;
 Tibetisch V: Uchen and Wylie black.  A metre table (its second row only
-– and ⏑) stays as it is, as does a table with a header row — one row,
-then \\hline: the comparison's overview (2.11.); no table of words has
-one."
+– and ⏑) stays as it is, as does the comparison's overview (2.11.: a
+header row — one row, then \\hline — and \\cellcolor); a table of a
+word's parts (5.11.: the members as a header row) has every row but the
+members' in \\bcatg."
   (let* ((lines (split-string tabular "\n"))
          (row-p (lambda (l) (string-match-p "\\\\\\\\[ \t]*\\'" l)))
          (rows (cl-remove-if-not row-p lines))
          (header (let ((first (cl-position-if row-p lines)))
                    (and first (nth (1+ first) lines)
                         (string-match-p "\\`[ \t]*\\\\hline" (nth (1+ first) lines))))))
-    (if (or (< (length rows) 2) header (bcat-export--metre-row-p (nth 1 rows)))
+    (if (or (< (length rows) 2)
+            (and header (string-match-p "\\\\cellcolor" tabular))
+            (bcat-export--metre-row-p (nth 1 rows)))
         tabular
       (let ((blue '()) (band '()))
-        ;; The bands, each closed by an \hline or the end.
-        (dolist (l (append lines (list "\\hline")))
-          (cond ((funcall row-p l) (push l band))
-                ((string-match-p "\\`[ \t]*\\\\hline" l)
-                 (let* ((b (nreverse band)) (n (length b))
-                        (uchen (and b (string-match-p "[\u0F00-\u0FFF]" (car b)))))
-                   (cl-loop for r in b for i from 0
-                            unless (or (= i 0) (and uchen (= i 1)) (= i (- n 2)))
-                            do (push r blue)))
-                 (setq band '()))))
+        (if header
+            ;; 5.11.: a table of a word's parts — the members, \hline, the
+            ;; parts: every row but the members'.
+            (setq blue (cdr rows))
+          ;; The bands, each closed by an \hline or the end.
+          (dolist (l (append lines (list "\\hline")))
+            (cond ((funcall row-p l) (push l band))
+                  ((string-match-p "\\`[ \t]*\\\\hline" l)
+                   (let* ((b (nreverse band)) (n (length b))
+                          (uchen (and b (string-match-p "[\u0F00-\u0FFF]" (car b)))))
+                     (cl-loop for r in b for i from 0
+                              unless (or (= i 0) (and uchen (= i 1)) (= i (- n 2)))
+                              do (push r blue)))
+                   (setq band '())))))
         (mapconcat
          (lambda (l)
            (if (not (memq l blue))
@@ -680,6 +699,8 @@ LuaLaTeX could not set land in `bcat-export--missing'."
                                      (list #'bcat-export--table-filter)))
                             (org-export-filter-verse-block-functions
                              (cons #'bcat-export--verse-filter org-export-filter-verse-block-functions))
+                            (org-export-filter-paragraph-functions
+                             (cons #'bcat-export--parts-line-filter org-export-filter-paragraph-functions))
                             (org-export-before-processing-functions
                              (append (list insert-head #'bcat-export--drop-machine-sections
                                            #'bcat-export--rechunk-gloss-tables

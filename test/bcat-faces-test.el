@@ -71,6 +71,29 @@ and ⏑).  A table in bands (hline between): each band on its own."
                      "| NUM   |")
                    (bcat-faces-test--matches #'bcat-faces--detail-row-matcher 0)))))
 
+(ert-deftest bcat-faces-parts-tables ()
+  "5.11. (Carsten, draft B): under a Sanskrit segment's translation the
+tables of the words' parts — the members as a header row, an hline, the
+parts below — have the parts blue and the members black, as the
+formation and parts rows before; the line of a word of one member,
+„/jananī/: …“, the word black and its parts blue.  The comparison's
+overview (\\cellcolor) stays plain, a Structure line of the same shape
+\(under * Segments) too."
+  (with-temp-buffer
+    (insert "* Text\n⟦1⟧\n| jananī      |\n| mother      |\n| f. nom. sg. |\n\n→ t\n\n"
+            "| vimala      | kalā        |\n|-------------+-------------|\n"
+            "| /vi-/ apart | part, power |\n| /-a/ adj    |             |\n\n"
+            "/jananī/: /√jan/ (1) be born · /-anī/ f. agent\n\n"
+            "* Sentence\n** Translations compared\n"
+            "| Nr. | Stelle | Einstufung                   |\n|-----+--------+------------------------------|\n"
+            "|   1 | /a/    | @@latex:\\cellcolor{bad}@@rot |\n\n"
+            "* Segments\n** Segment 1\n*Structure:* x \\\\\n/jananī/: rest\n")
+    (org-mode)
+    (should (equal '("| f. nom. sg. |" "| /vi-/ apart | part, power |" "| /-a/ adj    |             |")
+                   (bcat-faces-test--matches #'bcat-faces--detail-row-matcher 0)))
+    (should (equal '("/√jan/ (1) be born · /-anī/ f. agent")
+                   (bcat-faces-test--matches #'bcat-faces--parts-line-matcher 1)))))
+
 (ert-deftest bcat-faces-tibetan-table ()
   "A Tibetan table (Uchen, Wylie, gloss, function — Carsten 31.10.:
 Uchen and Wylie black): only the function row is blue."

@@ -92,12 +92,40 @@ table of words has one."
     (and (looking-at "[ \t]*|[^-\n]")
          (progn (forward-line 1) (looking-at "[ \t]*|-")))))
 
+(defun bcat-faces--parts-table-p (pos)
+  "Non-nil when the table row at POS belongs to a table of a word's
+parts (Carsten 5.11.: under a Sanskrit segment's translation, the
+members as a header row): a table with a header row
+\(`bcat-faces--header-table-p') that colours no ratings — the
+comparison's overview has @@latex:\\cellcolor{…}@@ in every row."
+  (and (bcat-faces--header-table-p pos)
+       (save-excursion
+         (goto-char pos)
+         (not (string-match-p "\\\\cellcolor"
+                              (buffer-substring-no-properties (org-table-begin) (org-table-end)))))))
+
+(defun bcat-faces--parts-line-matcher (limit)
+  "Font-lock matcher: the next line before LIMIT that gives the parts of
+a word of one member under * Text or * Sanskrit (Carsten 5.11.:
+„/jananī/: /√jan/ (1) be born · /-anī/ f. agent“) — group 1 the parts
+\(blue; the word black).  A line of the same shape in a Structure
+\(under * Segments) is none."
+  (let ((found nil))
+    (while (and (not found) (re-search-forward "^/[^/\n]+/: \\(.+\\)$" limit t))
+      (when (save-excursion
+              (save-match-data
+                (and (re-search-backward "^\\* \\(.*\\)$" nil t)
+                     (member (string-trim (match-string 1)) '("Text" "Sanskrit")))))
+        (setq found t)))
+    found))
+
 (defun bcat-faces--detail-row-matcher (limit)
   "Font-lock matcher: the next table row before LIMIT that explains the
 words — group 0 the row: in its band (rows between hlines) neither the
 first (the words), nor the second when the first is Uchen (its Wylie),
 nor the one next to last (the gloss); none of a metre table or of a
-table with a header row."
+table with a header row — but in a table of a word's parts every row
+under the members (5.11., `bcat-faces--parts-table-p')."
   (let ((found nil))
     (while (and (not found) (re-search-forward "^[ \t]*|[^-\n].*$" limit t))
       (let* ((beg (match-beginning 0)) (end (match-end 0))
@@ -109,10 +137,15 @@ table with a header row."
                                 (string-match-p "[\u0F00-\u0FFF]"
                                                 (buffer-substring-no-properties
                                                  (point) (line-end-position)))))))
-        (when (and i (/= i 0) (/= i (- (length band) 2))
-                   (not (and uchen (= i 1)))
-                   (not (bcat-faces--metre-table-p beg))
-                   (not (bcat-faces--header-table-p beg)))
+        (when (and i
+                   (if (bcat-faces--parts-table-p beg)
+                       ;; 5.11.: a table of a word's parts — all but the
+                       ;; members' row
+                       (save-excursion (goto-char beg) (forward-line -1) (looking-at "[ \t]*|"))
+                     (and (/= i 0) (/= i (- (length band) 2))
+                          (not (and uchen (= i 1)))
+                          (not (bcat-faces--metre-table-p beg))
+                          (not (bcat-faces--header-table-p beg)))))
           (set-match-data (list beg end))
           (setq found t))))
     found))
@@ -290,6 +323,7 @@ whole, so a later chunk of jit-lock never unfolds a part of it."
     (bcat-faces--detail-row-matcher
      ("[^|\n]+" (progn (goto-char (match-beginning 0)) (match-end 0)) nil
       (0 'bcat-gloss-face prepend)))
+    (bcat-faces--parts-line-matcher (1 'bcat-gloss-face prepend))
     (bcat-faces--rating-matcher
      (3 'shadow prepend t)
      (2 (bcat-faces--rating-face (match-string 1)) prepend))
