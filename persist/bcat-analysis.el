@@ -585,16 +585,43 @@ member of compound“ — several syllables, so a word all the same."
   (let ((v (alist-get key alist)))
     (if (stringp v) (string-trim v) "")))
 
-(defcustom bcat-analysis-tibetan-table-width 158
-  "Widest table for the words of a Tibetan segment in the sentence file,
-in characters as it is seen (each column's widest cell, links by their
+(define-obsolete-variable-alias 'bcat-analysis-tibetan-table-width
+  'bcat-analysis-table-width "5.11.2026")
+
+(defcustom bcat-analysis-table-width 158
+  "Widest table for the words of a segment in the sentence file — every
+language (5.11.; before, Tibetan only, Sanskrit had the PDF's 120) —,
+in characters as it is seen (each column's widest line, links by their
 text, plus 3 for bar and spaces); wider segments are split into several
 tables.  Carsten 4.11. (bDen 16, Segment 70, six columns of 119
 characters broken in a window of 162: „müsste eigentlich nicht
 umbrechen, oder?“): the file fills the MacBook window (162 less the
 org-indent prefix); the PDF chunks anew in the export, by its own
-measure (`bcat-export-tibetan-table-width')."
+measure (`bcat-export-tibetan-table-width').  An exception per language:
+`bcat-analysis-layout-overrides'."
   :type 'integer
+  :group 'buddhist-cat)
+
+(defcustom bcat-analysis-cell-width 45
+  "Narrowest a wide cell of a segment's table is broken to, every
+language: between the members of a compound, a member still wider at
+its „ · “ (`bcat-analysis--wrap-cell') — nothing is cut.  A segment's
+cells are broken only as far as that saves lines
+\(`bcat-analysis--best-chunks').  5.11., TĀ 1.1: one parts cell of 89
+characters made its column the widest; broken, segment 1 has two
+tables instead of five — but AS 3, two columns that fit side by side,
+stays unbroken.  An exception per language:
+`bcat-analysis-layout-overrides'."
+  :type 'integer
+  :group 'buddhist-cat)
+
+(defcustom bcat-analysis-layout-overrides nil
+  "Exceptions to the generic table layout per source language (the
+#+SOURCE_LANG code, \"bo\", \"sa\"): ((LANG . ((KEY . VALUE) …)) …),
+KEY one of `table-width', `cell-width', `function-width' — e.g.
+\((\"sa\" (cell-width . 60))).  Carsten 5.11.: „alles erstmal generisch
+und dann durch Ausnahmen überschrieben“."
+  :type '(alist :key-type string :value-type (alist :key-type symbol :value-type integer))
   :group 'buddhist-cat)
 
 (defun bcat-analysis--uchen-syllables (uchen)
@@ -653,6 +680,82 @@ a word is not found —, or nil when none is (then no row at all)."
    (replace-regexp-in-string "\\[\\[[^]]*\\]\\[\\([^]]*\\)\\]\\]" "\\1" (or cell "") t)
    t t))
 
+(defun bcat-analysis--wrap-pieces (pieces sep mark max)
+  "PIECES joined by SEP into lines of at most MAX characters, greedily;
+every line but the last ends in MARK (room kept for it).  A piece
+longer than MAX stays whole."
+  (let ((lines '()) (line nil) (room (- max (string-width mark))))
+    (dolist (piece pieces)
+      (let ((cand (if line (concat line sep piece) piece)))
+        (if (and line (> (string-width cand) room))
+            (progn (push (concat line mark) lines) (setq line piece))
+          (setq line cand))))
+    (nreverse (cons line lines))))
+
+(defun bcat-analysis--wrap-cell (text max)
+  "TEXT as lines of at most MAX characters (any table, 5.11. generic):
+broken between the members of a compound („;“ — whole members kept on
+a line) and a member still wider at its „ · “ (31.10., TĀ 1008: 160
+characters in one cell); the separator stays at the end of the line —
+`bcat-analysis--table-columns' joins the lines again by it.  A piece
+longer than MAX stays whole; a cell with a link is never broken."
+  (if (or (<= (string-width (bcat-analysis-plain-cell text)) max)
+          (string-match-p "\\[\\[" text))
+      (list text)
+    (let* ((members (split-string text "; "))
+           (n (length members))
+           (lines '()) (line nil))
+      (cl-loop for m in members
+               for i from 1
+               for end = (if (< i n) ";" "")
+               do (cond
+                   ((> (string-width m) max)
+                    ;; A member wider than MAX: lines of its own.
+                    (when line (push (concat line ";") lines) (setq line nil))
+                    (let ((parts (bcat-analysis--wrap-pieces (split-string m " · ") " · " " ·" max)))
+                      (dolist (l (butlast parts)) (push l lines))
+                      (push (concat (car (last parts)) end) lines)))
+                   ((and line (> (string-width (concat line "; " m)) (1- max)))
+                    (push (concat line ";") lines)
+                    (setq line m))
+                   (t (setq line (if line (concat line "; " m) m)))))
+      (when line (push line lines))
+      (nreverse lines))))
+
+(defun bcat-analysis--continued-p (cell)
+  "Non-nil when CELL, a line of a broken cell, goes on in the row
+below: it ends in a separator (`bcat-analysis--wrap-cell')."
+  (string-match-p "\\(?: ·\\|;\\)\\'" cell))
+
+(defun bcat-analysis--join-continuations (rows)
+  "ROWS (lists of cells) with the lines of broken cells joined: a row
+whose filled cells all stand under a cell that goes on
+\(`bcat-analysis--continued-p') belongs to the row above."
+  (let ((out '()))
+    (dolist (row rows (nreverse out))
+      (let ((prev (car out)))
+        (if (and prev
+                 (cl-some (lambda (c) (not (string-empty-p c))) row)
+                 (cl-every (lambda (j)
+                             (or (string-empty-p (or (nth j row) ""))
+                                 (bcat-analysis--continued-p (or (nth j prev) ""))))
+                           (number-sequence 0 (1- (length row)))))
+            (setcar out (cl-loop for j below (max (length prev) (length row))
+                                 collect (let ((a (or (nth j prev) "")) (b (or (nth j row) "")))
+                                           (if (string-empty-p b) a (concat a " " b)))))
+          (push row out))))))
+
+(defun bcat-analysis-wrap-rows (rows max)
+  "ROWS (lists of cells) with every cell wider than MAX broken at its „·“
+\(`bcat-analysis--wrap-cell') into further rows — the other cells of
+such a row empty there.  The tables of every language
+\(`bcat-analysis--format-chunks', 5.11.) and the export of tables
+written before (31.10.)."
+  (cl-loop for row in rows
+           append (let ((cells (mapcar (lambda (c) (bcat-analysis--wrap-cell c max)) row)))
+                    (cl-loop for i below (apply #'max (mapcar #'length cells))
+                             collect (mapcar (lambda (c) (or (nth i c) "")) cells)))))
+
 (defun bcat-analysis--table-columns (table)
   "The columns of the org TABLE — each a list of its cells, top to
 bottom — in reading order: bands (rows between hlines, the older form of
@@ -704,6 +807,16 @@ characters widened its column, the table broke and left a word alone."
   :type 'integer
   :group 'buddhist-cat)
 
+(defun bcat-analysis--layout (key &optional lang)
+  "The value of the layout KEY (`table-width', `cell-width',
+`function-width') for the source language LANG: its exception in
+`bcat-analysis-layout-overrides', else the generic option."
+  (or (alist-get key (cdr (assoc lang bcat-analysis-layout-overrides)))
+      (pcase key
+        ('table-width bcat-analysis-table-width)
+        ('cell-width bcat-analysis-cell-width)
+        ('function-width bcat-analysis-function-width))))
+
 (defun bcat-analysis--cut-label (text max)
   "(SHORT . PIECES) for a label TEXT wider than MAX: without its remarks
 in parentheses when that fits, else that cut at its last fitting comma,
@@ -742,15 +855,16 @@ TEXT (the remarks without their parentheses).  TĀ 1.1 (5.11.): „āśiṣi
                                       (nreverse pieces))
                               (lambda (a b) (< (car a) (car b)))))))))))
 
-(defun bcat-analysis--function-split (fn)
+(defun bcat-analysis--function-split (fn &optional lang)
   "(SHORT . REST) of the last cell of a word's column — the function of a
 Tibetan word, the form of a Sanskrit one (5.11., generic): FN itself
 and nil when it is no wider than `bcat-analysis-function-width'; else
 the leading „·“ parts that fit and the rest; a first part wider than
 that cut by `bcat-analysis--cut-label' (remarks in parentheses out, else
-at a comma, else at a space with „…“), what it leaves out in REST."
+at a comma, else at a space with „…“), what it leaves out in REST.
+LANG: the source language, for its exception (`bcat-analysis--layout')."
   (let ((fn (string-trim (or fn "")))
-        (max bcat-analysis-function-width))
+        (max (bcat-analysis--layout 'function-width lang)))
     (if (<= (string-width fn) max)
         (list fn)
       (let* ((parts (split-string fn "[ \t]*·[ \t]*" t))
@@ -785,17 +899,27 @@ nicht redundant?“ (54 of 99 verbs in the files)."
          m)))
    (or fn "") t t))
 
-(defun bcat-analysis--word-function (w)
-  "The function of the word W as the table shows it, before cutting:
-without a repeated dictionary form (`bcat-analysis--trim-lemma')."
-  (bcat-analysis--trim-lemma (bcat-analysis--field w 'function) (bcat-analysis--field w 'wylie)))
+(defun bcat-analysis--word-name (w)
+  "The word W as its table's word row names it: a Tibetan word's Wylie,
+a Sanskrit word as in the padapāṭha."
+  (let ((wylie (bcat-analysis--field w 'wylie)))
+    (if (string-empty-p wylie) (bcat-analysis--field w 'word) wylie)))
 
-(defun bcat-analysis--function-overflow (words)
-  "The lines for Structure of the WORDS whose function was cut:
-„/wylie/: rest“ (`bcat-analysis--function-split')."
+(defun bcat-analysis--word-function (w)
+  "The last cell of the word W as the table shows it, before cutting —
+a Tibetan word's function without a repeated dictionary form
+\(`bcat-analysis--trim-lemma'), a Sanskrit word's form."
+  (let ((fn (bcat-analysis--field w 'function)))
+    (bcat-analysis--trim-lemma (if (string-empty-p fn) (bcat-analysis--field w 'form) fn)
+                               (bcat-analysis--word-name w))))
+
+(defun bcat-analysis--function-overflow (words &optional lang)
+  "The lines for Structure of the WORDS whose last cell was cut — a
+Tibetan function, since 5.11. a Sanskrit form too: „/word/: rest“
+\(`bcat-analysis--function-split'; LANG for its exception)."
   (delq nil (mapcar (lambda (w)
-                      (let ((rest (cdr (bcat-analysis--function-split (bcat-analysis--word-function w)))))
-                        (and rest (format "/%s/: %s" (bcat-analysis--field w 'wylie) rest))))
+                      (let ((rest (cdr (bcat-analysis--function-split (bcat-analysis--word-function w) lang))))
+                        (and rest (format "/%s/: %s" (bcat-analysis--word-name w) rest))))
                     words)))
 
 (defun bcat-analysis--with-overflow (structure lines)
@@ -806,17 +930,20 @@ line of its own (org line breaks)."
     (string-join (append (and structure (not (string-blank-p structure)) (list structure)) lines)
                  " \\\\\n")))
 
-(defun bcat-analysis--chunk-columns (columns &optional width charge)
+(defun bcat-analysis--chunk-columns (columns &optional width charge cell-width)
   "COLUMNS (each a list of its cells, top to bottom) in chunks no wider
-than WIDTH (`bcat-analysis-tibetan-table-width') — each column charged
-with its widest cell (links by their text) plus CHARGE (3: bar and
-spaces, the table as seen; the PDF charges 6)."
+than WIDTH (`bcat-analysis-table-width') — each column charged with its
+widest line (links by their text; a cell wider than CELL-WIDTH,
+`bcat-analysis-cell-width', by the lines it breaks into) plus CHARGE (3:
+bar and spaces, the table as seen; the PDF charges 6)."
   (let ((chunks '()) (chunk '()) (used 1)
-        (width (or width bcat-analysis-tibetan-table-width))
-        (charge (or charge 3)))
+        (width (or width bcat-analysis-table-width))
+        (charge (or charge 3))
+        (cell-width (or cell-width bcat-analysis-cell-width)))
     (dolist (col columns)
-      (let ((w (+ charge (apply #'max 0 (mapcar (lambda (c) (string-width (bcat-analysis-plain-cell c)))
-                                                col)))))
+      (let ((w (+ charge (apply #'max 0 (mapcar (lambda (line) (string-width (bcat-analysis-plain-cell line)))
+                                                (cl-mapcan (lambda (c) (bcat-analysis--wrap-cell c cell-width))
+                                                           (copy-sequence col)))))))
         (when (and chunk (> (+ used w) width))
           (push (nreverse chunk) chunks)
           (setq chunk nil used 1))
@@ -825,50 +952,98 @@ spaces, the table as seen; the PDF charges 6)."
     (when chunk (push (nreverse chunk) chunks))
     (nreverse chunks)))
 
-(defun bcat-analysis--format-chunks (chunks)
-  "CHUNKS (lists of columns) as org tables, blank lines between."
+(defun bcat-analysis--format-chunks (chunks &optional cell-width)
+  "CHUNKS (lists of columns) as org tables, blank lines between — a cell
+wider than CELL-WIDTH (`bcat-analysis-cell-width') broken into further
+lines (`bcat-analysis-wrap-rows')."
   (mapconcat (lambda (ch)
                (string-trim-right
                 (tibetan-gloss-table--format-rows
-                 (cl-loop for r below (length (car ch)) collect (mapcar (lambda (col) (nth r col)) ch)))))
+                 (bcat-analysis-wrap-rows
+                  (cl-loop for r below (length (car ch)) collect (mapcar (lambda (col) (nth r col)) ch))
+                  (or cell-width bcat-analysis-cell-width)))))
              chunks "\n\n"))
 
-(defun bcat-analysis-compact-tables (tables)
-  "(TABLES . OVERFLOW) for the Tibetan tables of a segment as a file
-written before 4.11. holds them: every function cell (the last row)
-without a repeated dictionary form (`bcat-analysis--trim-lemma') and,
-wider than `bcat-analysis-function-width', cut — the rest as Structure
-lines in OVERFLOW —, the columns chunked anew (a word left alone joins
-the table before when it fits, at the width of the file).  TABLES
-itself and nil when nothing changes."
+(defun bcat-analysis--chunk-lines (chunks cell-width)
+  "The lines CHUNKS take as org tables with cells broken at CELL-WIDTH:
+their rows plus a blank line between two tables."
+  (+ (max 0 (1- (length chunks)))
+     (cl-loop for ch in chunks
+              sum (cl-loop for r below (length (car ch))
+                           sum (apply #'max 1 (mapcar (lambda (col)
+                                                        (length (bcat-analysis--wrap-cell (nth r col) cell-width)))
+                                                      ch))))))
+
+(defun bcat-analysis--best-chunks (columns width charge cell-min)
+  "(CHUNKS . CELL-WIDTH) for the COLUMNS of a segment at the table WIDTH
+\(CHARGE per column): wide cells broken only as far as that saves lines
+— of the widths from unbroken down to CELL-MIN (step 5) the one giving
+the fewest lines, the widest of those.  5.11.: broken at a fixed 45,
+AS 3's two columns, side by side at 120, grew from 5 lines to 8."
+  (let ((best nil))
+    (dolist (cw (append (number-sequence (- width charge 1) (1+ cell-min) -5) (list cell-min)))
+      (let* ((chunks (bcat-analysis--chunk-columns columns width charge cw))
+             (lines (bcat-analysis--chunk-lines chunks cw)))
+        (when (or (null best) (< lines (car best)))
+          (setq best (list lines chunks cw)))))
+    (cons (nth 1 best) (nth 2 best))))
+
+(defun bcat-analysis--layout-tables (columns lang)
+  "COLUMNS of a segment's table as org tables in the layout of the file
+for the source language LANG (`bcat-analysis--layout'): chunked to the
+table width, wide cells broken as far as that saves lines
+\(`bcat-analysis--best-chunks')."
+  (let ((best (bcat-analysis--best-chunks columns (bcat-analysis--layout 'table-width lang) 3
+                                          (bcat-analysis--layout 'cell-width lang))))
+    (bcat-analysis--format-chunks (car best) (cdr best))))
+
+(defun bcat-analysis-compact-tables (tables &optional lang)
+  "(TABLES . OVERFLOW) for the tables of a segment as a file written
+before holds them — every language (5.11.; 4.11. Tibetan only): every
+last cell (function, form) without a repeated dictionary form
+\(`bcat-analysis--trim-lemma') and, wider than
+`bcat-analysis-function-width', cut — the rest as Structure lines in
+OVERFLOW —, the columns chunked anew and wide cells broken, in the
+layout of the file (a word left alone joins the table before when it
+fits).  LANG: the source language (for its exception); by default
+\"bo\" for tables in Tibetan script, else \"sa\".  TABLES itself and nil
+when nothing changes."
   (let* ((parts (split-string (or tables "") "\n[ \t]*\n" t))
          (columns (apply #'append (mapcar #'bcat-analysis--table-columns parts)))
+         (lang (or lang (if (and columns (string-match-p "[\u0F00-\u0FFF]" (caar columns))) "bo" "sa")))
          (overflow '()))
     (setq columns
           (mapcar (lambda (col)
-                    (let* ((wylie (bcat-analysis-plain-cell
-                                   (nth (if (string-match-p "[\u0F00-\u0FFF]" (car col)) 1 0) col)))
+                    (let* ((word (bcat-analysis-plain-cell
+                                  (nth (if (string-match-p "[\u0F00-\u0FFF]" (car col)) 1 0) col)))
                            (fn (bcat-analysis-plain-cell (car (last col))))
-                           (sp (bcat-analysis--function-split (bcat-analysis--trim-lemma fn wylie))))
+                           (sp (bcat-analysis--function-split (bcat-analysis--trim-lemma fn word) lang)))
                       (when (cdr sp)
-                        (push (format "/%s/: %s" wylie (cdr sp)) overflow))
+                        (push (format "/%s/: %s" word (cdr sp)) overflow))
                       (if (equal (car sp) fn)
                           col
                         (append (butlast col) (list (tibetan-gloss-table--cell (car sp)))))))
                   columns))
-    ;; Chunked anew — the width of the file changed on 4.11.; the same
-    ;; chunks with the same cells leave the text as it is.
-    (let ((chunks (bcat-analysis--chunk-columns columns)))
+    ;; Chunked anew — the width of the file changed on 4.11., the
+    ;; breaking of wide cells on 5.11.; the same chunks broken into the
+    ;; same lines leave the text as it is.
+    (let* ((best (bcat-analysis--best-chunks columns (bcat-analysis--layout 'table-width lang) 3
+                                             (bcat-analysis--layout 'cell-width lang)))
+           (chunks (car best))
+           (out (bcat-analysis--format-chunks chunks (cdr best)))
+           (lines (lambda (tbs) (mapcar (lambda (tb) (length (split-string tb "\n" t))) tbs))))
       (if (or (null columns)
-              (equal chunks (mapcar #'bcat-analysis--table-columns parts)))
+              (and (equal chunks (mapcar #'bcat-analysis--table-columns parts))
+                   (equal (funcall lines parts) (funcall lines (split-string out "\n\n" t)))))
           (cons tables nil)
-        (cons (bcat-analysis--format-chunks chunks) (nreverse overflow))))))
+        (cons out (nreverse overflow))))))
 
 (defun bcat-analysis-gloss-table (words &optional uchen)
   "The table of WORDS (Claude's word list): row 1 Wylie (with a
 Steinert link unless a particle), row 2 gloss, row 3 function — split
-into separate tables of at most `bcat-analysis-tibetan-table-width'.
-With UCHEN, the segment's Tibetan, the word in Uchen above its Wylie
+into separate tables in the layout of the file
+\(`bcat-analysis--layout-tables', `bcat-analysis-table-width').  With
+UCHEN, the segment's Tibetan, the word in Uchen above its Wylie
 \(Carsten 31.10. abends, Tibetisch V: Uchen and Wylie black, the
 function blue).  \"\" for no words."
   (if (null words)
@@ -888,8 +1063,8 @@ function blue).  \"\" for no words."
                                      (tibetan-gloss-table--cell
                                       (or (tibetan-gloss-table--truncate-cell (bcat-analysis--field w 'gloss)) ""))
                                      (tibetan-gloss-table--cell
-                                      (car (bcat-analysis--function-split (bcat-analysis--word-function w))))))))))
-      (bcat-analysis--format-chunks (bcat-analysis--chunk-columns columns)))))
+                                      (car (bcat-analysis--function-split (bcat-analysis--word-function w) "bo")))))))))
+      (bcat-analysis--layout-tables columns "bo"))))
 
 (defun bcat-analysis--bracketed (word gloss)
   "WORD followed by GLOSS in brackets.  A gloss Claude brackets itself
@@ -1423,7 +1598,7 @@ named again (`bcat-analysis--full-names')."
                     (segment-translation . ,(bcat-analysis--field c 'translation))
                     (structure . ,(bcat-analysis--with-overflow
                                    (bcat-analysis--field c 'structure)
-                                   (bcat-analysis--function-overflow (alist-get 'words c))))
+                                   (bcat-analysis--function-overflow (alist-get 'words c) "bo")))
                     (note . ,(bcat-analysis--field c 'note))
                     (concepts . ,(bcat-analysis--field c 'concepts)))
                   seg))))
@@ -1443,122 +1618,34 @@ named again (`bcat-analysis--full-names')."
 ;; ----------------------------------------------------------------------------
 
 (defcustom bcat-analysis-sanskrit-table-width 120
-  "Widest org table (characters) for the words of a Sanskrit segment;
-wider segments are split into several tables (not into bands of one
-table: a shared column grid let a long compound widen every column).
-120 (30.10., was 95): in the PDF of AS sentence 3 a table of 115
-characters fits the page, one of 134 runs into the margin; Carsten
-wanted compound and upādāya side by side as in the preview."
+  "Widest Sanskrit table in the PDF (the export breaks a wider cell,
+`bcat-export--wrap-wide-tables').  Since 5.11. the sentence file has the
+width of every language (`bcat-analysis-table-width').  120 (30.10.,
+was 95): in the PDF of AS sentence 3 a table of 115 characters fits the
+page, one of 134 runs into the margin; Carsten wanted compound and
+upādāya side by side as in the preview."
   :type 'integer
   :group 'buddhist-cat)
 
-(defun bcat-analysis--wrap-pieces (pieces sep mark max)
-  "PIECES joined by SEP into lines of at most MAX characters, greedily;
-every line but the last ends in MARK (room kept for it).  A piece
-longer than MAX stays whole."
-  (let ((lines '()) (line nil) (room (- max (string-width mark))))
-    (dolist (piece pieces)
-      (let ((cand (if line (concat line sep piece) piece)))
-        (if (and line (> (string-width cand) room))
-            (progn (push (concat line mark) lines) (setq line piece))
-          (setq line cand))))
-    (nreverse (cons line lines))))
-
-(defun bcat-analysis--wrap-cell (text max)
-  "TEXT as lines of at most MAX characters (any table, 5.11. generic):
-broken between the members of a compound („;“ — whole members kept on
-a line) and a member still wider at its „ · “ (31.10., TĀ 1008: 160
-characters in one cell); the separator stays at the end of the line —
-`bcat-analysis--table-columns' joins the lines again by it.  A piece
-longer than MAX stays whole; a cell with a link is never broken."
-  (if (or (<= (string-width (bcat-analysis-plain-cell text)) max)
-          (string-match-p "\\[\\[" text))
-      (list text)
-    (let* ((members (split-string text "; "))
-           (n (length members))
-           (lines '()) (line nil))
-      (cl-loop for m in members
-               for i from 1
-               for end = (if (< i n) ";" "")
-               do (cond
-                   ((> (string-width m) max)
-                    ;; A member wider than MAX: lines of its own.
-                    (when line (push (concat line ";") lines) (setq line nil))
-                    (let ((parts (bcat-analysis--wrap-pieces (split-string m " · ") " · " " ·" max)))
-                      (dolist (l (butlast parts)) (push l lines))
-                      (push (concat (car (last parts)) end) lines)))
-                   ((and line (> (string-width (concat line "; " m)) (1- max)))
-                    (push (concat line ";") lines)
-                    (setq line m))
-                   (t (setq line (if line (concat line "; " m) m)))))
-      (when line (push line lines))
-      (nreverse lines))))
-
-(defun bcat-analysis--continued-p (cell)
-  "Non-nil when CELL, a line of a broken cell, goes on in the row
-below: it ends in a separator (`bcat-analysis--wrap-cell')."
-  (string-match-p "\\(?: ·\\|;\\)\\'" cell))
-
-(defun bcat-analysis--join-continuations (rows)
-  "ROWS (lists of cells) with the lines of broken cells joined: a row
-whose filled cells all stand under a cell that goes on
-\(`bcat-analysis--continued-p') belongs to the row above."
-  (let ((out '()))
-    (dolist (row rows (nreverse out))
-      (let ((prev (car out)))
-        (if (and prev
-                 (cl-some (lambda (c) (not (string-empty-p c))) row)
-                 (cl-every (lambda (j)
-                             (or (string-empty-p (or (nth j row) ""))
-                                 (bcat-analysis--continued-p (or (nth j prev) ""))))
-                           (number-sequence 0 (1- (length row)))))
-            (setcar out (cl-loop for j below (max (length prev) (length row))
-                                 collect (let ((a (or (nth j prev) "")) (b (or (nth j row) "")))
-                                           (if (string-empty-p b) a (concat a " " b)))))
-          (push row out))))))
-
-(defun bcat-analysis-wrap-rows (rows max)
-  "ROWS (lists of cells) with every cell wider than MAX broken at its „·“
-\(`bcat-analysis--wrap-cell') into further rows — the other cells of
-such a row empty there.  Shared by the Sanskrit tables and the export
-of tables written before (31.10.)."
-  (cl-loop for row in rows
-           append (let ((cells (mapcar (lambda (c) (bcat-analysis--wrap-cell c max)) row)))
-                    (cl-loop for i below (apply #'max (mapcar #'length cells))
-                             collect (mapcar (lambda (c) (or (nth i c) "")) cells)))))
-
 (defun bcat-analysis-sanskrit-tables (words)
   "The tables of a Sanskrit segment's WORDS (Claude's padapāṭha: word,
-formation, parts, gloss, form — five rows), split into separate tables
-of at most `bcat-analysis-sanskrit-table-width'; nothing is cut.  A cell
-wider than that breaks into further lines of the table at its „·“
-\(`bcat-analysis-wrap-rows') — split by columns a one-word table could
-not get narrower, and the PDF shrank it to an unreadable size (31.10.).
-\"\" for no words."
-  (let* ((max (- bcat-analysis-sanskrit-table-width 4))
-         (cols (mapcar (lambda (w)
-                         (mapcar (lambda (k) (tibetan-gloss-table--cell (bcat-analysis--field w k)))
-                                 '(word formation parts gloss form)))
-                       words))
-         (width (lambda (col)
-                  (+ 3 (apply #'max (mapcar #'string-width
-                                            (cl-mapcan (lambda (c) (bcat-analysis--wrap-cell c max))
-                                                       (copy-sequence col)))))))
-         (chunks '()) (chunk '()) (used 1))
-    (dolist (col cols)
-      (let ((w (funcall width col)))
-        (when (and chunk (> (+ used w) bcat-analysis-sanskrit-table-width))
-          (push (nreverse chunk) chunks)
-          (setq chunk nil used 1))
-        (push col chunk)
-        (setq used (+ used w))))
-    (when chunk (push (nreverse chunk) chunks))
-    (mapconcat (lambda (ch)
-                 (tibetan-gloss-table--format-rows
-                  (bcat-analysis-wrap-rows
-                   (cl-loop for r below 5 collect (mapcar (lambda (col) (nth r col)) ch))
-                   max)))
-               (nreverse chunks) "\n\n")))
+formation, parts, gloss, form — five rows) in the layout of every
+language (5.11., Carsten: „generisch machen und mit anwenden“;
+`bcat-analysis--layout-tables'): split into tables of the file's width,
+a wide cell broken at its members into further lines (31.10., TĀ 1008:
+a one-word table cannot get narrower by columns), the form cut like a
+Tibetan function — its rest goes to Structure
+\(`bcat-analysis--function-overflow').  \"\" for no words."
+  (if (null words)
+      ""
+    (bcat-analysis--layout-tables
+     (mapcar (lambda (w)
+               (append (mapcar (lambda (k) (tibetan-gloss-table--cell (bcat-analysis--field w k)))
+                               '(word formation parts gloss))
+                       (list (tibetan-gloss-table--cell
+                              (car (bcat-analysis--function-split (bcat-analysis--word-function w) "sa"))))))
+             words)
+     "sa")))
 
 (defun bcat-analysis-padapatha-line (samhita words &optional plain)
   "The padapāṭha line of a segment for * Text: WORDS (Claude's
@@ -1661,7 +1748,9 @@ skipped keeps its rump fields; sigla used as names are named again
                     (compounds . ,(string-join
                                    (bcat-analysis--word-entries (alist-get 'compounds c))
                                    " · "))
-                    (structure . ,(bcat-analysis--field c 'structure))
+                    (structure . ,(bcat-analysis--with-overflow
+                                   (bcat-analysis--field c 'structure)
+                                   (bcat-analysis--function-overflow words "sa")))
                     (note . ,(bcat-analysis--field c 'note))
                     (concepts . ,(bcat-analysis--field c 'concepts)))
                   seg))))

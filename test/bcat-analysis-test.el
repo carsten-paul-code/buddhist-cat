@@ -321,7 +321,8 @@ garbhīkāreṇa“ (160 characters) made a one-column table wider than the
 page; split by columns there was nothing to split, and the PDF shrank
 the table to an unreadable size (1f6da5b).  A cell wider than the table
 width breaks at its „·“ into further lines of the table — nothing cut,
-no line wider than `bcat-analysis-sanskrit-table-width'."
+no line wider than the table width.  5.11.: broken at
+`bcat-analysis-cell-width', the lines read back as the cell."
   (let* ((parts "√vac (2) speak · -ṣyamāṇa fut. pass. part. · ṣaḍ six · ardha half · śāstra treatise · artha meaning · garbhī- womb/containing · √kṛ (8) make · -a action noun")
          (table (bcat-analysis-sanskrit-tables
                  `(((word . "vakṣyamāṇa-ṣaḍardha-śāstra-artha-garbhīkāreṇa")
@@ -330,22 +331,19 @@ no line wider than `bcat-analysis-sanskrit-table-width'."
                     (gloss . "by incorporating the meaning of the Ṣaḍardhaśāstra to be expounded")
                     (form . "m. inst. sg.")))))
          (lines (split-string table "\n" t)))
-    (should (cl-every (lambda (l) (<= (string-width l) bcat-analysis-sanskrit-table-width)) lines))
+    (should (cl-every (lambda (l) (<= (string-width l) bcat-analysis-table-width)) lines))
     (should (= 1 (length (split-string table "\n\n"))))
-    (should (= 6 (length lines)))
+    (should (> (length lines) 5))
     ;; Nothing lost: the parts, read across their lines, are the cell.
-    (should (equal parts
-                   (replace-regexp-in-string
-                    " *\n *" " "
-                    (mapconcat (lambda (l) (string-trim (string-trim l "|" "|")))
-                               (seq-subseq lines 2 4) "\n"))))))
+    (should (equal parts (nth 2 (car (bcat-analysis--table-columns table)))))))
 
 (ert-deftest bcat-analysis-sanskrit-tables ()
   "The word table of a Sanskrit segment (word / formation / parts /
 gloss / form) is split into separate tables, none wider than
-`bcat-analysis-sanskrit-table-width' — a shared column grid made the
-long compound widen every column (29.10.); nothing is cut."
-  (let* ((bcat-analysis-sanskrit-table-width 40)
+the table width (`bcat-analysis-table-width', 5.11. every language) — a
+shared column grid made the long compound widen every column (29.10.);
+nothing is cut."
+  (let* ((bcat-analysis-table-width 40)
          (words '(((word . "atra") (formation . "—") (parts . "") (gloss . "here") (form . "ind."))
                   ((word . "ullaset") (formation . "ud-√las") (parts . "ud- up · √las (1) shine")
                    (gloss . "may shine forth") (form . "opt. 3 sg. P"))
@@ -365,8 +363,9 @@ long compound widen every column (29.10.); nothing is cut."
   "Carsten 30.10.: the tables as in the reviewed preview of AS sentence
 3 — compound and upādāya side by side.  Measured in its PDF: a table of
 115 characters (segment 24) fits the page, one of 134 (segment 27) runs
-into the margin.  With the default width segments 23 and 24 keep one
-table, segment 27 is split."
+into the margin.  5.11.: in the file (the width of every language, wide
+cells broken) segments 23, 24 and 27 keep one table each; the PDF
+chunks anew (`bcat-export-rechunk-gloss-tables')."
   (let ((segments (alist-get 'segments
                              (bcat-analysis-parse (bcat-analysis-test--answer-003 "asam")))))
     (cl-flet ((tables (n) (length (split-string
@@ -376,7 +375,7 @@ table, segment 27 is split."
                                    "\n\n"))))
       (should (= 1 (tables 23)))
       (should (= 1 (tables 24)))
-      (should (= 2 (tables 27))))))
+      (should (= 1 (tables 27))))))
 
 (ert-deftest bcat-analysis-padapatha-line ()
   "The padapāṭha line under * Text: each word with its gloss in
@@ -1607,15 +1606,91 @@ the export)."
     (should (equal (list (mapcar #'car rows) (mapcar #'cadr rows))
                    (bcat-analysis--table-columns table)))))
 
+(defconst bcat-analysis-test--ta-1-1-words
+  '(((word . "vimala-kalā-āśrayā") (lemma . "vimala-kalā-āśraya") (formation . "vi-mala · kalā · ā-√śri-a")
+     (parts . "vi- apart · √mal (1) be impure · -a adj; kalā part, power; ā- unto · √śri (1) resort · -a whose basis")
+     (gloss . "whose basis is pure kalā") (form . "adj. f. nom. sg. (bahuvrīhi, agrees with jananī)"))
+    ((word . "abhinava-sṛṣṭi-mahāḥ") (lemma . "abhinava-sṛṣṭi-mahas") (formation . "abhi-nava · sṛṣṭi · mahas")
+     (parts . "abhi- toward · nava new, ever-new; sṛṣṭi creation (√sṛj); mahas radiance, glory")
+     (gloss . "whose radiance is ever-new creation") (form . "adj. f. nom. sg. (bahuvrīhi, agrees with jananī)"))
+    ((word . "jananī") (lemma . "jananī") (formation . "√jan-anī") (parts . "√jan (1) be born · -anī f. agent")
+     (gloss . "mother") (form . "f. nom. sg."))
+    ((word . "bharita-tanuḥ") (lemma . "bharita-tanu") (formation . "√bhṛ-ita · tanu")
+     (parts . "√bhṛ (1) bear, be full · -ita ppp; tanu body, nature") (gloss . "whose nature is fullness")
+     (form . "adj. nom. sg. (bahuvrīhi, agrees with janakaḥ; by kākākṣi-nyāya also with jananī)"))
+    ((word . "ca") (lemma . "ca") (formation . "—") (parts . "") (gloss . "and") (form . "ind."))
+    ((word . "pañca-mukha-gupta-ruciḥ") (lemma . "pañca-mukha-gupta-ruci") (formation . "pañca · mukha · √gup-ta · ruci")
+     (parts . "pañca five; mukha face, power; √gup (1) protect, maintain · -ta ppp; ruci light, radiance")
+     (gloss . "whose light is maintained through five faces") (form . "adj. m. nom. sg. (bahuvrīhi, agrees with janakaḥ)"))
+    ((word . "janakaḥ") (lemma . "janaka") (formation . "√jan-aka") (parts . "√jan (1) beget · -aka m. agent")
+     (gloss . "father") (form . "m. nom. sg.")))
+  "The padapāṭha of TĀ 1.1, segment 1, as Claude gave it on 2.11.")
+
+(ert-deftest bcat-analysis-sanskrit-tables-generic ()
+  "Carsten 5.11. on the MacBook (TĀ 1.1): the Tibetan tables of 4.11.
+fill the window, the Sanskrit ones stood five on top of each other —
+„so prinzipiell anwendbare Pattern … generisch machen und mit
+anwenden“.  The Sanskrit tables go through the same layout: the width
+of the file (`bcat-analysis-table-width'), the form cut like a Tibetan
+function, a wide cell broken at its members (`bcat-analysis-cell-width')
+— segment 1 in two tables instead of five, nothing lost."
+  (let* ((out (bcat-analysis-sanskrit-tables bcat-analysis-test--ta-1-1-words))
+         (tables (split-string out "\n\n")))
+    (should (= 2 (length tables)))
+    (should (string-prefix-p "| vimala-kalā-āśrayā" (car tables)))
+    (dolist (line (split-string out "\n" t))
+      (should (<= (string-width line) bcat-analysis-table-width)))
+    (should (string-match-p "| adj\\. nom\\. sg\\. +|" out))
+    (should-not (string-match-p "kākākṣi" out))
+    (should (string-match-p "| pañca five; mukha face, power; +|" out))
+    ;; Read back, the columns are the words' cells (the form cut).
+    (should (equal "pañca five; mukha face, power; √gup (1) protect, maintain · -ta ppp; ruci light, radiance"
+                   (nth 2 (nth 5 (apply #'append (mapcar #'bcat-analysis--table-columns tables))))))))
+
+(ert-deftest bcat-analysis-sanskrit-form-overflow ()
+  "What the form cell leaves out goes to the segment's Structure, a line
+per word — as for a Tibetan function (4.11.)."
+  (should (equal '("/vimala-kalā-āśrayā/: bahuvrīhi, agrees with jananī"
+                   "/abhinava-sṛṣṭi-mahāḥ/: bahuvrīhi, agrees with jananī"
+                   "/bharita-tanuḥ/: bahuvrīhi, agrees with janakaḥ; by kākākṣi-nyāya also with jananī"
+                   "/pañca-mukha-gupta-ruciḥ/: bahuvrīhi, agrees with janakaḥ")
+                 (bcat-analysis--function-overflow bcat-analysis-test--ta-1-1-words)))
+  (let* ((base '((segments ((num . 1) (samhita . "vimalakalāśrayābhinavasṛṣṭimahā jananī /")))))
+         (parsed `((segments ((num . 1) (words . ,(seq-take bcat-analysis-test--ta-1-1-words 4))
+                              (structure . "/jananī/ [subject 1]") (translation . "t")))
+                   (translation . "t") (grammar . "g")))
+         (seg (car (alist-get 'segments (bcat-analysis-sanskrit-context base parsed)))))
+    (should (string-prefix-p "/jananī/ [subject 1] \\\\\n/vimala-kalā-āśrayā/: bahuvrīhi"
+                             (alist-get 'structure seg)))))
+
+(ert-deftest bcat-analysis-layout-generic-with-exceptions ()
+  "One width for every language, an exception per source language over
+it (`bcat-analysis-layout-overrides') — Carsten 5.11.: „alles erstmal
+generisch und dann durch Ausnahmen überschrieben“."
+  (should (= 158 (eval (car (get 'bcat-analysis-table-width 'standard-value)))))
+  (should (= 45 (eval (car (get 'bcat-analysis-cell-width 'standard-value)))))
+  (should (eq 'bcat-analysis-table-width (indirect-variable 'bcat-analysis-tibetan-table-width)))
+  (let ((bcat-analysis-layout-overrides '(("sa" (table-width . 60)))))
+    (should (= 60 (bcat-analysis--layout 'table-width "sa")))
+    (should (= 158 (bcat-analysis--layout 'table-width "bo")))
+    (dolist (line (split-string (bcat-analysis-sanskrit-tables bcat-analysis-test--ta-1-1-words) "\n" t))
+      (should (<= (string-width line) 60)))
+    (should (= 1 (length (split-string
+                          (bcat-analysis-gloss-table
+                           '(((wylie . "chos nyid") (gloss . "nature of phenomena") (function . "N · goal/locus"))
+                             ((wylie . "'di") (gloss . "this") (function . "DEM · specifying"))
+                             ((wylie . "la") (gloss . "toward / into") (function . "DAT/LOC"))))
+                          "\n\n"))))))
+
 (ert-deftest bcat-analysis-tables-fill-the-window ()
   "Carsten 4.11. (bDen 16, Segment 70): „müsste eigentlich nicht
 umbrechen, oder?“ — six columns, 119 characters as the table stands,
 in a window of 162; it broke because the width was the PDF's (6 per
 column, limit 130: 137).  In the file a table is as wide as it is seen
-\(cells + 3 per column), up to `bcat-analysis-tibetan-table-width'
-\(158, the MacBook window); the PDF chunks anew in the export
+\(cells + 3 per column), up to `bcat-analysis-table-width'
+\(158, the MacBook window; 5.11. every language); the PDF chunks anew in the export
 \(`bcat-export--rechunk-tibetan-tables')."
-  (should (= 158 (eval (car (get 'bcat-analysis-tibetan-table-width 'standard-value)))))
+  (should (= 158 (eval (car (get 'bcat-analysis-table-width 'standard-value)))))
   (let* ((cols '(("ཆོས་ཉིད" "chos nyid" "nature of phenomena" "N · goal/locus")
                  ("འདི" "'di" "this" "DEM · specifying")
                  ("ལ" "la" "toward / into" "DAT/LOC")

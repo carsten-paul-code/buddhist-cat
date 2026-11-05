@@ -274,11 +274,11 @@ sentence translation.  ASSIGNMENT from the segment headings."
                                   (table (alist-get 'gloss-table f)))
                              (append
                               (and table
-                                   `((gloss-table . ,(if sanskrit-file
-                                                         ;; 4.11.: compact, as in the partner file.
-                                                         (car (bcat-analysis-compact-tables
-                                                               (bcat-analysis-uchen-table table (alist-get 'uchen o))))
-                                                       table))))
+                                   ;; 4.11./5.11.: compact, as in the partner file.
+                                   `((gloss-table . ,(car (bcat-analysis-compact-tables
+                                                           (if sanskrit-file
+                                                               (bcat-analysis-uchen-table table (alist-get 'uchen o))
+                                                             table))))))
                               (and (alist-get 'segment-translation f)
                                    `((segment-translation . ,(alist-get 'segment-translation f))))
                               (and (alist-get 'differences f)
@@ -317,13 +317,16 @@ segments per segment come from there (Carsten 1.11.)."
          (segments (mapcar (lambda (seg)
                              (let ((fields (gethash (bcat-analysis--num seg) read))
                                    (uchen (alist-get 'uchen seg)))
-                               ;; Tables written before 31.10. abends get
-                               ;; the Uchen row (Tibetisch V).
-                               (when (and uchen (alist-get 'gloss-table fields))
-                                 (setf (alist-get 'gloss-table fields)
-                                       (bcat-analysis-uchen-table (alist-get 'gloss-table fields) uchen))
+                               (when (alist-get 'gloss-table fields)
+                                 ;; Tables written before 31.10. abends get
+                                 ;; the Uchen row (Tibetisch V).
+                                 (when uchen
+                                   (setf (alist-get 'gloss-table fields)
+                                         (bcat-analysis-uchen-table (alist-get 'gloss-table fields) uchen)))
                                  ;; 4.11.: compact tables — a long function
-                                 ;; cut, its rest a line of Structure.
+                                 ;; cut, its rest a line of Structure; 5.11.
+                                 ;; every language (Sanskrit: the form, wide
+                                 ;; cells broken at their members).
                                  (let ((compact (bcat-analysis-compact-tables
                                                  (alist-get 'gloss-table fields))))
                                    (setf (alist-get 'gloss-table fields) (car compact))
