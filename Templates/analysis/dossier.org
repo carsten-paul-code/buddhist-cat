@@ -1,0 +1,52 @@
+#+begin_comment
+VORLAGE Lesedossier eines Verses (Carsten 5.11.2026, nach seiner
+Studienausgabe MSA IX.60–66 und dem gebilligten Muster
+Lesedossier-IX.60-MUSTER.org): je Vers die Schichten untereinander —
+01 der Text (Sanskrit, Tibetisch, die Übersetzung), 02 das Bhāṣya,
+03 der Kommentar je Satz („N · Folio“, Uchen über Wylie, die Zeilen,
+die den Vers aufgreifen, fett, → die Übersetzung, das Lemma) — und
+„* Meine Notizen“, die jeden Neubau übersteht.  Felder: label,
+analysis (Links auf die Analysedateien), layers (heading, verses
+(text), translation, note, items (head, lines, item-translation,
+lemma)), my-notes.  Geschrieben von C-c u V und nach C-c u G
+(bcat-dossier.el); die Analysedateien bleiben, wie sie sind.
+#+end_comment
+#+TITLE: {{label}} — Lesedossier
+#+STARTUP: showall
+#+OPTIONS: toc:nil num:nil title:nil
+
+{{label}} · Analyse: {{analysis}}
+
+{{#layers}}
+* {{heading}}
+{{#verses}}
+#+begin_verse
+{{text}}
+#+end_verse
+
+{{/verses}}
+{{#translation}}
+{{translation}}
+
+{{/translation}}
+{{#note}}
+*Hint:* {{note}}
+
+{{/note}}
+{{#items}}
+** {{head}}
+#+begin_verse
+{{lines}}
+#+end_verse
+
+{{#item-translation}}
+→ {{item-translation}}
+{{/item-translation}}
+{{#lemma}}
+/Lemma:/ {{lemma}}
+{{/lemma}}
+
+{{/items}}
+{{/layers}}
+* Meine Notizen
+{{my-notes}}

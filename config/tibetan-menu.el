@@ -108,6 +108,9 @@
      ["Belege in die Zettel (C-c u z b)" bcat-zettel-belege
       :help "Die Stellen der Concept Notes als markierte Belege (CAT) in ihre Zettel — Satzdatei an Punkt bzw. die Sätze unter der Überschrift; C-c u G tut es von selbst"
       :active (fboundp 'bcat-zettel-belege)]
+     ["Lesedossier des Verses (C-c u V)" bcat-dossier
+      :help "Vers, Bhāṣya und Kommentar untereinander — aus den vorhandenen Dateien, Notizen bleiben"
+      :active (fboundp 'bcat-dossier)]
      ["Neu setzen ohne Abruf (C-c u L)" bcat-relayout
       :help "Die Satzdatei an Punkt bzw. die Sätze unter der Überschrift aus ihrer Vorlage neu setzen — ohne Abruf, nach einer Änderung der Vorlage"
       :active (fboundp 'bcat-relayout)]

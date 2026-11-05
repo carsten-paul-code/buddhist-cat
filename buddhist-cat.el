@@ -540,6 +540,7 @@ in the appropriate instance."
 (require 'bcat-faces)
 (require 'bcat-relayout)
 (require 'bcat-zettel)
+(require 'bcat-dossier)
 
 (provide 'buddhist-cat)
 ;; The old feature name, announced too: code that waits on it

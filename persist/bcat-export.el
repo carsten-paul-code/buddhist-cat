@@ -778,6 +778,15 @@ not count.  Mechanical — the transcript goes to no one."
               collect (cdr p))
      "\n\n")))
 
+(defun bcat-export--split-proposal (proposal)
+  "(PROPOSAL . DECISIONS) of PROPOSAL: the proposed translation(s), read
+first, and from *Decisions:* (*Entscheidungen:*) on what justifies them
+— both trimmed, \"\" when missing."
+  (let ((cut (and (string-match "^\\*\\(?:Decisions\\|Entscheidungen\\)\\(?: — [^*\n]*\\)?:\\*" proposal)
+                  (match-beginning 0))))
+    (cons (string-trim (if cut (substring proposal 0 cut) proposal))
+          (if cut (string-trim (substring proposal cut)) ""))))
+
 (defun bcat-export--view-context (context)
   "CONTEXT (`bcat-relayout-file-context') with the fields of the PDF view:
 the proposed translation without its decisions — they belong to the
@@ -786,11 +795,9 @@ discussion (`decisions'), the translation is read first —; per segment
 when there is some); whether the parts Grammar, Concepts, Discussion,
 Notes have anything (`grammar-p', `concepts-p', `discussion-p',
 `translations-p', `notes-p')."
-  (let* ((proposal (or (alist-get 'proposal context) ""))
-         (cut (and (string-match "^\\*\\(?:Decisions\\|Entscheidungen\\)\\(?: — [^*\n]*\\)?:\\*" proposal)
-                   (match-beginning 0)))
-         (decisions (if cut (string-trim (substring proposal cut)) ""))
-         (proposal (string-trim (if cut (substring proposal 0 cut) proposal)))
+  (let* ((split (bcat-export--split-proposal (or (alist-get 'proposal context) "")))
+         (proposal (car split))
+         (decisions (cdr split))
          (segments (mapcar (lambda (s)
                              (let ((detail (cl-some (lambda (f) (bcat-export--filled-p (alist-get f s)))
                                                     bcat-export--detail-fields)))

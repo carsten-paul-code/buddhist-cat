@@ -113,6 +113,9 @@
   ;; zum ersten Vers); in einer Quelle zur anderen Quelle.
 
 (global-set-key (kbd "C-c u L") 'bcat-relayout)
+;; C-c u V (Carsten 5.11.2026): the reading dossier of the verse — text,
+;; bhāṣya, commentary one under the other (bcat-dossier.el).
+(global-set-key (kbd "C-c u V") 'bcat-dossier)
   ;; §5.74 (Carsten 31.10. abends, TĀ 1006: „Ohne Abruf umbauen“): die
   ;; Satzdatei an Punkt (im Paar beide) bzw. jeden Satz unter der
   ;; Überschrift aus ihrer Vorlage neu setzen — ohne Abruf, nach einer
