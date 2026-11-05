@@ -208,6 +208,13 @@ means in this passage, its general sense is the zettel's."
   :type 'integer
   :group 'buddhist-cat)
 
+(defcustom bcat-zettel-prompt-skip-regexp "nicht ausgearbeitet"
+  "A zettel whose #+description matches this does not go to Claude — a
+glossary rump (5.11., AS 5: „Glossar-Rumpf … nur Aliasse, nicht
+ausgearbeitet“) tells it nothing.  nil: every zettel with a description."
+  :type '(choice regexp (const nil))
+  :group 'buddhist-cat)
+
 (defun bcat-zettel--filled (v)
   "Non-nil when V is a string not blank."
   (and (stringp v) (not (string-blank-p v))))
@@ -246,8 +253,10 @@ use them."
                                   (not (assoc id hits)))
                          (push (cons id (length key)) hits))))))
                tibetan-zettel-highlight--index)
-      (let* ((hits (seq-take (sort hits (lambda (a b) (> (cdr a) (cdr b)))) bcat-zettel-prompt-max))
-             (lines (delq nil
+      (let* ((hits (sort hits (lambda (a b) (> (cdr a) (cdr b)))))
+             ;; the cap after the rumps are out — they take no place
+             (lines (seq-take
+                     (delq nil
                           (mapcar (lambda (h)
                                     (let* ((e (tibetan-zettel-highlight-entry (car h)))
                                            (desc (bcat-zettel--description (car h)))
@@ -258,10 +267,13 @@ use them."
                                                                    (and (bcat-zettel--filled (plist-get e :english))
                                                                         (plist-get e :english))))))
                                       (and desc
+                                           (not (and bcat-zettel-prompt-skip-regexp
+                                                     (string-match-p bcat-zettel-prompt-skip-regexp desc)))
                                            (format "- %s%s: %s" (plist-get e :title)
                                                    (if labels (format " (%s)" (string-join labels "; ")) "")
                                                    desc))))
-                                  hits))))
+                                  hits))
+                     bcat-zettel-prompt-max)))
         (when lines
           (concat "Entries of the reader's Zettelkasten for terms of this sentence (for the field concepts: "
                   "when a note treats one of these terms, take its general sense from the entry and say "
