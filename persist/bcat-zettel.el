@@ -126,23 +126,21 @@ is no stub."
 
 (defun bcat-zettel--passage (table term)
   "(WORD . GLOSS) of the column of TABLE (a segment's overview) whose word
-holds TERM, or nil: the first cell matching TERM is the word — in
-Tibetan script the line under it (the transcription) —, the next cell
-what it means there."
+holds TERM, or nil: the word is the first cell — under a cell in
+Tibetan script the transcription below it —, the gloss the next cell.
+Only the word is searched: a term that turns up in a gloss is no word
+of the text."
   (let ((key (tibetan-zettel-highlight--norm-key term)))
     (when (and table (>= (length key) 3))
       (cl-loop for col in (bcat-analysis--table-columns table)
                for cells = (mapcar #'bcat-analysis-plain-cell col)
-               for i = (cl-position-if
-                        (lambda (c) (string-match-p (regexp-quote key)
-                                                    (tibetan-zettel-highlight--norm-key c)))
-                        cells)
-               when i
-               return (let ((i (if (and (string-match-p "[ༀ-࿿]" (nth i cells))
-                                        (nth (1+ i) cells))
-                                   (1+ i) i)))
-                        (and (nth (1+ i) cells)
-                             (cons (nth i cells) (nth (1+ i) cells))))))))
+               for w = (if (and (cdr cells) (string-match-p "[\u0F00-\u0FFF]" (car cells))) 1 0)
+               for words = (cl-subseq cells 0 (1+ w))
+               when (and (nth (1+ w) cells)
+                         (cl-some (lambda (c) (string-match-p (regexp-quote key)
+                                                              (tibetan-zettel-highlight--norm-key c)))
+                                  words))
+               return (cons (nth w cells) (nth (1+ w) cells))))))
 
 (defun bcat-zettel--terms (text)
   "((ID . TERM) …) of the links in TEXT, in order."
@@ -203,9 +201,9 @@ Belege section, making the section when missing."
 (defun bcat-zettel-write-belege (file context label link-label)
   "Write the Belege of the sentence FILE (fields CONTEXT, place LABEL —
 the verse, else „Satz N“ —, LINK-LABEL the link's text) into the
-zettels its concept notes link to: per segment and linked term the
-line „- LABEL ⟦N⟧: /word/ — what it means there (CAT: link)“.  Returns
-the zettel files changed."
+zettels its concept notes link to: per segment and linked term that
+stands in the segment's text the line „- LABEL ⟦N⟧: /word/ — what it
+means there (CAT: link)“.  Returns the zettel files changed."
   (let* ((changed '())
          (file-mark (format "(CAT: [[file:%s::" (abbreviate-file-name file)))
          (target (format "[[file:%s::*Concepts][%s]]" (abbreviate-file-name file) link-label)))
@@ -214,10 +212,11 @@ the zettel files changed."
         (let* ((path (tibetan-zettel-highlight--entry-path (car pair)))
                (passage (bcat-zettel--passage (alist-get 'gloss-table s) (cdr pair)))
                (place (format "%s ⟦%s⟧" label (alist-get 'num s)))
-               (line (concat "- " place
-                             (if passage (format ": /%s/ — %s" (car passage) (cdr passage)) "")
-                             " (CAT: " target ")")))
-          (when (and path (file-exists-p path) (file-writable-p path)
+               (line (and passage
+                          (format "- %s: /%s/ — %s (CAT: %s)" place (car passage) (cdr passage) target))))
+          ;; Only where the term stands in the text of the segment — a
+          ;; term the note merely names is no Beleg (5.11., TĀ 1.1).
+          (when (and line path (file-exists-p path) (file-writable-p path)
                      (bcat-zettel--write-line path line label place file-mark))
             (cl-pushnew path changed :test #'equal)))))
     (nreverse changed)))

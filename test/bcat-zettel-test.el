@@ -130,8 +130,9 @@ kalā and visarga in its concept notes and the overview of its words."
   "The passage goes into each linked zettel as a marked Beleg (Carsten
 5.11.: automatically, „ja, bitte“): under * Belegstellen …, after the
 last one — the place (verse or Satz N, ⟦N⟧), the word of the passage
-and what it means there, (CAT: link to the sentence file).  No such
-section: one before * Verweise.  Again: nothing doubled; a changed
+and what it means there, (CAT: link to the sentence file) — only where
+the term stands in the text of the segment.  No such section: one
+before * Verweise.  Again: nothing doubled; a changed
 passage replaces its line; a Beleg of the same verse by hand wins."
   (bcat-zettel-test--with-kasten
     (let* ((dir (make-temp-file "bcat-sent-" t))
@@ -147,12 +148,15 @@ passage replaces its line; a Beleg of the same verse by hand wins."
                                            "- TĀ 1.1 ⟦1⟧: /vimalā-kalā-āśrayā/ — whose ground is pure kalā "
                                            link "\n\n* Abgrenzungen"))
                      (bcat-zettel-test--read kala)))
+            ;; ⟦1⟧ only names visarga in its note — not in its text: no
+            ;; Beleg (5.11., TĀ 1.1: prakāśa, cit, icchā … got lines
+            ;; without a word, jñāna even in the wrong zettel).
             (should (string-match-p
                      (regexp-quote (concat "* Belegstellen in der Literatur\n"
-                                           "- TĀ 1.1 ⟦1⟧ " link "\n"
                                            "- TĀ 1.1 ⟦2⟧: /tad-ubhaya-visarga-mayam/ — consisting of the emission of both "
                                            link "\n\n* Verweise"))
                      (bcat-zettel-test--read visarga)))
+            (should-not (string-match-p "⟦1⟧" (bcat-zettel-test--read visarga)))
             ;; Again: nothing doubled.
             (let ((before (bcat-zettel-test--read kala)))
               (bcat-zettel-write-belege file bcat-zettel-test--context "TĀ 1.1" "Satz 1")
@@ -173,6 +177,18 @@ passage replaces its line; a Beleg of the same verse by hand wins."
             (bcat-zettel-write-belege file bcat-zettel-test--context "TĀ 1.1" "Satz 1")
             (should-not (string-match-p "(CAT:" (bcat-zettel-test--read kala))))
         (delete-directory dir t)))))
+
+(ert-deftest bcat-zettel-passage ()
+  "The word of the passage and what it means there: the term in the word
+\(Sanskrit: the first row; Tibetan: the Uchen or the transcription
+under it), not in a gloss."
+  (bcat-zettel-test--with-kasten
+    (should (equal '("vimalā-kalā-āśrayā" . "whose ground is pure kalā")
+                   (bcat-zettel--passage "| jananī | vimalā-kalā-āśrayā |\n| mother | whose ground is pure kalā |" "kalā")))
+    (should-not (bcat-zettel--passage "| jananī |\n| mother of the visarga |" "visarga"))
+    (should (equal '("'dus ma byas" . "uncompounded")
+                   (bcat-zettel--passage "| འདུས་མ་བྱས |\n| [[steinert:'dus ma byas]['dus ma byas]] |\n| uncompounded |"
+                                         "'dus ma byas")))))
 
 (ert-deftest bcat-zettel-belege-after-fetch ()
   "C-c u G ends with the Belege (when `bcat-zettel-belege-auto'); never
