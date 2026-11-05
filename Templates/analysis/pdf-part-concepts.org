@@ -1,0 +1,16 @@
+#+begin_comment
+TEIL Concepts der PDF-Vorlagen (Carsten 5.11.2026): die Begriffe je
+Segment, wie unter ** Concepts der Datei.
+#+end_comment
+{{#concepts-p}}
+* Concepts
+:PROPERTIES:
+:CUSTOM_ID: concepts
+:END:
+{{#segments}}
+{{#concepts}}
+⟦{{num}}⟧ {{concepts}}
+
+{{/concepts}}
+{{/segments}}
+{{/concepts-p}}

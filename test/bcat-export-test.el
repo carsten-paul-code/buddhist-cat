@@ -23,6 +23,10 @@
 (require 'bcat-sentence-test)
 (require 'bcat-analysis-test)
 
+(defun bcat-export-test--view-of (file)
+  "The file C-c u H writes the view of the sentence FILE to (5.11.)."
+  (expand-file-name (concat ".pdfview-" (file-name-nondirectory file)) (file-name-directory file)))
+
 (ert-deftest bcat-export-running-head ()
   "The running head: folder of the source · work title (from the
 source's #+TITLE before „ — “, italic) · Satz N · verse — LaTeX-safe."
@@ -171,7 +175,8 @@ Switched off (`bcat-export-auto' nil): nothing."
           (bcat-sentence-test--with-stubs bcat-sentence-test--answer
             (add-hook 'bcat-sentence-after-fetch-functions #'bcat-export-after-fetch)
             (bcat-sentence-test--fetch src)))
-        (should (equal (list (tibetan-sentence--filepath 9 folder src)) exported))
+        ;; 5.11.: exported is the file's view (one document with jump marks).
+        (should (equal (list (bcat-export-test--view-of (tibetan-sentence--filepath 9 folder src))) exported))
         (should (equal '(("/nonexistent/bcat-test.pdf" "bDen pa gnyis la 'jug pa" "SDA 9")) uploaded))
         (setq exported nil uploaded nil)
         (let ((bcat-export-auto nil))
@@ -231,13 +236,14 @@ file is not exported (C-c u G first)."
                 ((symbol-function 'tibetan-discussion-paper--upload) (lambda (&rest _) t)))
         (with-current-buffer (find-file-noselect file)
           (bcat-export))
-        (should (equal (list file) exported))
+        ;; 5.11.: exported is the file's view.
+        (should (equal (list (bcat-export-test--view-of file)) exported))
         (setq exported nil)
         (with-current-buffer (find-file-noselect src)
           (goto-char (point-min))
           (re-search-forward "^\\*\\*\\*\\* Segment 38")
           (bcat-export))
-        (should (equal (list file) exported))
+        (should (equal (list (bcat-export-test--view-of file)) exported))
         (setq exported nil)
         (let ((bcat-sentence-templates nil))
           (delete-file file)
@@ -710,6 +716,174 @@ ersten).  Ein Dokument mit interner Verknüpfung gibt keine Warnung."
       (let ((buf (get-file-buffer file))) (when buf (kill-buffer buf)))
       (delete-directory dir t))))
 
+;; ----------------------------------------------------------------------------
+;; One document with jump marks (Carsten 5.11.2026)
+;; ----------------------------------------------------------------------------
+
+(defun bcat-export-test--parts (view)
+  "The level-1 headings of VIEW, in order."
+  (let ((out '()) (start 0))
+    (while (string-match "^\\* \\(.+\\)$" view start)
+      (push (match-string 1 view) out)
+      (setq start (match-end 0)))
+    (nreverse out)))
+
+(defun bcat-export-test--part (view title)
+  "The text of the level-1 part TITLE of VIEW (heading included)."
+  (when (string-match (concat "^\\* " (regexp-quote title) "\n") view)
+    (let ((start (match-beginning 0)))
+      (substring view start (if (string-match "^\\* " view (1+ start)) (match-beginning 0) (length view))))))
+
+(ert-deftest bcat-export-view-sanskrit ()
+  "Carsten 5.11.: the PDF is one document with jump marks, not the file
+in its order — Reading (the recitation, the translation), Segments (the
+overview of the words, → per segment), Grammar (the parts of the words,
+the grammar, per segment sandhi, forms, compounds, structure), Concepts,
+Discussion; each part with a CUSTOM_ID (a page of its own, a link in
+the bar).  Rendered from the fields C-c u L reads back; the file stays
+as it is; no request; no Word Analysis."
+  (bcat-sentence-test--with-sa-source
+    (bcat-sentence-test--create-n src 1007)
+    (bcat-sentence-test--with-stubs (bcat-sentence-test--sa-answer)
+      (bcat-sentence-test--fetch-n src 1007))
+    (let* ((file (tibetan-sentence--filepath 1007 folder src))
+           (before (bcat-sentence-test--text-of file))
+           (fired nil)
+           (view (cl-letf (((symbol-function 'tibetan-discussion--submit)
+                            (lambda (&rest _) (setq fired t))))
+                   (bcat-export-view file))))
+      (should (stringp view))
+      (should-not fired)
+      (should (equal before (bcat-sentence-test--text-of file)))
+      (should (equal '("Reading" "Segments" "Grammar" "Concepts" "Discussion")
+                     (bcat-export-test--parts view)))
+      (dolist (id '("reading" "segments" "grammar" "concepts" "discussion"))
+        (should (string-match-p (concat "^\\* .+\n:PROPERTIES:\n:CUSTOM_ID: " id "\n:END:$") view)))
+      (let ((reading (bcat-export-test--part view "Reading"))
+            (segments (bcat-export-test--part view "Segments"))
+            (grammar (bcat-export-test--part view "Grammar")))
+        (should (string-match-p "^#\\+begin_verse\nअत्र" reading))
+        (should (string-match-p "^\\*Translation:\\* Although my speech (vāc)" reading))
+        ;; The metre, not the tables of the words.
+        (should-not (string-match-p "^| atra" reading))
+        ;; The overview, its link into the grammar, the translation of
+        ;; the segment — the parts of the words not here.
+        (should (string-match-p (regexp-quote "⟦685⟧ · [[#grammar-685][Grammar]]\n| atra |") segments))
+        (should (string-match-p "^→ " segments))
+        (should-not (string-match-p "^|-\\|^/mad-vāk/\\|\\*Forms:\\*" segments))
+        (should (string-match-p "^\\*Grammar:\\* Two clauses\\." grammar))
+        (should (string-match-p "^\\*\\* ⟦685⟧\n:PROPERTIES:\n:CUSTOM_ID: grammar-685\n:END:$" grammar))
+        (should (string-match-p "^\\*Forms:\\*\n- /mad-vāk/ — vāc- f\\." grammar))
+        (should (string-match-p "my\\b.*speech" grammar)))
+      (should (string-match-p "^⟦685⟧ \\*niyantraṇa\\*" (bcat-export-test--part view "Concepts")))
+      (should (string-match-p "^\\*Dyczkowski 2023:\\* Although my speech is powerless here"
+                              (bcat-export-test--part view "Discussion")))
+      (should-not (string-match-p "Word Analysis\\|^\\* Working Translation\\|^\\* My Notes" view)))))
+
+(ert-deftest bcat-export-view-tibetan ()
+  "The Tibetan file as one document: Reading with every segment's Uchen
+over its Wylie, Segments with the tables, Grammar with structure and
+note per segment; a part with nothing in it is left out (no Concepts
+without concepts); My Notes with text: a part Notes at the end."
+  (bcat-sentence-test--with-source
+    (bcat-sentence-test--create src)
+    (bcat-sentence-test--with-stubs bcat-sentence-test--answer
+      (bcat-sentence-test--fetch src))
+    (let ((file (tibetan-sentence--filepath 9 folder src)))
+      (with-temp-file file
+        (insert (replace-regexp-in-string "^\\* My Notes\n" "* My Notes\nMeine Notiz.\n"
+                                          (bcat-sentence-test--text-of file) t t)))
+      (let* ((view (bcat-export-view file))
+             (reading (and view (bcat-export-test--part view "Reading"))))
+        (should (stringp view))
+        (should (equal "Reading" (car (bcat-export-test--parts view))))
+        (should (equal "Notes" (car (last (bcat-export-test--parts view)))))
+        (should (string-match-p "^བརྗོད་དུ་མེད་པ་བལྟར་མེད་པ། །\nbrjod du med pa" reading))
+        (should (string-match-p (regexp-quote "⟦38⟧ · [[#grammar-38][Grammar]]\n| བརྗོད་དུ་མེད་པ")
+                                (bcat-export-test--part view "Segments")))
+        (should (string-match-p "^\\*Structure:\\* no finite verb$" (bcat-export-test--part view "Grammar")))
+        (should (string-match-p "^Meine Notiz\\.$" (bcat-export-test--part view "Notes")))))))
+
+(ert-deftest bcat-export-view-pair ()
+  "Both files of a bilingual pair as one document each: every jump mark
+\(<<skt-N>>, <<tib-N>>) once, every link to one of them with its
+target — the export would stop at a broken link; the other language's
+lines in Reading, its tables in Segments."
+  (bcat-sentence-test--with-pair
+    (bcat-sentence-test--create-n src 3)
+    (bcat-sentence-test--with-stubs #'bcat-sentence-test--pair-answers
+      (bcat-sentence-test--fetch-n src 3))
+    (dolist (file (list (tibetan-sentence--filepath 3 folder src)
+                        (bcat-sentence-partner-file 3 src)))
+      (let ((view (bcat-export-view file)) (start 0))
+        (should (stringp view))
+        (should (equal '("Reading" "Segments") (cl-subseq (bcat-export-test--parts view) 0 2)))
+        (should (string-match-p "^<<skt-22>>⟦22⟧" view))
+        (should (string-match-p "^<<tib-77>>⟦77⟧" view))
+        (while (string-match "\\[\\[\\(\\(?:skt\\|tib\\)-[0-9]+\\)\\]" view start)
+          (let ((target (match-string 1 view)))
+            (setq start (match-end 0))
+            (should (= 1 (with-temp-buffer
+                           (insert view)
+                           (how-many (concat "<<" (regexp-quote target) ">>") (point-min) (point-max)))))))
+        (let ((reading (bcat-export-test--part view "Reading")))
+          (should (string-match-p "kasmāt" reading))
+          (should (string-match-p "ཅིའི་ཕྱིར" reading)))))))
+
+(ert-deftest bcat-export-view-decisions ()
+  "The proposed translation is read first (Reading), the decisions that
+justify it belong to the discussion (Carsten 5.11.)."
+  (let ((ctx (bcat-export--view-context
+              '((proposal . "*Proposed translation:*\n#+begin_quote\nX.\n#+end_quote\n\n*Decisions:* Unit 1: kalā.")
+                (segments . (((num . 1) (concepts . "") (sandhi . "s"))
+                             ((num . 2) (concepts . "*kalā* — power")))))))
+        (render (lambda (tpl ctx) (bcat-template-render tpl ctx))))
+    (should (equal "*Proposed translation:*\n#+begin_quote\nX.\n#+end_quote" (alist-get 'proposal ctx)))
+    (should (equal "*Decisions:* Unit 1: kalā." (alist-get 'decisions ctx)))
+    (should (alist-get 'concepts-p ctx))
+    (should (alist-get 'discussion-p ctx))
+    (should (equal "[1 · [[#grammar-1][Grammar]]]\n[2]\n"
+                   (funcall render "{{#segments}}\n[{{num}}{{grammar-link}}]\n{{/segments}}\n" ctx)))
+    (should-not (alist-get 'notes-p ctx))))
+
+(ert-deftest bcat-export-view-none ()
+  "No PDF template for the file (a commentary document, a sentence file
+of no template): no view — C-c u H exports the file as it is."
+  (let ((dir (make-temp-file "bcat-view-" t)))
+    (unwind-protect
+        (let ((file (expand-file-name "notes.org" dir)))
+          (with-temp-file file (insert "* Notes\n"))
+          (should-not (bcat-export-view file)))
+      (delete-directory dir t))))
+
+(ert-deftest bcat-export-parts-pages ()
+  "In the export buffer every part of level 1 with a CUSTOM_ID after the
+first starts a new page, and the foot of every page carries the bar of
+links to the parts (the reMarkable follows internal links); the bar
+after the running head (fancyhdr clears it).  A buffer without parts
+stays as it is."
+  (with-temp-buffer
+    (insert "#+LATEX_HEADER: \\usepackage{fancyhdr}\\pagestyle{fancy}\\fancyhf{}\n"
+            "#+LATEX_HEADER: \\fancyhead[L]{X}\n"
+            "* Reading\n:PROPERTIES:\n:CUSTOM_ID: reading\n:END:\nR.\n"
+            "* Segments\n:PROPERTIES:\n:CUSTOM_ID: segments\n:END:\nS.\n"
+            "** ⟦1⟧\n:PROPERTIES:\n:CUSTOM_ID: grammar-1\n:END:\n"
+            "* Further Reading\n:PROPERTIES:\n:CUSTOM_ID: further-reading\n:END:\nF.\n")
+    (bcat-export--parts-pages)
+    (let ((text (buffer-string)))
+      (should (string-match-p "^#\\+LATEX_HEADER: \\\\fancyhead\\[L\\]{X}\n#\\+LATEX_HEADER: \\\\fancyfoot\\[C\\]{" text))
+      (should (string-match-p (regexp-quote "\\hyperref[reading]{Reading}") text))
+      (should (string-match-p (regexp-quote "\\hyperref[further-reading]{Further Reading}") text))
+      (should-not (string-match-p "hyperref\\[grammar-1\\]" text))
+      (should-not (string-match-p "clearpage\n\\* Reading" text))
+      (should (string-match-p "^#\\+LATEX: \\\\clearpage\n\\* Segments$" text))
+      (should (string-match-p "^#\\+LATEX: \\\\clearpage\n\\* Further Reading$" text))
+      (should-not (string-match-p "clearpage\n\\*\\* " text))))
+  (with-temp-buffer
+    (insert "* Verse\nV.\n* Commentary\nC.\n")
+    (bcat-export--parts-pages)
+    (should (equal "* Verse\nV.\n* Commentary\nC.\n" (buffer-string)))))
+
 (ert-deftest bcat-export-page-format ()
   "Carsten 5.11.: reMarkable Paper Pro — the page is its screen (180 ×
 240 mm, 3:4), shown at its size; narrow margins, 10 pt.  The format
@@ -717,6 +891,35 @@ goes into the export copy only."
   (let ((lines (bcat-export-page-lines)))
     (should (string-match-p "^#\\+LATEX_CLASS_OPTIONS: \\[10pt\\]$" lines))
     (should (string-match-p "\\\\geometry{paperwidth=180mm,paperheight=240mm," lines))))
+
+(ert-deftest bcat-export-file-exports-the-view ()
+  "C-c u H exports the view (one document with jump marks), not the
+file: written beside the file under a name no folder scan takes for a
+sentence file, gone after the export; the PDF into handouts/ under the
+speaking name.  Without a view: the file itself, as before."
+  (bcat-sentence-test--with-source
+    (bcat-sentence-test--create src)
+    (bcat-sentence-test--with-stubs bcat-sentence-test--answer
+      (bcat-sentence-test--fetch src))
+    (let* ((file (tibetan-sentence--filepath 9 folder src))
+           (exported nil) (seen nil))
+      (cl-letf (((symbol-function 'bcat-export-pdf)
+                 (lambda (f &rest _)
+                   (setq exported f
+                         seen (with-temp-buffer (insert-file-contents f) (buffer-string)))
+                   (let ((pdf (concat (file-name-sans-extension f) ".pdf")))
+                     (with-temp-file pdf (insert "PDF")) pdf))))
+        (let ((bcat-export-upload nil))
+          (should (equal (expand-file-name "handouts/bden-9.pdf" dir) (bcat-export-file file)))
+          (should-not (string-prefix-p "sent-" (file-name-nondirectory exported)))
+          (should (equal folder (file-name-directory exported)))
+          (should (string-match-p "^\\* Reading\n" seen))
+          (should-not (file-exists-p exported))
+          (should-not (directory-files folder nil "\\.pdf\\'"))
+          ;; No view: the file itself.
+          (cl-letf (((symbol-function 'bcat-export-view) #'ignore))
+            (bcat-export-file file)
+            (should (equal file exported))))))))
 
 (ert-deftest bcat-export-pdf-smoke ()
   "Real LuaLaTeX run (only where lualatex is installed): the reviewed

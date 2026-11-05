@@ -1,0 +1,26 @@
+#+begin_comment
+TEIL Notes der PDF-Vorlagen (Carsten 5.11.2026): Working Translation
+und My Notes, wenn darin etwas steht (notes-p).  Die Footnotes stehen
+immer am Ende — ihre Definitionen druckt LaTeX an der Stelle des
+Verweises, eine eigene Seite brauchen sie nicht.
+#+end_comment
+{{#notes-p}}
+* Notes
+:PROPERTIES:
+:CUSTOM_ID: notes
+:END:
+{{#working-translation}}
+** Working Translation
+{{working-translation}}
+
+{{/working-translation}}
+{{#my-notes}}
+** My Notes
+{{my-notes}}
+
+{{/my-notes}}
+{{/notes-p}}
+{{#footnotes}}
+
+{{footnotes}}
+{{/footnotes}}

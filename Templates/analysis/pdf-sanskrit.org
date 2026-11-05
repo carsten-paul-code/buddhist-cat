@@ -1,0 +1,75 @@
+#+begin_comment
+VORLAGE PDF einer Sanskrit-Satzdatei (C-c u H, Carsten 5.11.2026): ein
+Dokument mit Sprungmarken statt der Datei in ihrer Reihenfolge.  Jeder
+Teil der Ebene 1 mit CUSTOM_ID beginnt auf einer neuen Seite und steht
+als Link in der Leiste am Fuß jeder Seite (das reMarkable folgt internen
+Links).  Gesetzt aus den Feldern, die C-c u L aus der Datei zurückliest
+— die Datei bleibt, wie sie ist; ein Teil ohne Inhalt fällt weg.
+Teile: Reading (Rezitation, Übersetzung — Carsten: „auf der ersten
+Seite Reading und Rezitation“), Segments (je Segment die Übersicht der
+Wörter, → die Übersetzung; ⟦N⟧ springt in die Grammatik), Grammar
+(pdf-part-grammar), Concepts, Discussion, Further Reading, Notes.
+Zusätzliche Felder der Ansicht (bcat-export--view-context): decisions
+(aus proposal gelöst — die Entscheidungen gehören zur Diskussion),
+grammar-link / detail-p je Segment, grammar-p, concepts-p,
+discussion-p, translations-p, notes-p.
+Eine Klasse überschreibt die Vorlage oder einen Teil wie jede andere
+(Templates/analysis/ beim Text, Resources/Templates/analysis/).
+#+end_comment
+#+TITLE: Sentence {{sent-num}}
+#+OPTIONS: toc:nil num:nil title:nil author:nil date:nil
+
+* Reading
+:PROPERTIES:
+:CUSTOM_ID: reading
+:END:
+{{#recitation}}
+#+begin_verse
+{{recitation}}
+#+end_verse
+{{#scansion}}
+
+{{scansion}}
+{{/scansion}}
+
+{{/recitation}}
+{{^recitation}}
+#+begin_verse
+{{#segments}}
+{{devanagari}}
+{{samhita}}
+{{/segments}}
+#+end_verse
+
+{{/recitation}}
+{{#proposal}}
+{{proposal}}
+{{/proposal}}
+{{^proposal}}
+*Translation:* {{translation}}
+{{/proposal}}
+{{#second-translation}}
+
+*{{second-label}}:* {{second-translation}}
+{{/second-translation}}
+
+* Segments
+:PROPERTIES:
+:CUSTOM_ID: segments
+:END:
+{{#segments}}
+{{#gloss-table}}
+⟦{{num}}⟧{{grammar-link}}
+{{gloss-table}}
+
+{{#segment-translation}}
+→ {{segment-translation}}
+
+{{/segment-translation}}
+{{/gloss-table}}
+{{/segments}}
+{{> pdf-part-grammar}}
+{{> pdf-part-concepts}}
+{{> pdf-part-discussion}}
+{{> pdf-part-further-reading}}
+{{> pdf-part-notes}}

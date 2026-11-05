@@ -1,0 +1,15 @@
+#+begin_comment
+TEIL Further Reading der PDF-Vorlagen (Carsten 5.11.2026): wie unter
+* Further Reading der Datei.
+#+end_comment
+{{#lectures-p}}
+* Further Reading
+:PROPERTIES:
+:CUSTOM_ID: further-reading
+:END:
+{{#lectures}}
+** {{lecture-name}}
+{{lecture-body}}
+
+{{/lectures}}
+{{/lectures-p}}

@@ -1,0 +1,52 @@
+#+begin_comment
+VORLAGE PDF einer tibetischen Satzdatei (C-c u H, Carsten 5.11.2026) —
+wie pdf-sanskrit: ein Dokument mit Sprungmarken, jeder Teil der Ebene 1
+mit CUSTOM_ID auf einer neuen Seite, die Leiste der Teile am Fuß jeder
+Seite.  Reading: je Segment Uchen über Wylie (die Tabellen stehen im
+Teil Segments, deshalb hier jede Wylie-Zeile), dann die Übersetzung.
+#+end_comment
+#+TITLE: Sentence {{sent-num}}
+#+OPTIONS: toc:nil num:nil title:nil author:nil date:nil
+
+* Reading
+:PROPERTIES:
+:CUSTOM_ID: reading
+:END:
+#+begin_verse
+{{#segments}}
+{{uchen}}
+{{wylie}}
+{{/segments}}
+#+end_verse
+
+{{#proposal}}
+{{proposal}}
+{{/proposal}}
+{{^proposal}}
+*Translation:* {{translation}}
+{{/proposal}}
+{{#second-translation}}
+
+*{{second-label}}:* {{second-translation}}
+{{/second-translation}}
+
+* Segments
+:PROPERTIES:
+:CUSTOM_ID: segments
+:END:
+{{#segments}}
+{{#gloss-table}}
+⟦{{num}}⟧{{grammar-link}}
+{{gloss-table}}
+
+{{#segment-translation}}
+→ {{segment-translation}}
+
+{{/segment-translation}}
+{{/gloss-table}}
+{{/segments}}
+{{> pdf-part-grammar}}
+{{> pdf-part-concepts}}
+{{> pdf-part-discussion}}
+{{> pdf-part-further-reading}}
+{{> pdf-part-notes}}

@@ -33,6 +33,7 @@
 (declare-function tibetan-discussion-paper--upload "tibetan-discussion-paper" (pdf title label &optional done))
 (declare-function tibetan-discussion-paper--temp-source-p "tibetan-discussion-paper" (file))
 (declare-function tibetan-handout "tibetan-handout" (&optional org-only))
+(declare-function bcat-relayout-file-context "bcat-relayout" (file))
 (declare-function org-latex-export-to-pdf "ox-latex")
 (declare-function org-end-of-subtree "org" (&optional invisible-ok to-heading element))
 (declare-function org-export-derived-backend-p "ox" (backend &rest backends))
@@ -46,6 +47,7 @@
 (defvar org-export-filter-paragraph-functions)
 (defvar org-export-before-processing-functions)
 (defvar org-export-headline-levels)
+(defvar org-latex-prefer-user-labels)
 (defvar tibetan-cascade-subtree-confirm-threshold)
 
 (defcustom bcat-export-auto t
@@ -644,8 +646,14 @@ sentence files (Carsten 30.10.: not in the PDF).  For
         (goto-char beg)))))
 
 ;; ----------------------------------------------------------------------------
-;; The page of the reMarkable Paper Pro (Carsten 5.11.2026)
+;; One document with jump marks (Carsten 5.11.2026)
 ;; ----------------------------------------------------------------------------
+;; „Es könnte ja auch ein PDF bleiben, wenn ich Sprungmarken hätte“ — the
+;; PDF of a sentence file is no longer the file in its order but a VIEW
+;; rendered from the template pdf-<template> with the fields C-c u L reads
+;; back: Reading, Segments, Grammar, Concepts, Discussion, … each part on
+;; a page of its own, a bar of links to the parts at the foot of every
+;; page, on the page of the reMarkable Paper Pro.
 
 (defcustom bcat-export-paper '(180 . 240)
   "Width and height of the PDF page in mm.  Carsten 5.11.: reMarkable
@@ -674,6 +682,109 @@ never the file."
   (concat (format "#+LATEX_CLASS_OPTIONS: [%dpt]\n" bcat-export-font-size)
           (format "#+LATEX_HEADER: \\geometry{paperwidth=%dmm,paperheight=%dmm,%s}\n"
                   (car bcat-export-paper) (cdr bcat-export-paper) bcat-export-margins)))
+
+(defun bcat-export--filled-p (value)
+  "Non-nil when VALUE is something to show: a string not blank, any
+other non-nil value."
+  (if (stringp value) (not (string-blank-p value)) (and value t)))
+
+(defconst bcat-export--detail-fields
+  '(formation-tables sandhi forms compounds structure note)
+  "The fields of a segment that go into the part Grammar of the PDF.")
+
+(defun bcat-export--view-context (context)
+  "CONTEXT (`bcat-relayout-file-context') with the fields of the PDF view:
+the proposed translation without its decisions — they belong to the
+discussion (`decisions'), the translation is read first —; per segment
+`detail-p' and `grammar-link' (the link from ⟦N⟧ to its grammar, only
+when there is some); whether the parts Grammar, Concepts, Discussion,
+Notes have anything (`grammar-p', `concepts-p', `discussion-p',
+`translations-p', `notes-p')."
+  (let* ((proposal (or (alist-get 'proposal context) ""))
+         (cut (and (string-match "^\\*\\(?:Decisions\\|Entscheidungen\\)\\(?: — [^*\n]*\\)?:\\*" proposal)
+                   (match-beginning 0)))
+         (decisions (if cut (string-trim (substring proposal cut)) ""))
+         (proposal (string-trim (if cut (substring proposal 0 cut) proposal)))
+         (segments (mapcar (lambda (s)
+                             (let ((detail (cl-some (lambda (f) (bcat-export--filled-p (alist-get f s)))
+                                                    bcat-export--detail-fields)))
+                               (append `((detail-p . ,detail)
+                                         (grammar-link . ,(if detail
+                                                              (format " · [[#grammar-%s][Grammar]]"
+                                                                      (alist-get 'num s))
+                                                            "")))
+                                       s)))
+                           (alist-get 'segments context)))
+         (filled (lambda (key) (bcat-export--filled-p (alist-get key context))))
+         (any (lambda (key items) (cl-some (lambda (s) (bcat-export--filled-p (alist-get key s))) items))))
+    (append
+     `((segments . ,segments)
+       (proposal . ,proposal)
+       (decisions . ,decisions)
+       (grammar-p . ,(or (funcall filled 'grammar)
+                         (cl-some (lambda (s) (alist-get 'detail-p s)) segments)
+                         (funcall any 'formation-tables (alist-get 'sanskrit-segments context))))
+       (concepts-p . ,(funcall any 'concepts segments))
+       (translations-p . ,(funcall any 'translations segments))
+       (discussion-p . ,(or (bcat-export--filled-p decisions)
+                            (funcall filled 'comparison) (funcall filled 'rendering)
+                            (funcall any 'translations segments)))
+       (notes-p . ,(or (funcall filled 'working-translation) (funcall filled 'my-notes))))
+     context)))
+
+(defun bcat-export-view (file)
+  "The PDF view of the sentence FILE as org text: the template
+pdf-<its template> (cascade of its source) rendered with the fields C-c u
+L reads back from FILE (`bcat-relayout-file-context', completed by
+`bcat-export--view-context').  The file stays as it is.  nil when there
+is no such template (a commentary document) or FILE is no sentence file
+of a template — C-c u H then exports the file itself."
+  (require 'bcat-relayout)
+  (let* ((template (bcat-sentence-file-p file))
+         (source (and template (tibetan-sentence--source-file-from-analysis file)))
+         (name (and template (concat "pdf-" template))))
+    (when (and name (bcat-template-find name source))
+      (let ((read (bcat-relayout-file-context file)))
+        (unless (plist-get read :error)
+          (bcat-template-render-named name (bcat-export--view-context (plist-get read :context))
+                                      (plist-get read :source)))))))
+
+(defun bcat-export--parts-pages (&rest _)
+  "In the current (export) buffer: every part — a heading of level 1 with
+a CUSTOM_ID (the PDF view) — after the first starts a new page, and the
+foot of every page carries a bar of links to the parts (the reMarkable
+follows internal links since 2.6), placed after the running head
+\(whose \\fancyhf{} would clear it).  Without parts nothing changes.
+For `org-export-before-processing-functions'."
+  (save-excursion
+    (goto-char (point-min))
+    (let ((parts '()))
+      (while (re-search-forward "^\\* \\(.+?\\)[ \t]*$" nil t)
+        (let* ((title (match-string-no-properties 1))
+               (beg (copy-marker (line-beginning-position)))
+               (id (save-excursion
+                     (forward-line 1)
+                     (when (looking-at "[ \t]*:PROPERTIES:[ \t]*$")
+                       (let ((end (save-excursion (re-search-forward "^[ \t]*:END:[ \t]*$" nil t))))
+                         (and end (re-search-forward "^[ \t]*:CUSTOM_ID:[ \t]*\\(\\S-+\\)" end t)
+                              (match-string-no-properties 1)))))))
+          (when id (push (list id title beg) parts))))
+      (when parts
+        (setq parts (nreverse parts))
+        (dolist (p (cdr parts))
+          (goto-char (nth 2 p))
+          (insert "#+LATEX: \\clearpage\n"))
+        (goto-char (point-min))
+        (let ((last nil))
+          (while (re-search-forward "^#\\+LATEX_HEADER:.*$" nil t)
+            (setq last (point)))
+          (if last (progn (goto-char last) (forward-line 1)) (goto-char (point-min))))
+        (insert "#+LATEX_HEADER: \\fancyfoot[C]{"
+                (mapconcat (lambda (p)
+                             (format "\\hyperref[%s]{%s}" (nth 0 p) (bcat-export--latex-escape (nth 1 p))))
+                           parts "\\enspace·\\enspace ")
+                "}\n")
+        (dolist (p parts) (set-marker (nth 2 p) nil))))))
 
 (defcustom bcat-export-keep-tex nil
   "Keep the .tex beside the PDF — only for looking into the LaTeX.
@@ -723,6 +834,10 @@ LuaLaTeX could not set land in `bcat-export--missing'."
                             ;; **** (a unit of the comparison, 2.11.) as a
                             ;; heading, not as a list item.
                             (org-export-headline-levels 4)
+                            ;; The parts of the view are linked by their
+                            ;; CUSTOM_ID (the bar at the foot, ⟦N⟧ →
+                            ;; grammar-N): those are the labels.
+                            (org-latex-prefer-user-labels t)
                             ;; The log is read first (missing characters),
                             ;; then cleared as org would.
                             (org-latex-remove-logfiles nil)
@@ -737,7 +852,8 @@ LuaLaTeX could not set land in `bcat-export--missing'."
                              (append (list insert-head #'bcat-export--drop-machine-sections
                                            #'bcat-export--rechunk-gloss-tables
                                            #'bcat-export--wrap-wide-tables
-                                           #'bcat-export--marks-apart)
+                                           #'bcat-export--marks-apart
+                                           #'bcat-export--parts-pages)
                                      org-export-before-processing-functions)))
                         (expand-file-name (org-latex-export-to-pdf) (file-name-directory file))))
                  (base (file-name-sans-extension pdf))
@@ -759,12 +875,30 @@ LuaLaTeX could not set land in `bcat-export--missing'."
   "C-c u H for the sentence FILE: PDF with running head, moved into the
 handouts folder under its speaking name (Carsten 30.10.: „Das PDF
 brauchen wir nicht noch mal im Analyse Ordner“), then onto the
-reMarkable (`bcat-export-upload').  Returns the PDF path."
+reMarkable (`bcat-export-upload').  Exported is the view (Carsten
+5.11.: one document with jump marks, `bcat-export-view'), written
+beside FILE as .pdfview-<name>.org — a name no folder scan takes for a
+sentence file — and removed after the export; without a view the file
+itself.  Returns the PDF path."
   (let* ((info (bcat-export-info file))
-         (pdf (bcat-export-pdf file (bcat-export-head-lines
-                                     (plist-get info :folder) (plist-get info :work)
-                                     (plist-get info :sent-num) (plist-get info :verse)))))
-    (let ((target (plist-get info :handout)))
+         (head (bcat-export-head-lines (plist-get info :folder) (plist-get info :work)
+                                       (plist-get info :sent-num) (plist-get info :verse)))
+         (view (condition-case err (bcat-export-view file)
+                 (error (message "PDF-Ansicht von %s nicht gesetzt (%s) — die Datei selbst"
+                                 (file-name-nondirectory file) (error-message-string err))
+                        nil)))
+         (view-file (and view (expand-file-name (concat ".pdfview-" (file-name-nondirectory file))
+                                                (file-name-directory file))))
+         (pdf (if (not view)
+                  (bcat-export-pdf file head)
+                (unwind-protect
+                    (progn (let ((coding-system-for-write 'utf-8-unix))
+                             (with-temp-file view-file (insert view)))
+                           (bcat-export-pdf view-file head))
+                  (when (file-exists-p view-file) (delete-file view-file))))))
+    (let ((target (or (plist-get info :handout)
+                      ;; No handouts folder: beside FILE under its name.
+                      (and view (concat (file-name-sans-extension file) ".pdf")))))
       ;; Only the PDF the export made beside FILE — never another file.
       (when (and target (file-exists-p pdf)
                  (file-equal-p (file-name-directory pdf) (file-name-directory file)))

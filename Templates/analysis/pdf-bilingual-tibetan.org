@@ -1,0 +1,129 @@
+#+begin_comment
+VORLAGE PDF der tibetischen Datei eines zweisprachigen Satzes (C-c u H,
+Carsten 5.11.2026) — wie pdf-tibetan: ein Dokument mit Sprungmarken.
+Reading: Uchen über Wylie, die Sanskrit-Zeilen des Partners, die
+Übersetzung und die des Sanskrit.  Segments: die eigenen Tabellen
+(<<tib-N>>, Differences), darunter ** Sanskrit mit den Übersichten des
+Partners (<<skt-N>>); dessen Teile der Wörter im Teil Grammar.
+#+end_comment
+#+TITLE: Sentence {{sent-num}}
+#+OPTIONS: toc:nil num:nil title:nil author:nil date:nil
+
+* Reading
+:PROPERTIES:
+:CUSTOM_ID: reading
+:END:
+#+begin_verse
+{{#segments}}
+{{uchen}}
+{{wylie}}
+{{/segments}}
+#+end_verse
+
+{{#sanskrit-p}}
+#+begin_verse
+{{#sanskrit}}
+{{devanagari}}
+{{samhita}}
+{{/sanskrit}}
+#+end_verse
+
+{{/sanskrit-p}}
+{{#proposal}}
+{{proposal}}
+{{/proposal}}
+{{^proposal}}
+*Translation:* {{translation}}
+{{/proposal}}
+{{#second-translation}}
+
+*{{second-label}}:* {{second-translation}}
+{{/second-translation}}
+{{#sanskrit-translation}}
+
+*Translation of the Sanskrit:* {{sanskrit-translation}}
+{{/sanskrit-translation}}
+
+* Segments
+:PROPERTIES:
+:CUSTOM_ID: segments
+:END:
+{{#segments}}
+{{#shown}}
+<<tib-{{num}}>>⟦{{num}}⟧{{mark}}{{grammar-link}}
+{{^gloss-table}}
+
+{{/gloss-table}}
+{{/shown}}
+{{#gloss-table}}
+{{gloss-table}}
+
+{{/gloss-table}}
+{{#segment-translation}}
+→ {{segment-translation}}
+
+{{/segment-translation}}
+{{#differences}}
+*Differences:* {{differences}}
+
+{{/differences}}
+{{/segments}}
+{{#sanskrit-p}}
+** Sanskrit
+{{#sanskrit-segments}}
+{{#shown}}
+<<skt-{{num}}>>⟦{{num}}⟧{{mark}}
+{{^gloss-table}}
+
+{{/gloss-table}}
+{{/shown}}
+{{#gloss-table}}
+{{gloss-table}}
+
+{{/gloss-table}}
+{{#segment-translation}}
+→ {{segment-translation}}
+
+{{/segment-translation}}
+{{/sanskrit-segments}}
+{{/sanskrit-p}}
+{{> pdf-part-grammar}}
+{{> pdf-part-concepts}}
+{{> pdf-part-discussion}}
+{{#commentary-p}}
+* Commentary
+:PROPERTIES:
+:CUSTOM_ID: commentary
+:END:
+{{#segments}}
+{{#commentary}}
+⟦{{num}}⟧ {{commentary}}
+
+{{/commentary}}
+{{/segments}}
+{{#bhasya-p}}
+** Bhāṣya
+{{#bhasya-tibetan-p}}
+#+begin_verse
+{{#bhasya-tibetan}}
+{{uchen}}
+{{wylie}}
+{{/bhasya-tibetan}}
+#+end_verse
+
+{{/bhasya-tibetan-p}}
+{{#bhasya-sanskrit-p}}
+#+begin_verse
+{{#bhasya-sanskrit}}
+{{devanagari}}
+{{samhita}}
+{{/bhasya-sanskrit}}
+#+end_verse
+
+{{/bhasya-sanskrit-p}}
+*Hint:* {{bhasya-hint}}
+
+{{/bhasya-p}}
+{{/commentary-p}}
+{{> pdf-part-further-reading}}
+{{> pdf-part-notes}}

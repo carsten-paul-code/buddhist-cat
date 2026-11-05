@@ -1,0 +1,50 @@
+#+begin_comment
+TEIL Grammar der PDF-Vorlagen (Carsten 5.11.2026): die Grammatik des
+Satzes, dann je Segment mit Inhalt (detail-p) eine Überschrift ⟦N⟧ —
+CUSTOM_ID grammar-N, das Ziel des Links neben ⟦N⟧ im Teil Segments —
+mit den Teilen der Wörter (formation-tables), Sandhi, Forms, Compounds,
+Structure, Note.  Bei einer tibetischen Paardatei danach die Teile der
+Wörter des Sanskrit-Partners.
+#+end_comment
+{{#grammar-p}}
+* Grammar
+:PROPERTIES:
+:CUSTOM_ID: grammar
+:END:
+{{#grammar}}
+*Grammar:* {{grammar}}
+
+{{/grammar}}
+{{#segments}}
+{{#detail-p}}
+** ⟦{{num}}⟧
+:PROPERTIES:
+:CUSTOM_ID: grammar-{{num}}
+:END:
+{{#formation-tables}}
+{{formation-tables}}
+
+{{/formation-tables}}
+*Sandhi:* {{sandhi}}
+
+{{#forms}}
+*Forms:*
+{{forms}}
+
+{{/forms}}
+*Compounds:* {{compounds}}
+
+*Structure:* {{structure}}
+
+*Note:* {{note}}
+
+{{/detail-p}}
+{{/segments}}
+{{#sanskrit-segments}}
+{{#formation-tables}}
+** Sanskrit ⟦{{num}}⟧
+{{formation-tables}}
+
+{{/formation-tables}}
+{{/sanskrit-segments}}
+{{/grammar-p}}

@@ -1,0 +1,36 @@
+#+begin_comment
+TEIL Discussion der PDF-Vorlagen (Carsten 5.11.2026): die
+Entscheidungen zur vorgeschlagenen Übersetzung (decisions, die
+Übersetzung selbst steht vorn im Teil Reading), bei Paaren die
+tibetische Wiedergabe, der Vergleich der Übersetzungen (Overview, For
+the class, die Stellen), zuletzt die Übersetzungen je Segment.
+#+end_comment
+{{#discussion-p}}
+* Discussion
+:PROPERTIES:
+:CUSTOM_ID: discussion
+:END:
+{{#decisions}}
+{{decisions}}
+
+{{/decisions}}
+{{#rendering}}
+** Tibetan rendering
+{{rendering}}
+
+{{/rendering}}
+{{#comparison}}
+** Translations compared
+{{comparison}}
+
+{{/comparison}}
+{{#translations-p}}
+** Translations per segment
+{{#segments}}
+{{#translations}}
+{{translations}}
+
+{{/translations}}
+{{/segments}}
+{{/translations-p}}
+{{/discussion-p}}
