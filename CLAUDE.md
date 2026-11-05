@@ -4938,6 +4938,23 @@ Durchgang: alle 48 Satzdateien mit C-c u L neu gesetzt (nur Links
 geändert, 130), Belege: 68 Zeilen in 43 Zetteln (Kasten nicht
 committet).
 
+5.11.2026 abends, PLAN LESEDOSSIER (Carsten: „Im Mahāyānasūtrālaṃkāra
+Reading sind wir ziemlich schnell zwischen Vers, Vasubandhu und
+Sthiramati hin und her gesprungen.  Da fiel es mir schwer mitzukommen“;
+Vorbild seine Studienausgabe MSA IX.60–66 — je Vers die Schichten
+untereinander, Sigle, Farbe; „das PDF ist ein ziemlich guter Ansatz“;
+Entscheidungen: immer pro Vers, Vasubandhu übersetzen, AS ein PDF je
+Satz mit Bhāṣya als zweiter Schicht; „Wichtig … vor allem auch das
+.org, das ja mein 1st Screen beim Reading ist“; Muster
+Mahayanasutralamkara/Lesedossier-IX.60-MUSTER.org gebilligt: „das
+passt so“).  Schritte: (1) Dossier-.org je Vers aus den vorhandenen
+Dateien (01 Vers Skt+Tib + Übersetzung · 02 Bhāṣya Skt+Tib +
+Übersetzung + Hint · 03 Kommentar je Satz „N · Folio“, Uchen/Wylie,
+Lemma-Zeilen fett, → Übersetzung, Lemma-Verweis · Meine Notizen
+bleiben), C-c u V, nach C-c u G neu; AS: Grundsatz + :asbh:-Satz.
+(2) Vasubandhu-Übersetzung als Teil von C-c u G (nur Mechanismus).
+(3) PDF des Dossiers: Leseseite + je Schicht die Analyse, Sprungmarken.
+
 #### Offen
 
 - Mitgeben: seit 5.11. auch im tibetischen Abruf eines Paars.  Schlüssel
