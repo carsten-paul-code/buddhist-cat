@@ -30,6 +30,13 @@ device).  Tests that need it bind it to t and stub the upload.")
 ;; C-c u H); the tests that need it bind them and stub LaTeX/rmapi.
 (setq bcat-export-auto nil
       bcat-export-upload nil)
+;; 5.11.: the concept notes link to the zettels and C-c u G writes Belege
+;; into them — never with the real index from the suite; the tests of
+;; bcat-zettel bind both with a fixture Kasten.
+(defvar bcat-zettel-link-concepts nil)
+(defvar bcat-zettel-belege-auto nil)
+(setq bcat-zettel-link-concepts nil
+      bcat-zettel-belege-auto nil)
 (defvar tibetan-skip-external-glossaries t
   "When non-nil, skip loading external glossaries during tests.")
 

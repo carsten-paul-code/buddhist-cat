@@ -26,6 +26,7 @@
 (require 'bcat-analysis)
 (require 'tibetan-sanskrit-script)
 (require 'bcat-status)
+(require 'bcat-zettel nil t)
 
 (declare-function tibetan-analysis--cascade-p "tibetan-analysis-claude" (file))
 (declare-function tibetan-analysis--resolve-source-lang "tibetan-analysis-claude" (file))
@@ -574,7 +575,11 @@ followed by the file's own sections (`own-sections' in CONTEXT, from
 `bcat-sentence--keep') unchanged — the template does not know them.  A
 section the template writes itself (* Bhāṣya, a commentary's * Sentence
 258) is no own section."
-  (let* ((text (bcat-template-render-named name context source-file))
+  (let* ((text (bcat-template-render-named
+                ;; 5.11.: the terms of the concept notes link to their
+                ;; zettels (bcat-zettel.el) — fetch and relayout alike.
+                name (if (fboundp 'bcat-zettel-link-context) (bcat-zettel-link-context context) context)
+                source-file))
          (tool (bcat-sentence--template-sections name source-file))
          (own (cl-remove-if (lambda (s) (cl-some (lambda (re) (string-match-p re (car s))) tool))
                             (alist-get 'own-sections context))))

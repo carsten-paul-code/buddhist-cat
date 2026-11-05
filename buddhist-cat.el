@@ -539,6 +539,7 @@ in the appropriate instance."
 (require 'bcat-export)
 (require 'bcat-faces)
 (require 'bcat-relayout)
+(require 'bcat-zettel)
 
 (provide 'buddhist-cat)
 ;; The old feature name, announced too: code that waits on it

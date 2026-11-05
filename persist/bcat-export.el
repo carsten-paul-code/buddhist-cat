@@ -669,6 +669,16 @@ it would sit beside the table (ad89035).  For
       (goto-char (1- (match-end 0)))
       (insert "\n"))))
 
+(defun bcat-export--plain-zettel-links (&rest _)
+  "In the current (export) buffer: every link to a zettel (denote:ID,
+5.11., the terms of the concept notes, bcat-zettel.el) as its text —
+the reMarkable cannot open the Kasten, and org would stop at a link it
+cannot resolve.  For `org-export-before-processing-functions'."
+  (save-excursion
+    (goto-char (point-min))
+    (while (re-search-forward "\\[\\[denote:[^]\n]+\\]\\[\\([^]\n]+\\)\\]\\]" nil t)
+      (replace-match (match-string 1) t t))))
+
 (defun bcat-export--drop-machine-sections (&rest _)
   "Delete from the current (export) buffer the `** Word Analysis'
 subtree — machine data for the zettel highlighting and the padapāṭha
@@ -889,6 +899,7 @@ LuaLaTeX could not set land in `bcat-export--missing'."
                              (cons #'bcat-export--parts-line-filter org-export-filter-paragraph-functions))
                             (org-export-before-processing-functions
                              (append (list insert-head #'bcat-export--drop-machine-sections
+                                           #'bcat-export--plain-zettel-links
                                            #'bcat-export--rechunk-gloss-tables
                                            #'bcat-export--rechunk-header-tables
                                            #'bcat-export--wrap-wide-tables
