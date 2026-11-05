@@ -1454,12 +1454,12 @@ wanted compound and upādāya side by side as in the preview."
 
 (defun bcat-analysis--wrap-pieces (pieces sep mark max)
   "PIECES joined by SEP into lines of at most MAX characters, greedily;
-every line but the last ends in MARK.  A piece longer than MAX stays
-whole."
-  (let ((lines '()) (line nil))
+every line but the last ends in MARK (room kept for it).  A piece
+longer than MAX stays whole."
+  (let ((lines '()) (line nil) (room (- max (string-width mark))))
     (dolist (piece pieces)
       (let ((cand (if line (concat line sep piece) piece)))
-        (if (and line (> (string-width cand) max))
+        (if (and line (> (string-width cand) room))
             (progn (push (concat line mark) lines) (setq line piece))
           (setq line cand))))
     (nreverse (cons line lines))))
@@ -1487,7 +1487,7 @@ longer than MAX stays whole; a cell with a link is never broken."
                     (let ((parts (bcat-analysis--wrap-pieces (split-string m " · ") " · " " ·" max)))
                       (dolist (l (butlast parts)) (push l lines))
                       (push (concat (car (last parts)) end) lines)))
-                   ((and line (> (string-width (concat line "; " m)) max))
+                   ((and line (> (string-width (concat line "; " m)) (1- max)))
                     (push (concat line ";") lines)
                     (setq line m))
                    (t (setq line (if line (concat line "; " m) m)))))

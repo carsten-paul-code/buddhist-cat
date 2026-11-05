@@ -1582,6 +1582,16 @@ broken."
   (let ((link "[[steinert:a b c][a b c]] · d · e · f · g · h · i · j · k · l · m · n"))
     (should (equal (list link) (bcat-analysis--wrap-cell link 20)))))
 
+(ert-deftest bcat-analysis-wrap-cell-room-for-the-mark ()
+  "A broken line is never wider than the limit — its separator („ ·“,
+„;“) included.  The mark was added after the line had been measured:
+„aaaa · bbbb ·“ at 11 has 13 characters (5.11., found with the width
+60 of `bcat-analysis-layout-overrides': a line of 61)."
+  (dolist (case '(("aaaa · bbbb · cccc" 11) ("aaaa; bbbb; cccc" 10)
+                  ("an- not · uttara higher, surpassed · (comparative); kula body" 38)))
+    (dolist (line (bcat-analysis--wrap-cell (car case) (cadr case)))
+      (should (<= (string-width line) (cadr case))))))
+
 (ert-deftest bcat-analysis-table-columns-continuations ()
   "Reading a table back joins the lines a wide cell was broken into:
 a line ending in „ ·“ or „;“ goes on in the row below where that row
