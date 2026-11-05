@@ -4943,10 +4943,12 @@ committet).
 - Mitgeben noch nicht im tibetischen Abruf eines Paars
   (`bcat-sentence--tibetan-prompts'); Schlüssel ohne Wortgrenzen
   (TĀ 1.1: akula aus amṛtakulam).
-- Further Reading (Sanderson-Transkript, TĀ 1.1 60 000 Zeichen, 11 von
-  24 PDF-Seiten): Carsten sah Wiederholungen — im Transkript kein Satz
-  doppelt; was gemeint ist, klären.  Kürzen mit Claude verbietet die
-  OCHS-Regel (Transkripte nur für den Vergleich im Prompt).
+- Further Reading geteilt (5.11., Carsten: „Im Reading PDF nur ein
+  Exzerpt … Extradokument“): im Satz-PDF nur die zitierten Absätze
+  (`bcat-export--lecture-excerpt', mechanisch über die Zeitmarken), der
+  ganze Vortrag als <name>-lectures.pdf (Vorlage pdf-lectures), aufs
+  Gerät nur beim ersten Mal.  TĀ 1.1: 24 → 16 Seiten + 11.  Die
+  „Wiederholungen“ waren eine Täuschung beim Lesen (Carsten).
 
 - Kommentardokument (comm-…, Vorlage commentary) noch in alter Ordnung;
   dieselbe Reihenfolge je Satz steht aus (Carsten: „Hier habe ich noch

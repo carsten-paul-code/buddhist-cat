@@ -1,9 +1,9 @@
 #+TITLE: Function Reference — buddhist-cat
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-11-05T14:46:40
+#+DATE: 2026-11-05T15:19:19
 #+OPTIONS: toc:2 num:nil
 
-Source tree: ~/Users/cp/buddhist-cat~  ·  96 modules  ·  2312 forms
+Source tree: ~/Users/cp/buddhist-cat~  ·  96 modules  ·  2316 forms
 
 Regenerated automatically by:
 
@@ -64,7 +64,7 @@ python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/buddhist-c
   - [[#doc-prep/tibetan-wylie-ingest.el][doc-prep/tibetan-wylie-ingest.el]]  (26)
   - [[#persist/bcat-analysis.el][persist/bcat-analysis.el]]  (122)
   - [[#persist/bcat-commentary.el][persist/bcat-commentary.el]]  (56)
-  - [[#persist/bcat-export.el][persist/bcat-export.el]]  (68)
+  - [[#persist/bcat-export.el][persist/bcat-export.el]]  (72)
   - [[#persist/bcat-faces.el][persist/bcat-faces.el]]  (30)
   - [[#persist/bcat-parallel.el][persist/bcat-parallel.el]]  (7)
   - [[#persist/bcat-relayout.el][persist/bcat-relayout.el]]  (16)
@@ -15183,10 +15183,35 @@ never the file.
 Non-nil when VALUE is something to show: a string not blank, any
 other non-nil value.
 
-** ~bcat-export--view-context~  /function/
+** ~bcat-export--lecture-paragraphs~  /function/
 :PROPERTIES:
 :KIND: defun
 :LINE: 744
+:SIGNATURE: (bcat-export--lecture-paragraphs body)
+:END:
+
+The paragraphs of the lecture BODY as ((SECONDS . PARAGRAPH) …) — each
+begins with its time mark, [[url][H:MM:SS]]; one without keeps the
+time of the one before.
+
+** ~bcat-export--lecture-excerpt~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 757
+:SIGNATURE: (bcat-export--lecture-excerpt body name cited)
+:END:
+
+The excerpt of the lecture NAME (BODY) for the reading PDF (Carsten
+5.11.: „Im Reading PDF nur ein Exzerpt“): the paragraphs whose time the
+text CITED cites — „(S, I 0:24:13)“; a mark inside a paragraph takes
+that paragraph — in order, each once, blank-line separated.  A mark of
+another lecture (its numeral, „II“, not the one NAME ends with) does
+not count.  Mechanical — the transcript goes to no one.
+
+** ~bcat-export--view-context~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 781
 :SIGNATURE: (bcat-export--view-context context)
 :END:
 
@@ -15201,7 +15226,7 @@ Notes have anything (`grammar-p', `concepts-p', `discussion-p',
 ** ~bcat-export-view~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 784
+:LINE: 828
 :SIGNATURE: (bcat-export-view file)
 :END:
 
@@ -15212,10 +15237,25 @@ L reads back from FILE (`bcat-relayout-file-context', completed by
 is no such template (a commentary document) or FILE is no sentence file
 of a template — C-c u H then exports the file itself.
 
+** ~bcat-export-views~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 837
+:SIGNATURE: (bcat-export-views file)
+:END:
+
+The views of the sentence FILE (`bcat-export-view'): (:view TEXT
+:lectures TEXT :lecturer NAME) — the reading PDF (template
+pdf-<template>) and, when the sentence has lectures (#+CAT_LECTURES),
+the document of the whole lectures (template pdf-lectures, Carsten
+5.11.: „das was einen konkreten Vers betrifft in einem
+Extradokument“), NAME the lecturer (the first lecture's name up to its
+comma).  nil without a pdf template.
+
 ** ~bcat-export--parts-pages~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 801
+:LINE: 861
 :SIGNATURE: (bcat-export--parts-pages &rest _)
 :END:
 
@@ -15229,7 +15269,7 @@ For `org-export-before-processing-functions'.
 ** ~bcat-export-remove-tex~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 846
+:LINE: 906
 :SIGNATURE: (bcat-export-remove-tex pdf)
 :END:
 
@@ -15240,7 +15280,7 @@ old handout, discussion paper).
 ** ~bcat-export-pdf~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 855
+:LINE: 915
 :SIGNATURE: (bcat-export-pdf file &optional head)
 :END:
 
@@ -15255,7 +15295,7 @@ LuaLaTeX could not set land in `bcat-export--missing'.
 ** ~bcat-export-file~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 925
+:LINE: 985
 :SIGNATURE: (bcat-export-file file)
 :END:
 
@@ -15268,10 +15308,23 @@ beside FILE as .pdfview-<name>.org — a name no folder scan takes for a
 sentence file — and removed after the export; without a view the file
 itself.  Returns the PDF path.
 
+** ~bcat-export--lectures-pdf~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 1048
+:SIGNATURE: (bcat-export--lectures-pdf file views head target)
+:END:
+
+The document of the lectures of the sentence FILE (:lectures of VIEWS,
+Carsten 5.11.) as PDF beside TARGET (the handout: <name>-lectures.pdf),
+or nil.  Returns its path only when it is NEW — then C-c u H puts it on
+the reMarkable; later it is only written anew (the transcript does not
+change; a copy per export would crowd the device).
+
 ** ~bcat-export-after-fetch~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 978
+:LINE: 1071
 :SIGNATURE: (bcat-export-after-fetch file)
 :END:
 
@@ -15284,7 +15337,7 @@ rmapi failure must not spoil the landed analysis.
 ** ~bcat-export~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 996
+:LINE: 1089
 :SIGNATURE: (bcat-export)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -15460,7 +15513,7 @@ Font size of the PDF in pt — the page is shown at its size.
 ** ~bcat-export-keep-tex~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 838
+:LINE: 898
 :TYPE: 'boolean
 :GROUP: buddhist-cat
 :DEFAULT: nil
