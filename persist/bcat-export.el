@@ -871,6 +871,25 @@ comma).  nil without a pdf template."
                                  (string-trim (car (split-string (alist-get 'lecture-name (car lectures))
                                                                  "[,(]")))))))))))
 
+(defcustom bcat-export-bar-width 90
+  "Characters the titles of the bar may take together before they are
+shortened (`bcat-export--bar-labels') — one line at the foot."
+  :type 'integer
+  :group 'buddhist-cat)
+
+(defun bcat-export--bar-labels (titles)
+  "The labels of the bar for TITLES: the titles themselves, or — when
+together longer than `bcat-export-bar-width' (5.11., Einführung MSA IX:
+eight titles over three lines) — for a numbered title its number
+\(„1.“, „IX.60“), for another its first word."
+  (if (<= (apply #'+ (mapcar #'length titles)) bcat-export-bar-width)
+      titles
+    (mapcar (lambda (title)
+              (if (string-match "\\`\\([0-9IVXL]+\\(?:[.)][0-9]*\\)*\\)\\(?:[ \t]\\|\\'\\)" title)
+                  (match-string 1 title)
+                (car (split-string title))))
+            titles)))
+
 (defun bcat-export--parts-pages (&rest _)
   "In the current (export) buffer: every part — a heading of level 1 with
 a CUSTOM_ID (the PDF view) — after the first starts a new page, and the
@@ -904,11 +923,14 @@ For `org-export-before-processing-functions'."
           (while (re-search-forward "^#\\+LATEX_HEADER:.*$" nil t)
             (setq last (point)))
           (if last (progn (goto-char last) (forward-line 1)) (goto-char (point-min))))
-        (insert "#+LATEX_HEADER: \\fancyfoot[C]{"
-                (mapconcat (lambda (p)
-                             (format "\\hyperref[%s]{%s}" (nth 0 p) (bcat-export--latex-escape (nth 1 p))))
-                           parts "\\enspace·\\enspace ")
-                "}\n")
+        ;; the bar on every page — the title page's plain style too
+        (insert "#+LATEX_HEADER: \\newcommand{\\bcatbar}{"
+                (mapconcat #'identity
+                           (cl-mapcar (lambda (p label)
+                                        (format "\\hyperref[%s]{%s}" (nth 0 p) (bcat-export--latex-escape label)))
+                                      parts (bcat-export--bar-labels (mapcar (lambda (p) (nth 1 p)) parts)))
+                           "\\enspace·\\enspace ")
+                "}\\fancyfoot[C]{\\bcatbar}\\fancypagestyle{plain}{\\fancyhf{}\\fancyfoot[C]{\\bcatbar}}\n")
         (dolist (p parts) (set-marker (nth 2 p) nil))))))
 
 (defvar bcat-export-navbar-auto nil

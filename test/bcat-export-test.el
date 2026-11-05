@@ -910,7 +910,9 @@ stays as it is."
             "* Further Reading\n:PROPERTIES:\n:CUSTOM_ID: further-reading\n:END:\nF.\n")
     (bcat-export--parts-pages)
     (let ((text (buffer-string)))
-      (should (string-match-p "^#\\+LATEX_HEADER: \\\\fancyhead\\[L\\]{X}\n#\\+LATEX_HEADER: \\\\fancyfoot\\[C\\]{" text))
+      (should (string-match-p "^#\\+LATEX_HEADER: \\\\fancyhead\\[L\\]{X}\n#\\+LATEX_HEADER: \\\\newcommand{\\\\bcatbar}{" text))
+      ;; on every page — the title page's plain style too (5.11.)
+      (should (string-match-p (regexp-quote "\\fancyfoot[C]{\\bcatbar}\\fancypagestyle{plain}{\\fancyhf{}\\fancyfoot[C]{\\bcatbar}}") text))
       (should (string-match-p (regexp-quote "\\hyperref[reading]{Reading}") text))
       (should (string-match-p (regexp-quote "\\hyperref[further-reading]{Further Reading}") text))
       (should-not (string-match-p "hyperref\\[grammar-1\\]" text))
@@ -1057,6 +1059,17 @@ One heading, or ten and more: no bar (useless, or too long)."
     (insert "* A\n* B\n")
     (bcat-export--auto-parts)
     (should (equal "* A\n* B\n" (buffer-string)))))
+
+(ert-deftest bcat-export-bar-labels ()
+  "The bar stays one line (5.11., Einführung MSA IX: eight long titles
+ran over three lines): when the titles together are too long, a
+numbered title shows its number, another its first word."
+  (should (equal '("Reading" "Segments") (bcat-export--bar-labels '("Reading" "Segments"))))
+  (should (equal '("1." "2." "3." "Weiterlesen" "IX.60")
+                 (bcat-export--bar-labels
+                  '("1. Das Kapitel im Werk" "2. Sthiramati und sein Kommentar"
+                    "3. Textgrundlage und Hilfsmittel und noch mehr Worte" "Weiterlesen und Literatur zum Kapitel"
+                    "IX.60 Die drei Körper des Buddha")))))
 
 (ert-deftest bcat-export-reading-document ()
   "C-c u H in a document of the readings that is no cascade source and
