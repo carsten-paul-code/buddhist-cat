@@ -225,21 +225,23 @@ the face alone left the lines at 43 px, with its own fontset 27."
 
 (defun bcat-faces--remap-shads (on)
   "ON: the gold shads of Carsten's init (display overlays in
-`cp/tibetan-shad-face') in `bcat-tibetan-face''s family and height —
-they alone would keep the lines high; off: as before.  The height is
-absolute, else it compounds with the shad face's own 1.4."
+`cp/tibetan-shad-face') in `bcat-tibetan-face' — its family, its fontset
+\(`bcat-faces--tibetan-fontset'), its height — they alone would keep the
+lines high; off: as before.  The height is absolute, else it compounds
+with the shad face's own 1.4.  The fontset comes by the face's name: a
+face property list may not name one (6.11.: Emacs dropped the whole
+remapping and logged „Invalid face attribute :fontset“ at every
+redisplay of a shad)."
   (when bcat-faces--shad-remap
     (face-remap-remove-relative bcat-faces--shad-remap)
     (setq bcat-faces--shad-remap nil))
   (when (and on (facep 'cp/tibetan-shad-face))
-    (let ((fs (bcat-faces--tibetan-fontset)))
-      (setq bcat-faces--shad-remap
-            (apply #'face-remap-add-relative
-                   'cp/tibetan-shad-face
-                   :family (face-attribute 'bcat-tibetan-face :family nil t)
-                   :height (round (* (face-attribute 'bcat-tibetan-face :height nil t)
-                                     (face-attribute 'default :height)))
-                   (and fs (list :fontset fs)))))))
+    (setq bcat-faces--shad-remap
+          (face-remap-add-relative
+           'cp/tibetan-shad-face
+           (list :height (round (* (face-attribute 'bcat-tibetan-face :height nil t)
+                                   (face-attribute 'default :height))))
+           'bcat-tibetan-face))))
 
 (defun bcat-faces--bar-columns (line)
   "The columns of the bars of the table LINE as it is seen: org links by

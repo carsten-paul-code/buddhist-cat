@@ -217,6 +217,51 @@ too, else they alone keep the lines high."
       (bcat-faces-mode -1)
       (should-not (assq 'cp/tibetan-shad-face face-remapping-alist)))))
 
+(defun bcat-faces-test--merged (face attr)
+  "ATTR (:family, :height, :foreground) of FACE as Emacs merges it in the
+current buffer — through the buffer's face remapping, by the code
+redisplay uses (`face-attributes-as-vector'; the index is the one of
+xfaces.c)."
+  (aref (face-attributes-as-vector face)
+        (pcase attr (:family 1) (:height 4) (:foreground 9))))
+
+(ert-deftest bcat-faces-shad-remap-valid ()
+  "Bug 6.11.: *Messages* in Carsten's Emacs full of, alternating,
+  Invalid face attribute :fontset \"-*-menlo-…-fontset-bcattibetan\"
+  Invalid face reference: cp/tibetan-shad-face
+— the redisplay of the gold shads in 25 open sentence files, on graphic
+frames.  A face property list (the remapping) may not name a fontset,
+only a named face takes one (`set-face-attribute'): Emacs dropped the
+whole remapping, the shads came out in no face of their own — not
+Kailasa, not gold — and kept the Uchen lines at 43 px instead of 27.
+On a graphic display (the fontset stubbed: the batch Emacs has none):
+merging the shad face in a sentence file logs nothing and gives Kailasa
+at an absolute height in the shads' gold; the fontset comes through the
+named `bcat-tibetan-face'."
+  (unless (facep 'cp/tibetan-shad-face)
+    (defface cp/tibetan-shad-face
+      '((t :foreground "#D4A843" :family "Jomolhari" :height 1.4)) "test"))
+  (cl-letf (((symbol-function 'bcat-faces--tibetan-fontset)
+             (lambda () "-*-menlo-regular-normal-normal-*-*-*-*-*-m-0-fontset-bcattibetan")))
+    (with-temp-buffer
+      (insert "* Text\n#+begin_verse\nདེ་ལས། །\n#+end_verse\n")
+      (org-mode)
+      (bcat-faces-mode 1)
+      (let* ((message-log-max t)
+             (mark (progn (message "bcat-faces-test: merging the shads")
+                          (with-current-buffer (messages-buffer) (copy-marker (point-max)))))
+             (family (bcat-faces-test--merged 'cp/tibetan-shad-face :family))
+             (height (bcat-faces-test--merged 'cp/tibetan-shad-face :height))
+             (fg (bcat-faces-test--merged 'cp/tibetan-shad-face :foreground)))
+        (should-not (string-match-p "Invalid face"
+                                    (with-current-buffer (messages-buffer)
+                                      (buffer-substring-no-properties mark (point-max)))))
+        (should (equal "Kailasa" family))
+        (should (integerp height))
+        (should (equal (face-attribute 'cp/tibetan-shad-face :foreground nil t) fg))
+        (should (memq 'bcat-tibetan-face
+                      (flatten-tree (assq 'cp/tibetan-shad-face face-remapping-alist))))))))
+
 (ert-deftest bcat-faces-uchen-row-aligned ()
   "4.11.: the Uchen row of a table did not line up with the rows under
 it — Tibetan glyphs are not as wide as the monospace grid counts them.
