@@ -1177,7 +1177,14 @@ Returns the PDF."
                   (progn
                     (let ((coding-system-for-write 'utf-8-unix))
                       (with-temp-file copy
-                        (insert "#+CAT_NAVBAR: t\n" text)))
+                        ;; 6.11. (Carsten: „es gab PDF error“): the class
+                        ;; loads geometry already — a second \usepackage
+                        ;; with options is an „Option clash“; its options
+                        ;; go to \geometry, which may follow.
+                        (insert "#+CAT_NAVBAR: t\n"
+                                (replace-regexp-in-string
+                                 "^\\(#\\+LATEX_HEADER:[ \t]*\\)\\\\usepackage\\[\\([^]\n]*\\)\\]{geometry}"
+                                 "\\1\\\\geometry{\\2}" text t))))
                     (let ((bcat-export-page nil))
                       (bcat-export-pdf copy (bcat-export-head-lines folder title nil nil))))
                 (when (file-exists-p copy) (delete-file copy)))))

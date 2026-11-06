@@ -1105,6 +1105,11 @@ its title; the file untouched."
                 (should-not page)))
             (should (equal before (with-temp-buffer (insert-file-contents file) (buffer-string)))))
           (should (string-match-p "a4paper" exported))
+          ;; 6.11. (Carsten: „es gab PDF error“): the class loads geometry
+          ;; already — a second \usepackage with options clashed; in the
+          ;; export copy its options go to \geometry.
+          (should (string-match-p (regexp-quote "#+LATEX_HEADER: \\geometry{a4paper,left=2.5cm}") exported))
+          (should-not (string-match-p "usepackage\\[[^]]*\\]{geometry}" exported))
           (should (string-match-p "libertinus" exported))
           (should (string-match-p "^#\\+CAT_NAVBAR: t$" exported))
           (should (equal (expand-file-name "handouts/Einfuehrung-MSA-9.pdf" text-dir) (car uploaded)))
