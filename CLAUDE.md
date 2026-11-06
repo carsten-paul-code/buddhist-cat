@@ -4993,6 +4993,16 @@ LaTeX-Lauf.  Dazu (`0a1665d'): Reading-Dokumente mit eigenem
 Carstens Klasse).  Lehre: Proben im laufenden Emacs mit den echten
 Dateinamen machen; Warnungen dort unterdrücken (warning-minimum-level).
 
+6.11.2026, BUG *Messages* voll mit „Invalid face attribute :fontset …
+bcattibetan“ / „Invalid face reference: cp/tibetan-shad-face“
+\(`b92dc0c'): die Shad-Umlenkung aus 9f89f6b trug :fontset in einer
+Face-Eigenschaftsliste — das nimmt nur ein benanntes Face an; Emacs
+verwarf die ganze Umlenkung, die Shads standen ohne Face da (nicht
+Kailasa, nicht gold), Zeilen mit Shads blieben bei 43 px.  Jetzt
+((:height N) bcat-tibetan-face) — das Fontset kommt über den
+Face-Namen; live 27 px.  Test `bcat-faces-shad-remap-valid' (Mischen
+über face-attributes-as-vector, Fontset gestubbt).
+
 #### Offen
 
 - Mitgeben: seit 5.11. auch im tibetischen Abruf eines Paars.  Schlüssel
@@ -6216,6 +6226,13 @@ folio alongside the text so the caller can thread it through.
   `lookup-combined-dictionary-first`) decide which data source
   answers — that makes interactive and batch runs diverge (§5.53;
   same lesson class as the B0 fboundp guard, §5.52).
+- **`:fontset` only on a named face**: `set-face-attribute` takes it,
+  a face property list (`face-remap-add-relative`, a `face` text
+  property, a font-lock face spec) does not — Emacs drops the WHOLE
+  spec and logs „Invalid face attribute :fontset“ at every redisplay
+  (6.11., `b92dc0c`).  Put the fontset on a named face and reference
+  that face by name.  `face-attributes-as-vector` runs the same merge
+  as redisplay and works in batch — use it in tests.
 - **Placeholder translations**: `[Requesting translation...]`,
   `[Claude unavailable`, `[Translation not available` — these are NOT
   real translations. Any "preserve existing Claude translation" logic
