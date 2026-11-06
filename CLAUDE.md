@@ -4983,6 +4983,16 @@ A4 (`bcat-export-page' nil), Leiste, handouts/, Upload unter dem Titel
 (Nummer bzw. erstes Wort, wenn die Titel > 90 Zeichen) und auch auf der
 Titelseite (\bcatbar in fancy und plain, `ac14fdf').
 
+6.11.2026, BUG „es gab PDF error“ (`8a63d02'): seit 52cd4d5 schrieb
+C-c u H die Ansicht als .pdfview-<name>.org — LuaLaTeX schreibt keine
+Datei mit Punkt am Namensanfang (openout_any = p), kein PDF.  Jetzt
+pdfview-<name>.org (`bcat-export--copy-prefix'); neuer Test mit echtem
+LuaLaTeX (`bcat-export-file-smoke') — die übrigen Tests ersetzen den
+LaTeX-Lauf.  Dazu (`0a1665d'): Reading-Dokumente mit eigenem
+\usepackage[…]{geometry} → in der Kopie \geometry{…} (Option clash mit
+Carstens Klasse).  Lehre: Proben im laufenden Emacs mit den echten
+Dateinamen machen; Warnungen dort unterdrücken (warning-minimum-level).
+
 #### Offen
 
 - Mitgeben: seit 5.11. auch im tibetischen Abruf eines Paars.  Schlüssel
