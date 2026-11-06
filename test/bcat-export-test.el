@@ -25,7 +25,7 @@
 
 (defun bcat-export-test--view-of (file)
   "The file C-c u H writes the view of the sentence FILE to (5.11.)."
-  (expand-file-name (concat ".pdfview-" (file-name-nondirectory file)) (file-name-directory file)))
+  (expand-file-name (concat "pdfview-" (file-name-nondirectory file)) (file-name-directory file)))
 
 (ert-deftest bcat-export-running-head ()
   "The running head: folder of the source · work title (from the
@@ -1025,7 +1025,7 @@ copy per export would crowd the device."
           (setq uploaded nil)
           (bcat-export-file file)
           (should (equal '(("bden-9.pdf" . "SDA 9")) uploaded))
-          (should-not (directory-files folder nil "\\.pdf\\'\\|\\`\\.pdfview")))))))
+          (should-not (directory-files folder nil "\\.pdf\\'\\|\\`pdfview")))))))
 
 (ert-deftest bcat-export-auto-parts ()
   "Carsten 5.11.: the bar of links „überall“ — in the documents of the
@@ -1110,6 +1110,24 @@ its title; the file untouched."
           (should (equal (expand-file-name "handouts/Einfuehrung-MSA-9.pdf" text-dir) (car uploaded)))
           (should (equal "Mahāyānasūtrālaṃkāra IX — Einführung" (cdr uploaded))))
       (delete-directory dir t))))
+
+(ert-deftest bcat-export-file-smoke ()
+  "Bug (6.11., Carsten: „es gab PDF error“): C-c u H wrote the view as
+.pdfview-<name>.org — LuaLaTeX writes no file whose name begins with a
+dot (openout_any = p: „I can't write on file `.pdfview-….log'“), no PDF
+came out.  The other tests stub the LaTeX run; here it is real (only
+where lualatex is installed): the PDF of a sentence file in handouts/."
+  (skip-unless (executable-find "lualatex"))
+  (bcat-sentence-test--with-source
+    (bcat-sentence-test--create src)
+    (bcat-sentence-test--with-stubs bcat-sentence-test--answer
+      (bcat-sentence-test--fetch src))
+    (let ((bcat-export-upload nil)
+          (warning-minimum-level :emergency))
+      (let ((pdf (bcat-export-file (tibetan-sentence--filepath 9 folder src))))
+        (should (equal (expand-file-name "handouts/bden-9.pdf" dir) pdf))
+        (should (file-exists-p pdf))
+        (should-not (directory-files folder nil "pdfview"))))))
 
 (ert-deftest bcat-export-pdf-smoke ()
   "Real LuaLaTeX run (only where lualatex is installed): the reviewed

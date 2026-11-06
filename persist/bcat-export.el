@@ -1055,19 +1055,26 @@ LuaLaTeX could not set land in `bcat-export--missing'."
             (bcat-export-remove-tex pdf)))
       (unless visited (kill-buffer buf)))))
 
+(defconst bcat-export--copy-prefix "pdfview-"
+  "The start of the name of an export copy beside its file (the view of
+a sentence file, the lectures, a document of the readings) — no dot:
+LuaLaTeX writes no file whose name begins with one (6.11., „I can't
+write on file `.pdfview-….log'“); no „sent-“: no folder scan takes it
+for a sentence file.")
+
 (defun bcat-export-file (file)
   "C-c u H for the sentence FILE: PDF with running head, moved into the
 handouts folder under its speaking name (Carsten 30.10.: „Das PDF
 brauchen wir nicht noch mal im Analyse Ordner“), then onto the
 reMarkable (`bcat-export-upload').  Exported is the view (Carsten
 5.11.: one document with jump marks, `bcat-export-view'), written
-beside FILE as .pdfview-<name>.org — a name no folder scan takes for a
-sentence file — and removed after the export; without a view the file
-itself.  A file of a verse with more than one layer (bhāṣya,
-commentary — Carsten 5.11.: the reading dossier) exports the dossier's
-PDF instead (`bcat-dossier-pdf-text'), under the name and label of the
-verse — from any of its files, the commentary document too.  Returns
-the PDF path."
+beside FILE as pdfview-<name>.org (`bcat-export--copy-prefix') — no
+folder scan takes it for a sentence file — and removed after the
+export; without a view the file itself.  A file of a verse with more
+than one layer (bhāṣya, commentary — Carsten 5.11.: the reading
+dossier) exports the dossier's PDF instead (`bcat-dossier-pdf-text'),
+under the name and label of the verse — from any of its files, the
+commentary document too.  Returns the PDF path."
   (let* ((status-file file)
          (dossier (and (fboundp 'bcat-dossier-pdf-text)
                        (condition-case err (bcat-dossier-pdf-text file)
@@ -1084,7 +1091,7 @@ the PDF path."
                          nil)))
          (view (or (plist-get dossier :text) (plist-get views :view)))
          (lectures (bcat-export--lectures-pdf file views head (plist-get info :handout)))
-         (view-file (and view (expand-file-name (concat ".pdfview-" (file-name-nondirectory file))
+         (view-file (and view (expand-file-name (concat bcat-export--copy-prefix (file-name-nondirectory file))
                                                 (file-name-directory file))))
          (pdf (if (not view)
                   (bcat-export-pdf file head)
@@ -1139,7 +1146,7 @@ change; a copy per export would crowd the device)."
     (when (and text target)
       (let* ((out (concat (file-name-sans-extension target) "-lectures.pdf"))
              (new (not (file-exists-p out)))
-             (src (expand-file-name (concat ".pdfview-" (file-name-base file) "-lectures.org")
+             (src (expand-file-name (concat bcat-export--copy-prefix (file-name-base file) "-lectures.org")
                                     (file-name-directory file))))
         (unwind-protect
             (let ((pdf (progn (let ((coding-system-for-write 'utf-8-unix))
@@ -1164,7 +1171,7 @@ Returns the PDF."
          (title (or (bcat-export--title file) (file-name-base file)))
          (full (or (bcat-sentence--header-value file "TITLE") title))
          (folder (file-name-nondirectory (directory-file-name (file-name-directory file))))
-         (copy (expand-file-name (concat ".pdfview-" (file-name-nondirectory file)) (file-name-directory file)))
+         (copy (expand-file-name (concat bcat-export--copy-prefix (file-name-nondirectory file)) (file-name-directory file)))
          (target (bcat-export--handout file (file-name-base file)))
          (pdf (unwind-protect
                   (progn
