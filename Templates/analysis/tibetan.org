@@ -25,6 +25,10 @@ am Schluss Kommentar (* Commentary: was rein muss) vor Weiterführendem
 Unter * Text oben die Uchen-Zeilen: das Tibetische hat keine eigene
 Rezitation.
 
+Seit 9.11. (Carsten, TĀ 1009) steht nach den Segmenten zuerst die
+Übersetzung des Satzes (Vorschlag samt Decisions bzw. *Translation:*),
+dann die zweite Sprache, dann *Grammar:* — wie in den Sanskrit-Vorlagen.
+
 Platzhalter:  {{name}} setzt einen Wert ein (auch mehrzeilig).  Eine
 Zeile, deren Platzhalter ALLE leer sind, fällt weg — samt Beschriftung
 („*Note:* {{note}}“ erscheint nur, wo es eine Note gibt); eine dadurch
@@ -90,10 +94,6 @@ Rumpf ohne Glossen bleibt sie.  Reines Sanskrit behält den Padapāṭha.
 {{/segment-translation}}
 {{/gloss-table}}
 {{/segments}}
-{{#grammar}}
-*Grammar:* {{grammar}}
-
-{{/grammar}}
 {{#proposal}}
 {{proposal}}
 {{/proposal}}
@@ -104,6 +104,10 @@ Rumpf ohne Glossen bleibt sie.  Reines Sanskrit behält den Padapāṭha.
 
 *{{second-label}}:* {{second-translation}}
 {{/second-translation}}
+{{#grammar}}
+
+*Grammar:* {{grammar}}
+{{/grammar}}
 
 * Sentence
 ** Concepts

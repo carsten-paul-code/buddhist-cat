@@ -49,9 +49,9 @@
 
 → the obstructions of affliction (nyon mongs: kleśa) and of the knowable (śes bya'i sgrib pa: jñeyāvaraṇa) are abandoned.
 
-*Grammar:* This four-pāda verse (verse 9 in the treatise) consists of two predicate-attribute pādas (38–39) describing an unnamed referent (the paramārtha/dharmatā established in prior verses) followed by a conditional converb clause (40: rtogs + na) and its apodosis (41: spangs). The subject of the conditional (rnal 'byor pa) is marked ergative (yis) as agent of the transitive verb rtogs; the apodosis (spangs) has an implicit agent (the same yogin) and an implicit copula, both licensed by verse-register compression. The demonstrative de in pāda 40 anaphorically picks up the entire description of segments 38–39.
-
 *Translation:* Indescribable (brjod du med pa: avācya) and invisible (bltar med pa: adraṣṭavya), immutable ('gyur ba med pa: avikāra) and uncompounded ('dus ma byas: asaṃskṛta) — if a yogin (rnal 'byor pa: yogin) realizes that, the obstructions of affliction (nyon mongs: kleśa) and of the knowable (śes bya'i sgrib pa: jñeyāvaraṇa) are abandoned.
+
+*Grammar:* This four-pāda verse (verse 9 in the treatise) consists of two predicate-attribute pādas (38–39) describing an unnamed referent (the paramārtha/dharmatā established in prior verses) followed by a conditional converb clause (40: rtogs + na) and its apodosis (41: spangs). The subject of the conditional (rnal 'byor pa) is marked ergative (yis) as agent of the transitive verb rtogs; the apodosis (spangs) has an implicit agent (the same yogin) and an implicit copula, both licensed by verse-register compression. The demonstrative de in pāda 40 anaphorically picks up the entire description of segments 38–39.
 
 * Sentence
 ** Concepts

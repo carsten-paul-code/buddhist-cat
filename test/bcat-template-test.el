@@ -223,6 +223,36 @@ Formation, folded away."
     (dolist (out (list sanskrit bilingual partner))
       (should (string-match-p "^\\*\\* Translation\n\\(?:.*\n\\)*?\\*Translation:\\* T$" out)))))
 
+(ert-deftest bcat-template-proposal-first ()
+  "Carsten 9.11. (TĀ 1009: „ich vermisse jetzt die proposed
+translation“ — it stood after the Grammar, behind the folded Word
+Formation): with a proposal the heading after the segments is
+** Proposed translation and the proposal stands right under it; the
+translation always before the Grammar (the order of reading, 31.10.:
+translation and German first) — the Tibetan file too, without a
+heading (its segments are none)."
+  (let* ((bcat-template-directory
+          (expand-file-name "Templates/analysis" bcat-template-test--root))
+         (seg '((num . "1") (shown . t) (mark . "") (gloss-table . "| a |") (padapatha . "p")
+                (segment-translation . "t")))
+         (proposal "*Proposed translation:*\n#+begin_quote\nP\n#+end_quote\n\n*Decisions:* D")
+         (with `((segments ,seg) (translation . "T") (grammar . "G") (proposal . ,proposal)
+                 (second-label . "Deutsch") (second-translation . "Ü")))
+         (without `((segments ,seg) (translation . "T") (grammar . "G"))))
+    (dolist (template '("sanskrit" "bilingual"))
+      (let ((out (bcat-template-render-named template with)))
+        (should (string-match-p
+                 (regexp-quote (concat "\n** Proposed translation\n" proposal
+                                       "\n\n*Deutsch:* Ü\n\n*Grammar:* G\n\n* Sentence\n"))
+                 out))
+        (should-not (string-match-p "^\\*\\* Translation$" out)))
+      (should (string-match-p (regexp-quote "\n** Translation\n*Translation:* T\n\n*Grammar:* G\n\n* Sentence\n")
+                              (bcat-template-render-named template without))))
+    (let ((out (bcat-template-render-named "tibetan" with)))
+      (should (string-match-p (regexp-quote (concat "→ t\n\n" proposal "\n\n*Deutsch:* Ü\n\n*Grammar:* G\n\n* Sentence\n"))
+                              out))
+      (should-not (string-match-p "^\\*\\* \\(?:Proposed translation\\|Translation\\)$" out)))))
+
 (defun bcat-template-test--sample (name)
   "The text of the sample NAME under Templates/analysis/samples/."
   (with-temp-buffer

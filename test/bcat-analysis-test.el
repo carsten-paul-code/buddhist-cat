@@ -260,7 +260,8 @@ reference added by hand.  The field lands under the translation."
         (bcat-template-directory (expand-file-name "Templates/analysis" bcat-analysis-test--root)))
     (should (equal "Deutsch" (alist-get 'second-label ctx)))
     (should (string-match-p
-             (regexp-quote "glorious great bliss (mahānanda).\n\n*Deutsch:* Obwohl meine Rede hier unfähig ist …\n\n* Sentence\n")
+             ;; 9.11.: the translation and its German first, the Grammar after
+             (regexp-quote "glorious great bliss (mahānanda).\n\n*Deutsch:* Obwohl meine Rede hier unfähig ist …\n\n*Grammar:* Two clauses.")
              (bcat-template-render-named "sanskrit" ctx))))
   (let ((ctx (bcat-analysis-context (bcat-analysis-test--base)
                                     '((segments) (translation . "t") (translation_en . "In English.")))))
@@ -1424,11 +1425,12 @@ own translation stays under the tables."
          (out (bcat-template-render-named
                "tibetan" (bcat-analysis-context base (bcat-analysis-parse answer) bcat-analysis-test--refs)))
          (text (substring out (string-match "^\\* Text$" out) (string-match "^\\* Sentence$" out))))
+    ;; 9.11.: the proposal before the Grammar (Carsten, TĀ 1009).
     (should (string-match-p
-             (regexp-quote (concat "*Grammar:* Two predicate pādas.\n\n"
-                                   "*Proposed translation — First sense:*\n#+begin_quote\nProposed one.\n#+end_quote\n\n"
+             (regexp-quote (concat "*Proposed translation — First sense:*\n#+begin_quote\nProposed one.\n#+end_quote\n\n"
                                    "*Proposed translation — Second sense:*\n#+begin_quote\nProposed two.\n#+end_quote\n\n"
-                                   "*Decisions:* Unit 1: kept.\n\n* Sentence\n** Concepts\n"))
+                                   "*Decisions:* Unit 1: kept.\n\n"
+                                   "*Grammar:* Two predicate pādas.\n\n* Sentence\n** Concepts\n"))
              out))
     (should-not (string-match-p "^\\*Translation:\\*" text))
     (should-not (string-match-p "^\\*\\* Grammar$" out))
@@ -1439,7 +1441,7 @@ own translation stays under the tables."
     (let* ((plain (bcat-template-render-named
                    "tibetan" (bcat-analysis-context base (bcat-analysis-parse (bcat-analysis-test--answer))
                                                     bcat-analysis-test--refs))))
-      (should (string-match-p "^\\*Grammar:\\* .*\n\n\\*Translation:\\* Indescribable" plain)))))
+      (should (string-match-p "^\\*Translation:\\* Indescribable.*\n\n\\(?:\\*[A-Z][a-z]+:\\* .*\n\n\\)?\\*Grammar:\\* " plain)))))
 
 (ert-deftest bcat-analysis-proposal-reads-aloud ()
   "Carsten 4.11. on the proposal of bDen 15 — „If one asks, \"By whom is

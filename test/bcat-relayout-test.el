@@ -155,7 +155,7 @@ bold line stays."
          (again (bcat-relayout-test--render "sanskrit" base once)))
     (should (string-match-p (regexp-quote "\n** ⟦1⟧\n*hṛdayam ab /*\n\n| hṛdayam | ab |") once))
     (should (string-match-p (regexp-quote "→ t\n\n*** Word Formation\n:PROPERTIES:\n:VISIBILITY: folded\n:END:\n| hṛdayam ") once))
-    (should (string-match-p (regexp-quote "\n** Translation\n*Grammar:* g\n\n*Translation:* T\n") once))
+    (should (string-match-p (regexp-quote "\n** Translation\n*Translation:* T\n\n*Grammar:* g\n") once))
     (should-not (string-match-p "^/hṛdayam/:" once))
     (should (equal once again))
     (let ((fixed (replace-regexp-in-string "^\\*hṛdayam ab /\\*$" "*hṛdayam a-b /*" once)))
@@ -200,10 +200,10 @@ second run changes nothing."
          (once (bcat-relayout-test--render "tibetan" base old))
          (twice (bcat-relayout-test--render "tibetan" base once)))
     (should (string-match-p
-             (regexp-quote (concat "→ s\n\n*Grammar:* Two pādas.\n\n"
+             (regexp-quote (concat "→ s\n\n"
                                    "*Übersetzungsvorschlag — Erster Sinn:*\n#+begin_quote\nEins.\n#+end_quote\n\n"
                                    "*Übersetzungsvorschlag:*\n#+begin_quote\nZwei.\n#+end_quote\n\n"
-                                   "*Entscheidungen:* Nr. 1.\n\n* Sentence\n"))
+                                   "*Entscheidungen:* Nr. 1.\n\n*Grammar:* Two pādas.\n\n* Sentence\n"))
              once))
     (should-not (string-match-p "^\\*\\*\\* Übersetzungsvorschlag" once))
     (should (string-match-p "^\\*\\*\\* Berichtigungen zur Analyse\n- k\\." once))
@@ -254,7 +254,7 @@ is read back and stays."
                 "^\\(\\*Translation:\\* Indescribable.*\\)$"
                 "\\1\n\n*Deutsch:* Unsagbar und unsichtbar." sample t))
          (out (bcat-relayout-test--render "tibetan" (bcat-analysis-test--base) text)))
-    (should (string-match-p "\n\n\\*Deutsch:\\* Unsagbar und unsichtbar\\.\n\n\\* Sentence\n" out))))
+    (should (string-match-p "\n\n\\*Deutsch:\\* Unsagbar und unsichtbar\\.\n\n\\*Grammar:\\* " out))))
 
 (ert-deftest bcat-relayout-file ()
   "C-c u L on an analysed file in the old order: the file in the new

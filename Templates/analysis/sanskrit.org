@@ -32,7 +32,11 @@ direkt darunter fett die Originalzeile in IAST (padapatha: der
 Padapāṭha nach C-c u G, sonst die überlieferte Zeile), dann die
 Übersicht, „→“ und die Teile der Wörter unter *** Word Formation
 (:VISIBILITY: folded — eingeklappt); die Übersetzung des Satzes unter
-** Translation, sonst stünde sie im letzten Word Formation.
+** Translation, sonst stünde sie im letzten Word Formation — mit
+Vorschlag unter ** Proposed translation, der Vorschlag direkt darunter
+(Carsten 9.11.: „ich vermisse jetzt die proposed translation“).  Seit
+9.11. in jeder Vorlage zuerst die Übersetzung (Vorschlag samt Decisions
+bzw. *Translation:*), dann die zweite Sprache, dann *Grammar:*.
 
 Platzhalter und Abschnitte wie in tibetan.org: {{name}} setzt einen Wert
 ein; eine Zeile, deren Platzhalter ALLE leer sind, fällt samt
@@ -115,23 +119,24 @@ Goldman 1999).
 {{/formation-tables}}
 {{/gloss-table}}
 {{/segments}}
-{{#translation}}
-** Translation
-{{/translation}}
-{{#grammar}}
-*Grammar:* {{grammar}}
-
-{{/grammar}}
 {{#proposal}}
+** Proposed translation
 {{proposal}}
 {{/proposal}}
 {{^proposal}}
+{{#translation}}
+** Translation
+{{/translation}}
 *Translation:* {{translation}}
 {{/proposal}}
 {{#second-translation}}
 
 *{{second-label}}:* {{second-translation}}
 {{/second-translation}}
+{{#grammar}}
+
+*Grammar:* {{grammar}}
+{{/grammar}}
 
 * Sentence
 ** Concepts
