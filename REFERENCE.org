@@ -1,9 +1,9 @@
 #+TITLE: Function Reference — buddhist-cat
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-11-09T15:35:10
+#+DATE: 2026-11-09T16:00:42
 #+OPTIONS: toc:2 num:nil
 
-Source tree: ~/Users/cp/buddhist-cat~  ·  97 modules  ·  2366 forms
+Source tree: ~/Users/cp/buddhist-cat~  ·  97 modules  ·  2368 forms
 
 Regenerated automatically by:
 
@@ -64,7 +64,7 @@ python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/buddhist-c
   - [[#doc-prep/tibetan-wylie-ingest.el][doc-prep/tibetan-wylie-ingest.el]]  (26)
   - [[#persist/bcat-analysis.el][persist/bcat-analysis.el]]  (125)
   - [[#persist/bcat-commentary.el][persist/bcat-commentary.el]]  (56)
-  - [[#persist/bcat-dossier.el][persist/bcat-dossier.el]]  (33)
+  - [[#persist/bcat-dossier.el][persist/bcat-dossier.el]]  (35)
   - [[#persist/bcat-export.el][persist/bcat-export.el]]  (82)
   - [[#persist/bcat-faces.el][persist/bcat-faces.el]]  (32)
   - [[#persist/bcat-parallel.el][persist/bcat-parallel.el]]  (7)
@@ -15024,10 +15024,23 @@ first heading is left out.
 
 TEXT with every heading one level down.
 
+** ~bcat-dossier--page-breaks~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 362
+:SIGNATURE: (bcat-dossier--page-breaks reading)
+:END:
+
+The reading page READING (the layers demoted to `** ') with a new page
+before every layer but the first and before the second language of a
+layer (a verse block right after another) — Carsten 9.11.: room for
+notes on the reMarkable.  The commentary's sentences (`*** ') stay
+together.
+
 ** ~bcat-dossier--nest-view~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 359
+:LINE: 379
 :SIGNATURE: (bcat-dossier--nest-view view title id parts)
 :END:
 
@@ -15039,7 +15052,7 @@ first file's (AS: the bhāṣya sentence).
 ** ~bcat-dossier--commentary-part~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 372
+:LINE: 392
 :SIGNATURE: (bcat-dossier--commentary-part doc author)
 :END:
 
@@ -15050,7 +15063,7 @@ comm-N.
 ** ~bcat-dossier--lead-of~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 389
+:LINE: 409
 :SIGNATURE: (bcat-dossier--lead-of file)
 :END:
 
@@ -15060,7 +15073,7 @@ document the first verse of its #+CAT_VERSE, else FILE.
 ** ~bcat-dossier-pdf-text~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 398
+:LINE: 418
 :SIGNATURE: (bcat-dossier-pdf-text file)
 :END:
 
@@ -15075,7 +15088,7 @@ view (`bcat-export-views').
 ** ~bcat-dossier-await~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 446
+:LINE: 467
 :SIGNATURE: (bcat-dossier-await verse-file doc)
 :END:
 
@@ -15085,7 +15098,7 @@ VERSE-FILE (see `bcat-dossier--awaiting').
 ** ~bcat-dossier-export-pending-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 451
+:LINE: 472
 :SIGNATURE: (bcat-dossier-export-pending-p file)
 :END:
 
@@ -15100,7 +15113,7 @@ of the commentary clears the verse's note (`bcat-dossier-await').
 ** ~bcat-dossier-after-fetch~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 474
+:LINE: 495
 :SIGNATURE: (bcat-dossier-after-fetch file)
 :END:
 
@@ -15111,7 +15124,7 @@ never signals.
 ** ~bcat-dossier~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 487
+:LINE: 508
 :SIGNATURE: (bcat-dossier)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -15150,10 +15163,19 @@ The heading of the user's notes in a dossier — kept across rebuilds.
 
 What stands for a layer's translation not fetched yet.
 
+** ~bcat-dossier--page-break~  /constant/
+:PROPERTIES:
+:KIND: defconst
+:LINE: 359
+:DEFAULT: "#+LATEX: \\clearpage\n"
+:END:
+
+A new page in the PDF (as in the pdf-bilingual templates).
+
 ** ~bcat-commentary--runs~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 437
+:LINE: 458
 :END:
 
 /(no docstring)/
@@ -15161,7 +15183,7 @@ What stands for a layer's translation not fetched yet.
 ** ~bcat-dossier--awaiting~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 440
+:LINE: 461
 :DEFAULT: (make-hash-table :test #'equal)
 :END:
 

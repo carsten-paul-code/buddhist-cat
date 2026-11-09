@@ -5061,6 +5061,20 @@ Dateien waren nie betroffen (geschrieben vor dem Besuch).  Test
 org-mode-hook am INHALT entscheidet, nach dem Umschreiben eines
 offenen Buffers erneut prüfen.  ERT 2884 (2882 + 2 Skips), BDD 251.
 
+9.11.2026, SEITENUMBRÜCHE FÜR NOTIZEN (`ea3140c'; Carsten: „für die
+mehrsprachigen Readings … immer Seitenumbrüche … Kommentar … auf einer
+neuen Seite“, per Rückfrage drei Stellen): pdf-bilingual und
+pdf-bilingual-tibetan setzen #+LATEX: \clearpage vor die zweite Sprache
+im Reading und vor ** Tibetan / ** Sanskrit in Segments (Reihenfolge
+wie in der Datei); `bcat-dossier--page-breaks' gibt im Lesedossier-PDF
+jeder Schicht außer der ersten und dem zweiten Versblock einer Schicht
+eine neue Seite, die Kommentarsätze bleiben zusammen.  Nur die
+PDF-Ansicht; die Hauptteile hatten schon je eine Seite
+(`bcat-export--parts-pages').  Dabei (Upload derselben Sitzung): 34
+Dokumente in EINER rmapi-Sitzung (`tibetan-discussion-paper-upload-many',
+vorhandene Namen mit Zeitstempel) statt C-c u H je Datei — gut 90
+Einzelsitzungen hätten das Token-Limit (429) gerissen.
+
 #### Offen
 
 - Mitgeben: seit 5.11. auch im tibetischen Abruf eines Paars.  Schlüssel
