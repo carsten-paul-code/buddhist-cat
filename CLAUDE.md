@@ -5003,6 +5003,40 @@ Kailasa, nicht gold), Zeilen mit Shads blieben bei 43 px.  Jetzt
 Face-Namen; live 27 px.  Test `bcat-faces-shad-remap-valid' (Mischen
 über face-attributes-as-vector, Fontset gestubbt).
 
+
+9.11.2026, SANSKRIT-SEGMENT MIT ÜBERSCHRIFT, WORTBILDUNG ABGESETZT
+(Carsten über die Tantrāloka-Session, TĀ 1009: „der Formatwechsel
+(Tabelle/Fließtext) verwirrt mich … Zumindest bräuchte es noch eine
+subsection headline. Und hatten wir nicht mal Original und Übersetzung
+hervorgehoben?“).  Je Sanskrit-Segment unter * Text (sanskrit,
+bilingual; * Sanskrit in bilingual-tibetan) jetzt `** ⟦N⟧' (zweisprachig
+mit <<skt-N>> und Link), fett die Originalzeile in IAST (padapatha;
+Rumpf: die überlieferte Zeile), Übersicht, „→“, `*** Word Formation'
+mit :VISIBILITY: folded und darunter NUR Tabellen — auch ein Wort aus
+einem Glied als Tabelle einer Spalte (`040541e',
+`bcat-analysis--column-table'); die Satzübersetzung unter `** Translation'
+(nur mit Übersetzung — sonst läge sie im letzten Word Formation)
+(`438c7d0').  C-c u L führt fünfzeilige und B-Dateien über:
+`bcat-relayout--text-paragraphs' (Überschriften als eigene Absätze,
+Drawer weg), fette Zeile → padapatha (Handkorrektur bleibt), Zeilen
+„/x/: …“ → Tabelle (`bcat-analysis-parts-line-table'), fehlt die
+Originalzeile, kommt sie aus der ersten Zeile der Übersicht
+(`bcat-analysis-table-padapatha'); `bcat-relayout--before-l2' entfällt.
+`bcat-sentence--write' wendet VISIBILITY nach dem Schreiben an.
+Hervorhebung (`46a3926'): `bcat-translation-face' (kursiv, grün) für
+jedes „→“ unter * Text/* Tibetan/* Sanskrit, jede Sprache; im PDF
+\bcatorig (fett, `bcat-export-original-color'), \bcattrans (kursiv,
+`bcat-export-translation-color'), \bcatsub „Word Formation“ im Teil
+Grammar.  Dabei BUG (`616846a'): \geometry ohne geladenes Paket gab
+außerhalb von Carstens Klasse „Undefined control sequence“ — PDF „with
+errors“, Seite nicht gesetzt; jetzt \usepackage{geometry} davor
+(`bcat-export--geometry'), die Smoke-Tests prüfen auf „with errors“.
+Toter PDF-Zeilenfilter entfernt (`853e7d2').  Live: TĀ sent-001 und
+sent-1009 mit C-c u L neu gesetzt (Kopf und alles ab * Sentence
+unverändert, in * Text nichts verloren).  Die tibetischen Segmente
+bleiben ohne Überschrift (keine Wortbildung) — auf Zuruf dieselbe
+Gestalt mit Uchen-Zeile.
+
 #### Offen
 
 - Mitgeben: seit 5.11. auch im tibetischen Abruf eines Paars.  Schlüssel
@@ -5042,6 +5076,12 @@ Face-Namen; live 27 px.  Test `bcat-faces-shad-remap-valid' (Mischen
   Formregel und den Vergleichsmarkern vom 4.11.).
 - Devanāgarī-Zeilen der Rezitation sind 22 px hoch statt 19 (Noto Sans
   Devanagari); bei Bedarf ein Fontset wie für Uchen (§5.74, 4.11.).
+- TĀ 1009 (9.11., Nebenbefund der Tantrāloka-Session, Claudes Antwort):
+  vācya als „vi-√ac (6)“ statt √vac (2) + -ya; sphuratāt/vikasatāt als
+  „pres. ppl. + ablative as imperative“ statt Imperativ 3. sg. auf -tāt
+  (āśiṣi, Pāṇini 7.1.35); akalitatayā zu „akalitayā“ verkürzt.  Carsten
+  korrigiert selbst; ein Hinweis zu -tāt im Wortbildungs-Prompt nur auf
+  Zuruf.
 
 ### 5.73 Umbenennung in Buddhist CAT — erster Schritt: die Hülle (done, 2026-10-28)
 
