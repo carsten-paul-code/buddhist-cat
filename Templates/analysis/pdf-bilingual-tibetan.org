@@ -4,7 +4,9 @@ Carsten 5.11.2026) — wie pdf-tibetan: ein Dokument mit Sprungmarken.
 Reading: Uchen über Wylie, die Sanskrit-Zeilen des Partners, die
 Übersetzung und die des Sanskrit.  Segments: die eigenen Tabellen
 (<<tib-N>>, Differences), darunter ** Sanskrit mit den Übersichten des
-Partners (<<skt-N>>); dessen Teile der Wörter im Teil Grammar.
+Partners (<<skt-N>>); dessen Teile der Wörter im Teil Grammar.  9.11.
+(Carsten, Notizen auf dem reMarkable): die zweite Sprache beginnt im
+Reading und in Segments auf einer neuen Seite (\clearpage).
 #+end_comment
 #+TITLE: Sentence {{sent-num}}
 #+OPTIONS: toc:nil num:nil title:nil author:nil date:nil
@@ -21,6 +23,7 @@ Partners (<<skt-N>>); dessen Teile der Wörter im Teil Grammar.
 #+end_verse
 
 {{#sanskrit-p}}
+#+LATEX: \clearpage
 #+begin_verse
 {{#sanskrit}}
 {{devanagari}}
@@ -69,6 +72,7 @@ Partners (<<skt-N>>); dessen Teile der Wörter im Teil Grammar.
 {{/differences}}
 {{/segments}}
 {{#sanskrit-p}}
+#+LATEX: \clearpage
 ** Sanskrit
 {{#sanskrit-segments}}
 {{#shown}}

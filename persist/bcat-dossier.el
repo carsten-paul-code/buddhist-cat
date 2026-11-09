@@ -356,6 +356,26 @@ first heading is left out."
   "TEXT with every heading one level down."
   (replace-regexp-in-string "^\\(\\*+\\) " "*\\1 " text t))
 
+(defconst bcat-dossier--page-break "#+LATEX: \\clearpage\n"
+  "A new page in the PDF (as in the pdf-bilingual templates).")
+
+(defun bcat-dossier--page-breaks (reading)
+  "The reading page READING (the layers demoted to `** ') with a new page
+before every layer but the first and before the second language of a
+layer (a verse block right after another) — Carsten 9.11.: room for
+notes on the reMarkable.  The commentary's sentences (`*** ') stay
+together."
+  (let ((first t))
+    (replace-regexp-in-string
+     "^#\\+end_verse\n\\(?:[ \t]*\n\\)*\\(#\\+begin_verse\\)"
+     (lambda (m) (replace-regexp-in-string "#\\+begin_verse\\'"
+                                           (concat bcat-dossier--page-break "#+begin_verse") m t t))
+     (replace-regexp-in-string
+      "^\\*\\* "
+      (lambda (m) (if first (progn (setq first nil) m) (concat bcat-dossier--page-break m)))
+      reading t t)
+     t t)))
+
 (defun bcat-dossier--nest-view (view title id parts)
   "The parts PARTS (CUSTOM_IDs, in VIEW's order) of the PDF view VIEW of
 a second sentence file one level down under „* TITLE“ (CUSTOM_ID ID),
@@ -411,9 +431,10 @@ view (`bcat-export-views')."
              (lead (plist-get files :lead))
              (source (tibetan-sentence--source-file-from-analysis lead))
              (reading (let ((text (bcat-template-render-named "dossier" (cons '(my-notes . "") ctx) source)))
-                        (bcat-dossier--demote
-                         (substring text (string-match "^\\* " text)
-                                    (string-match (concat "^\\* " bcat-dossier--notes) text)))))
+                        (bcat-dossier--page-breaks
+                         (bcat-dossier--demote
+                          (substring text (string-match "^\\* " text)
+                                     (string-match (concat "^\\* " bcat-dossier--notes) text))))))
              (parts (bcat-dossier--split-parts (plist-get (bcat-export-views lead) :view)))
              (part (lambda (id) (or (nth 2 (assoc id parts)) "")))
              (bh-file (plist-get files :bhasya))

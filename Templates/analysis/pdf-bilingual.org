@@ -5,7 +5,9 @@ Reading: die Sanskrit-Zeilen, die tibetischen Zeilen, die Übersetzung
 und die des Tibetischen.  Segments: die eigenen Tabellen (<<skt-N>>),
 darunter ** Tibetan mit den Tabellen des Partners (<<tib-N>>) — jede
 Sprungmarke genau einmal, die Links zwischen beiden bleiben ganz.
-Commentary vor Further Reading, wie in der Datei.
+Commentary vor Further Reading, wie in der Datei.  9.11. (Carsten,
+Notizen auf dem reMarkable): die zweite Sprache beginnt im Reading und
+in Segments auf einer neuen Seite (\clearpage).
 #+end_comment
 #+TITLE: Sentence {{sent-num}}
 #+OPTIONS: toc:nil num:nil title:nil author:nil date:nil
@@ -22,6 +24,7 @@ Commentary vor Further Reading, wie in der Datei.
 #+end_verse
 
 {{#tibetan-p}}
+#+LATEX: \clearpage
 #+begin_verse
 {{#tibetan-lines}}
 {{line}}
@@ -65,6 +68,7 @@ Commentary vor Further Reading, wie in der Datei.
 {{/segment-translation}}
 {{/segments}}
 {{#tibetan-p}}
+#+LATEX: \clearpage
 ** Tibetan
 {{#tibetan-segments}}
 {{#shown}}

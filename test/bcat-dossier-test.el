@@ -186,6 +186,31 @@ file of the verse: the verse files and the commentary document."
       (should (equal file (plist-get (bcat-dossier-pdf-text doc) :lead)))
       (should (equal file (plist-get (bcat-dossier-pdf-text (tibetan-sentence--filepath 64 tfolder tsrc)) :lead))))))
 
+(ert-deftest bcat-dossier-pdf-page-breaks ()
+  "Carsten 9.11.: im PDF des Lesedossiers beginnt jede Schicht der
+Reading-Seite (01 Vers, 02 Bhāṣya, 03 Kommentar) auf einer neuen Seite,
+die erste nicht; in einer Schicht die zweite Sprache (der zweite
+Versblock) ebenso; die Sätze des Kommentars untereinander nicht."
+  (bcat-commentary-test--with-msa
+    (bcat-sentence-test--with-stubs #'bcat-commentary-test--answers
+      (bcat-sentence-test--fetch-n src 36))
+    (let* ((text (plist-get (bcat-dossier-pdf-text (tibetan-sentence--filepath 36 folder src)) :text))
+           (reading (substring text (string-match "^\\* Reading$" text)
+                               (string-match "^\\* Segments$" text)))
+           (layers (with-temp-buffer (insert reading)
+                     (how-many "^\\*\\* 0[0-9] " (point-min) (point-max))))
+           (breaks (with-temp-buffer (insert reading)
+                     (how-many "^#\\+LATEX: \\\\clearpage$" (point-min) (point-max)))))
+      (should (>= layers 2))
+      (should-not (string-match-p "#\\+LATEX: \\\\clearpage\n\\*\\* 01 " reading))
+      (should (string-match-p "^#\\+LATEX: \\\\clearpage\n\\*\\* 02 " reading))
+      (should (string-match-p "^#\\+LATEX: \\\\clearpage\n\\*\\* 03 " reading))
+      (should (string-match-p "^#\\+end_verse\n\n#\\+LATEX: \\\\clearpage\n#\\+begin_verse" reading))
+      (should-not (string-match-p "^#\\+LATEX: \\\\clearpage\n\\*\\*\\* " reading))
+      ;; die Segments des Verses aus seiner Ansicht: Tibetisch neu
+      (should (string-match-p "^#\\+LATEX: \\\\clearpage\n\\*\\* Tibetan$" text))
+      (should (> breaks (1- layers))))))
+
 (ert-deftest bcat-dossier-pdf-none ()
   "A sentence with one layer (no bhāṣya, no commentary) has no dossier
 PDF — C-c u H keeps its own view."

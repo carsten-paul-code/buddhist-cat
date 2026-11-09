@@ -880,6 +880,29 @@ lines in Reading, its tables in Segments."
           (should (string-match-p "kasmāt" reading))
           (should (string-match-p "ཅིའི་ཕྱིར" reading)))))))
 
+(ert-deftest bcat-export-view-pair-page-breaks ()
+  "Carsten 9.11. (Notizen auf dem reMarkable): in den PDFs eines
+zweisprachigen Satzes beginnt die zweite Sprache auf einer neuen
+Seite — im Reading ihre Zeilen (die Übersetzungen folgen wie in der
+Datei), in Segments ihre Tabellen; die erste Sprache bleibt oben am
+Teil.  Sanskrit-Datei: Tibetisch neu; tibetische Datei: Sanskrit neu."
+  (bcat-sentence-test--with-pair
+    (bcat-sentence-test--create-n src 3)
+    (bcat-sentence-test--with-stubs #'bcat-sentence-test--pair-answers
+      (bcat-sentence-test--fetch-n src 3))
+    (pcase-dolist (`(,file ,other ,heading)
+                   `((,(tibetan-sentence--filepath 3 folder src) "ཅིའི་ཕྱིར" "Tibetan")
+                     (,(bcat-sentence-partner-file 3 src) "kasmāt" "Sanskrit")))
+      (let* ((view (bcat-export-view file))
+             (reading (bcat-export-test--part view "Reading"))
+             (segments (bcat-export-test--part view "Segments"))
+             (count (lambda (text) (with-temp-buffer (insert text)
+                                     (how-many "^#\\+LATEX: \\\\clearpage$" (point-min) (point-max))))))
+        (should (string-match-p (concat "^#\\+LATEX: \\\\clearpage\n#\\+begin_verse\n[^#]*" other) reading))
+        (should (= 1 (funcall count reading)))
+        (should (string-match-p (concat "^#\\+LATEX: \\\\clearpage\n\\*\\* " heading "$") segments))
+        (should (= 1 (funcall count segments)))))))
+
 (ert-deftest bcat-export-view-decisions ()
   "The proposed translation is read first (Reading), the decisions that
 justify it belong to the discussion (Carsten 5.11.)."
