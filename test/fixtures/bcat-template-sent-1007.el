@@ -36,11 +36,22 @@ tatpārameśvaraṃ śrīman|mahānandavijṛmbhitam // 7")
 |-----+--------|
 | my  | speech |
 
-/aśaktā/: /a-/ not · /√śak/ (5) be able · /-ta/ ppp
+| aśaktā             |
+|--------------------|
+| /a-/ not           |
+| /√śak/ (5) be able |
+| /-ta/ ppp          |
 
-/niyantraṇam/: /ni-/ in · /√yantr/ (10) restrain · /-ana/ action
+| niyantraṇam            |
+|------------------------|
+| /ni-/ in               |
+| /√yantr/ (10) restrain |
+| /-ana/ action          |
 
-/ullaset/: /ud-/ up · /√las/ (1) shine")
+| ullaset          |
+|------------------|
+| /ud-/ up         |
+| /√las/ (1) shine |")
       (segment-translation . "Although my speech (vāc) is incapable (aśakta) here, whatever control (niyantraṇa) may shine forth (ullaset) —")
       (translations . "⟦685⟧ *Translation:* Although my speech (vāc) is incapable (aśakta) here, whatever control (niyantraṇa) may shine forth (ullaset) — \\\\
 *Dyczkowski 2023:* Although my speech is powerless here (in this task), whatever *restriction* may arise (on one's understanding of the teachings is not my fault, rather) \\\\
@@ -64,7 +75,11 @@ tatpārameśvaraṃ śrīman|mahānandavijṛmbhitam // 7")
       (gloss-table . "| tat               | pārameśvaram       | śrīmat-mahā-ānanda-vijṛmbhitam    |
 | that              | the Supreme Lord's | unfolding of glorious great bliss |
 | pron. n. nom. sg. | adj. n. nom. sg.   | n. nom. sg.                       |")
-      (formation-tables . "/pārameśvaram/: supreme · lord · /vṛddhi/ + -a belonging to
+      (formation-tables . "| pārameśvaram               |
+|----------------------------|
+| supreme                    |
+| lord                       |
+| /vṛddhi/ + -a belonging to |
 
 | śrīmat        | mahā  | ānanda                | vijṛmbhitam       |
 |---------------+-------+-----------------------+-------------------|

@@ -1801,12 +1801,20 @@ an hline under it."
   (let ((lines (split-string (string-trim-right (tibetan-gloss-table--format-rows rows)) "\n")))
     (string-join (cons (car lines) (cons (bcat-analysis--header-rule (car lines)) (cdr lines))) "\n")))
 
+(defun bcat-analysis--column-table (head cells)
+  "A table of one column: HEAD as its header row, CELLS below, one a
+row — the parts of a word of one member (Carsten 9.11., TĀ 1009: under
+the translation only tables, „der Formatwechsel (Tabelle/Fließtext)
+verwirrt mich“)."
+  (bcat-analysis--header-table (cons (list head) (mapcar #'list cells))))
+
 (defun bcat-analysis--formation-block (w)
   "What the parts of the Sanskrit word W add to the overview, or nil: for
 a compound a table — a column per member, its parts below (one per
 row), split like the overview when wider than the file
-\(`bcat-analysis--layout'); for a word of one member a line, „/jananī/:
-/√jan/ (1) be born · /-anī/ f. agent“; nothing when the parts only
+\(`bcat-analysis--layout'); for a word of one member a table of one
+column, the word above its parts (9.11.; before, a line „/jananī/:
+/√jan/ (1) be born · /-anī/ f. agent“); nothing when the parts only
 repeat the word."
   (let ((wp (bcat-analysis--word-parts w)))
     (when wp
@@ -1816,7 +1824,8 @@ repeat the word."
              (cell (lambda (item) (tibetan-gloss-table--cell (bcat-analysis--part-cell item keys)))))
         (if (= 1 (length heads))
             (unless (bcat-analysis--bare-part-p (car groups) word keys)
-              (format "/%s/: %s" word (mapconcat cell (car groups) " · ")))
+              (bcat-analysis--column-table (tibetan-gloss-table--cell word)
+                                           (mapcar cell (car groups))))
           (let* ((cells (cl-mapcar (lambda (head items)
                                      (cond ((not (bcat-analysis--bare-part-p items head keys))
                                             (mapcar cell items))
@@ -1843,6 +1852,17 @@ repeat the word."
                                      collect row)))
                          (bcat-analysis--chunk-columns columns width 3 width)
                          "\n\n"))))))))
+
+(defun bcat-analysis-parts-line-table (line)
+  "The table of one column for LINE, the line of a word of one member as
+the files of 5.11. (draft B) held it — „/hṛdayam/: /hṛd/ heart · /-aya/
+suffix“ —: the word above its parts as the line has them (a hand
+correction stays; `bcat-analysis--column-table').  nil for anything
+else.  C-c u L (Carsten 9.11., TĀ 1009)."
+  (let ((line (string-trim (or line ""))))
+    (when (string-match "\\`/\\([^/\n]+\\)/: \\([^\n]+\\)\\'" line)
+      (bcat-analysis--column-table (match-string 1 line)
+                                   (split-string (match-string 2 line) " · " t "[ \t]+")))))
 
 (defun bcat-analysis-formation-tables (words)
   "The parts of a Sanskrit segment's WORDS under its overview, in the

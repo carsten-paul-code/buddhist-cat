@@ -46,9 +46,11 @@ glossed (Padapāṭha,
 Sandhis aufgelöst, Vokabeln in Klammern) gloss-table (die Übersicht)
 formation-tables (unter „→“ je Wort mit Teilen eine kleine Tabelle —
 die Glieder als Spalten, darunter die Teile, die Sanskrit-Form kursiv —,
-ein Wort aus einem Glied als Zeile „/jananī/: …“; Carsten 5.11., TĀ 1.1:
-„die Redundanzen rausnehmen“, „B, Übersetzung unter die Übersicht,
-einzeilig, kursiv“) translations
+seit 9.11. auch ein Wort aus einem Glied als Tabelle einer Spalte, das
+Wort über seinen Teilen (vorher eine Zeile „/jananī/: …“; Carsten, TĀ
+1009: „der Formatwechsel (Tabelle/Fließtext) verwirrt mich“); Carsten
+5.11., TĀ 1.1: „die Redundanzen rausnehmen“, „B, Übersetzung unter die
+Übersicht, einzeilig, kursiv“) translations
 sandhi forms compounds structure note concepts; second-translation
 second-label;
 glosses (gesetzt, wenn es einen Padapāṭha gibt) translation grammar

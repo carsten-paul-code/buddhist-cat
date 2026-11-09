@@ -39,11 +39,22 @@ tatpārameśvaraṃ śrīman|mahānandavijṛmbhitam // 7
 |-----+--------|
 | my  | speech |
 
-/aśaktā/: /a-/ not · /√śak/ (5) be able · /-ta/ ppp
+| aśaktā             |
+|--------------------|
+| /a-/ not           |
+| /√śak/ (5) be able |
+| /-ta/ ppp          |
 
-/niyantraṇam/: /ni-/ in · /√yantr/ (10) restrain · /-ana/ action
+| niyantraṇam            |
+|------------------------|
+| /ni-/ in               |
+| /√yantr/ (10) restrain |
+| /-ana/ action          |
 
-/ullaset/: /ud-/ up · /√las/ (1) shine
+| ullaset          |
+|------------------|
+| /ud-/ up         |
+| /√las/ (1) shine |
 
 ⟦686⟧
 | tat               | pārameśvaram       | śrīmat-mahā-ānanda-vijṛmbhitam    |
@@ -52,7 +63,11 @@ tatpārameśvaraṃ śrīman|mahānandavijṛmbhitam // 7
 
 → that belongs to the Supreme Lord (pārameśvara): it is the unfolding (vijṛmbhita) of glorious great bliss (mahānanda).
 
-/pārameśvaram/: supreme · lord · /vṛddhi/ + -a belonging to
+| pārameśvaram               |
+|----------------------------|
+| supreme                    |
+| lord                       |
+| /vṛddhi/ + -a belonging to |
 
 | śrīmat        | mahā  | ānanda                | vijṛmbhitam       |
 |---------------+-------+-----------------------+-------------------|

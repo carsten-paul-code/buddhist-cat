@@ -48,7 +48,11 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 |-------+------------+------+-------+--------------------------------|
 | five  | form, mode | self | thing | bring forth (caus.) + abstract |
 
-/upādāya/: /upa-/ near · /ā-/ to · /√dā/ (3) give, take
+| upādāya              |
+|----------------------|
+| /upa-/ near          |
+| /ā-/ to              |
+| /√dā/ (3) give, take |
 
 <<skt-24>>⟦24⟧ · [[tib-79][Tib. 79]]
 | sa-parigraha-deha-ātma-vastu-udbhāvanatām | upādāya       |
@@ -62,7 +66,11 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 | with | /pari-/ around    | body | self | thing | bringing     |
 |      | /√grah/ (9) seize |      |      |       |              |
 
-/upādāya/: /upa-/ near · /ā-/ to · /√dā/ (3) give, take
+| upādāya              |
+|----------------------|
+| /upa-/ near          |
+| /ā-/ to              |
+| /√dā/ (3) give, take |
 
 <<skt-25>>⟦25⟧ · [[tib-80][Tib. 80]]
 | upabhoga-ātma-vastu-udbhāvanatām | upādāya       |
@@ -76,7 +84,11 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 | /upa-/ near       | self | thing | bringing     |
 | /√bhuj/ (7) enjoy |      |       |              |
 
-/upādāya/: /upa-/ near · /ā-/ to · /√dā/ (3) give, take
+| upādāya              |
+|----------------------|
+| /upa-/ near          |
+| /ā-/ to              |
+| /√dā/ (3) give, take |
 
 <<skt-26>>⟦26⟧ · [[tib-81][Tib. 81]]
 | vyavahāra-ātma-vastu-udbhāvanatām | upādāya       |
@@ -91,7 +103,11 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 | /ava-/ down     |      |       |              |
 | /√hṛ/ (1) carry |      |       |              |
 
-/upādāya/: /upa-/ near · /ā-/ to · /√dā/ (3) give, take
+| upādāya              |
+|----------------------|
+| /upa-/ near          |
+| /ā-/ to              |
+| /√dā/ (3) give, take |
 
 <<skt-27>>⟦27⟧ · [[tib-82][Tib. 82]]
 | dharma-adharma-abhisaṃskāra-ātma-vastu-udbhāvanatām | upādāya       |
@@ -106,7 +122,11 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 |        | merit   | /sam-/ together |      |       |              |
 |        |         | /√kṛ/ (8) make  |      |       |              |
 
-/upādāya/: /upa-/ near · /ā-/ to · /√dā/ (3) give, take
+| upādāya              |
+|----------------------|
+| /upa-/ near          |
+| /ā-/ to              |
+| /√dā/ (3) give, take |
 
 <<skt-28>>⟦28⟧ · [[tib-83][Tib. 83]]
 | tad-āśraya-ātma-vastu-udbhāvanatām | upādāya       |
@@ -120,7 +140,11 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 | that | /ā-/ to            | self | thing | bringing     |
 |      | /√śri/ (1) lean on |      |       |              |
 
-/upādāya/: /upa-/ near · /ā-/ to · /√dā/ (3) give, take
+| upādāya              |
+|----------------------|
+| /upa-/ near          |
+| /ā-/ to              |
+| /√dā/ (3) give, take |
 
 *Grammar:* One question and its answer, the catechism form of the AS.  The question (22) is a nominal sentence with an understood copula: kasmāt pañcaiva skandhāḥ.  The answer (23–28) has no finite verb: six accusatives in -udbhāvanatām, each governed by the gerund upādāya used as a postposition („on account of“).  23 states the principle — the self-basis appears in five modes —, 24–28 list the five, each a compound ending in -ātmavastūdbhāvanatām.
 

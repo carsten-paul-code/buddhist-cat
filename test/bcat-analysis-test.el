@@ -353,9 +353,11 @@ nothing is cut."
     (should (= 2 (length tables)))
     (should (string-prefix-p "| atra | ullaset" (nth 0 tables)))
     (should (string-prefix-p "| api" (nth 1 tables)))
-    ;; 5.11.: the parts are not in the overview — they have their own line.
+    ;; 5.11.: the parts are not in the overview — they have their own
+    ;; table (9.11.: of one column, not a line).
     (should-not (string-match-p "√las" out))
-    (should (equal "/ullaset/: /ud-/ up · /√las/ (1) shine" (bcat-analysis-formation-tables words)))
+    (should (equal "| ullaset          |\n|------------------|\n| /ud-/ up         |\n| /√las/ (1) shine |"
+                   (bcat-analysis-formation-tables words)))
     (dolist (tb tables)
       (dolist (row (split-string tb "\n"))
         (should (<= (string-width row) 30))))
@@ -1743,9 +1745,11 @@ overview each word with parts gets its own table — a column per member
 of the compound, its parts below, one per row, the Sanskrit form in
 italics before its meaning; a member that is one bare stem shows only
 its meaning.  The formation row is gone: every part was in the table
-twice.  A word of one member is a line, „/jananī/: …“; a word without
-parts (ca) nothing.  Expected text drawn up apart from the code, from
-the agreed draft."
+twice.  A word of one member is a table of one column — the word, its
+parts below (Carsten 9.11., TĀ 1009: „der Formatwechsel (Tabelle/
+Fließtext) verwirrt mich“; before, a line „/jananī/: …“); a word
+without parts (ca) nothing.  Expected text drawn up apart from the
+code, from the agreed draft."
   (should (equal "| vimala               | kalā        | āśrayā            |
 |----------------------+-------------+-------------------|
 | /vi-/ apart          | part, power | /ā-/ unto         |
@@ -1757,7 +1761,10 @@ the agreed draft."
 | /abhi-/ toward       | creation (√sṛj) | /mahas/ radiance, glory |
 | /nava/ new, ever-new |                 |                         |
 
-/jananī/: /√jan/ (1) be born · /-anī/ f. agent
+| jananī             |
+|--------------------|
+| /√jan/ (1) be born |
+| /-anī/ f. agent    |
 
 | bharita                  | tanuḥ               |
 |--------------------------+---------------------|
@@ -1769,7 +1776,10 @@ the agreed draft."
 | five  | face, power | /√gup/ (1) protect, maintain | /ruci/ light, radiance |
 |       |             | /-ta/ ppp                    |                        |
 
-/janakaḥ/: /√jan/ (1) beget · /-aka/ m. agent"
+| janakaḥ          |
+|------------------|
+| /√jan/ (1) beget |
+| /-aka/ m. agent  |"
                  (bcat-analysis-formation-tables bcat-analysis-test--ta-1-1-words))))
 
 (ert-deftest bcat-analysis-formation-tables-members-from-the-word ()
@@ -1848,8 +1858,21 @@ they are."
     (should (equal "" (funcall block "ca" "")))
     (should (equal "" (funcall block "kalā" "kalā part, power")))
     (should (equal "" (funcall block "kāya" "body")))
-    (should (equal "/mahaḥ/: /mahas/ radiance" (funcall block "mahaḥ" "mahas radiance")))
+    (should (equal "| mahaḥ            |\n|------------------|\n| /mahas/ radiance |"
+                   (funcall block "mahaḥ" "mahas radiance")))
     (should (equal "" (bcat-analysis-formation-tables nil)))))
+
+(ert-deftest bcat-analysis-parts-line-table ()
+  "C-c u L on a file of 5.11. (draft B): the line of a word of one
+member, „/hṛdayam/: /hṛd/ heart · /-aya/ suffix“, becomes its table of
+one column, the parts as the line has them (a hand correction stays);
+anything else is no such line (nil)."
+  (should (equal "| hṛdayam          |\n|------------------|\n| /hṛd/ heart      |\n| /-aya/ my suffix |"
+                 (bcat-analysis-parts-line-table "/hṛdayam/: /hṛd/ heart · /-aya/ my suffix")))
+  (should (equal "| pārameśvaram               |\n|----------------------------|\n| supreme                    |\n| lord                       |\n| /vṛddhi/ + -a belonging to |"
+                 (bcat-analysis-parts-line-table "/pārameśvaram/: supreme · lord · /vṛddhi/ + -a belonging to")))
+  (should-not (bcat-analysis-parts-line-table "| a |\n|---|\n| b |"))
+  (should-not (bcat-analysis-parts-line-table "*Grammar:* g")))
 
 (ert-deftest bcat-analysis-formation-tables-chunked ()
   "A compound wider than the table width is split into several tables,

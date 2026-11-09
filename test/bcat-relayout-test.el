@@ -116,11 +116,27 @@ tables stay as they are — a second run changes nothing."
          (seg (car (alist-get 'segments (bcat-relayout-context base old "sanskrit")))))
     (should (equal (bcat-analysis-sanskrit-tables words) (alist-get 'gloss-table seg)))
     (should (string-prefix-p "| vimala " (alist-get 'formation-tables seg)))
-    (should (string-match-p "^/janakaḥ/: /√jan/ (1) beget" (alist-get 'formation-tables seg)))
+    (should (string-match-p "^| janakaḥ +|\n|-+|\n| /√jan/ (1) beget |" (alist-get 'formation-tables seg)))
     (let* ((once (bcat-relayout-test--render "sanskrit" base old))
            (again (bcat-relayout-test--render "sanskrit" base once)))
       (should (string-match-p "^→ t\n\n| vimala " once))
       (should (equal once again)))))
+
+(ert-deftest bcat-relayout-parts-lines-to-tables ()
+  "Carsten 9.11., TĀ 1009 („der Formatwechsel (Tabelle/Fließtext)
+verwirrt mich“): C-c u L sets a file of 5.11. (draft B) with the line
+of a word of one member as its table of one column — the parts as the
+line has them, a hand correction stays —, in the order of the words;
+the tables of compounds stay as they are."
+  (let* ((old (concat "* Text\n⟦1⟧\n| hṛdayam | a-b |\n| heart | g |\n| n. | f |\n\n→ t\n\n"
+                      "/hṛdayam/: /hṛd/ heart · /-aya/ my suffix\n\n"
+                      "| a  | b  |\n|----+----|\n| x  | y  |\n\n"
+                      "* Segments\n** Segment 1\n\n*Structure:* s\n"))
+         (base '((segments ((num . 1) (samhita . "hṛdayam ab"))) (sent-num . "1")))
+         (seg (car (alist-get 'segments (bcat-relayout-context base old "sanskrit")))))
+    (should (equal (concat "| hṛdayam          |\n|------------------|\n| /hṛd/ heart      |\n"
+                           "| /-aya/ my suffix |\n\n| a  | b  |\n|----+----|\n| x  | y  |")
+                   (alist-get 'formation-tables seg)))))
 
 (ert-deftest bcat-relayout-compacts-tables ()
   "4.11.: C-c u L sets a Tibetan file written before with compact tables

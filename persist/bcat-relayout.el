@@ -123,8 +123,10 @@ the other language's blocks and differences."
          ((and current (string-prefix-p "|" p))
           (cond (own (bcat-relayout--put table current 'gloss-table p t))
                 (parts (bcat-relayout--put table current 'formation-tables p t))))
-         ((and current parts (string-match-p "\\`/[^/\n]+/: " p))
-          (bcat-relayout--put table current 'formation-tables p t))
+         ((and current parts (bcat-analysis-parts-line-table p))
+          ;; 9.11.: the line of a word of one member (draft B) becomes
+          ;; its table of one column, the parts as the line has them.
+          (bcat-relayout--put table current 'formation-tables (bcat-analysis-parts-line-table p) t))
          ((and current (string-match "\\`→ " p))
           (when own
             (bcat-relayout--put table current 'segment-translation (substring p (match-end 0)))
