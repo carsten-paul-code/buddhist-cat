@@ -144,6 +144,26 @@ segment as transmitted, the references."
     (should (string-match-p (regexp-quote "[685] atra madvāgaśaktāpi yanniyantraṇamullaset /\n[686] tatpārameśvaraṃ") user))
     (should (string-match-p "=== Dyczkowski 2023 ===\nAlthough my speech" user))))
 
+(ert-deftest bcat-analysis-sanskrit-prompt-tat-imperative ()
+  "9.11., TĀ 1009 (Carsten bestätigt über die Tantrāloka-Session):
+sphuratāt/vikasatāt kamen als „pres. ppl. + ablative as imperative“,
+vācya-Fehler beiseite.  Der Prompt sagt für Analyse (forms, form) und
+Wortbildung (formation, parts): Imperativ 2./3. sg. P auf -tāt, der
+-tu/-hi im Segenswunsch ersetzt (āśiṣi, Pāṇini 7.1.35), zerlegt als
+Präsensstamm + -tāt — kein Partizip, kein Ablativ, kein „vedischer
+Optativ“, kein āśīrliṅ (-yāt)."
+  (let ((sys (bcat-analysis-sanskrit-system-prompt "en")))
+    (should (string-match-p "-tāt" sys))
+    (should (string-match-p "sphuratāt" sys))
+    (should (string-match-p "Pāṇini 7\\.1\\.35" sys))
+    (should (string-match-p "tuhyos tātaṅ āśiṣy anyatarasyām" sys))
+    (should (string-match-p "present stem \\+ -tāt" sys))
+    (should (string-match-p "sphura- \\+ -tāt" sys))
+    (should (string-match-p "never a participle" sys))
+    (should (string-match-p "precative, -yāt" sys))
+    ;; Analyse und Wortbildung: Regel in beiden Prompt-Varianten.
+    (should (string-match-p "-tāt" (bcat-analysis-sanskrit-system-prompt "de" t t)))))
+
 (ert-deftest bcat-analysis-uchen-words ()
   "Carsten 31.10. abends, Tibetisch V: the Uchen of each word above its
 Wylie in the tables — from the segment's Uchen, syllable by syllable
