@@ -29,6 +29,7 @@
 (require 'bcat-zettel nil t)
 
 (declare-function org-cycle-set-visibility-according-to-property "org-cycle" ())
+(declare-function bcat-faces-maybe "bcat-faces" ())
 (declare-function tibetan-analysis--cascade-p "tibetan-analysis-claude" (file))
 (declare-function tibetan-analysis--resolve-source-lang "tibetan-analysis-claude" (file))
 (declare-function tibetan-analysis--read-source-metadata "tibetan-analysis-claude" (source-file))
@@ -733,7 +734,12 @@ were read by the caller)."
           ;; 9.11.: what opens folded (Word Formation, :VISIBILITY:
           ;; folded) is folded after a rebuild too.
           (when (derived-mode-p 'org-mode)
-            (org-cycle-set-visibility-according-to-property))
+            (org-cycle-set-visibility-according-to-property)
+            ;; 9.11. (TĀ 1010): an old cascade file was open when it
+            ;; was rebuilt after the template — `org-mode-hook' had
+            ;; seen no #+CAT_TEMPLATE, the colours stayed off.
+            (unless (bound-and-true-p bcat-faces-mode)
+              (when (fboundp 'bcat-faces-maybe) (bcat-faces-maybe))))
           (save-buffer))))))
 
 (defun bcat-sentence--save-visit (file)

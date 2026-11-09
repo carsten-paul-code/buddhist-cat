@@ -1483,5 +1483,31 @@ rest stays open."
       (kill-buffer buf)
       (delete-file file))))
 
+(ert-deftest bcat-sentence-write-switches-colours-on ()
+  "9.11. (TĀ 1010): an old cascade file without #+CAT_TEMPLATE was open
+when C-c u G rebuilt it after the template — `org-mode-hook' had run on
+the old text, so `bcat-faces-mode' stayed off: the → translation was
+neither green nor italic, the keyword lines not folded, as in 1009.
+The writer switches the colours on when the new text has a template."
+  (let* ((dir (make-temp-file "bcat-colours-" t))
+         (file (expand-file-name "sent-1010-x.org" dir))
+         (old "#+TITLE: Sentence 1010 Analysis\n#+TIBETAN_LAYOUT: cascade\n* Translation\nT\n")
+         (new (concat "#+TITLE: Sentence 1010 Analysis\n#+CAT_TEMPLATE: sanskrit\n"
+                      "* Text\n** ⟦1⟧\n*a*\n\n→ t\n"))
+         buf)
+    (with-temp-file file (insert old))
+    (unwind-protect
+        (progn
+          (setq buf (find-file-noselect file))
+          (with-current-buffer buf
+            (should (derived-mode-p 'org-mode))
+            (should-not (bound-and-true-p bcat-faces-mode))
+            (bcat-sentence--write file new)
+            (should (bound-and-true-p bcat-faces-mode))))
+      (when buf
+        (with-current-buffer buf (set-buffer-modified-p nil))
+        (kill-buffer buf))
+      (delete-directory dir t))))
+
 (provide 'bcat-sentence-test)
 ;;; bcat-sentence-test.el ends here
