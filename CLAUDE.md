@@ -5104,8 +5104,10 @@ offenen Buffers erneut prüfen.  ERT 2884 (2882 + 2 Skips), BDD 251.
   vācya als „vi-√ac (6)“ statt √vac (2) + -ya; sphuratāt/vikasatāt als
   „pres. ppl. + ablative as imperative“ statt Imperativ 3. sg. auf -tāt
   (āśiṣi, Pāṇini 7.1.35); akalitatayā zu „akalitayā“ verkürzt.  Carsten
-  korrigiert selbst; ein Hinweis zu -tāt im Wortbildungs-Prompt nur auf
-  Zuruf.
+  korrigiert selbst (die Tantrāloka-Session korrigiert sent-001/1009).
+  Der Hinweis zu -tāt steht seit 9.11. im Sanskrit-Prompt (`ec70c7b',
+  auf Carstens Bestätigung): Präsensstamm + -tāt, Segenswunsch, kein
+  Partizip/Ablativ/āśīrliṅ.
 
 ### 5.73 Umbenennung in Buddhist CAT — erster Schritt: die Hülle (done, 2026-10-28)
 

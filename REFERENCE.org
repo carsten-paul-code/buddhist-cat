@@ -1,6 +1,6 @@
 #+TITLE: Function Reference — buddhist-cat
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-11-09T14:05:51
+#+DATE: 2026-11-09T15:35:10
 #+OPTIONS: toc:2 num:nil
 
 Source tree: ~/Users/cp/buddhist-cat~  ·  97 modules  ·  2366 forms
@@ -12850,7 +12850,7 @@ answer gives `recitation', the text in sense units (31.10., TĀ 1008).
 ** ~bcat-analysis-sanskrit-user-prompt~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 323
+:LINE: 324
 :SIGNATURE: (bcat-analysis-sanskrit-user-prompt sent-num verse segs refs &optional context bhasya second lectures metre)
 :END:
 
@@ -12866,7 +12866,7 @@ it Claude named Śālinī for a Nardaṭaka.
 ** ~bcat-analysis-tibetan-system-prompt~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 352
+:LINE: 353
 :SIGNATURE: (bcat-analysis-tibetan-system-prompt target)
 :END:
 
@@ -12883,7 +12883,7 @@ Constant per document.
 ** ~bcat-analysis-tibetan-user-prompt~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 377
+:LINE: 378
 :SIGNATURE: (bcat-analysis-tibetan-user-prompt sent-num verse sanskrit tibetan refs &optional context second lectures)
 :END:
 
@@ -12898,7 +12898,7 @@ translations of the Tibetan, CONTEXT the #+TIBETAN_CLAUDE_CONTEXT lines
 ** ~bcat-analysis--json-problem~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 409
+:LINE: 410
 :SIGNATURE: (bcat-analysis--json-problem err start)
 :END:
 
@@ -12908,7 +12908,7 @@ start of the answer (the object began at START).
 ** ~bcat-analysis--repair-json~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 417
+:LINE: 418
 :SIGNATURE: (bcat-analysis--repair-json text)
 :END:
 
@@ -12931,7 +12931,7 @@ Valid JSON comes back unchanged.
 ** ~bcat-analysis--unterminated-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 488
+:LINE: 489
 :SIGNATURE: (bcat-analysis--unterminated-p text)
 :END:
 
@@ -12942,7 +12942,7 @@ after 41 283 characters inside „grammar“).
 ** ~bcat-analysis-no-links~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 502
+:LINE: 503
 :SIGNATURE: (bcat-analysis-no-links text)
 :END:
 
@@ -12957,7 +12957,7 @@ as a link (`org-link-bracket-re'): the bracketing of compounds,
 ** ~bcat-analysis--no-links-in~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 514
+:LINE: 515
 :SIGNATURE: (bcat-analysis--no-links-in object)
 :END:
 
@@ -12966,7 +12966,7 @@ OBJECT (a parsed answer) with `bcat-analysis-no-links' on every string.
 ** ~bcat-analysis--decode~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 522
+:LINE: 523
 :SIGNATURE: (bcat-analysis--decode json)
 :END:
 
@@ -12976,7 +12976,7 @@ strings unable to form org links (`bcat-analysis-no-links').
 ** ~bcat-analysis-read~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 529
+:LINE: 530
 :SIGNATURE: (bcat-analysis-read response)
 :END:
 
@@ -12989,7 +12989,7 @@ what `bcat-analysis--repair-json' mends.
 ** ~bcat-analysis-parse~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 556
+:LINE: 557
 :SIGNATURE: (bcat-analysis-parse response)
 :END:
 
@@ -12999,7 +12999,7 @@ is none (see `bcat-analysis-read').
 ** ~bcat-analysis-keep-response~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 561
+:LINE: 562
 :SIGNATURE: (bcat-analysis-keep-response file response)
 :END:
 
@@ -13009,7 +13009,7 @@ read, under `bcat-analysis-response-directory'; return its path.
 ** ~bcat-analysis--particle-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 581
+:LINE: 582
 :SIGNATURE: (bcat-analysis--particle-p word)
 :END:
 
@@ -13021,7 +13021,7 @@ member of compound“ — several syllables, so a word all the same.
 ** ~bcat-analysis--field~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 591
+:LINE: 592
 :SIGNATURE: (bcat-analysis--field alist key)
 :END:
 
@@ -13030,7 +13030,7 @@ String value of KEY in ALIST, trimmed; "" when absent.
 ** ~bcat-analysis--uchen-syllables~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 635
+:LINE: 636
 :SIGNATURE: (bcat-analysis--uchen-syllables uchen)
 :END:
 
@@ -13039,7 +13039,7 @@ The syllables of the Tibetan UCHEN — tsheg, shad and spaces dropped.
 ** ~bcat-analysis--wylie-key~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 639
+:LINE: 640
 :SIGNATURE: (bcat-analysis--wylie-key wylie)
 :END:
 
@@ -13049,7 +13049,7 @@ shad, lower case.
 ** ~bcat-analysis-uchen-words~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 644
+:LINE: 645
 :SIGNATURE: (bcat-analysis-uchen-words uchen wylies)
 :END:
 
@@ -13063,7 +13063,7 @@ take the syllables whose Wylie they spell (bDen 9–20: 216 of 216).
 ** ~bcat-analysis--uchen-row~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 676
+:LINE: 677
 :SIGNATURE: (bcat-analysis--uchen-row uchen wylies)
 :END:
 
@@ -13073,7 +13073,7 @@ a word is not found —, or nil when none is (then no row at all).
 ** ~bcat-analysis-plain-cell~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 683
+:LINE: 684
 :SIGNATURE: (bcat-analysis-plain-cell cell)
 :END:
 
@@ -13083,7 +13083,7 @@ CELL of a gloss table as plain text: links reduced to their text,
 ** ~bcat-analysis--wrap-pieces~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 691
+:LINE: 692
 :SIGNATURE: (bcat-analysis--wrap-pieces pieces sep mark max)
 :END:
 
@@ -13094,7 +13094,7 @@ longer than MAX stays whole.
 ** ~bcat-analysis--wrap-cell~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 703
+:LINE: 704
 :SIGNATURE: (bcat-analysis--wrap-cell text max)
 :END:
 
@@ -13108,7 +13108,7 @@ longer than MAX stays whole; a cell with a link is never broken.
 ** ~bcat-analysis--continued-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 733
+:LINE: 734
 :SIGNATURE: (bcat-analysis--continued-p cell)
 :END:
 
@@ -13118,7 +13118,7 @@ below: it ends in a separator (`bcat-analysis--wrap-cell').
 ** ~bcat-analysis--join-continuations~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 738
+:LINE: 739
 :SIGNATURE: (bcat-analysis--join-continuations rows)
 :END:
 
@@ -13129,7 +13129,7 @@ whose filled cells all stand under a cell that goes on
 ** ~bcat-analysis-wrap-rows~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 756
+:LINE: 757
 :SIGNATURE: (bcat-analysis-wrap-rows rows max)
 :END:
 
@@ -13142,7 +13142,7 @@ written before (31.10.).
 ** ~bcat-analysis--table-columns~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 767
+:LINE: 768
 :SIGNATURE: (bcat-analysis--table-columns table)
 :END:
 
@@ -13155,7 +13155,7 @@ lines of a broken cell joined again (`bcat-analysis--join-continuations',
 ** ~bcat-analysis-uchen-table~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 784
+:LINE: 785
 :SIGNATURE: (bcat-analysis-uchen-table tables uchen)
 :END:
 
@@ -13168,7 +13168,7 @@ in Uchen stay as they are.
 ** ~bcat-analysis--layout~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 818
+:LINE: 819
 :SIGNATURE: (bcat-analysis--layout key &optional lang)
 :END:
 
@@ -13179,7 +13179,7 @@ The value of the layout KEY (`table-width', `cell-width',
 ** ~bcat-analysis--cut-label~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 828
+:LINE: 829
 :SIGNATURE: (bcat-analysis--cut-label text max)
 :END:
 
@@ -13193,7 +13193,7 @@ TEXT (the remarks without their parentheses).  TĀ 1.1 (5.11.): „āśiṣi
 ** ~bcat-analysis--function-split~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 866
+:LINE: 867
 :SIGNATURE: (bcat-analysis--function-split fn &optional lang)
 :END:
 
@@ -13208,7 +13208,7 @@ LANG: the source language, for its exception (`bcat-analysis--layout').
 ** ~bcat-analysis--trim-lemma~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 892
+:LINE: 893
 :SIGNATURE: (bcat-analysis--trim-lemma fn wylie)
 :END:
 
@@ -13221,7 +13221,7 @@ nicht redundant?“ (54 of 99 verbs in the files).
 ** ~bcat-analysis--word-name~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 910
+:LINE: 911
 :SIGNATURE: (bcat-analysis--word-name w)
 :END:
 
@@ -13231,7 +13231,7 @@ a Sanskrit word as in the padapāṭha.
 ** ~bcat-analysis--word-function~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 916
+:LINE: 917
 :SIGNATURE: (bcat-analysis--word-function w)
 :END:
 
@@ -13242,7 +13242,7 @@ a Tibetan word's function without a repeated dictionary form
 ** ~bcat-analysis--function-overflow~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 924
+:LINE: 925
 :SIGNATURE: (bcat-analysis--function-overflow words &optional lang)
 :END:
 
@@ -13253,7 +13253,7 @@ Tibetan function, since 5.11. a Sanskrit form too: „/word/: rest“
 ** ~bcat-analysis--with-overflow~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 933
+:LINE: 934
 :SIGNATURE: (bcat-analysis--with-overflow structure lines)
 :END:
 
@@ -13263,7 +13263,7 @@ line of its own (org line breaks).
 ** ~bcat-analysis--chunk-columns~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 941
+:LINE: 942
 :SIGNATURE: (bcat-analysis--chunk-columns columns &optional width charge cell-width)
 :END:
 
@@ -13276,7 +13276,7 @@ bar and spaces, the table as seen; the PDF charges 6).
 ** ~bcat-analysis--format-chunks~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 963
+:LINE: 964
 :SIGNATURE: (bcat-analysis--format-chunks chunks &optional cell-width)
 :END:
 
@@ -13287,7 +13287,7 @@ lines (`bcat-analysis-wrap-rows').
 ** ~bcat-analysis--chunk-lines~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 975
+:LINE: 976
 :SIGNATURE: (bcat-analysis--chunk-lines chunks cell-width)
 :END:
 
@@ -13297,7 +13297,7 @@ their rows plus a blank line between two tables.
 ** ~bcat-analysis--best-chunks~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 985
+:LINE: 986
 :SIGNATURE: (bcat-analysis--best-chunks columns width charge cell-min)
 :END:
 
@@ -13310,7 +13310,7 @@ AS 3's two columns, side by side at 120, grew from 5 lines to 8.
 ** ~bcat-analysis--layout-tables~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 999
+:LINE: 1000
 :SIGNATURE: (bcat-analysis--layout-tables columns lang)
 :END:
 
@@ -13322,7 +13322,7 @@ table width, wide cells broken as far as that saves lines
 ** ~bcat-analysis-compact-tables~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1008
+:LINE: 1009
 :SIGNATURE: (bcat-analysis-compact-tables tables &optional lang)
 :END:
 
@@ -13340,7 +13340,7 @@ when nothing changes.
 ** ~bcat-analysis-gloss-table~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1049
+:LINE: 1050
 :SIGNATURE: (bcat-analysis-gloss-table words &optional uchen)
 :END:
 
@@ -13355,7 +13355,7 @@ function blue).  "" for no words.
 ** ~bcat-analysis--bracketed~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1077
+:LINE: 1078
 :SIGNATURE: (bcat-analysis--bracketed word gloss)
 :END:
 
@@ -13366,7 +13366,7 @@ is an org link (30.10., MSA IX.60: the commentary's export aborted).
 ** ~bcat-analysis-glossed-line~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1087
+:LINE: 1088
 :SIGNATURE: (bcat-analysis-glossed-line wylie words)
 :END:
 
@@ -13381,7 +13381,7 @@ WORDS do not cover its syllables exactly: the text is never altered.
 ** ~bcat-analysis-glosses-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1116
+:LINE: 1117
 :SIGNATURE: (bcat-analysis-glosses-p segments)
 :END:
 
@@ -13391,7 +13391,7 @@ the template then shows the glossed verse below the plain one.
 ** ~bcat-analysis--reference-lines~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1125
+:LINE: 1126
 :SIGNATURE: (bcat-analysis--reference-lines refs)
 :END:
 
@@ -13400,7 +13400,7 @@ the template then shows the glossed verse below the plain one.
 ** ~bcat-analysis-strip-marks~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1132
+:LINE: 1133
 :SIGNATURE: (bcat-analysis-strip-marks text)
 :END:
 
@@ -13409,7 +13409,7 @@ TEXT without org bold marks (the meaning-shift marks of a fetch).
 ** ~bcat-analysis--loose-regexp~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1136
+:LINE: 1137
 :SIGNATURE: (bcat-analysis--loose-regexp text)
 :END:
 
@@ -13418,7 +13418,7 @@ A regexp for TEXT that lets any run of whitespace stand for its spaces.
 ** ~bcat-analysis--reference-parts~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1140
+:LINE: 1141
 :SIGNATURE: (bcat-analysis--reference-parts segments name)
 :END:
 
@@ -13428,7 +13428,7 @@ order — each with its passages in org bold.
 ** ~bcat-analysis-mark-reference~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1154
+:LINE: 1155
 :SIGNATURE: (bcat-analysis-mark-reference text parts)
 :END:
 
@@ -13444,7 +13444,7 @@ of Lindtner's verse 9 dropped his note).
 ** ~bcat-analysis-shift-lines~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1189
+:LINE: 1190
 :SIGNATURE: (bcat-analysis-shift-lines seg)
 :END:
 
@@ -13456,7 +13456,7 @@ line with nothing after the translator's name is dropped (29.10., TĀ
 ** ~bcat-analysis-translations-block~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1202
+:LINE: 1203
 :SIGNATURE: (bcat-analysis-translations-block num seg)
 :END:
 
@@ -13469,7 +13469,7 @@ line breaks between.
 ** ~bcat-analysis-footnotes-last~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1215
+:LINE: 1216
 :SIGNATURE: (bcat-analysis-footnotes-last text)
 :END:
 
@@ -13486,7 +13486,7 @@ comparison below it (*** Übersicht …, 2.11.) stay where they are.
 ** ~bcat-analysis--comparison-labels-for~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1277
+:LINE: 1278
 :SIGNATURE: (bcat-analysis--comparison-labels-for)
 :END:
 
@@ -13496,7 +13496,7 @@ language has none).
 ** ~bcat-analysis--comparison-label~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1283
+:LINE: 1284
 :SIGNATURE: (bcat-analysis--comparison-label key)
 :END:
 
@@ -13505,7 +13505,7 @@ The word for KEY in the language of the comparison being rendered.
 ** ~bcat-analysis--rating~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1287
+:LINE: 1288
 :SIGNATURE: (bcat-analysis--rating rating)
 :END:
 
@@ -13515,7 +13515,7 @@ grün/gelb/rot or ok/mid/bad —, or nil.
 ** ~bcat-analysis--rating-word~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1295
+:LINE: 1296
 :SIGNATURE: (bcat-analysis--rating-word rating)
 :END:
 
@@ -13524,7 +13524,7 @@ RATING (Claude's) as the word of the file — the raw text when unknown.
 ** ~bcat-analysis--table-cell~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1300
+:LINE: 1301
 :SIGNATURE: (bcat-analysis--table-cell text)
 :END:
 
@@ -13533,7 +13533,7 @@ TEXT as one cell of an org table: one line, a bar as \vert{}.
 ** ~bcat-analysis--aligned-table~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1306
+:LINE: 1307
 :SIGNATURE: (bcat-analysis--aligned-table header rows)
 :END:
 
@@ -13543,7 +13543,7 @@ file, an hline under the header; the first column (numbers) to the right.
 ** ~bcat-analysis--class-conclusions~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1324
+:LINE: 1325
 :SIGNATURE: (bcat-analysis--class-conclusions units)
 :END:
 
@@ -13556,7 +13556,7 @@ ich bin mir nicht sicher, ob das richtig ist weil … Dafür müsste ich es
 ** ~bcat-analysis-comparison-proposal~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1406
+:LINE: 1407
 :SIGNATURE: (bcat-analysis-comparison-proposal parsed &optional target)
 :END:
 
@@ -13572,7 +13572,7 @@ Comparison.“
 ** ~bcat-analysis-comparison-units~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1434
+:LINE: 1435
 :SIGNATURE: (bcat-analysis-comparison-units parsed &optional refs target)
 :END:
 
@@ -13589,7 +13589,7 @@ units.  The proposal stands under the tables since 4.11.
 ** ~bcat-analysis--full-names~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1502
+:LINE: 1503
 :SIGNATURE: (bcat-analysis--full-names parsed refs)
 :END:
 
@@ -13603,7 +13603,7 @@ of Translations compared, looked up by „Lindtner 1981“, were lost.
 ** ~bcat-analysis-comparison~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1536
+:LINE: 1537
 :SIGNATURE: (bcat-analysis-comparison parsed &optional refs target)
 :END:
 
@@ -13616,7 +13616,7 @@ TARGET (`bcat-analysis-comparison-units').
 ** ~bcat-analysis--second-translation~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1563
+:LINE: 1564
 :SIGNATURE: (bcat-analysis--second-translation parsed)
 :END:
 
@@ -13627,7 +13627,7 @@ The fields of the translation in the second language PARSED gives —
 ** ~bcat-analysis--glossed~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1572
+:LINE: 1573
 :SIGNATURE: (bcat-analysis--glossed seg c)
 :END:
 
@@ -13638,7 +13638,7 @@ words do not cover the line.
 ** ~bcat-analysis-context~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1582
+:LINE: 1583
 :SIGNATURE: (bcat-analysis-context base parsed &optional refs)
 :END:
 
@@ -13652,7 +13652,7 @@ named again (`bcat-analysis--full-names').
 ** ~bcat-analysis-sanskrit-tables~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1628
+:LINE: 1629
 :SIGNATURE: (bcat-analysis-sanskrit-tables words)
 :END:
 
@@ -13669,7 +13669,7 @@ no words.
 ** ~bcat-analysis--part-norm~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1653
+:LINE: 1654
 :SIGNATURE: (bcat-analysis--part-norm s)
 :END:
 
@@ -13680,7 +13680,7 @@ tantrālokaḥ, sva of svātantrya.
 ** ~bcat-analysis--part-item~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1661
+:LINE: 1662
 :SIGNATURE: (bcat-analysis--part-item text)
 :END:
 
@@ -13690,7 +13690,7 @@ tantrālokaḥ, sva of svātantrya.
 ** ~bcat-analysis--part-form-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1669
+:LINE: 1670
 :SIGNATURE: (bcat-analysis--part-form-p form keys)
 :END:
 
@@ -13704,7 +13704,7 @@ speech“.
 ** ~bcat-analysis--part-groups~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1688
+:LINE: 1689
 :SIGNATURE: (bcat-analysis--part-groups items keys)
 :END:
 
@@ -13724,7 +13724,7 @@ anything else goes with the part after it.
 ** ~bcat-analysis--word-parts~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1746
+:LINE: 1747
 :SIGNATURE: (bcat-analysis--word-parts w)
 :END:
 
@@ -13739,7 +13739,7 @@ members).
 ** ~bcat-analysis--part-cell~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1770
+:LINE: 1771
 :SIGNATURE: (bcat-analysis--part-cell item keys)
 :END:
 
@@ -13751,7 +13751,7 @@ the word's members (`bcat-analysis--part-form-p').
 ** ~bcat-analysis--bare-part-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1781
+:LINE: 1782
 :SIGNATURE: (bcat-analysis--bare-part-p items head keys)
 :END:
 
@@ -13763,7 +13763,7 @@ root (cit: „√cit (1) consciousness“ stays), or only a meaning (kāya:
 ** ~bcat-analysis--header-rule~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1791
+:LINE: 1792
 :SIGNATURE: (bcat-analysis--header-rule line)
 :END:
 
@@ -13772,7 +13772,7 @@ The hline under the table row LINE: dashes as wide as each cell.
 ** ~bcat-analysis--header-table~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1798
+:LINE: 1799
 :SIGNATURE: (bcat-analysis--header-table rows)
 :END:
 
@@ -13782,7 +13782,7 @@ an hline under it.
 ** ~bcat-analysis--column-table~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1804
+:LINE: 1805
 :SIGNATURE: (bcat-analysis--column-table head cells)
 :END:
 
@@ -13794,7 +13794,7 @@ verwirrt mich“).
 ** ~bcat-analysis--formation-block~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1811
+:LINE: 1812
 :SIGNATURE: (bcat-analysis--formation-block w)
 :END:
 
@@ -13809,7 +13809,7 @@ repeat the word.
 ** ~bcat-analysis-parts-line-table~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1856
+:LINE: 1857
 :SIGNATURE: (bcat-analysis-parts-line-table line)
 :END:
 
@@ -13822,7 +13822,7 @@ else.  C-c u L (Carsten 9.11., TĀ 1009).
 ** ~bcat-analysis-formation-tables~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1867
+:LINE: 1868
 :SIGNATURE: (bcat-analysis-formation-tables words)
 :END:
 
@@ -13836,7 +13836,7 @@ own small table.
 ** ~bcat-analysis-split-word-tables~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1876
+:LINE: 1877
 :SIGNATURE: (bcat-analysis-split-word-tables tables)
 :END:
 
@@ -13851,7 +13851,7 @@ tables — Tibetan, an overview already.  C-c u L.
 ** ~bcat-analysis-padapatha-line~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1897
+:LINE: 1898
 :SIGNATURE: (bcat-analysis-padapatha-line samhita words &optional plain)
 :END:
 
@@ -13865,7 +13865,7 @@ closes the line set close (30.10.).  nil without words.
 ** ~bcat-analysis-table-padapatha~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1916
+:LINE: 1917
 :SIGNATURE: (bcat-analysis-table-padapatha samhita tables)
 :END:
 
@@ -13879,7 +13879,7 @@ tables in Tibetan script.
 ** ~bcat-analysis--word-entries~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1931
+:LINE: 1932
 :SIGNATURE: (bcat-analysis--word-entries entries)
 :END:
 
@@ -13888,7 +13888,7 @@ ENTRIES (alists with word and analysis) as "/word/ — analysis".
 ** ~bcat-analysis-word-analysis~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1938
+:LINE: 1939
 :SIGNATURE: (bcat-analysis-word-analysis segments)
 :END:
 
@@ -13900,7 +13900,7 @@ LEMMA; FORM' — "" when no segment has words.
 ** ~bcat-analysis--prose-recitation~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1957
+:LINE: 1958
 :SIGNATURE: (bcat-analysis--prose-recitation base parsed)
 :END:
 
@@ -13913,7 +13913,7 @@ the lines are the transmitted text, broken at its spaces; else nil.
 ** ~bcat-analysis-sanskrit-context~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1978
+:LINE: 1979
 :SIGNATURE: (bcat-analysis-sanskrit-context base parsed &optional refs)
 :END:
 
@@ -13927,7 +13927,7 @@ skipped keeps its rump fields; sigla used as names are named again
 ** ~bcat-analysis--num~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 2039
+:LINE: 2040
 :SIGNATURE: (bcat-analysis--num alist &optional key)
 :END:
 
@@ -13937,7 +13937,7 @@ writes numbers, now and then as strings — or nil.
 ** ~bcat-analysis--num-ranges~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 2047
+:LINE: 2048
 :SIGNATURE: (bcat-analysis--num-ranges nums)
 :END:
 
@@ -13947,7 +13947,7 @@ NUMS (ascending) for a heading: runs as ranges, the rest by comma —
 ** ~bcat-analysis--assignment~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 2060
+:LINE: 2061
 :SIGNATURE: (bcat-analysis--assignment tibetan parsed sa-nums)
 :END:
 
@@ -13959,7 +13959,7 @@ with the one before it, the first with the first of SA-NUMS.
 ** ~bcat-analysis--differences~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 2075
+:LINE: 2076
 :SIGNATURE: (bcat-analysis--differences parsed n)
 :END:
 
@@ -13969,7 +13969,7 @@ for none.
 ** ~bcat-analysis-pair-lists~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 2087
+:LINE: 2088
 :SIGNATURE: (bcat-analysis-pair-lists sanskrit tibetan assignment differences)
 :END:
 
@@ -13989,7 +13989,7 @@ assignment — one per segment, its Wylie under it when it has no table.
 ** ~bcat-analysis--tibetan-answered~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 2146
+:LINE: 2147
 :SIGNATURE: (bcat-analysis--tibetan-answered tibetan parsed)
 :END:
 
@@ -14000,7 +14000,7 @@ request.
 ** ~bcat-analysis-bilingual-context~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 2162
+:LINE: 2163
 :SIGNATURE: (bcat-analysis-bilingual-context base parsed)
 :END:
 
@@ -14018,7 +14018,7 @@ without a valid assignment see `bcat-analysis--assignment'.
 ** ~bcat-analysis-partner-context~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 2201
+:LINE: 2202
 :SIGNATURE: (bcat-analysis-partner-context base parsed sanskrit &optional sanskrit-translation)
 :END:
 
@@ -14053,7 +14053,7 @@ alles in der Zielsprache“ — so nil; "de" or "en" fixes one.
 ** ~bcat-analysis-response-directory~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 402
+:LINE: 403
 :TYPE: 'directory
 :GROUP: buddhist-cat
 :DEFAULT: (expand-file-name "bcat-responses" temporary-file-directory)
@@ -14065,7 +14065,7 @@ Where an answer C-c u G could not read is kept, one file per answer
 ** ~bcat-analysis-table-width~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 599
+:LINE: 600
 :TYPE: 'integer
 :GROUP: buddhist-cat
 :DEFAULT: 158
@@ -14085,7 +14085,7 @@ measure (`bcat-export-tibetan-table-width').  An exception per language:
 ** ~bcat-analysis-cell-width~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 613
+:LINE: 614
 :TYPE: 'integer
 :GROUP: buddhist-cat
 :DEFAULT: 45
@@ -14104,7 +14104,7 @@ stays unbroken.  An exception per language:
 ** ~bcat-analysis-layout-overrides~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 626
+:LINE: 627
 :TYPE: '(alist
 :GROUP: buddhist-cat
 :DEFAULT: nil
@@ -14119,7 +14119,7 @@ und dann durch Ausnahmen überschrieben“.
 ** ~bcat-analysis-function-width~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 809
+:LINE: 810
 :TYPE: 'integer
 :GROUP: buddhist-cat
 :DEFAULT: 30
@@ -14155,7 +14155,7 @@ The comparison's part of the JSON contract of every sentence analysis
 ** ~bcat-analysis--particle-labels~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 576
+:LINE: 577
 :DEFAULT: '
 :END:
 
@@ -14164,7 +14164,7 @@ The comparison's part of the JSON contract of every sentence analysis
 ** ~bcat-analysis--comparison-labels~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 1236
+:LINE: 1237
 :DEFAULT: '
 :END:
 
@@ -14173,7 +14173,7 @@ The comparison's part of the JSON contract of every sentence analysis
 ** ~bcat-analysis--rating-colours~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 1262
+:LINE: 1263
 :DEFAULT: '
 :END:
 
@@ -14182,7 +14182,7 @@ The comparison's part of the JSON contract of every sentence analysis
 ** ~bcat-analysis--comparison-table-attr~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 1267
+:LINE: 1268
 :DEFAULT: "#+ATTR_LATEX: :align rp{4.3cm}p{1.6cm}p{8cm} :font \\small"
 :END:
 
@@ -14192,7 +14192,7 @@ the page (the Muster's).
 ** ~bcat-analysis--comparison-lang~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 1272
+:LINE: 1273
 :DEFAULT: "en"
 :END:
 
