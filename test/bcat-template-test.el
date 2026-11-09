@@ -199,18 +199,74 @@ Compounds — the Note of segment 686 dropped."
   "Carsten 5.11.: „Übersetzung unter die Übersicht“ — per Sanskrit
 segment the overview, „→“ its translation, then the parts tables; in
 the Sanskrit file, the bilingual one and the Sanskrit part of the
-Tibetan file of a pair."
-  (let ((bcat-template-directory
-         (expand-file-name "Templates/analysis" bcat-template-test--root))
-        (seg '((num . "1") (shown . t) (mark . "") (gloss-table . "| a |")
-               (segment-translation . "t") (formation-tables . "| b |\n|---|\n| c |"))))
-    (should (string-match-p (regexp-quote "⟦1⟧\n| a |\n\n→ t\n\n| b |\n|---|\n| c |\n\n")
-                            (bcat-template-render-named "sanskrit" `((segments ,seg)))))
-    (should (string-match-p (regexp-quote "⟦1⟧\n| a |\n\n→ t\n\n| b |\n|---|\n| c |\n\n")
-                            (bcat-template-render-named "bilingual" `((segments ,seg)))))
-    (should (string-match-p (regexp-quote "⟦1⟧\n| a |\n\n→ t\n\n| b |\n|---|\n| c |\n\n")
-                            (bcat-template-render-named "bilingual-tibetan"
-                                                        `((sanskrit-p . t) (sanskrit-segments ,seg)))))))
+Tibetan file of a pair.  9.11. (TĀ 1009: „Zumindest bräuchte es noch
+eine subsection headline. Und hatten wir nicht mal Original und
+Übersetzung hervorgehoben?“): the segment a heading ⟦N⟧, under it the
+line of the original in IAST (the padapāṭha) in bold, the parts under
+their own heading Word Formation, folded; the sentence's translation
+under a heading of its own — else it would sit in the last Word
+Formation, folded away."
+  (let* ((bcat-template-directory
+          (expand-file-name "Templates/analysis" bcat-template-test--root))
+         (seg '((num . "1") (shown . t) (mark . "") (gloss-table . "| a |") (padapatha . "p q //")
+                (segment-translation . "t") (formation-tables . "| b |\n|---|\n| c |")))
+         (block (concat "⟦1⟧\n*p q //*\n\n| a |\n\n→ t\n\n*** Word Formation\n:PROPERTIES:\n"
+                        ":VISIBILITY: folded\n:END:\n| b |\n|---|\n| c |\n\n"))
+         (sanskrit (bcat-template-render-named "sanskrit" `((segments ,seg) (translation . "T"))))
+         (bilingual (bcat-template-render-named "bilingual" `((segments ,seg) (translation . "T"))))
+         (partner (bcat-template-render-named "bilingual-tibetan"
+                                              `((sanskrit-p . t) (sanskrit-segments ,seg)
+                                                (sanskrit-translation . "T")))))
+    (should (string-match-p (concat "^\\*\\* " (regexp-quote block)) sanskrit))
+    (should (string-match-p (concat "^\\*\\* <<skt-1>>" (regexp-quote block)) bilingual))
+    (should (string-match-p (concat "^\\*\\* <<skt-1>>" (regexp-quote block)) partner))
+    (dolist (out (list sanskrit bilingual partner))
+      (should (string-match-p "^\\*\\* Translation\n\\(?:.*\n\\)*?\\*Translation:\\* T$" out)))))
+
+(defun bcat-template-test--sample (name)
+  "The text of the sample NAME under Templates/analysis/samples/."
+  (with-temp-buffer
+    (insert-file-contents (expand-file-name (concat "Templates/analysis/samples/" name)
+                                            bcat-template-test--root))
+    (buffer-string)))
+
+(ert-deftest bcat-template-reading-structure ()
+  "9.11. (TĀ 1009) as org reads it, in the reviewed samples: in the
+section with the Sanskrit segments (* Text; * Sanskrit in the Tibetan
+file of a pair) each segment is a heading ⟦N⟧ with the original in bold
+right under it; its „→“ translation belongs to that heading, its parts
+to a heading Word Formation under it, folded; the translation of the
+sentence to a heading Translation — not to the last Word Formation."
+  (require 'org)
+  (dolist (case '(("Sanskrit.org" "Text") ("Bilingual.org" "Text") ("Bilingual-Tibetan.org" "Sanskrit")))
+    (with-temp-buffer
+      (insert (bcat-template-test--sample (car case)))
+      (let ((org-mode-hook nil)) (org-mode))
+      (goto-char (point-min))
+      (should (re-search-forward (format "^\\* %s$" (nth 1 case)) nil t))
+      (let ((start (point))
+            (end (save-excursion (org-end-of-subtree t) (point)))
+            (segments 0) (arrows 0) (formations 0))
+        (while (re-search-forward "^\\*\\* .*⟦[0-9]+⟧" end t)
+          (cl-incf segments)
+          (should (save-excursion (forward-line 1) (looking-at "\\*[^* \n][^\n]*[^ \n]\\*$"))))
+        (goto-char start)
+        (while (re-search-forward "^→ " end t)
+          (cl-incf arrows)
+          (let ((path (org-get-outline-path t)))
+            (should (= 2 (length path)))
+            (should (string-match-p "⟦[0-9]+⟧" (nth 1 path)))))
+        (goto-char start)
+        (while (re-search-forward "^\\*\\*\\* Word Formation$" end t)
+          (cl-incf formations)
+          (should (equal "folded" (org-entry-get nil "VISIBILITY")))
+          (should (string-match-p "⟦[0-9]+⟧" (car (last (org-get-outline-path))))))
+        (goto-char start)
+        (should (re-search-forward "^\\*Translation:\\* " end t))
+        (should (equal (list (nth 1 case) "Translation") (org-get-outline-path t)))
+        (should (> segments 0))
+        (should (= segments arrows))
+        (should (> formations 0))))))
 
 (ert-deftest bcat-template-sanskrit-prose ()
   "Viveka prose (no metre): the Recitation holds only the Devanāgarī

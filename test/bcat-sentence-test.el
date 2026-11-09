@@ -1049,7 +1049,8 @@ with vocabulary under * Text, tables, Forms per segment — and the hook
         ;; description; no padapāṭha under * Text, the tables instead.
         (should (string-match-p "^\\* Recitation\n#\\+begin_verse\nअत्र" text))
         (should-not (string-match-p "Śloka (Anuṣṭubh)\\|atra \\[here\\]" text))
-        (should (string-match-p (regexp-quote "* Text\n⟦685⟧\n| atra |") text))
+        ;; 9.11.: ⟦N⟧ a heading, the original in bold under it
+        (should (string-match-p (regexp-quote "* Text\n** ⟦685⟧\n*atra mad-vāk aśaktā api yat niyantraṇam ullaset /*\n\n| atra |") text))
         (should (string-match-p (regexp-quote "| atra | mad-vāk ") text))
         (should (string-match-p "^\\*Forms:\\*\n- /mad-vāk/ — vāc- f\\." text))
         (should (string-match-p "^⟦685⟧ \\*Translation:\\* Although my speech" text))
@@ -1242,7 +1243,7 @@ differences, the rendering; C-c u H runs once, at the end."
         ;; 1.11.: the Sanskrit part, then the Tibetan part, jump marks
         ;; both ways; the differences after the last Tibetan segment of
         ;; a group.
-        (should (string-match-p (regexp-quote "<<skt-23>>⟦23⟧ · [[tib-78][Tib. 78–79]]\n| ") text))
+        (should (string-match-p "^\\*\\* <<skt-23>>⟦23⟧ · \\[\\[tib-78\\]\\[Tib\\. 78–79\\]\\]\n\\*[^*\n]+\\*\n\n| " text))
         (should (string-match-p (regexp-quote "<<tib-77>>⟦77⟧ · [[skt-22][Skt. 22]]\n| ཅིའི་ཕྱིར") text))
         (should (< (string-match "^\\* Tibetan$" text) (string-match "^<<tib-77>>" text)))
         ;; (78 and 79 have neither words nor translation in this answer;
@@ -1406,7 +1407,7 @@ The PDF is made of the Sanskrit file only („nur die zweisprachige“)."
           ;; (78 and 79 have no words in this answer: no table, so no
           ;; mark — their translations, then the group's differences.)
           (should (string-match-p (regexp-quote "→ the body with what it appropriated,\n\n*Differences:* /udbhāvanatā/") text))
-          (should (string-match-p (regexp-quote "<<skt-23>>⟦23⟧ · [[tib-78][Tib. 78–79]]\n| pañca-ākāra-ātma-vastu-udbhāvanatām") text))
+          (should (string-match-p (regexp-quote "** <<skt-23>>⟦23⟧ · [[tib-78][Tib. 78–79]]\n*pañca-ākāra-ātma-vastu-udbhāvanatām upādāya.*\n\n| pañca-ākāra-ātma-vastu-udbhāvanatām") text))
           (should (< (string-match "^→ the body with what it appropriated,$" text) (string-match "^\\*Differences:\\*" text)))
           (should (string-match-p (concat (regexp-quote "*Differences:* /udbhāvanatā/ is rendered /brjod pa/ („stating“).\n\n")
                                           "\\(?:\\*Grammar:\\* [^\n]*\n\n\\)?\\*Translation:\\*")
@@ -1455,6 +1456,32 @@ Tibetan), not „one each“."
           (tibetan-cascade-fetch (list :source src :sent-nums '(3) :label "Satz 3") t)))
       (should (string-match-p "je zwei DharmaMitra- und zwei Claude-Abrufe (Sanskrit, Tibetisch)"
                               (car questions))))))
+
+(ert-deftest bcat-sentence-write-folds-word-formation ()
+  "9.11. (TĀ 1009): Word Formation is folded when the file opens
+\(:VISIBILITY: folded) — and also after C-c u G or C-c u L write into
+a buffer that visits the file: the writer applies the property, the
+rest stays open."
+  (let* ((file (make-temp-file "bcat-fold-" nil ".org"))
+         (text (concat "#+STARTUP: showall\n* Text\n** ⟦1⟧\n*a*\n\n| a |\n\n→ t\n\n"
+                       "*** Word Formation\n:PROPERTIES:\n:VISIBILITY: folded\n:END:\n"
+                       "| x |\n|---|\n| y |\n\n** Translation\n*Translation:* T\n"))
+         (buf (find-file-noselect file)))
+    (unwind-protect
+        (with-current-buffer buf
+          (let ((org-mode-hook nil)) (org-mode))
+          (bcat-sentence--write file text)
+          (goto-char (point-min))
+          (re-search-forward "^| x |")
+          (should (invisible-p (point)))
+          (goto-char (point-min))
+          (re-search-forward "^→ t")
+          (should-not (invisible-p (point)))
+          (re-search-forward "^\\*Translation:\\* T")
+          (should-not (invisible-p (point))))
+      (with-current-buffer buf (set-buffer-modified-p nil))
+      (kill-buffer buf)
+      (delete-file file))))
 
 (provide 'bcat-sentence-test)
 ;;; bcat-sentence-test.el ends here

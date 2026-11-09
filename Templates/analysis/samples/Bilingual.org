@@ -30,20 +30,28 @@ dharmādharmābhisaṃskārātmavastūdbhāvanatām upādāya.
 tadāśrayātmavastūdbhāvanatām upādāya.
 #+end_verse
 
-<<skt-22>>⟦22⟧ · [[tib-77][Tib. 77]]
+** <<skt-22>>⟦22⟧ · [[tib-77][Tib. 77]]
+*kasmāt pañca eva skandhāḥ.*
+
 | kasmāt                | pañca            | eva  | skandhāḥ    |
 | why                   | five             | only | aggregates  |
 | pron. abl. sg. (ind.) | num. m. nom. pl. | ind. | m. nom. pl. |
 
 → Why are there just five aggregates (skandha)? —
 
-<<skt-23>>⟦23⟧ · [[tib-78][Tib. 78]]
+** <<skt-23>>⟦23⟧ · [[tib-78][Tib. 78]]
+*pañca-ākāra-ātma-vastu-udbhāvanatām upādāya.*
+
 | pañca-ākāra-ātma-vastu-udbhāvanatām | upādāya       |
 | showing a fivefold self-basis       | on account of |
 | f. acc. sg.                         | ger.          |
 
 → On account of their bringing to light (udbhāvanatā) the basis of self (ātmavastu) in five modes:
 
+*** Word Formation
+:PROPERTIES:
+:VISIBILITY: folded
+:END:
 | pañca | ākāra      | ātma | vastu | udbhāvanatām                   |
 |-------+------------+------+-------+--------------------------------|
 | five  | form, mode | self | thing | bring forth (caus.) + abstract |
@@ -54,13 +62,19 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 | /ā-/ to              |
 | /√dā/ (3) give, take |
 
-<<skt-24>>⟦24⟧ · [[tib-79][Tib. 79]]
+** <<skt-24>>⟦24⟧ · [[tib-79][Tib. 79]]
+*sa-parigraha-deha-ātma-vastu-udbhāvanatām upādāya.*
+
 | sa-parigraha-deha-ātma-vastu-udbhāvanatām | upādāya       |
 | self-basis: body + possessions            | on account of |
 | f. acc. sg.                               | ger.          |
 
 → the self-basis that is the body together with its possessions (saparigraha-deha),
 
+*** Word Formation
+:PROPERTIES:
+:VISIBILITY: folded
+:END:
 | sa   | parigraha         | deha | ātma | vastu | udbhāvanatām |
 |------+-------------------+------+------+-------+--------------|
 | with | /pari-/ around    | body | self | thing | bringing     |
@@ -72,13 +86,19 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 | /ā-/ to              |
 | /√dā/ (3) give, take |
 
-<<skt-25>>⟦25⟧ · [[tib-80][Tib. 80]]
+** <<skt-25>>⟦25⟧ · [[tib-80][Tib. 80]]
+*upabhoga-ātma-vastu-udbhāvanatām upādāya.*
+
 | upabhoga-ātma-vastu-udbhāvanatām | upādāya       |
 | self-basis: experience           | on account of |
 | f. acc. sg.                      | ger.          |
 
 → the self-basis that is experience (upabhoga),
 
+*** Word Formation
+:PROPERTIES:
+:VISIBILITY: folded
+:END:
 | upabhoga          | ātma | vastu | udbhāvanatām |
 |-------------------+------+-------+--------------|
 | /upa-/ near       | self | thing | bringing     |
@@ -90,13 +110,19 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 | /ā-/ to              |
 | /√dā/ (3) give, take |
 
-<<skt-26>>⟦26⟧ · [[tib-81][Tib. 81]]
+** <<skt-26>>⟦26⟧ · [[tib-81][Tib. 81]]
+*vyavahāra-ātma-vastu-udbhāvanatām upādāya.*
+
 | vyavahāra-ātma-vastu-udbhāvanatām | upādāya       |
 | self-basis: expression            | on account of |
 | f. acc. sg.                       | ger.          |
 
 → the self-basis that is conventional expression (vyavahāra),
 
+*** Word Formation
+:PROPERTIES:
+:VISIBILITY: folded
+:END:
 | vyavahāra       | ātma | vastu | udbhāvanatām |
 |-----------------+------+-------+--------------|
 | /vi-/ apart     | self | thing | bringing     |
@@ -109,13 +135,19 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 | /ā-/ to              |
 | /√dā/ (3) give, take |
 
-<<skt-27>>⟦27⟧ · [[tib-82][Tib. 82]]
+** <<skt-27>>⟦27⟧ · [[tib-82][Tib. 82]]
+*dharma-adharma-abhisaṃskāra-ātma-vastu-udbhāvanatām upādāya.*
+
 | dharma-adharma-abhisaṃskāra-ātma-vastu-udbhāvanatām | upādāya       |
 | self-basis: forming (de)merit                       | on account of |
 | f. acc. sg.                                         | ger.          |
 
 → the self-basis that is the forming of merit and demerit (dharmādharmābhisaṃskāra),
 
+*** Word Formation
+:PROPERTIES:
+:VISIBILITY: folded
+:END:
 | dharma | adharma | abhisaṃskāra    | ātma | vastu | udbhāvanatām |
 |--------+---------+-----------------+------+-------+--------------|
 | merit  | not     | /abhi-/ toward  | self | thing | bringing     |
@@ -128,13 +160,19 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 | /ā-/ to              |
 | /√dā/ (3) give, take |
 
-<<skt-28>>⟦28⟧ · [[tib-83][Tib. 83]]
+** <<skt-28>>⟦28⟧ · [[tib-83][Tib. 83]]
+*tad-āśraya-ātma-vastu-udbhāvanatām upādāya.*
+
 | tad-āśraya-ātma-vastu-udbhāvanatām | upādāya       |
 | self-basis: their support          | on account of |
 | f. acc. sg.                        | ger.          |
 
 → and the self-basis that is the support of these (tadāśraya).
 
+*** Word Formation
+:PROPERTIES:
+:VISIBILITY: folded
+:END:
 | tad  | āśraya             | ātma | vastu | udbhāvanatām |
 |------+--------------------+------+-------+--------------|
 | that | /ā-/ to            | self | thing | bringing     |
@@ -146,6 +184,7 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 | /ā-/ to              |
 | /√dā/ (3) give, take |
 
+** Translation
 *Grammar:* One question and its answer, the catechism form of the AS.  The question (22) is a nominal sentence with an understood copula: kasmāt pañcaiva skandhāḥ.  The answer (23–28) has no finite verb: six accusatives in -udbhāvanatām, each governed by the gerund upādāya used as a postposition („on account of“).  23 states the principle — the self-basis appears in five modes —, 24–28 list the five, each a compound ending in -ātmavastūdbhāvanatām.
 
 *Translation:* Why are there just five aggregates (skandha)? — On account of their bringing to light (udbhāvanatā) the basis of self (ātmavastu) in five modes: the self-basis that is the body together with its possessions (saparigraha-deha), the self-basis that is experience (upabhoga), the self-basis that is conventional expression (vyavahāra), the self-basis that is the forming of merit and demerit (dharmādharmābhisaṃskāra), and the self-basis that is the support of these (tadāśraya).

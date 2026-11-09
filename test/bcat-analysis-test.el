@@ -851,9 +851,15 @@ the sentence."
          (text (substring out (string-match "^\\* Text$" out) (string-match "^\\* Tibetan$" out)))
          (tib (substring out (string-match "^\\* Tibetan$" out) (string-match "^\\* Sentence$" out))))
     (should (string-match-p "\\`\\* Text\n#\\+begin_verse\nकस्मात्" text))
+    ;; 9.11.: the segment a heading, the original in bold under it, the
+    ;; parts under a folded Word Formation.
     (should (string-match-p
-             (concat "^<<skt-23>>⟦23⟧ · \\[\\[tib-78\\]\\[Tib\\. 78\\]\\]\n| pañca-ākāra-ātma-vastu-udbhāvanatām .*\n\\(?:|.*\n\\)*"
-                     "\n→ On account of their bringing to light .*\n\n\\(?:\\(?:[|/].*\n\\)+\n\\)*<<skt-24>>")
+             (concat "^\\*\\* <<skt-23>>⟦23⟧ · \\[\\[tib-78\\]\\[Tib\\. 78\\]\\]\n"
+                     "\\*pañca-ākāra-ātma-vastu-udbhāvanatām upādāya\\.\\*\n\n"
+                     "| pañca-ākāra-ātma-vastu-udbhāvanatām .*\n\\(?:|.*\n\\)*"
+                     "\n→ On account of their bringing to light .*\n\n"
+                     "\\*\\*\\* Word Formation\n:PROPERTIES:\n:VISIBILITY: folded\n:END:\n"
+                     "\\(?:\\(?:|.*\n\\)+\n\\)*\\*\\* <<skt-24>>")
              text))
     (should-not (string-match-p "བདག\\|Differences" text))
     (should (string-match-p "\n\\*Translation:\\* Why are there just five aggregates" text))
@@ -910,7 +916,9 @@ Devanāgarī over IAST, per segment mark (link to the Tibetan), tables,
              text))
     (should (string-match-p "\\`\\* Sanskrit\n#\\+begin_verse\nकस्मात्" skt))
     (should (string-match-p
-             (concat "^<<skt-23>>⟦23⟧ · \\[\\[tib-78\\]\\[Tib\\. 78\\]\\]\n| pañca-ākāra-ātma-vastu-udbhāvanatām .*\n\\(?:|.*\n\\)*"
+             (concat "^\\*\\* <<skt-23>>⟦23⟧ · \\[\\[tib-78\\]\\[Tib\\. 78\\]\\]\n"
+                     "\\*pañca-ākāra-ātma-vastu-udbhāvanatām upādāya\\.\\*\n\n"
+                     "| pañca-ākāra-ātma-vastu-udbhāvanatām .*\n\\(?:|.*\n\\)*"
                      "\n→ On account of their bringing to light ")
              skt))
     (should (string-match-p "\n\\*Translation:\\* Why are there just five aggregates\\? — On account of …" skt))

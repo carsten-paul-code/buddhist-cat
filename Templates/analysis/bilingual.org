@@ -11,6 +11,15 @@ Devanāgarī (30.10.: „hat keinen Mehrwert“) — Devanāgarī über der
 überlieferten Zeile, dann der Padapāṭha mit Vokabeln, wie beim
 Tibetischen Uchen über Wylie, dann Wylie mit Vokabeln.
 
+Seit 9.11. (Carsten, TĀ 1009: „Zumindest bräuchte es noch eine
+subsection headline. Und hatten wir nicht mal Original und Übersetzung
+hervorgehoben?“) ist jedes Sanskrit-Segment eine Überschrift ** ⟦N⟧,
+direkt darunter fett die Originalzeile in IAST (padapatha: der
+Padapāṭha nach C-c u G, sonst die überlieferte Zeile), dann die
+Übersicht, „→“ und die Teile der Wörter unter *** Word Formation
+(:VISIBILITY: folded — eingeklappt); die Übersetzung des Satzes unter
+** Translation, sonst stünde sie im letzten Word Formation.
+
 Platzhalter und Abschnitte wie in tibetan.org: {{name}} setzt einen Wert
 ein; eine Zeile, deren Platzhalter ALLE leer sind, fällt samt
 Beschriftung weg; {{#x}} … {{/x}} erscheint nur, wenn x einen Wert hat
@@ -94,10 +103,9 @@ Rumpf ohne Glossen bleibt sie.  Reines Sanskrit behält den Padapāṭha.
 
 {{#segments}}
 {{#shown}}
-<<skt-{{num}}>>⟦{{num}}⟧{{mark}}
-{{^gloss-table}}
+** <<skt-{{num}}>>⟦{{num}}⟧{{mark}}
+*{{padapatha}}*
 
-{{/gloss-table}}
 {{/shown}}
 {{#gloss-table}}
 {{gloss-table}}
@@ -108,10 +116,17 @@ Rumpf ohne Glossen bleibt sie.  Reines Sanskrit behält den Padapāṭha.
 
 {{/segment-translation}}
 {{#formation-tables}}
+*** Word Formation
+:PROPERTIES:
+:VISIBILITY: folded
+:END:
 {{formation-tables}}
 
 {{/formation-tables}}
 {{/segments}}
+{{#translation}}
+** Translation
+{{/translation}}
 {{#grammar}}
 *Grammar:* {{grammar}}
 

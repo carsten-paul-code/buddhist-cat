@@ -119,7 +119,7 @@ tables stay as they are — a second run changes nothing."
     (should (string-match-p "^| janakaḥ +|\n|-+|\n| /√jan/ (1) beget |" (alist-get 'formation-tables seg)))
     (let* ((once (bcat-relayout-test--render "sanskrit" base old))
            (again (bcat-relayout-test--render "sanskrit" base once)))
-      (should (string-match-p "^→ t\n\n| vimala " once))
+      (should (string-match-p "^→ t\n\n\\*\\*\\* Word Formation\n:PROPERTIES:\n:VISIBILITY: folded\n:END:\n| vimala " once))
       (should (equal once again)))))
 
 (ert-deftest bcat-relayout-parts-lines-to-tables ()
@@ -137,6 +137,30 @@ the tables of compounds stay as they are."
     (should (equal (concat "| hṛdayam          |\n|------------------|\n| /hṛd/ heart      |\n"
                            "| /-aya/ my suffix |\n\n| a  | b  |\n|----+----|\n| x  | y  |")
                    (alist-get 'formation-tables seg)))))
+
+(ert-deftest bcat-relayout-segment-headings ()
+  "9.11. (TĀ 1009): C-c u L sets a file of 5.11. (⟦N⟧ a line, the parts
+right after „→“, the sentence's translation after the last segment) in
+the new structure — ⟦N⟧ a heading, the original in bold under it, the
+parts under a folded Word Formation, the sentence under ** Translation;
+read back, a second run changes nothing, and a hand correction of the
+bold line stays."
+  (let* ((old (concat "* Text\n⟦1⟧\n| hṛdayam | ab |\n| heart | g |\n| n. | f |\n\n→ t\n\n"
+                      "/hṛdayam/: /hṛd/ heart · /-aya/ suffix\n\n"
+                      "*Grammar:* g\n\n*Translation:* T\n\n"
+                      "* Segments\n** Segment 1\n\n*Structure:* s\n"))
+         (base '((segments ((num . 1) (samhita . "hṛdayam ab /") (padapatha . "hṛdayam ab /")))
+                 (sent-num . "1")))
+         (once (bcat-relayout-test--render "sanskrit" base old))
+         (again (bcat-relayout-test--render "sanskrit" base once)))
+    (should (string-match-p (regexp-quote "\n** ⟦1⟧\n*hṛdayam ab /*\n\n| hṛdayam | ab |") once))
+    (should (string-match-p (regexp-quote "→ t\n\n*** Word Formation\n:PROPERTIES:\n:VISIBILITY: folded\n:END:\n| hṛdayam ") once))
+    (should (string-match-p (regexp-quote "\n** Translation\n*Grammar:* g\n\n*Translation:* T\n") once))
+    (should-not (string-match-p "^/hṛdayam/:" once))
+    (should (equal once again))
+    (let ((fixed (replace-regexp-in-string "^\\*hṛdayam ab /\\*$" "*hṛdayam a-b /*" once)))
+      (should-not (equal fixed once))
+      (should (equal fixed (bcat-relayout-test--render "sanskrit" base fixed))))))
 
 (ert-deftest bcat-relayout-compacts-tables ()
   "4.11.: C-c u L sets a Tibetan file written before with compact tables
@@ -349,7 +373,8 @@ pair; no request."
                  (lambda (&rest _) (setq fired t))))
         (bcat-relayout-file file))
       (should-not fired)
-      (should (string-match-p "^<<skt-22>>⟦22⟧ · \\[\\[tib-77\\]\\[Tib\\. 77\\]\\]\n| kasmāt" (bcat-sentence-test--text-of file)))
+      (should (string-match-p "^\\*\\* <<skt-22>>⟦22⟧ · \\[\\[tib-77\\]\\[Tib\\. 77\\]\\]\n\\*kasmāt pañca eva skandhāḥ\\.\\*\n\n| kasmāt"
+                              (bcat-sentence-test--text-of file)))
       (should (string-match-p "^\\* Tibetan\n\\(?:.\\|\n\\)*\n| ཅིའི་ཕྱིར" (bcat-sentence-test--text-of file))))))
 
 (ert-deftest bcat-relayout-file-context ()

@@ -1913,6 +1913,21 @@ closes the line set close (30.10.).  nil without words."
                     ((string-prefix-p "." close) close)
                     (t (concat " " close)))))))
 
+(defun bcat-analysis-table-padapatha (samhita tables)
+  "The padapāṭha line of a Sanskrit segment read back from its overview
+TABLES — the words of their first row, then the daṇḍas closing the
+transmitted line SAMHITA (`bcat-analysis-padapatha-line', PLAIN) —, for
+the original in bold under ⟦N⟧ (Carsten 9.11., TĀ 1009) when C-c u L
+sets a file that does not show it yet.  nil without tables or for
+tables in Tibetan script."
+  (let ((columns (apply #'append (mapcar #'bcat-analysis--table-columns
+                                         (split-string (or tables "") "\n[ \t]*\n" t)))))
+    (when (and columns (not (string-match-p "[\u0F00-\u0FFF]" (caar columns))))
+      (bcat-analysis-padapatha-line
+       (or samhita "")
+       (mapcar (lambda (col) (list (cons 'word (bcat-analysis-plain-cell (car col))))) columns)
+       t))))
+
 (defun bcat-analysis--word-entries (entries)
   "ENTRIES (alists with word and analysis) as \"/word/ — analysis\"."
   (mapcar (lambda (e) (format "/%s/ — %s" (bcat-analysis--field e 'word)

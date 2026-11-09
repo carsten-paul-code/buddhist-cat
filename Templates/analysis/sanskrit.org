@@ -25,6 +25,15 @@ am Schluss Kommentar (* Commentary: was rein muss) vor Weiterführendem
 (* Further Reading: Sanderson u. ä.).  Die ⟦N⟧-Marken außerhalb von
 * Segments machen die Datei ohne Abruf neu setzbar (C-c u L).
 
+Seit 9.11. (Carsten, TĀ 1009: „Zumindest bräuchte es noch eine
+subsection headline. Und hatten wir nicht mal Original und Übersetzung
+hervorgehoben?“) ist jedes Sanskrit-Segment eine Überschrift ** ⟦N⟧,
+direkt darunter fett die Originalzeile in IAST (padapatha: der
+Padapāṭha nach C-c u G, sonst die überlieferte Zeile), dann die
+Übersicht, „→“ und die Teile der Wörter unter *** Word Formation
+(:VISIBILITY: folded — eingeklappt); die Übersetzung des Satzes unter
+** Translation, sonst stünde sie im letzten Word Formation.
+
 Platzhalter und Abschnitte wie in tibetan.org: {{name}} setzt einen Wert
 ein; eine Zeile, deren Platzhalter ALLE leer sind, fällt samt
 Beschriftung weg; {{#x}} … {{/x}} erscheint nur, wenn x einen Wert hat.
@@ -87,7 +96,9 @@ Goldman 1999).
 * Text
 {{#segments}}
 {{#gloss-table}}
-⟦{{num}}⟧
+** ⟦{{num}}⟧
+*{{padapatha}}*
+
 {{gloss-table}}
 
 {{#segment-translation}}
@@ -95,11 +106,18 @@ Goldman 1999).
 
 {{/segment-translation}}
 {{#formation-tables}}
+*** Word Formation
+:PROPERTIES:
+:VISIBILITY: folded
+:END:
 {{formation-tables}}
 
 {{/formation-tables}}
 {{/gloss-table}}
 {{/segments}}
+{{#translation}}
+** Translation
+{{/translation}}
 {{#grammar}}
 *Grammar:* {{grammar}}
 

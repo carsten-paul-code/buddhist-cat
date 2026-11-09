@@ -39,13 +39,22 @@ nil when absent."
                        (match-beginning 0)
                      (length text)))))))
 
-(defun bcat-relayout--before-l2 (body)
-  "BODY up to its first L2 heading."
-  (if (and body (string-match "^\\*\\* " body)) (substring body 0 (match-beginning 0)) body))
-
 (defun bcat-relayout--paragraphs (body)
   "The paragraphs of BODY, trimmed."
   (and body (split-string body "\n[ \t]*\n" t "[ \t\n]+")))
+
+(defun bcat-relayout--text-paragraphs (body)
+  "The paragraphs of BODY with every heading line a paragraph of its own
+and the property drawers left out — since 9.11. (TĀ 1009) a Sanskrit
+segment under * Text is a heading ⟦N⟧ with the original right under
+it, its parts under a heading Word Formation with a drawer
+\(:VISIBILITY: folded), the sentence's translation under ** Translation."
+  (and body
+       (bcat-relayout--paragraphs
+        (replace-regexp-in-string
+         "^\\(\\*+ .*\\)$" "\n\\1\n"
+         (replace-regexp-in-string
+          "^[ \t]*:PROPERTIES:[ \t]*\n\\(?:.*\n\\)*?[ \t]*:END:[ \t]*$" "" body)))))
 
 (defun bcat-relayout--labelled (p)
   "(FIELD . VALUE) when the paragraph P is one of a segment's labelled
@@ -112,28 +121,39 @@ the other language's blocks and differences."
     ;; in a bilingual file (1.11.: the other language's tables and
     ;; translations) comes from the partner file (`bcat-relayout-context');
     ;; the differences belong to the segment.
-    (let ((current nil) (own nil) (parts nil))
-      (dolist (p (bcat-relayout--paragraphs (bcat-relayout--section text 1 "Text")))
-        (cond
-         ((string-match "\\`\\(?:<<[^>\n]*>>\\)?⟦\\([0-9]+\\)⟧[^\n]*\\'" p)
-          (setq current (string-to-number (match-string 1 p)) own t parts nil))
-         ((string-match "\\`\\(?:<<[^>\n]*>>\\)?⟦\\([0-9]+\\)⟧[^\n]*\n" p)
-          (setq current (string-to-number (match-string 1 p)) own t parts nil)
-          (bcat-relayout--put table current 'gloss-table (substring p (match-end 0))))
-         ((and current (string-prefix-p "|" p))
-          (cond (own (bcat-relayout--put table current 'gloss-table p t))
-                (parts (bcat-relayout--put table current 'formation-tables p t))))
-         ((and current parts (bcat-analysis-parts-line-table p))
-          ;; 9.11.: the line of a word of one member (draft B) becomes
-          ;; its table of one column, the parts as the line has them.
-          (bcat-relayout--put table current 'formation-tables (bcat-analysis-parts-line-table p) t))
-         ((and current (string-match "\\`→ " p))
-          (when own
-            (bcat-relayout--put table current 'segment-translation (substring p (match-end 0)))
-            (setq own nil parts t)))
-         ((and current (string-match "\\`\\*Differences:\\* " p))
-          (bcat-relayout--put table current 'differences (substring p (match-end 0))))
-         (t (setq current nil parts nil)))))
+    ;; 9.11.: ⟦N⟧ a heading (the bold line under it the original, read
+    ;; back as the padapāṭha — a hand correction stays), the parts under
+    ;; *** Word Formation, the sentence under ** Translation.
+    (let ((current nil) (own nil) (parts nil) (original nil))
+      (dolist (p (bcat-relayout--text-paragraphs (bcat-relayout--section text 1 "Text")))
+        (let ((after-mark original))
+          (setq original nil)
+          (cond
+           ((string-match "\\`\\(?:\\*\\* \\)?\\(?:<<[^>\n]*>>\\)?⟦\\([0-9]+\\)⟧[^\n]*\\'" p)
+            (setq current (string-to-number (match-string 1 p)) own t parts nil original t))
+           ((and current after-mark (string-match "\\`\\*\\([^*\n]+\\)\\*\\'" p))
+            (bcat-relayout--put table current 'padapatha (match-string 1 p)))
+           ((and current (string-match-p "\\`\\*\\*\\* Word Formation[ \t]*\\'" p))
+            (setq own nil parts t))
+           ((string-match-p "\\`\\*+ " p)
+            (setq current nil parts nil))
+           ((string-match "\\`\\(?:<<[^>\n]*>>\\)?⟦\\([0-9]+\\)⟧[^\n]*\n" p)
+            (setq current (string-to-number (match-string 1 p)) own t parts nil)
+            (bcat-relayout--put table current 'gloss-table (substring p (match-end 0))))
+           ((and current (string-prefix-p "|" p))
+            (cond (own (bcat-relayout--put table current 'gloss-table p t))
+                  (parts (bcat-relayout--put table current 'formation-tables p t))))
+           ((and current parts (bcat-analysis-parts-line-table p))
+            ;; 9.11.: the line of a word of one member (draft B) becomes
+            ;; its table of one column, the parts as the line has them.
+            (bcat-relayout--put table current 'formation-tables (bcat-analysis-parts-line-table p) t))
+           ((and current (string-match "\\`→ " p))
+            (when own
+              (bcat-relayout--put table current 'segment-translation (substring p (match-end 0)))
+              (setq own nil parts t)))
+           ((and current (string-match "\\`\\*Differences:\\* " p))
+            (bcat-relayout--put table current 'differences (substring p (match-end 0))))
+           (t (setq current nil parts nil))))))
     ;; ⟦N⟧ under Concepts.
     (let ((current nil))
       (dolist (p (bcat-relayout--paragraphs
@@ -147,11 +167,21 @@ the other language's blocks and differences."
     ;; language's („<<tib-78>>⟦78⟧ · [[skt-23][Skt. 23]]“) — the
     ;; differences after them belong to the Sanskrit segment the link
     ;; names; before (7f0ee89) ⟦N⟧ was this file's segment.
-    (let ((current nil))
-      (dolist (p (bcat-relayout--paragraphs
-                  (bcat-relayout--before-l2
-                   (or (bcat-relayout--section text 1 "\\(?:Tibetan\\|Sanskrit\\)") ""))))
+    ;; 9.11.: the Sanskrit segments of a Tibetan file (* Sanskrit) are
+    ;; headings ⟦N⟧ too; any other heading ends the part, as before.
+    (let ((current nil) (done nil))
+      (dolist (p (bcat-relayout--text-paragraphs
+                  (or (bcat-relayout--section text 1 "\\(?:Tibetan\\|Sanskrit\\)") "")))
         (cond
+         (done nil)
+         ((string-match "\\`\\*\\* \\(?:<<[^>\n]*>>\\)?⟦" p)
+          (string-match "⟦\\([0-9]+\\)⟧\\([^\n]*\\)" p)
+          (let ((mark (match-string 2 p)) (n (string-to-number (match-string 1 p))))
+            (setq current (if (string-match "Skt\\. \\([0-9]+\\)" mark)
+                              (string-to-number (match-string 1 mark))
+                            n))))
+         ((string-match-p "\\`\\*\\*\\*+ " p))
+         ((string-match-p "\\`\\*\\* " p) (setq done t))
          ((string-match "\\`\\(?:<<[^>\n]*>>\\)?⟦\\([0-9]+\\)⟧\\([^\n]*\\)" p)
           (let ((mark (match-string 2 p)) (n (string-to-number (match-string 1 p))))
             (setq current (if (string-match "Skt\\. \\([0-9]+\\)" mark)
@@ -224,7 +254,7 @@ Claude divided into sense units."
                                         (cons key (string-trim body)))))
          (grammar nil) (proposal '())
          (out '()))
-    (dolist (p (bcat-relayout--paragraphs (bcat-relayout--section text 1 "Text")))
+    (dolist (p (bcat-relayout--text-paragraphs (bcat-relayout--section text 1 "Text")))
       (cond
        ((string-match "\\`\\*Translation:\\* " p)
         (push (cons 'translation (substring p (match-end 0))) out))
@@ -271,6 +301,15 @@ Claude divided into sense units."
        (nreverse out)
        (and own (not (assq 'translation out)) (list (cons 'translation own)))))))
 
+(defun bcat-relayout--with-padapatha (fields seg)
+  "FIELDS read back for the segment SEG (its rump), with the padapāṭha
+line from the overview when the file does not show the original yet
+\(`bcat-analysis-table-padapatha'; 9.11.) — what the file shows wins."
+  (let ((line (and (not (alist-get 'padapatha fields))
+                   (bcat-analysis-table-padapatha (alist-get 'samhita seg)
+                                                  (alist-get 'gloss-table fields)))))
+    (if line (cons (cons 'padapatha line) fields) fields)))
+
 (defun bcat-relayout--pair-fields (template segments assignment other other-text base)
   "The two parts of a bilingual file of TEMPLATE (Carsten 1.11.,
 `bcat-analysis-pair-lists') set anew: SEGMENTS its own, merged; the
@@ -280,7 +319,7 @@ OTHER-TEXT (the Tibetan tables with the Uchen row) — and the partner's
 sentence translation.  ASSIGNMENT from the segment headings."
   (let* ((sanskrit-file (equal template "bilingual"))
          (others (mapcar (lambda (o)
-                           (let* ((f (gethash (bcat-analysis--num o) other))
+                           (let* ((f (bcat-relayout--with-padapatha (gethash (bcat-analysis--num o) other) o))
                                   (table (alist-get 'gloss-table f))
                                   ;; 5.11.: Sanskrit tables of five rows →
                                   ;; overview and parts tables.
@@ -298,6 +337,9 @@ sentence translation.  ASSIGNMENT from the segment headings."
                                    `((formation-tables . ,formation)))
                               (and (alist-get 'segment-translation f)
                                    `((segment-translation . ,(alist-get 'segment-translation f))))
+                              ;; 9.11.: the original in bold under ⟦N⟧
+                              (and (alist-get 'padapatha f)
+                                   `((padapatha . ,(alist-get 'padapatha f))))
                               (and (alist-get 'differences f)
                                    `((differences . ,(alist-get 'differences f))))
                               o)))
@@ -332,7 +374,8 @@ segments per segment come from there (Carsten 1.11.)."
                      (bcat-relayout--segments other-text (if (equal template "bilingual")
                                                              'sanskrit-block 'tibetan-block))))
          (segments (mapcar (lambda (seg)
-                             (let ((fields (gethash (bcat-analysis--num seg) read))
+                             (let ((fields (bcat-relayout--with-padapatha
+                                            (gethash (bcat-analysis--num seg) read) seg))
                                    (uchen (alist-get 'uchen seg)))
                                (when (alist-get 'gloss-table fields)
                                  ;; Tables written before 31.10. abends get
