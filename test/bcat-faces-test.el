@@ -94,6 +94,22 @@ overview (\\cellcolor) stays plain, a Structure line of the same shape
     (should (equal '("/√jan/ (1) be born · /-anī/ f. agent")
                    (bcat-faces-test--matches #'bcat-faces--parts-line-matcher 1)))))
 
+(ert-deftest bcat-faces-translation-line ()
+  "9.11. (TĀ 1009, Carsten: „hatten wir nicht mal Original und
+Übersetzung hervorgehoben?“; draft B: „einzeilig, kursiv“): the „→“
+line of a segment's translation — under * Text, * Tibetan, * Sanskrit,
+every language — italic in its colour; a translator's „→“ line under
+* Segments is none."
+  (with-temp-buffer
+    (insert "* Text\n** ⟦1⟧\n*a b*\n\n| a |\n\n→ the segment\n\n"
+            "* Tibetan\n<<tib-2>>⟦2⟧\n| x |\n\n→ the Tibetan\n\n"
+            "* Segments\n** Segment 1\n⟦1⟧ *Translation:* t \\\\\n→ Dyczkowski 2023: d\n")
+    (org-mode)
+    (should (equal '("→ the segment" "→ the Tibetan")
+                   (bcat-faces-test--matches #'bcat-faces--translation-matcher 0)))
+    (should (eq 'italic (face-attribute 'bcat-translation-face :slant nil t)))
+    (should (assq 'bcat-faces--translation-matcher bcat-faces--keywords))))
+
 (ert-deftest bcat-faces-tibetan-table ()
   "A Tibetan table (Uchen, Wylie, gloss, function — Carsten 31.10.:
 Uchen and Wylie black): only the function row is blue."

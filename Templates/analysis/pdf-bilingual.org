@@ -52,16 +52,15 @@ Commentary vor Further Reading, wie in der Datei.
 {{#segments}}
 {{#shown}}
 <<skt-{{num}}>>⟦{{num}}⟧{{mark}}{{grammar-link}}
-{{^gloss-table}}
+@@latex:\bcatorig{@@{{padapatha}}@@latex:}@@
 
-{{/gloss-table}}
 {{/shown}}
 {{#gloss-table}}
 {{gloss-table}}
 
 {{/gloss-table}}
 {{#segment-translation}}
-→ {{segment-translation}}
+@@latex:\bcattrans{@@→ {{segment-translation}}@@latex:}@@
 
 {{/segment-translation}}
 {{/segments}}
@@ -79,7 +78,7 @@ Commentary vor Further Reading, wie in der Datei.
 
 {{/gloss-table}}
 {{#segment-translation}}
-→ {{segment-translation}}
+@@latex:\bcattrans{@@→ {{segment-translation}}@@latex:}@@
 
 {{/segment-translation}}
 {{#differences}}

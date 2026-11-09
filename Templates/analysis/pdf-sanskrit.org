@@ -7,7 +7,10 @@ Links).  Gesetzt aus den Feldern, die C-c u L aus der Datei zurückliest
 — die Datei bleibt, wie sie ist; ein Teil ohne Inhalt fällt weg.
 Teile: Reading (Rezitation, Übersetzung — Carsten: „auf der ersten
 Seite Reading und Rezitation“), Segments (je Segment die Übersicht der
-Wörter, → die Übersetzung; ⟦N⟧ springt in die Grammatik), Grammar
+Wörter, → die Übersetzung; ⟦N⟧ springt in die Grammatik; seit 9.11.
+unter ⟦N⟧ die Originalzeile fett und farbig, \bcatorig, die Übersetzung
+kursiv und farbig, \bcattrans — Carsten, TĀ 1009: „hatten wir nicht
+mal Original und Übersetzung hervorgehoben?“), Grammar
 (pdf-part-grammar), Concepts, Discussion, Further Reading, Notes.
 Zusätzliche Felder der Ansicht (bcat-export--view-context): decisions
 (aus proposal gelöst — die Entscheidungen gehören zur Diskussion),
@@ -60,10 +63,12 @@ Eine Klasse überschreibt die Vorlage oder einen Teil wie jede andere
 {{#segments}}
 {{#gloss-table}}
 ⟦{{num}}⟧{{grammar-link}}
+@@latex:\bcatorig{@@{{padapatha}}@@latex:}@@
+
 {{gloss-table}}
 
 {{#segment-translation}}
-→ {{segment-translation}}
+@@latex:\bcattrans{@@→ {{segment-translation}}@@latex:}@@
 
 {{/segment-translation}}
 {{/gloss-table}}

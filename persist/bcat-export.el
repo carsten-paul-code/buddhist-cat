@@ -234,9 +234,26 @@ words black, the rest blue."
   :type 'string
   :group 'buddhist-cat)
 
+(defcustom bcat-export-original-color "8B1E1E"
+  "Colour (HTML hex) of the original under ⟦N⟧ in the PDF — the line of
+the segment in IAST (padapāṭha), bold (\\bcatorig).  Carsten 9.11., TĀ
+1009: „hatten wir nicht mal Original und Übersetzung hervorgehoben?“ —
+the original bold, in the PDF in colour."
+  :type 'string
+  :group 'buddhist-cat)
+
+(defcustom bcat-export-translation-color "1E6B3A"
+  "Colour (HTML hex) of the segment's translation („→“) in the PDF,
+italic (\\bcattrans) — draft B (5.11.): „einzeilig, kursiv“, since
+9.11. set off in colour (`bcat-translation-face' in Emacs)."
+  :type 'string
+  :group 'buddhist-cat)
+
 (defun bcat-export--font-lines ()
   "#+LATEX_HEADER lines defining \\bcattib and \\bcatdeva, the colour
-\\bcatg (gloss, `bcat-export-gloss-color'), loading adjustbox
+\\bcatg (gloss, `bcat-export-gloss-color'), \\bcatorig and \\bcattrans
+\(the original under ⟦N⟧ and the segment's translation, 9.11.) and
+\\bcatsub (a small title), loading adjustbox
 \(`bcat-export--table-filter'), and colortbl with the colours ok, mid,
 bad of the ratings in the comparison's overview (2.11., Muster
 vergleich-ta1-1.org, `bcat-analysis--rating-colours')."
@@ -248,6 +265,14 @@ vergleich-ta1-1.org, `bcat-analysis--rating-colours')."
    "#+LATEX_HEADER: \\definecolor{ok}{RGB}{200,235,200}\\definecolor{mid}{RGB}{250,235,160}\\definecolor{bad}{RGB}{245,190,185}\n"
    (format "#+LATEX_HEADER: \\definecolor{bcatgloss}{HTML}{%s}\n" bcat-export-gloss-color)
    "#+LATEX_HEADER: \\newcommand{\\bcatg}[1]{\\textcolor{bcatgloss}{#1}}\n"
+   ;; 9.11. (TĀ 1009): the original under ⟦N⟧ on a line of its own
+   ;; (\\\\: the mark before it in the same paragraph), the segment's
+   ;; translation, the small title over the parts of the words.
+   (format "#+LATEX_HEADER: \\definecolor{bcatorig}{HTML}{%s}\\definecolor{bcattrans}{HTML}{%s}\n"
+           bcat-export-original-color bcat-export-translation-color)
+   "#+LATEX_HEADER: \\newcommand{\\bcatorig}[1]{\\\\{\\bfseries\\color{bcatorig}#1}}\n"
+   "#+LATEX_HEADER: \\newcommand{\\bcattrans}[1]{{\\itshape\\color{bcattrans}#1}}\n"
+   "#+LATEX_HEADER: \\newcommand{\\bcatsub}[1]{\\par\\smallskip\\noindent{\\small\\bfseries #1}\\par\\nopagebreak}\n"
    (format "#+LATEX_HEADER: \\newfontfamily\\bcattib{%s}[Script=Tibetan,Renderer=HarfBuzz]\n"
            bcat-export-tibetan-font)
    (format "#+LATEX_HEADER: \\newfontfamily\\bcatdeva{%s}[Script=Devanagari,Renderer=HarfBuzz]\n"

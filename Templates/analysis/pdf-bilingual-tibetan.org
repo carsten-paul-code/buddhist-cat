@@ -60,7 +60,7 @@ Partners (<<skt-N>>); dessen Teile der Wörter im Teil Grammar.
 
 {{/gloss-table}}
 {{#segment-translation}}
-→ {{segment-translation}}
+@@latex:\bcattrans{@@→ {{segment-translation}}@@latex:}@@
 
 {{/segment-translation}}
 {{#differences}}
@@ -73,16 +73,15 @@ Partners (<<skt-N>>); dessen Teile der Wörter im Teil Grammar.
 {{#sanskrit-segments}}
 {{#shown}}
 <<skt-{{num}}>>⟦{{num}}⟧{{mark}}
-{{^gloss-table}}
+@@latex:\bcatorig{@@{{padapatha}}@@latex:}@@
 
-{{/gloss-table}}
 {{/shown}}
 {{#gloss-table}}
 {{gloss-table}}
 
 {{/gloss-table}}
 {{#segment-translation}}
-→ {{segment-translation}}
+@@latex:\bcattrans{@@→ {{segment-translation}}@@latex:}@@
 
 {{/segment-translation}}
 {{/sanskrit-segments}}

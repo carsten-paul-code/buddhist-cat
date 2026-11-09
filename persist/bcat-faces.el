@@ -150,6 +150,28 @@ under the members (5.11., `bcat-faces--parts-table-p')."
           (setq found t))))
     found))
 
+(defface bcat-translation-face
+  '((((background dark)) :slant italic :foreground "#7FCF9A")
+    (t :slant italic :foreground "#1E6B3A"))
+  "The „→“ line of a segment's translation under * Text — italic, set off
+in colour (as `bcat-export-translation-color' in the PDF).  Draft B
+\(5.11.): „einzeilig, kursiv“; Carsten 9.11., TĀ 1009: „hatten wir
+nicht mal Original und Übersetzung hervorgehoben?“."
+  :group 'buddhist-cat)
+
+(defun bcat-faces--translation-matcher (limit)
+  "Font-lock matcher: the next „→“ line before LIMIT that is a segment's
+translation — under * Text, * Tibetan or * Sanskrit, every language;
+group 0 the line.  A translator's „→“ line under * Segments is none."
+  (let ((found nil))
+    (while (and (not found) (re-search-forward "^→ .*$" limit t))
+      (when (save-excursion
+              (save-match-data
+                (and (re-search-backward "^\\* \\(.*\\)$" nil t)
+                     (member (string-trim (match-string 1)) '("Text" "Tibetan" "Sanskrit")))))
+        (setq found t)))
+    found))
+
 (defface bcat-rating-ok-face
   '((t :background "#C8EBC8" :foreground "black"))
   "A unit of the comparison rated green — no difference in meaning (the
@@ -326,6 +348,7 @@ whole, so a later chunk of jit-lock never unfolds a part of it."
      ("[^|\n]+" (progn (goto-char (match-beginning 0)) (match-end 0)) nil
       (0 'bcat-gloss-face prepend)))
     (bcat-faces--parts-line-matcher (1 'bcat-gloss-face prepend))
+    (bcat-faces--translation-matcher (0 'bcat-translation-face prepend))
     (bcat-faces--rating-matcher
      (3 'shadow prepend t)
      (2 (bcat-faces--rating-face (match-string 1)) prepend))

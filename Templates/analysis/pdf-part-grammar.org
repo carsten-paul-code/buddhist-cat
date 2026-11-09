@@ -2,7 +2,8 @@
 TEIL Grammar der PDF-Vorlagen (Carsten 5.11.2026): die Grammatik des
 Satzes, dann je Segment mit Inhalt (detail-p) eine Überschrift ⟦N⟧ —
 CUSTOM_ID grammar-N, das Ziel des Links neben ⟦N⟧ im Teil Segments —
-mit den Teilen der Wörter (formation-tables), Sandhi, Forms, Compounds,
+mit den Teilen der Wörter (formation-tables; seit 9.11. unter dem kleinen
+Zwischentitel Word Formation, \bcatsub), Sandhi, Forms, Compounds,
 Structure, Note.  Bei einer tibetischen Paardatei danach die Teile der
 Wörter des Sanskrit-Partners.
 #+end_comment
@@ -22,6 +23,8 @@ Wörter des Sanskrit-Partners.
 :CUSTOM_ID: grammar-{{num}}
 :END:
 {{#formation-tables}}
+@@latex:\bcatsub{@@Word Formation@@latex:}@@
+
 {{formation-tables}}
 
 {{/formation-tables}}
@@ -43,6 +46,8 @@ Wörter des Sanskrit-Partners.
 {{#sanskrit-segments}}
 {{#formation-tables}}
 ** Sanskrit ⟦{{num}}⟧
+@@latex:\bcatsub{@@Word Formation@@latex:}@@
+
 {{formation-tables}}
 
 {{/formation-tables}}

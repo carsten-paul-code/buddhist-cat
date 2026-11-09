@@ -40,7 +40,7 @@ Teil Segments, deshalb hier jede Wylie-Zeile), dann die Übersetzung.
 {{gloss-table}}
 
 {{#segment-translation}}
-→ {{segment-translation}}
+@@latex:\bcattrans{@@→ {{segment-translation}}@@latex:}@@
 
 {{/segment-translation}}
 {{/gloss-table}}

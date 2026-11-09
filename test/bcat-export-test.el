@@ -393,7 +393,15 @@ cut by \\hline."
   (let ((head (bcat-export--font-lines)))
     (should (string-match-p (regexp-quote "\\usepackage{xcolor}") head))
     (should (string-match-p (regexp-quote "\\definecolor{bcatgloss}{HTML}{1F4E9E}") head))
-    (should (string-match-p (regexp-quote "\\newcommand{\\bcatg}[1]{\\textcolor{bcatgloss}{#1}}") head)))
+    (should (string-match-p (regexp-quote "\\newcommand{\\bcatg}[1]{\\textcolor{bcatgloss}{#1}}") head))
+    ;; 9.11. (TĀ 1009): the original under ⟦N⟧ bold in its colour, the
+    ;; segment's translation italic in its own, a small title over the
+    ;; parts of the words.
+    (should (string-match-p (regexp-quote (format "\\definecolor{bcatorig}{HTML}{%s}" bcat-export-original-color)) head))
+    (should (string-match-p (regexp-quote (format "\\definecolor{bcattrans}{HTML}{%s}" bcat-export-translation-color)) head))
+    (should (string-match-p (regexp-quote "\\newcommand{\\bcatorig}[1]{\\\\{\\bfseries\\color{bcatorig}#1}}") head))
+    (should (string-match-p (regexp-quote "\\newcommand{\\bcattrans}[1]{{\\itshape\\color{bcattrans}#1}}") head))
+    (should (string-match-p (regexp-quote "\\newcommand{\\bcatsub}[1]{") head)))
   (let ((out (bcat-export--table-filter
               (concat "\\begin{tabular}{ll}\n"
                       "iha & \\href{steinert:x}{khalu}\\\\\n"
@@ -807,8 +815,19 @@ as it is; no request; no Word Analysis."
         (should-not (string-match-p "^| atra" reading))
         ;; The overview, its link into the grammar, the translation of
         ;; the segment — the parts of the words not here.
-        (should (string-match-p (regexp-quote "⟦685⟧ · [[#grammar-685][Grammar]]\n| atra |") segments))
-        (should (string-match-p "^→ " segments))
+        ;; 9.11.: under ⟦N⟧ the original, bold and coloured; the
+        ;; translation of the segment italic and coloured; a small
+        ;; title Word Formation over the parts in the grammar.
+        (should (string-match-p
+                 (regexp-quote (concat "⟦685⟧ · [[#grammar-685][Grammar]]\n"
+                                       "@@latex:\\bcatorig{@@atra mad-vāk aśaktā api yat niyantraṇam ullaset /@@latex:}@@\n\n"
+                                       "| atra |"))
+                 segments))
+        (should (string-match-p "^@@latex:\\\\bcattrans{@@→ Although my speech .*@@latex:}@@$" segments))
+        (should-not (string-match-p "^→ " segments))
+        (should (string-match-p (regexp-quote (concat ":CUSTOM_ID: grammar-685\n:END:\n"
+                                                      "@@latex:\\bcatsub{@@Word Formation@@latex:}@@\n\n| mad"))
+                                grammar))
         (should-not (string-match-p "^|-\\|^/mad-vāk/\\|\\*Forms:\\*" segments))
         (should (string-match-p "^\\*Grammar:\\* Two clauses\\." grammar))
         (should (string-match-p "^\\*\\* ⟦685⟧\n:PROPERTIES:\n:CUSTOM_ID: grammar-685\n:END:$" grammar))
@@ -840,6 +859,10 @@ without concepts); My Notes with text: a part Notes at the end."
         (should (string-match-p "^བརྗོད་དུ་མེད་པ་བལྟར་མེད་པ། །\nbrjod du med pa" reading))
         (should (string-match-p (regexp-quote "⟦38⟧ · [[#grammar-38][Grammar]]\n| བརྗོད་དུ་མེད་པ")
                                 (bcat-export-test--part view "Segments")))
+        ;; 9.11.: the segment's translation italic and coloured in every
+        ;; language; no Sanskrit original line in a Tibetan file.
+        (should (string-match-p "^@@latex:\\\\bcattrans{@@→ " (bcat-export-test--part view "Segments")))
+        (should-not (string-match-p "bcatorig{" view))
         (should (string-match-p "^\\*Structure:\\* no finite verb$" (bcat-export-test--part view "Grammar")))
         (should (string-match-p "^Meine Notiz\\.$" (bcat-export-test--part view "Notes")))))))
 
@@ -1146,6 +1169,29 @@ where lualatex is installed): the PDF of a sentence file in handouts/."
         ;; Bug 9.11.: LaTeX went on past „Undefined control sequence“
         ;; (\geometry without the package) — a PDF, but with errors.
         (should-not (cl-some (lambda (m) (string-match-p "with errors" m)) said))
+        (should-not (directory-files folder nil "pdfview"))))))
+
+(ert-deftest bcat-export-file-smoke-sanskrit ()
+  "9.11. (TĀ 1009): the PDF of a Sanskrit sentence file with the original
+under ⟦N⟧ (\\bcatorig), the coloured translation (\\bcattrans) and the
+title over the parts (\\bcatsub) — a real LuaLaTeX run (only where
+lualatex is installed), no error in the log."
+  (skip-unless (executable-find "lualatex"))
+  (bcat-sentence-test--with-sa-source
+    (bcat-sentence-test--create-n src 1007)
+    (bcat-sentence-test--with-stubs (bcat-sentence-test--sa-answer)
+      (bcat-sentence-test--fetch-n src 1007))
+    (let ((bcat-export-upload nil)
+          (warning-minimum-level :emergency)
+          (said '()))
+      (let ((pdf (cl-letf* ((orig (symbol-function 'message))
+                            ((symbol-function 'message)
+                             (lambda (fmt &rest args)
+                               (when fmt (push (apply #'format fmt args) said))
+                               (apply orig fmt args))))
+                   (bcat-export-file (tibetan-sentence--filepath 1007 folder src)))))
+        (should (and pdf (file-exists-p pdf)))
+        (should-not (cl-some (lambda (m) (string-match-p "with errors\\|wasn't produced" m)) said))
         (should-not (directory-files folder nil "pdfview"))))))
 
 (ert-deftest bcat-export-pdf-smoke ()
