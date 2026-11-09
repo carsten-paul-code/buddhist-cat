@@ -5037,6 +5037,30 @@ unverändert, in * Text nichts verloren).  Die tibetischen Segmente
 bleiben ohne Überschrift (keine Wortbildung) — auf Zuruf dieselbe
 Gestalt mit Uchen-Zeile.
 
+9.11.2026, VORSCHLAG ZUERST (`6cebc7e'; Carsten: „ich vermisse jetzt die
+proposed translation“ — sie stand unter `** Translation' hinter
+Grammar): Satzteil in sanskrit/bilingual mit Vorschlag unter
+`** Proposed translation', sonst `** Translation' mit *Translation:*
+zuerst; dann *Deutsch:*, dann *Grammar:*.  Tibetisch (tibetan,
+bilingual-tibetan) dieselbe Reihenfolge ohne Überschrift; greift dort
+erst mit dem nächsten C-c u L / C-c u G.  Das Label *Proposed
+translation:* unter der Überschrift bleibt — der Relayout erkennt den
+Vorschlag daran, das PDF hat keine Überschrift, sent-001 unterscheidet
+damit „First/Second meaning“.  Test `bcat-template-proposal-first'.
+TĀ sent-001/1009 neu gesetzt und geprüft.
+
+9.11.2026, BUG Farben fehlten nach C-c u G (`ff98023'; Carsten, TĀ
+1010: „die proposed translation nicht farbig und kursiv“ — gemeint die
+„→“-Zeile): sent-1010/1011 lagen noch im Kaskadenformat vom Oktober
+(ohne #+CAT_TEMPLATE) und waren offen; `bcat-faces-maybe' hatte beim
+Öffnen keine Vorlage gesehen, der Neubau schreibt durch den offenen
+Buffer, der Major-Mode läuft nicht neu.  `bcat-sentence--write' ruft
+jetzt `bcat-faces-maybe', wenn der Modus aus ist.  Neu angelegte
+Dateien waren nie betroffen (geschrieben vor dem Besuch).  Test
+`bcat-sentence-write-switches-colours-on'.  Lehre: alles, was ein
+org-mode-hook am INHALT entscheidet, nach dem Umschreiben eines
+offenen Buffers erneut prüfen.  ERT 2884 (2882 + 2 Skips), BDD 251.
+
 #### Offen
 
 - Mitgeben: seit 5.11. auch im tibetischen Abruf eines Paars.  Schlüssel
