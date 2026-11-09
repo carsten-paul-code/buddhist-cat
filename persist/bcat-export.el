@@ -443,17 +443,6 @@ the space-greedy separator ate the room before the second &."
         (setq pos (1+ i))))
     (nreverse (cons (substring row start) cells))))
 
-(defun bcat-export--parts-line-filter (text backend _info)
-  "`org-export-filter-paragraph-functions' entry: a paragraph that is
-the line of a word of one member — „\\emph{jananī}: \\emph{√jan} (1) be
-born · …“ (Carsten 5.11., the parts under a Sanskrit segment's
-translation) — with its parts in \\bcatg, the word black.  A Structure
-paragraph with lines of that shape stays as it is."
-  (if (and (org-export-derived-backend-p backend 'latex)
-           (string-match "\\`\\(\\\\emph{[^}\n]+}:\\) \\([^\n]+\\)\\(\n*\\)\\'" text))
-      (concat (match-string 1 text) " \\bcatg{" (match-string 2 text) "}" (match-string 3 text))
-    text))
-
 (defun bcat-export--detail-rows (tabular)
   "TABULAR (LaTeX) with the cells of the rows that explain the words —
 formation, parts, form — in \\bcatg: in each band of the table (rows
@@ -1061,8 +1050,6 @@ LuaLaTeX could not set land in `bcat-export--missing'."
                                      (list #'bcat-export--table-filter)))
                             (org-export-filter-verse-block-functions
                              (cons #'bcat-export--verse-filter org-export-filter-verse-block-functions))
-                            (org-export-filter-paragraph-functions
-                             (cons #'bcat-export--parts-line-filter org-export-filter-paragraph-functions))
                             (org-export-before-processing-functions
                              (append (list insert-head #'bcat-export--drop-machine-sections
                                            #'bcat-export--plain-zettel-links
