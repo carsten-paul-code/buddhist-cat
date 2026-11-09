@@ -730,12 +730,21 @@ bar of parts at the foot."
 \(`bcat-export-page-lines'); nil: the document keeps its own (Carsten
 5.11., the documents of the readings: „in Handouts A4 ist sehr fein“).")
 
+(defconst bcat-export--geometry "\\usepackage{geometry}"
+  "Loads geometry before \\geometry{…}: without options — when the
+LaTeX class loads it already (Carsten's, a4paper), neither an „Option
+clash“ nor a second load; when it does not (batch, another machine),
+\\geometry is defined.  Bug 9.11.: \\geometry alone gave „Undefined
+control sequence“ there — the PDF came out with errors, the page of
+the Paper Pro not set.")
+
 (defun bcat-export-page-lines ()
   "The lines setting the page of the PDF (`bcat-export-paper',
 `bcat-export-margins', `bcat-export-font-size') — for the export copy,
 never the file."
   (concat (format "#+LATEX_CLASS_OPTIONS: [%dpt]\n" bcat-export-font-size)
-          (format "#+LATEX_HEADER: \\geometry{paperwidth=%dmm,paperheight=%dmm,%s}\n"
+          (format "#+LATEX_HEADER: %s\\geometry{paperwidth=%dmm,paperheight=%dmm,%s}\n"
+                  bcat-export--geometry
                   (car bcat-export-paper) (cdr bcat-export-paper) bcat-export-margins)))
 
 (defun bcat-export--filled-p (value)
@@ -1180,11 +1189,15 @@ Returns the PDF."
                         ;; 6.11. (Carsten: „es gab PDF error“): the class
                         ;; loads geometry already — a second \usepackage
                         ;; with options is an „Option clash“; its options
-                        ;; go to \geometry, which may follow.
+                        ;; go to \geometry, which may follow (9.11.: after
+                        ;; the package without options, `bcat-export--geometry').
                         (insert "#+CAT_NAVBAR: t\n"
                                 (replace-regexp-in-string
                                  "^\\(#\\+LATEX_HEADER:[ \t]*\\)\\\\usepackage\\[\\([^]\n]*\\)\\]{geometry}"
-                                 "\\1\\\\geometry{\\2}" text t))))
+                                 (lambda (m)
+                                   (concat (match-string 1 m) bcat-export--geometry
+                                           "\\geometry{" (match-string 2 m) "}"))
+                                 text t t))))
                     (let ((bcat-export-page nil))
                       (bcat-export-pdf copy (bcat-export-head-lines folder title nil nil))))
                 (when (file-exists-p copy) (delete-file copy)))))

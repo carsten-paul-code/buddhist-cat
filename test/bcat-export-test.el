@@ -931,7 +931,12 @@ stays as it is."
 goes into the export copy only."
   (let ((lines (bcat-export-page-lines)))
     (should (string-match-p "^#\\+LATEX_CLASS_OPTIONS: \\[10pt\\]$" lines))
-    (should (string-match-p "\\\\geometry{paperwidth=180mm,paperheight=240mm," lines))))
+    (should (string-match-p "\\\\geometry{paperwidth=180mm,paperheight=240mm," lines))
+    ;; Bug 9.11.: \geometry alone relied on the class loading geometry
+    ;; (Carsten's does, a4paper) — elsewhere „Undefined control
+    ;; sequence“, the page not set.  Loaded without options it is
+    ;; neither a clash nor a second load.
+    (should (string-match-p (regexp-quote "\\usepackage{geometry}\\geometry{paperwidth=") lines))))
 
 (ert-deftest bcat-export-file-exports-the-view ()
   "C-c u H exports the view (one document with jump marks), not the
@@ -1108,7 +1113,7 @@ its title; the file untouched."
           ;; 6.11. (Carsten: „es gab PDF error“): the class loads geometry
           ;; already — a second \usepackage with options clashed; in the
           ;; export copy its options go to \geometry.
-          (should (string-match-p (regexp-quote "#+LATEX_HEADER: \\geometry{a4paper,left=2.5cm}") exported))
+          (should (string-match-p (regexp-quote "#+LATEX_HEADER: \\usepackage{geometry}\\geometry{a4paper,left=2.5cm}") exported))
           (should-not (string-match-p "usepackage\\[[^]]*\\]{geometry}" exported))
           (should (string-match-p "libertinus" exported))
           (should (string-match-p "^#\\+CAT_NAVBAR: t$" exported))
@@ -1128,10 +1133,19 @@ where lualatex is installed): the PDF of a sentence file in handouts/."
     (bcat-sentence-test--with-stubs bcat-sentence-test--answer
       (bcat-sentence-test--fetch src))
     (let ((bcat-export-upload nil)
-          (warning-minimum-level :emergency))
-      (let ((pdf (bcat-export-file (tibetan-sentence--filepath 9 folder src))))
+          (warning-minimum-level :emergency)
+          (said '()))
+      (let ((pdf (cl-letf* ((orig (symbol-function 'message))
+                            ((symbol-function 'message)
+                             (lambda (fmt &rest args)
+                               (when fmt (push (apply #'format fmt args) said))
+                               (apply orig fmt args))))
+                   (bcat-export-file (tibetan-sentence--filepath 9 folder src)))))
         (should (equal (expand-file-name "handouts/bden-9.pdf" dir) pdf))
         (should (file-exists-p pdf))
+        ;; Bug 9.11.: LaTeX went on past „Undefined control sequence“
+        ;; (\geometry without the package) — a PDF, but with errors.
+        (should-not (cl-some (lambda (m) (string-match-p "with errors" m)) said))
         (should-not (directory-files folder nil "pdfview"))))))
 
 (ert-deftest bcat-export-pdf-smoke ()
