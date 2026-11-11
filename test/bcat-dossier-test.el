@@ -277,6 +277,41 @@ both are in."
             (bcat-sentence-test--fetch-n src 36))))
       (should (= 1 (length exports))))))
 
+(ert-deftest bcat-dossier-commentary-waits-only-for-a-running-verse ()
+  "11.11., MSA IX.62: the commentary landed alone (its earlier request
+had failed), the verse had its analysis but a reference under
+Translations compared in no segment (fetch state `align') — the
+commentary waited for the verse („PDF folgt mit dem Rest des Verses“)
+although nothing of the verse was on the way, and no PDF came.  The
+commentary waits only while a request of the verse is in flight; then
+the verse's landing exports."
+  (bcat-commentary-test--with-msa
+    (let ((exports '())
+          (verse (tibetan-sentence--filepath 36 folder src))
+          (orig (symbol-function 'bcat-sentence-fetch-state)))
+      (bcat-sentence-test--with-stubs #'bcat-commentary-test--answers
+        (bcat-sentence-test--fetch-n src 36))
+      (cl-letf (((symbol-function 'bcat-export-file) (lambda (f) (push f exports) nil))
+                ((symbol-function 'tibetan-discussion-paper--temp-source-p) #'ignore)
+                ((symbol-function 'bcat-sentence-fetch-state)
+                 (lambda (f segs) (if (equal f verse) 'align (funcall orig f segs)))))
+        (let ((bcat-export-auto t))
+          ;; nothing of the verse on the way: the commentary exports
+          (bcat-sentence-test--with-stubs #'bcat-commentary-test--answers
+            (add-hook 'bcat-sentence-after-fetch-functions #'bcat-export-after-fetch)
+            (bcat-commentary-fetch "Section IX.16" csrc verse))
+          (should (= 1 (length exports)))
+          ;; a verse request in flight: the commentary waits for it
+          (let ((key (concat "bcat-analysis:" (file-truename verse))))
+            (unwind-protect
+                (progn
+                  (puthash key t tibetan-discussion--inflight)
+                  (bcat-sentence-test--with-stubs #'bcat-commentary-test--answers
+                    (add-hook 'bcat-sentence-after-fetch-functions #'bcat-export-after-fetch)
+                    (bcat-commentary-fetch "Section IX.16" csrc verse))
+                  (should (= 1 (length exports))))
+              (remhash key tibetan-discussion--inflight))))))))
+
 (ert-deftest bcat-dossier-key ()
   "C-c u V writes and shows the dossier of the verse at point."
   (require 'tibetan-keybindings)

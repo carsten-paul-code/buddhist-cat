@@ -469,24 +469,32 @@ lands first (5.11.).")
 VERSE-FILE (see `bcat-dossier--awaiting')."
   (puthash (expand-file-name verse-file) doc bcat-dossier--awaiting))
 
+(declare-function tibetan-discussion--inflight-p "tibetan-translation-discussion" (kind file))
+
+(defun bcat-dossier--verse-running-p (lead)
+  "Non-nil while a Claude request of the verse file LEAD is in flight —
+its analysis, its Tibetan, an alignment (the kinds of `bcat-sentence';
+the Tibetan request goes out inside the Sanskrit landing, so there is
+no gap between them)."
+  (and (fboundp 'tibetan-discussion--inflight-p)
+       (cl-some (lambda (kind) (tibetan-discussion--inflight-p kind lead))
+                '("bcat-analysis" "bcat-tibetan" "bcat-align"))))
+
 (defun bcat-dossier-export-pending-p (file)
   "Non-nil when the PDF of FILE's dossier should wait — Carsten 5.11.:
 „doppelten Upload weg“.  One C-c u G on a verse with commentary lands
 twice; the first to land waits for the other: a verse file while its
 commentary document is still being fetched (`bcat-commentary--runs'),
-the commentary document while its verse has not landed
-\(`bcat-sentence-fetch-state' of the verse file non-nil).  The landing
-of the commentary clears the verse's note (`bcat-dossier-await')."
+the commentary document while a request of its verse is still in flight
+\(`bcat-dossier--verse-running-p').  The landing of the commentary
+clears the verse's note (`bcat-dossier-await')."
   (require 'bcat-commentary)
   (if (equal (bcat-sentence-file-p file) "commentary")
-      (let* ((lead (bcat-dossier--lead-of file))
-             (_ (when lead (remhash (expand-file-name lead) bcat-dossier--awaiting)))
-             (source (and lead (tibetan-sentence--source-file-from-analysis lead)))
-             (n (and lead (tibetan-sentence--sent-id-from-filename lead)))
-             (verse (and source n (bcat-sentence--sentence n source))))
-        (and verse (file-exists-p lead)
-             (bcat-sentence-fetch-state lead (mapcar #'car (plist-get verse :segs)))
-             t))
+      (let ((lead (bcat-dossier--lead-of file)))
+        (when lead (remhash (expand-file-name lead) bcat-dossier--awaiting))
+        ;; 11.11., MSA IX.62: not the verse's fetch state — a verse with
+        ;; a hand-added reference stays `align' and nothing would export.
+        (and lead (bcat-dossier--verse-running-p lead) t))
     (or (and (gethash (expand-file-name file) bcat-dossier--awaiting) t)
         (let* ((ctx (ignore-errors (bcat-dossier-context file)))
                (doc (alist-get 'commentary-doc ctx)))
