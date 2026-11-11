@@ -28,7 +28,7 @@
 
 (declare-function tibetan-analysis-make-short-name "tibetan-analysis-persist" (source-file))
 (declare-function tibetan-analysis--read-source-metadata "tibetan-analysis-claude" (source-file))
-(declare-function tibetan-discussion--submit "tibetan-translation-discussion" (kind file prompts land))
+(declare-function tibetan-discussion--submit "tibetan-translation-discussion" (kind file prompts land &optional fail))
 (defvar tibetan-dharmamitra-sentence-request-delay)
 (declare-function tibetan-dharmamitra-api-limit-reached-p "tibetan-dharmamitra-api" ())
 (declare-function tibetan-sentence--filepath "tibetan-sentence-persist" (sent-num &optional folder source-file))
@@ -701,8 +701,15 @@ analysed is left alone."
 get their links and the document goes to the reMarkable (C-c u H)."
   (let ((failed (plist-get run :failed)))
     (if failed
-        (bcat-commentary--status run (format "%d von %d Teil(en) nicht lesbar — erneut C-c u G"
-                                             (length failed) (plist-get run :chunks)))
+        (progn
+          (bcat-commentary--status run (format "%d von %d Teil(en) ohne Antwort oder nicht lesbar — erneut C-c u G"
+                                               (length failed) (plist-get run :chunks)))
+          ;; 11.11.: the verse no longer waits for this commentary (its
+          ;; PDF comes with the commentary of the next C-c u G).
+          (when (boundp 'bcat-dossier--awaiting)
+            (let ((doc (plist-get run :doc)) (keys '()))
+              (maphash (lambda (k v) (when (equal v doc) (push k keys))) bcat-dossier--awaiting)
+              (dolist (k keys) (remhash k bcat-dossier--awaiting)))))
       (bcat-commentary--status run "✓")
       (let* ((source (plist-get run :source))
              (lead (bcat-commentary-lead source))
@@ -718,6 +725,16 @@ get their links and the document goes to the reMarkable (C-c u H)."
                                             (plist-get other :sent-num) parallel assignment)))))
       (run-hook-with-args 'bcat-sentence-after-fetch-functions (plist-get run :doc)))))
 
+(defun bcat-commentary--settle (doc run)
+  "Keep RUN of DOC after one of its parts answered or failed: progress,
+or — all parts in — the run ends (`bcat-commentary--finish')."
+  (puthash doc run bcat-commentary--runs)
+  (let ((done (+ (length (plist-get run :answers)) (length (plist-get run :failed)))))
+    (if (< done (plist-get run :chunks))
+        (bcat-commentary--status run (format "%d/%d Teile" done (plist-get run :chunks)))
+      (remhash doc bcat-commentary--runs)
+      (bcat-commentary--finish run))))
+
 (defun bcat-commentary--land (doc k response)
   "Part K of the commentary of DOC answered with RESPONSE."
   (let ((run (gethash doc bcat-commentary--runs)))
@@ -731,11 +748,17 @@ get their links and the document goes to the reMarkable (C-c u H)."
           (setq run (plist-put run :failed (cons k (plist-get run :failed)))))
         (puthash doc run bcat-commentary--runs)
         (when (car read) (bcat-commentary--write run))
-        (let ((done (+ (length (plist-get run :answers)) (length (plist-get run :failed)))))
-          (if (< done (plist-get run :chunks))
-              (bcat-commentary--status run (format "%d/%d Teile" done (plist-get run :chunks)))
-            (remhash doc bcat-commentary--runs)
-            (bcat-commentary--finish run)))))))
+        (bcat-commentary--settle doc run)))))
+
+(defun bcat-commentary--fail (doc k reason)
+  "Part K of the commentary of DOC ended without an answer (REASON) —
+11.11., MSA IX.62 without network: counted like an unreadable part, so
+the run ends and the next C-c u G asks again."
+  (let ((run (gethash doc bcat-commentary--runs)))
+    (when run
+      (message "C-c u G: Kommentar %s, Teil %d ohne Antwort (%s)"
+               (file-name-nondirectory doc) k reason)
+      (bcat-commentary--settle doc (plist-put run :failed (cons k (plist-get run :failed)))))))
 
 (defun bcat-commentary--submit (run chunks)
   "Send the commentary of RUN in CHUNKS, one Claude request each."
@@ -763,7 +786,8 @@ get their links and the document goes to the reMarkable (C-c u H)."
          (lambda ()
            (cons (bcat-commentary-system-prompt (or (plist-get meta :target-lang) "en"))
                  (bcat-commentary-user-prompt verse sentences refs (plist-get meta :claude-context))))
-         (lambda (_f response) (bcat-commentary--land doc k response)))))))
+         (lambda (_f response) (bcat-commentary--land doc k response))
+         (lambda (_f reason) (bcat-commentary--fail doc k reason)))))))
 
 (defun bcat-commentary--dharmamitra (run chunks k)
   "DharmaMitra once on each of CHUNKS (the parts of RUN, the K-th first)

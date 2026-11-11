@@ -642,6 +642,39 @@ to do."
         (should (bcat-sentence-fetch-state doc '(626 627)))
         (should (directory-files bcat-analysis-response-directory nil "\\`comm-IX"))))))
 
+(ert-deftest bcat-commentary-fetch-no-answer-releases ()
+  "11.11. (MSA IX.62, C-u C-c u G ohne Netz): the commentary request
+ended without an answer, its run stayed registered — the next C-c u G
+skipped the commentary („Nothing while one runs already“) and the
+verse's PDF waited for it for ever („PDF folgt mit dem Rest des
+Verses“).  A part without answer counts like an unreadable one: the run
+is gone, the status says to fetch again, the verse waits no longer, and
+the next C-c u G asks for the commentary again."
+  (bcat-commentary-test--with-msa
+    (let ((doc (expand-file-name "comm-IX.16-savbh.org" cfolder))
+          (verse (tibetan-sentence--filepath 36 folder src)))
+      (bcat-sentence-test--with-stubs #'bcat-commentary-test--answers
+        (cl-letf (((symbol-function 'tibetan-discussion--submit)
+                   (lambda (kind file thunk land &optional fail)
+                     (push kind kinds)
+                     (funcall thunk)
+                     (if (string-prefix-p "bcat-commentary" kind)
+                         (when fail (funcall fail file "no response"))
+                       (funcall land file (bcat-commentary-test--answers kind)))
+                     t)))
+          (bcat-sentence-test--fetch-n src 36))
+        (should (member "bcat-commentary-1" kinds))
+        (should-not (gethash doc bcat-commentary--runs))
+        (should-not (bcat-dossier-export-pending-p verse))
+        (should-not (member doc done))
+        (should (bcat-commentary-incomplete-p "Section IX.16" csrc)))
+      ;; again, now with answers: the commentary is asked for again
+      (bcat-sentence-test--with-stubs #'bcat-commentary-test--answers
+        (bcat-sentence-test--fetch-n src 36)
+        (should (member "bcat-commentary-1" kinds))
+        (should (member doc done))
+        (should-not (bcat-commentary-incomplete-p "Section IX.16" csrc))))))
+
 (ert-deftest bcat-commentary-export-info ()
   "The commentary's PDF goes beside the verse's: on the reMarkable in the
 folder of the work the verses belong to, named after the document; on

@@ -488,13 +488,17 @@ comparison) — one request per kind and file at a time.")
   (gethash (concat kind ":" (file-truename file))
            tibetan-discussion--inflight))
 
-(defun tibetan-discussion--submit (kind file prompts land)
+(defun tibetan-discussion--submit (kind file prompts land &optional fail)
   "Queue ONE Claude request of KIND for FILE through the Claude queue
 \(budget `tibetan-claude-max-tokens', system prompt cached).
 PROMPTS is a thunk returning (SYSTEM . USER) — called inside the job,
 so the inputs are read when the request actually goes out; LAND is
 called with (FILE RESPONSE) OUTSIDE the gptel sentinel (§5.40).  The
-in-flight mark is cleared on landing, error or failure.  Returns t
+in-flight mark is cleared on landing, error or failure.  FAIL, when
+given, is called with (FILE REASON) — also outside the callback — when
+the request ends without an answer (no response, an error, retries
+exhausted): 11.11., MSA IX.62 without network, the caller's own state
+(a commentary run) otherwise waited for ever.  Returns t
 when queued, nil while a KIND request for FILE is in flight.  Shared
 by the discussion (§5.62) and the Sanskrit comparison (§5.64)."
   (let ((key (concat kind ":" (file-truename file))))
@@ -543,8 +547,18 @@ by the discussion (§5.62) and the Sanskrit comparison (§5.64)."
             (funcall done (list :status 'error
                                 :error (error-message-string err))))))
        :label (format "%s %s" kind (file-name-nondirectory file))
-       :on-fail (lambda (_status)
-                  (remhash key tibetan-discussion--inflight)))
+       :on-fail (lambda (status)
+                  (remhash key tibetan-discussion--inflight)
+                  (when fail
+                    (run-at-time
+                     0 nil
+                     (lambda ()
+                       (condition-case e
+                           (funcall fail file (format "%s" (or (plist-get status :error)
+                                                                (plist-get status :status))))
+                         (error (message "%s failure handler (%s): %s"
+                                         (capitalize kind) (file-name-nondirectory file)
+                                         (error-message-string e)))))))))
       t)))
 
 (defun tibetan-discussion--request (file &optional force)

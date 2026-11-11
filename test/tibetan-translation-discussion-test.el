@@ -406,5 +406,29 @@ similarity matrix keeps its key."
             (tibetan-translation-compare-dwim)))
         (should old)))))
 
+(ert-deftest tibetan-discussion-submit-reports-failure ()
+  "11.11. (MSA IX.62, C-u C-c u G ohne Netz): a request that ends
+without an answer — no response, an error, retries exhausted — was only
+dropped from the in-flight marks; the caller (the commentary run) never
+heard of it and waited for ever.  FAIL is called with FILE and the
+reason, outside the queue's callback; LAND is not."
+  (let ((on-fail nil) (failed nil) (landed nil)
+        (file (make-temp-file "disc-fail-" nil ".org")))
+    (unwind-protect
+        (cl-letf (((symbol-function 'tibetan-claude-queue-submit)
+                   (lambda (_thunk &rest args) (setq on-fail (plist-get args :on-fail)) t))
+                  ((symbol-function 'run-at-time)
+                   (lambda (_time _repeat fn &rest args) (apply fn args) nil)))
+          (should (tibetan-discussion--submit "bcat-commentary-1" file
+                                              (lambda () (cons "S" "U"))
+                                              (lambda (_f _r) (setq landed t))
+                                              (lambda (f reason) (setq failed (list f reason)))))
+          (should (functionp on-fail))
+          (funcall on-fail '(:status error :error "no response"))
+          (should (equal (list file "no response") failed))
+          (should-not landed)
+          (should-not (tibetan-discussion--inflight-p "bcat-commentary-1" file)))
+      (delete-file file))))
+
 (provide 'tibetan-translation-discussion-test)
 ;;; tibetan-translation-discussion-test.el ends here

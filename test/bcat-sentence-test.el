@@ -343,7 +343,7 @@ PROMPTS (the (SYSTEM . USER) pairs sent, latest first), SUBMITS, KINDS
                ((symbol-function 'run-at-time)
                 (lambda (_time _repeat fn &rest args) (apply fn args) nil))
                ((symbol-function 'tibetan-discussion--submit)
-                (lambda (kind file thunk land)
+                (lambda (kind file thunk land &optional _fail)
                   (cl-incf submits)
                   (push kind kinds)
                   (push (funcall thunk) prompts)

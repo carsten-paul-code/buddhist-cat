@@ -757,7 +757,7 @@ typing is read (and kept) by a rebuild."
 (declare-function tibetan-cascade--create-file "tibetan-cascade" (sent-num segs source-file))
 (declare-function tibetan-sentence--filepath "tibetan-sentence-persist" (sent-num &optional folder source-file))
 (declare-function tibetan-analysis--defer-mt-p "tibetan-analysis-claude" (file))
-(declare-function tibetan-discussion--submit "tibetan-translation-discussion" (kind file prompts land))
+(declare-function tibetan-discussion--submit "tibetan-translation-discussion" (kind file prompts land &optional fail))
 (declare-function tibetan-dharmamitra-api-chat-translate "tibetan-dharmamitra-api" (text &rest args))
 (declare-function tibetan-dharmamitra-translation--target-lang "tibetan-dharmamitra-translation" (file))
 (declare-function tibetan-dharmamitra-translation--input-encoding "tibetan-dharmamitra-translation" (file))
