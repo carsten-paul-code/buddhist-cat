@@ -5075,6 +5075,25 @@ Dokumente in EINER rmapi-Sitzung (`tibetan-discussion-paper-upload-many',
 vorhandene Namen mit Zeitstempel) statt C-c u H je Datei — gut 90
 Einzelsitzungen hätten das Token-Limit (429) gerissen.
 
+11.11.2026, ZWEI BUGS AN EINEM ABRUF OHNE NETZ (MSA §62, C-u C-c u G
+offline, dann online).  (1) `9906971': `tibetan-discussion--submit'
+rief LAND nur bei Antwort; bei Fehler (no response, Fehler, Retries
+erschöpft) erfuhr der Aufrufer nichts — der Kommentarlauf blieb in
+`bcat-commentary--runs', sperrte jedes weitere C-c u G („Nothing while
+one runs already“) und ließ das Vers-PDF warten.  Jetzt optionales FAIL
+(FILE REASON); `bcat-commentary--fail' zählt den Teil wie unlesbar
+(`bcat-commentary--settle'), räumt Lauf und Wartemarke.  (2) `8d0a459':
+der Kommentar wartete aufs Vers-PDF, solange `bcat-sentence-fetch-state'
+des Verses nicht nil war — `align' (Referenz von Hand, keinem Segment
+zugeordnet) bleibt aber nach dem Landen; jetzt wartet er nur, solange
+ein Vers-Abruf unterwegs ist (`bcat-dossier--verse-running-p':
+In-flight-Marken bcat-analysis/-tibetan/-align).  Live: Lauf von Hand
+geräumt, Kommentar allein abgeholt, Dossier-PDF IX.62 aufs Gerät.  Der
+Offline-Lauf hatte den Vers nachträglich doch noch geschickt (DM-Aufruf
+blockierte bis Netz) — Vers zweimal abgeholt.  Lehre: Wer eigenen
+Zustand an einen Abruf hängt, braucht den Fehlerpfad; „gelandet“ nie
+aus dem Dateizustand schließen, wenn der Abrufzustand bekannt ist.
+
 #### Offen
 
 - Mitgeben: seit 5.11. auch im tibetischen Abruf eines Paars.  Schlüssel

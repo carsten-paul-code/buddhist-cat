@@ -1,9 +1,9 @@
 #+TITLE: Function Reference — buddhist-cat
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-11-09T16:00:42
+#+DATE: 2026-11-11T13:29:54
 #+OPTIONS: toc:2 num:nil
 
-Source tree: ~/Users/cp/buddhist-cat~  ·  97 modules  ·  2368 forms
+Source tree: ~/Users/cp/buddhist-cat~  ·  97 modules  ·  2371 forms
 
 Regenerated automatically by:
 
@@ -63,8 +63,8 @@ python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/buddhist-c
   - [[#doc-prep/tibetan-sentence-structure.el][doc-prep/tibetan-sentence-structure.el]]  (25)
   - [[#doc-prep/tibetan-wylie-ingest.el][doc-prep/tibetan-wylie-ingest.el]]  (26)
   - [[#persist/bcat-analysis.el][persist/bcat-analysis.el]]  (125)
-  - [[#persist/bcat-commentary.el][persist/bcat-commentary.el]]  (56)
-  - [[#persist/bcat-dossier.el][persist/bcat-dossier.el]]  (35)
+  - [[#persist/bcat-commentary.el][persist/bcat-commentary.el]]  (58)
+  - [[#persist/bcat-dossier.el][persist/bcat-dossier.el]]  (36)
   - [[#persist/bcat-export.el][persist/bcat-export.el]]  (82)
   - [[#persist/bcat-faces.el][persist/bcat-faces.el]]  (32)
   - [[#persist/bcat-parallel.el][persist/bcat-parallel.el]]  (7)
@@ -14670,19 +14670,40 @@ analysed is left alone.
 All parts of RUN landed: status; when none failed, the verse files
 get their links and the document goes to the reMarkable (C-c u H).
 
+** ~bcat-commentary--settle~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 728
+:SIGNATURE: (bcat-commentary--settle doc run)
+:END:
+
+Keep RUN of DOC after one of its parts answered or failed: progress,
+or — all parts in — the run ends (`bcat-commentary--finish').
+
 ** ~bcat-commentary--land~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 721
+:LINE: 738
 :SIGNATURE: (bcat-commentary--land doc k response)
 :END:
 
 Part K of the commentary of DOC answered with RESPONSE.
 
+** ~bcat-commentary--fail~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 753
+:SIGNATURE: (bcat-commentary--fail doc k reason)
+:END:
+
+Part K of the commentary of DOC ended without an answer (REASON) —
+11.11., MSA IX.62 without network: counted like an unreadable part, so
+the run ends and the next C-c u G asks again.
+
 ** ~bcat-commentary--submit~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 740
+:LINE: 763
 :SIGNATURE: (bcat-commentary--submit run chunks)
 :END:
 
@@ -14691,7 +14712,7 @@ Send the commentary of RUN in CHUNKS, one Claude request each.
 ** ~bcat-commentary--dharmamitra~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 768
+:LINE: 792
 :SIGNATURE: (bcat-commentary--dharmamitra run chunks k)
 :END:
 
@@ -14705,7 +14726,7 @@ onto the segments.
 ** ~bcat-commentary-fetch~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 794
+:LINE: 818
 :SIGNATURE: (bcat-commentary-fetch section commentary-source &optional status-file)
 :END:
 
@@ -14720,7 +14741,7 @@ Nothing while one runs already.
 ** ~bcat-commentary--link-target~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 826
+:LINE: 850
 :SIGNATURE: (bcat-commentary--link-target link from)
 :END:
 
@@ -14730,7 +14751,7 @@ PATH relative to FROM's folder: (FILE . OPT), OPT nil when absent.
 ** ~bcat-commentary--block-at-point~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 833
+:LINE: 857
 :SIGNATURE: (bcat-commentary--block-at-point)
 :END:
 
@@ -14739,7 +14760,7 @@ The `** Segment N' block point is in as (N . TEXT), or nil.
 ** ~bcat-commentary--visit-lemma~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 845
+:LINE: 869
 :SIGNATURE: (bcat-commentary--visit-lemma doc seg tibetan)
 :END:
 
@@ -14750,7 +14771,7 @@ segment), or at its top.
 ** ~bcat-commentary--source-jump~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 860
+:LINE: 884
 :SIGNATURE: (bcat-commentary--source-jump file)
 :END:
 
@@ -14759,7 +14780,7 @@ C-c u K in the source FILE: verse ↔ the commentary's Section.
 ** ~bcat-commentary-jump~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 880
+:LINE: 904
 :SIGNATURE: (bcat-commentary-jump)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -15095,10 +15116,22 @@ view (`bcat-export-views').
 Note that C-c u G fetches the commentary document DOC with the verse
 VERSE-FILE (see `bcat-dossier--awaiting').
 
+** ~bcat-dossier--verse-running-p~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 474
+:SIGNATURE: (bcat-dossier--verse-running-p lead)
+:END:
+
+Non-nil while a Claude request of the verse file LEAD is in flight —
+its analysis, its Tibetan, an alignment (the kinds of `bcat-sentence';
+the Tibetan request goes out inside the Sanskrit landing, so there is
+no gap between them).
+
 ** ~bcat-dossier-export-pending-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 472
+:LINE: 483
 :SIGNATURE: (bcat-dossier-export-pending-p file)
 :END:
 
@@ -15106,14 +15139,14 @@ Non-nil when the PDF of FILE's dossier should wait — Carsten 5.11.:
 „doppelten Upload weg“.  One C-c u G on a verse with commentary lands
 twice; the first to land waits for the other: a verse file while its
 commentary document is still being fetched (`bcat-commentary--runs'),
-the commentary document while its verse has not landed
-(`bcat-sentence-fetch-state' of the verse file non-nil).  The landing
-of the commentary clears the verse's note (`bcat-dossier-await').
+the commentary document while a request of its verse is still in flight
+(`bcat-dossier--verse-running-p').  The landing of the commentary
+clears the verse's note (`bcat-dossier-await').
 
 ** ~bcat-dossier-after-fetch~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 495
+:LINE: 503
 :SIGNATURE: (bcat-dossier-after-fetch file)
 :END:
 
@@ -15124,7 +15157,7 @@ never signals.
 ** ~bcat-dossier~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 508
+:LINE: 516
 :SIGNATURE: (bcat-dossier)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -29115,7 +29148,7 @@ Non-nil while a KIND request for FILE is in flight.
 :PROPERTIES:
 :KIND: defun
 :LINE: 491
-:SIGNATURE: (tibetan-discussion--submit kind file prompts land)
+:SIGNATURE: (tibetan-discussion--submit kind file prompts land &optional fail)
 :END:
 
 Queue ONE Claude request of KIND for FILE through the Claude queue
@@ -29123,14 +29156,18 @@ Queue ONE Claude request of KIND for FILE through the Claude queue
 PROMPTS is a thunk returning (SYSTEM . USER) — called inside the job,
 so the inputs are read when the request actually goes out; LAND is
 called with (FILE RESPONSE) OUTSIDE the gptel sentinel (§5.40).  The
-in-flight mark is cleared on landing, error or failure.  Returns t
+in-flight mark is cleared on landing, error or failure.  FAIL, when
+given, is called with (FILE REASON) — also outside the callback — when
+the request ends without an answer (no response, an error, retries
+exhausted): 11.11., MSA IX.62 without network, the caller's own state
+(a commentary run) otherwise waited for ever.  Returns t
 when queued, nil while a KIND request for FILE is in flight.  Shared
 by the discussion (§5.62) and the Sanskrit comparison (§5.64).
 
 ** ~tibetan-discussion--request~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 550
+:LINE: 564
 :SIGNATURE: (tibetan-discussion--request file &optional force)
 :END:
 
@@ -29141,7 +29178,7 @@ when a discussion exists and FORCE is nil.
 ** ~tibetan-discussion--maybe-fire~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 564
+:LINE: 578
 :SIGNATURE: (tibetan-discussion--maybe-fire file)
 :END:
 
@@ -29152,7 +29189,7 @@ once Claude AND DharmaMitra are there — unless switched off
 ** ~tibetan-discussion-fetch~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 579
+:LINE: 593
 :SIGNATURE: (tibetan-discussion-fetch source-file sentences folder)
 :END:
 
@@ -29165,7 +29202,7 @@ analysed.  Returns the list of files requested.
 ** ~tibetan-translation-compare-dwim~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 598
+:LINE: 612
 :SIGNATURE: (tibetan-translation-compare-dwim)
 :INTERACTIVE: t
 :AUTOLOAD: t
