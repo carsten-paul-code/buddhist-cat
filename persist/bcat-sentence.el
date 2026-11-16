@@ -723,17 +723,28 @@ verbatim, in order, as ((TITLE . TEXT) …); nil when there are none.
                                        (substring text beg (if (cdr rest) (car (cadr rest)) (length text))))))))
       own)))
 
+(defconst bcat-sentence--overview-heading "Worum es geht"
+  "The L1 section in front of a sentence file and a commentary document
+\(16.11., Carsten: he follows the translations but cannot join the
+discussion in class): what the sentence explains, the train of thought,
+the commentator's move, questions for the discussion — in German,
+whatever the language of the rest.")
+
 (defun bcat-sentence--keep (file)
   "Fields of FILE that a rebuild carries over: the user slots, the
-#+CREATED date and the file's own sections (30.10.: the rebuild from the
-old layout dropped the AS/MSA * Handout)."
+#+CREATED date, the file's own sections (30.10.: the rebuild from the
+old layout dropped the AS/MSA * Handout) and `overview', the body of
+„* Worum es geht“ (16.11., Tantrāloka 1009–1040: written by hand —
+the template sets it in front again, word for word)."
   (let* ((text (bcat-sentence--text file))
-         (own (bcat-sentence--own-sections text)))
+         (own (bcat-sentence--own-sections text))
+         (overview (bcat-sentence--l1-body text bcat-sentence--overview-heading)))
     (append
      (delq nil (mapcar (lambda (slot)
                          (let ((body (bcat-sentence--l1-body text (cdr slot))))
                            (and body (cons (car slot) body))))
                        bcat-sentence--user-slots))
+     (and overview (list (cons 'overview overview)))
      (and own (list (cons 'own-sections own)))
      (and (string-match "^#\\+CREATED:[ \t]*\\(.+\\)$" text)
           (list (cons 'created (string-trim (match-string 1 text))))))))

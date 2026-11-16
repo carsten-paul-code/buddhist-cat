@@ -301,6 +301,22 @@ order — My Notes, a section of its own (* Handout), #+CREATED and
         ;; Still analysed: the ⟦N⟧ translations under * Segments.
         (should-not (eq 'full (bcat-sentence-fetch-state file '(38 39))))))))
 
+(ert-deftest bcat-relayout-file-keeps-overview ()
+  "C-c u L (16.11.): „Worum es geht“ at the head of the file stays there,
+word for word and once — setting anew is no analysis."
+  (bcat-sentence-test--with-source
+    (bcat-sentence-test--create src)
+    (bcat-sentence-test--with-stubs bcat-sentence-test--answer
+      (bcat-sentence-test--fetch src))
+    (let ((file (tibetan-sentence--filepath 9 folder src)))
+      (bcat-sentence-test--put-overview file "* Text")
+      (should (bcat-relayout-file file))
+      (let ((text (bcat-sentence-test--text-of file)))
+        (should (string-match-p
+                 (regexp-quote (concat "\n\n* Worum es geht\n" bcat-sentence-test--overview "\n\n* Text\n"))
+                 text))
+        (should (= 1 (bcat-sentence-test--overview-count text)))))))
+
 (ert-deftest bcat-relayout-answers-kept ()
   "C-c u G keeps Claude's answer beside the file (Carsten 31.10.: „ab
 jetzt: Antwort aufbewahrt“ — a later change of the template needs no

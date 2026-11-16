@@ -544,6 +544,21 @@ reMarkable (the hook runs for the verse file and the commentary)."
                                 text))
         (should (= 2 (with-temp-buffer (insert text) (how-many "\\*Sthiramati:\\* lemmata" (point-min) (point-max)))))))))
 
+(ert-deftest bcat-commentary-fetch-keeps-overview ()
+  "16.11.: a commentary document's „Worum es geht“, written by hand
+before the verse, survives C-c u G where it stands."
+  (bcat-commentary-test--with-msa
+    (let ((doc (bcat-commentary-ensure-file 258 csrc)))
+      (bcat-sentence-test--put-overview doc "* Verse")
+      (bcat-sentence-test--with-stubs #'bcat-commentary-test--answers
+        (bcat-sentence-test--fetch-n src 36))
+      (let ((text (bcat-sentence-test--text-of doc)))
+        (should (string-match-p "^⟦627⟧ \\*Translation:\\*" text))
+        (should (string-match-p
+                 (regexp-quote (concat "\n\n* Worum es geht\n" bcat-sentence-test--overview "\n\n* Verse\n"))
+                 text))
+        (should (= 1 (bcat-sentence-test--overview-count text)))))))
+
 (ert-deftest bcat-commentary-status-line ()
   "30.10., IX.60: the commentary's PDF failed and the status said
 „Sthiramati: ✓“ — the error stood only in *Messages*.  The commentary

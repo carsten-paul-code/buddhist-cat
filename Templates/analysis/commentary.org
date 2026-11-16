@@ -18,6 +18,11 @@ translation (des Satzes) grammar — segments: num uchen wylie glossed
 gloss-table structure note concepts lemma (welches Pāda das Segment
 zitiert, wie gelesen) translations; translation-all (der ganze
 Kommentar); working-translation my-notes footnotes.
+16.11.: overview — „* Worum es geht“ vor allem anderen (Carsten, Tantrāloka
+1009–1040: er versteht die Übersetzungen, kommt in der Klasse aber nicht
+in die Diskussion): was der Satz erklärt, der Gedankengang, der Kniff,
+Fragen für die Diskussion — deutsch.  Von Hand geschrieben bleibt der
+Abschnitt bei jedem Neubau wörtlich stehen (`bcat-sentence--keep').
 #+end_comment
 #+TITLE: {{title}}
 #+STARTUP: showall
@@ -31,6 +36,11 @@ Kommentar); working-translation my-notes footnotes.
 #+CREATED: {{created}}
 #+LAST_ANALYZED: {{last-analyzed}}
 
+{{#overview}}
+* Worum es geht
+{{overview}}
+
+{{/overview}}
 * Verse
 #+begin_verse
 {{#verse}}

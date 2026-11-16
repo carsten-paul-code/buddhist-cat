@@ -61,6 +61,11 @@ Seit 31.10. (Carsten: „den reinen Textblock in Wylie oder IAST nicht
 mehr“): unter * Text die Schriftzeile (Uchen/Devanāgarī) ohne die reine
 Transliteration darunter, sobald es die Zeile mit Vokabeln gibt; im
 Rumpf ohne Glossen bleibt sie.  Reines Sanskrit behält den Padapāṭha.
+16.11.: overview — „* Worum es geht“ vor allem anderen (Carsten, Tantrāloka
+1009–1040: er versteht die Übersetzungen, kommt in der Klasse aber nicht
+in die Diskussion): was der Satz erklärt, der Gedankengang, der Kniff,
+Fragen für die Diskussion — deutsch.  Von Hand geschrieben bleibt der
+Abschnitt bei jedem Neubau wörtlich stehen (`bcat-sentence--keep').
 #+end_comment
 #+TITLE: Sentence {{sent-num}} Analysis
 #+STARTUP: showall
@@ -73,6 +78,11 @@ Rumpf ohne Glossen bleibt sie.  Reines Sanskrit behält den Padapāṭha.
 #+CREATED: {{created}}
 #+LAST_ANALYZED: {{last-analyzed}}
 
+{{#overview}}
+* Worum es geht
+{{overview}}
+
+{{/overview}}
 * Text
 #+begin_verse
 {{#segments}}

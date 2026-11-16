@@ -760,6 +760,85 @@ never twice; the old machine sections are not carried over."
           (should (= 1 (cl-count-if (lambda (l) (equal l "* Handout")) (split-string text "\n"))))
           (should (string-suffix-p handout text)))))))
 
+;; „Worum es geht“ (16.11.2026): an orientation in German at the head
+;; of the file — what the sentence explains, what the commentator does,
+;; questions for the discussion.
+
+(defconst bcat-sentence-test--overview
+  (concat "*Erklärt wird:* das Kompositum /anuttarāmṛtakulam/ aus Vers 1.1.\n\n"
+          "1. /anuttara/: das Höchste.\n2. /amṛta/: gelesen als /a-mṛta/.\n\n"
+          "*Der Kniff:* „tot“ bereitet das Wortspiel /a-mṛta/ vor.\n\n"
+          "*Fragen für die Diskussion:*\n- Warum „tot“ statt „vergänglich“?\n- Wessen Körper?")
+  "A * Worum es geht written by hand (Tantrāloka 1012, 16.11.).")
+
+(defun bcat-sentence-test--put-overview (file before &optional body)
+  "Insert * Worum es geht with BODY (default: the hand text) into FILE
+before the L1 heading BEFORE — where the Tantrāloka files have it."
+  (with-temp-buffer
+    (insert-file-contents file)
+    (goto-char (point-min))
+    (re-search-forward (concat "^" (regexp-quote before) "$"))
+    (goto-char (match-beginning 0))
+    (insert "* Worum es geht\n" (or body bcat-sentence-test--overview) "\n\n")
+    (write-region (point-min) (point-max) file nil 0)))
+
+(defun bcat-sentence-test--overview-count (text)
+  (cl-count "* Worum es geht" (split-string text "\n") :test #'equal))
+
+(ert-deftest bcat-sentence-fetch-keeps-overview-in-front ()
+  "16.11. (Tantrāloka 1009–1040): „Worum es geht“, written by hand
+before the first section, must survive C-c u G — and C-u C-c u G —
+word for word and where it stands: in front, not after the Footnotes
+with the file's other own sections."
+  (bcat-sentence-test--with-source
+    (bcat-sentence-test--create src)
+    (let ((file (tibetan-sentence--filepath 9 folder src))
+          (front (concat "\n\n* Worum es geht\n" bcat-sentence-test--overview "\n\n* Text\n")))
+      (bcat-sentence-test--put-overview file "* Text")
+      (bcat-sentence-test--with-stubs bcat-sentence-test--answer
+        (bcat-sentence-test--fetch src)
+        (let ((text (bcat-sentence-test--file-text src)))
+          (should (string-match-p "^⟦38⟧ \\*Translation:\\*" text))
+          (should (string-match-p (regexp-quote front) text))
+          (should (= 1 (bcat-sentence-test--overview-count text))))
+        (cl-letf (((symbol-function 'y-or-n-p) (lambda (&rest _) t)))
+          (tibetan-cascade-fetch (list :source src :sent-nums '(9) :label "Satz 9") t))
+        (let ((text (bcat-sentence-test--file-text src)))
+          (should (string-match-p (regexp-quote front) text))
+          (should (= 1 (bcat-sentence-test--overview-count text))))))))
+
+(ert-deftest bcat-sentence-fetch-keeps-overview-sanskrit ()
+  "The same in a Sanskrit file: „Worum es geht“ stays before the
+Recitation (Tantrāloka 1012)."
+  (bcat-sentence-test--with-sa-source
+    (bcat-sentence-test--create-n src 1007)
+    (bcat-sentence-test--put-overview (tibetan-sentence--filepath 1007 folder src) "* Recitation")
+    (bcat-sentence-test--with-stubs (bcat-sentence-test--sa-answer)
+      (bcat-sentence-test--fetch-n src 1007)
+      (let ((text (bcat-sentence-test--file-text-n src 1007)))
+        (should (string-match-p (regexp-quote "* Text\n** ⟦685⟧\n") text))
+        (should (string-match-p
+                 (regexp-quote (concat "\n\n* Worum es geht\n" bcat-sentence-test--overview
+                                       "\n\n* Recitation\n#+begin_verse\n"))
+                 text))
+        (should (= 1 (bcat-sentence-test--overview-count text)))))))
+
+(ert-deftest bcat-sentence-templates-overview-first ()
+  "Every template of a sentence file and of a commentary document has
+the section: with the field `overview' it is the first L1 section,
+without it there is none."
+  (let ((bcat-template-directory
+         (expand-file-name "../Templates/analysis"
+                           (file-name-directory (locate-library "bcat-sentence-test")))))
+    (dolist (name '("tibetan" "sanskrit" "bilingual" "bilingual-tibetan" "commentary"))
+      (let ((with (bcat-template-render-named name '((overview . "Erste Zeile.\n\n- Frage?"))))
+            (without (bcat-template-render-named name '())))
+        (ert-info ((format "Vorlage %s" name))
+          (should (string-match "^\\* \\(.*\\)$" with))
+          (should (equal "Worum es geht" (match-string 1 with)))
+          (should (string-match-p "\n\n\\* Worum es geht\nErste Zeile\\.\n\n- Frage\\?\n\n\\* " with))
+          (should-not (string-match-p "Worum es geht" without)))))))
+
 (ert-deftest bcat-sentence-fetch-keeps-reference-text ()
   "28.10., bDen 9: Claude copied Lindtner's verse without his note, and
 the note was gone from the file.  The paragraphs under Translations
