@@ -908,6 +908,37 @@ the answer brings an overview of its own, at C-c u G and at C-u C-c u G."
           (tibetan-cascade-fetch (list :source src :sent-nums '(1007) :label "Satz 1007") t))
         (should (equal hand (bcat-sentence-test--section (bcat-sentence-test--text-of file))))))))
 
+(ert-deftest bcat-sentence-prompt-neighbours ()
+  "16.11.: the overview may refer to the sentence before and after
+\(„zweite Runde“, „Rückverweis auf 1016“) — the request gives both as
+context, marked as not to be analysed: the Sanskrit as transmitted, the
+Tibetan as it stands.  A sentence without neighbours gets no such
+block."
+  (bcat-sentence-test--with-sa-source
+    (bcat-sentence-test--create-n src 1007)
+    (bcat-sentence-test--create-n src 1008)
+    (bcat-sentence-test--with-stubs (bcat-sentence-test--sa-answer)
+      (bcat-sentence-test--fetch-n src 1007)
+      (let ((user (cdr (car prompts))))
+        (should (string-match-p
+                 (regexp-quote (concat "Neighbouring sentences (context for the overview only — do not analyse them):\n"
+                                       "Sentence 1008 (after): iha khalu śāstrādāv alaukikāśīrvādamukhena parāmṛśati\n\n"
+                                       "Sentence 1007"))
+                 user))
+        (should-not (string-match-p "(before)" user)))
+      (bcat-sentence-test--fetch-n src 1008)
+      (let ((user (cdr (car prompts))))
+        (should (string-match-p
+                 (regexp-quote (concat "Sentence 1007 (before): atra madvāgaśaktāpi yanniyantraṇamullaset / "
+                                       "tatpārameśvaraṃ śrīmanmahānandavijṛmbhitam // 7\n\nSentence 1008"))
+                 user))
+        (should-not (string-match-p "(after)" user)))))
+  (bcat-sentence-test--with-source
+    (bcat-sentence-test--create src)
+    (bcat-sentence-test--with-stubs bcat-sentence-test--answer
+      (bcat-sentence-test--fetch src)
+      (should-not (string-match-p "Neighbouring sentences" (cdr (car prompts)))))))
+
 (ert-deftest bcat-sentence-templates-overview-first ()
   "Every template of a sentence file and of a commentary document has
 the section: with the field `overview' it is the first L1 section,

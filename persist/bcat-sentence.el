@@ -746,6 +746,32 @@ nil when the file has no such section or it is empty."
                               (match-string 1 drawer)))))
         (cons body nil)))))
 
+(defconst bcat-sentence--neighbour-limit 600
+  "Longest text of a neighbouring sentence in a request
+\(`bcat-sentence--neighbours-block'); a longer one is cut with „…“.")
+
+(defun bcat-sentence--neighbours-block (sentence source-file)
+  "The sentences before and after SENTENCE in SOURCE-FILE as a block of
+the request's context, or nil when it has neither — 16.11.: „Worum es
+geht“ takes in the neighbours („zweite Runde“, „Rückverweis auf
+1016“).  Their text as transmitted, marked as context only."
+  (let* ((all (bcat-sentence--sentences source-file))
+         (pos (cl-position (plist-get sentence :sent-num) all
+                           :key (lambda (s) (plist-get s :sent-num))))
+         (line (lambda (s where)
+                 (let ((text (and s (string-join (mapcar (lambda (g) (string-trim (cdr g)))
+                                                         (plist-get s :segs))
+                                                 " "))))
+                   (and text (not (string-blank-p text))
+                        (format "Sentence %d (%s): %s" (plist-get s :sent-num) where
+                                (truncate-string-to-width text bcat-sentence--neighbour-limit
+                                                          nil nil "…"))))))
+         (lines (and pos (delq nil (list (funcall line (and (> pos 0) (nth (1- pos) all)) "before")
+                                         (funcall line (nth (1+ pos) all) "after"))))))
+    (and lines
+         (concat "Neighbouring sentences (context for the overview only — do not analyse them):\n"
+                 (string-join lines "\n")))))
+
 (defun bcat-sentence--keep (file)
   "Fields of FILE that a rebuild carries over: the user slots, the
 #+CREATED date, the file's own sections (30.10.: the rebuild from the
@@ -1152,7 +1178,11 @@ translations — Carsten 2.11.: „Ja, nur beim Vergleich“."
          (target (or (plist-get meta :target-lang) "en"))
          (second (bcat-sentence--second-language sentence source-file))
          (lectures (bcat-sentence--lectures (plist-get sentence :sent-num) source-file))
-         (segs (plist-get sentence :segs)))
+         (segs (plist-get sentence :segs))
+         ;; 16.11.: the sentences before and after, for „Worum es geht“
+         (context (append (bcat-sentence--context-with-zettels meta segs source-file)
+                          (let ((block (bcat-sentence--neighbours-block sentence source-file)))
+                            (and block (list block))))))
     (if (bcat-sentence--sanskrit-p source-file)
         (let ((verse-mode (bcat-sentence--verse-mode-p source-file)))
           (cons (bcat-analysis-sanskrit-system-prompt
@@ -1161,7 +1191,7 @@ translations — Carsten 2.11.: „Ja, nur beim Vergleich“."
                  (plist-get sentence :sent-num) (plist-get sentence :verse)
                  (mapcar (lambda (s) (list (car s) (cdr s))) segs)
                  refs
-                 (bcat-sentence--context-with-zettels meta segs source-file)
+                 context
                  (and verse-mode (bcat-sentence--bhasya-texts (plist-get sentence :sent-num)
                                                               source-file))
                  second lectures
@@ -1171,7 +1201,7 @@ translations — Carsten 2.11.: „Ja, nur beim Vergleich“."
              (plist-get sentence :sent-num) (plist-get sentence :verse)
              (mapcar (lambda (s) (list (car s) (cdr s) (bcat-sentence--wylie (cdr s)))) segs)
              refs
-             (bcat-sentence--context-with-zettels meta segs source-file)
+             context
              second lectures)))))
 
 (defun bcat-sentence--write-analysed (file sent-num segs source-file build)
