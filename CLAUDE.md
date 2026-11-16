@@ -5146,6 +5146,46 @@ steht seit `b99d450' auch im PDF (pdf-sanskrit, pdf-bilingual,
 pdf-bilingual-tibetan unter der \bcatorig-Zeile; `bcat-export-views'
 prüft die zurückgelesenen Segmente; das Lesedossier erbt ihn).
 
+16.11.2026 abends, „WORUM ES GEHT“ (Carsten über die Tantrāloka-
+Session: er versteht die Übersetzungen, kommt in der Klasse aber nicht
+in die Diskussion; Concepts = Lexikonwissen, „For the class“ = nur
+Übersetzungsvergleich).  Neuer L1-Abschnitt `* Worum es geht' ganz
+vorn in jeder Satzdatei und jedem Kommentardokument (alle fünf
+Vorlagen), deutsch, auch wenn der Rest englisch ist: *Erklärt wird:* /
+Gedankengang (mehrere Schritte nummeriert) / *Der Kniff:* / *Fragen für
+die Diskussion:*.  Muster: 32 Handtexte der Tantrāloka-Session zu TĀ
+1009–1040.
+- Erhalt (`d2cc4d7'): Feld `overview'; `bcat-sentence--keep' liest den
+  Abschnitt aus der Datei, die Vorlage setzt ihn wörtlich wieder vorn
+  ein (vorher: fremder Abschnitt, landete hinter den Footnotes).
+- PDF (`543c961'): Teil pdf-part-overview vor Reading in allen vier
+  pdf-Vorlagen — eigene erste Seite, Eintrag in der Leiste; im Dossier
+  vor der Reading-Seite, der Abschnitt des Kommentardokuments am Kopf
+  des Kommentarteils, beim AS der des Bhāṣya-Satzes im Teil Bhāṣya.
+- Erzeugung (`0bca8e2'): kein eigener Abruf, sondern das letzte Feld
+  der Antwort (`overview': subject, steps, move, questions);
+  `bcat-analysis--overview-rule' in der tibetischen, der Sanskrit- und
+  der Kommentar-Analyse, NICHT im tibetischen Abruf eines Paars (einer
+  pro Satznummer, in der Datei des Sanskrit).  Die Beschriftungen setzt
+  das Werkzeug (`bcat-analysis-overview').  Schlusszeile der Prompts:
+  „… in <Zielsprache>; the overview in German“.
+- Schutz der Handtexte (`bcat-analysis-overview-fields'): erzeugt =
+  Drawer :GENERATED_HASH: (md5 des Textes) unter der Überschrift.  Ohne
+  Hash oder mit nicht mehr passendem Hash (von Hand geschrieben bzw.
+  geändert) bleibt der Abschnitt bei JEDEM Abruf stehen, auch C-u; nur
+  ein unveränderter erzeugter wird ersetzt.  Neu erzeugen lassen =
+  Abschnitt löschen, dann C-c u L (aus .answers) oder C-c u G.
+- Kontext (`a9ee7fb'): `bcat-sentence--neighbours-block' gibt dem
+  führenden Abruf den Satz davor und danach mit (≤ 600 Zeichen, „do not
+  analyse them“) — für „zweite Runde“, „Rückverweis auf 1016“.
+Lehre: Vorlagen liest das laufende Emacs von der Platte — eine Vorlage,
+die ein neues Feld erwartet, und der Code, der es setzt, müssen
+zusammen geladen werden (zwischen Vorlagenänderung und `load' hätte ein
+C-c u L den Abschnitt fallen lassen: die Vorlage schrieb die
+Überschrift schon selbst, der alte Code kannte das Feld noch nicht).
+Noch kein echter Abruf mit dem neuen Feld (Abrufe nur auf Zuruf); die
+Form der erzeugten Texte ist an einer echten Antwort zu prüfen.
+
 #### Offen
 
 - Mitgeben: seit 5.11. auch im tibetischen Abruf eines Paars.  Schlüssel
