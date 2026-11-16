@@ -1,9 +1,9 @@
 #+TITLE: Function Reference — buddhist-cat
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-11-16T15:11:16
+#+DATE: 2026-11-16T15:34:10
 #+OPTIONS: toc:2 num:nil
 
-Source tree: ~/Users/cp/buddhist-cat~  ·  97 modules  ·  2384 forms
+Source tree: ~/Users/cp/buddhist-cat~  ·  97 modules  ·  2387 forms
 
 Regenerated automatically by:
 
@@ -62,7 +62,7 @@ python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/buddhist-c
   - [[#doc-prep/tibetan-segment-migrate.el][doc-prep/tibetan-segment-migrate.el]]  (12)
   - [[#doc-prep/tibetan-sentence-structure.el][doc-prep/tibetan-sentence-structure.el]]  (25)
   - [[#doc-prep/tibetan-wylie-ingest.el][doc-prep/tibetan-wylie-ingest.el]]  (26)
-  - [[#persist/bcat-analysis.el][persist/bcat-analysis.el]]  (135)
+  - [[#persist/bcat-analysis.el][persist/bcat-analysis.el]]  (138)
   - [[#persist/bcat-commentary.el][persist/bcat-commentary.el]]  (58)
   - [[#persist/bcat-dossier.el][persist/bcat-dossier.el]]  (36)
   - [[#persist/bcat-export.el][persist/bcat-export.el]]  (82)
@@ -13898,21 +13898,49 @@ h dropped, vowels one class and a run of them one (a + i = e), the
 consonants in their sandhi classes (`bcat-analysis--skeleton-class');
 POSITIONS the index in S of each class.
 
-** ~bcat-analysis--skeleton-gaps~  /function/
+** ~bcat-analysis--lcs-pairs~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1995
-:SIGNATURE: (bcat-analysis--skeleton-gaps a b)
+:LINE: 2001
+:SIGNATURE: (bcat-analysis--lcs-pairs a b &optional ok)
 :END:
 
-The runs of A's and of B's skeleton classes outside their longest
-common subsequence: (A-RUNS . B-RUNS), each run (START . END) inclusive;
-nil when the strings are too long to compare.
+The pairs (I . J) of a longest common subsequence of the strings A
+and B, in order; OK, a function of I and J, says which positions may
+be paired (default: equal characters).
+
+** ~bcat-analysis--unmatched-runs~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 2024
+:SIGNATURE: (bcat-analysis--unmatched-runs len matched)
+:END:
+
+The runs (START . END), inclusive, of the positions below LEN that are
+not in MATCHED (ascending).
+
+** ~bcat-analysis--skeleton-diff~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 2036
+:SIGNATURE: (bcat-analysis--skeleton-diff a b)
+:END:
+
+Where the skeletons A (the text) and B (the padapāṭha) differ beyond
+sandhi: (A-RUNS . B-RUNS), each run (START . END) inclusive; nil when
+the strings are too long to compare.  16.11., TĀ 1001: a plain common
+subsequence aligns unrelated lines too.  So the two are aligned first
+at their common stretches of `bcat-analysis--anchor-length' classes or
+more; of each stretch between such anchors: when it is large and unlike
+(four classes or more without a partner, less than three quarters in
+common) each side with three or more left over counts whole; else its
+runs of three classes or more without a partner count.  What sandhi
+does between short words — a class here and there — stays below that.
 
 ** ~bcat-analysis--gap-text~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 2022
+:LINE: 2091
 :SIGNATURE: (bcat-analysis--gap-text gap)
 :END:
 
@@ -13923,7 +13951,7 @@ class, so a run may take one in.
 ** ~bcat-analysis-padapatha-check~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 2034
+:LINE: 2103
 :SIGNATURE: (bcat-analysis-padapatha-check samhita padapatha)
 :END:
 
@@ -13931,16 +13959,17 @@ What the padapāṭha PADAPATHA (Claude's words, in IAST) leaves out of
 the transmitted segment SAMHITA or adds to it, beyond what sandhi
 explains — a sentence for the file, or nil.  Carsten 16.11. (TĀ
 1013–1020: abhinavā for abhinavāyām, vyatiriktena for vyatiriktatvena,
-half a segment missing): compared are the skeletons
-(`bcat-analysis--skeleton'); a run of three classes or more outside
-their common part counts, shown as the text has it.  Editorial brackets
-in SAMHITA ([cchilaṣṭaḥ]) do not count.  Words merely split or joined
-wrongly (yasya āḥ, yā sā, yat-vakṣyati) change too few letters to show.
+half a segment missing; TĀ 1001: the halves of two segments swapped):
+compared are the skeletons (`bcat-analysis--skeleton',
+`bcat-analysis--skeleton-diff'), shown is the text itself.  Editorial
+brackets in SAMHITA ([cchilaṣṭaḥ]) do not count.  Words merely split or
+joined wrongly (yasya āḥ, yā sā, yat-vakṣyati) change too few letters
+to show.
 
 ** ~bcat-analysis-with-padapatha-checks~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 2066
+:LINE: 2136
 :SIGNATURE: (bcat-analysis-with-padapatha-checks context)
 :END:
 
@@ -13952,7 +13981,7 @@ what `bcat-analysis-padapatha-check' finds, or removed — the line under
 ** ~bcat-analysis-table-padapatha~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 2086
+:LINE: 2156
 :SIGNATURE: (bcat-analysis-table-padapatha samhita tables)
 :END:
 
@@ -13966,7 +13995,7 @@ tables in Tibetan script.
 ** ~bcat-analysis--word-entries~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 2101
+:LINE: 2171
 :SIGNATURE: (bcat-analysis--word-entries entries)
 :END:
 
@@ -13975,7 +14004,7 @@ ENTRIES (alists with word and analysis) as "/word/ — analysis".
 ** ~bcat-analysis-word-analysis~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 2108
+:LINE: 2178
 :SIGNATURE: (bcat-analysis-word-analysis segments)
 :END:
 
@@ -13987,7 +14016,7 @@ LEMMA; FORM' — "" when no segment has words.
 ** ~bcat-analysis-quote-lines~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 2127
+:LINE: 2197
 :SIGNATURE: (bcat-analysis-quote-lines lines quotes)
 :END:
 
@@ -14001,7 +14030,7 @@ may stand inside a sandhi word, kiṃcin|na); the other lines stay.
 ** ~bcat-analysis--prose-recitation~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 2149
+:LINE: 2219
 :SIGNATURE: (bcat-analysis--prose-recitation base parsed)
 :END:
 
@@ -14015,7 +14044,7 @@ in the prose gets its metrical lines (`bcat-analysis-quote-lines',
 ** ~bcat-analysis-sanskrit-context~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 2172
+:LINE: 2242
 :SIGNATURE: (bcat-analysis-sanskrit-context base parsed &optional refs)
 :END:
 
@@ -14029,7 +14058,7 @@ skipped keeps its rump fields; sigla used as names are named again
 ** ~bcat-analysis--num~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 2233
+:LINE: 2303
 :SIGNATURE: (bcat-analysis--num alist &optional key)
 :END:
 
@@ -14039,7 +14068,7 @@ writes numbers, now and then as strings — or nil.
 ** ~bcat-analysis--num-ranges~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 2241
+:LINE: 2311
 :SIGNATURE: (bcat-analysis--num-ranges nums)
 :END:
 
@@ -14049,7 +14078,7 @@ NUMS (ascending) for a heading: runs as ranges, the rest by comma —
 ** ~bcat-analysis--assignment~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 2254
+:LINE: 2324
 :SIGNATURE: (bcat-analysis--assignment tibetan parsed sa-nums)
 :END:
 
@@ -14061,7 +14090,7 @@ with the one before it, the first with the first of SA-NUMS.
 ** ~bcat-analysis--differences~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 2269
+:LINE: 2339
 :SIGNATURE: (bcat-analysis--differences parsed n)
 :END:
 
@@ -14071,7 +14100,7 @@ for none.
 ** ~bcat-analysis-pair-lists~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 2281
+:LINE: 2351
 :SIGNATURE: (bcat-analysis-pair-lists sanskrit tibetan assignment differences)
 :END:
 
@@ -14091,7 +14120,7 @@ assignment — one per segment, its Wylie under it when it has no table.
 ** ~bcat-analysis--tibetan-answered~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 2340
+:LINE: 2410
 :SIGNATURE: (bcat-analysis--tibetan-answered tibetan parsed)
 :END:
 
@@ -14102,7 +14131,7 @@ request.
 ** ~bcat-analysis-bilingual-context~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 2356
+:LINE: 2426
 :SIGNATURE: (bcat-analysis-bilingual-context base parsed)
 :END:
 
@@ -14120,7 +14149,7 @@ without a valid assignment see `bcat-analysis--assignment'.
 ** ~bcat-analysis-partner-context~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 2395
+:LINE: 2465
 :SIGNATURE: (bcat-analysis-partner-context base parsed sanskrit &optional sanskrit-translation)
 :END:
 
@@ -14319,6 +14348,18 @@ the document's target language).
 :END:
 
 /(no docstring)/
+
+** ~bcat-analysis--anchor-length~  /constant/
+:PROPERTIES:
+:KIND: defconst
+:LINE: 1995
+:DEFAULT: 6
+:END:
+
+Text and padapāṭha are aligned where their skeletons share a stretch
+of at least this many classes (`bcat-analysis--skeleton-diff').  Shorter
+agreements are chance between unrelated lines — the classes are few —;
+calibrated on the kept answers of TĀ 1, AS and MSA IX (16.11.).
 
 
 * persist/bcat-commentary.el
@@ -18106,7 +18147,7 @@ it (§5.74) — C-c u H (PDF + reMarkable) hangs here.
 ** ~bcat-status-mode~  /major mode/
 :PROPERTIES:
 :KIND: define-derived-mode
-:LINE: 38
+:LINE: 39
 :SIGNATURE: (bcat-status-mode …)
 :END:
 
@@ -18115,7 +18156,7 @@ it (§5.74) — C-c u H (PDF + reMarkable) hangs here.
 ** ~bcat-status--buffer~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 41
+:LINE: 42
 :SIGNATURE: (bcat-status--buffer)
 :END:
 
@@ -18124,7 +18165,7 @@ it (§5.74) — C-c u H (PDF + reMarkable) hangs here.
 ** ~bcat-status--line~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 47
+:LINE: 48
 :SIGNATURE: (bcat-status--line label steps)
 :END:
 
@@ -18133,7 +18174,7 @@ The text of a sentence line: LABEL and STEPS in the fixed order.
 ** ~bcat-status-begin~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 54
+:LINE: 55
 :SIGNATURE: (bcat-status-begin command label items)
 :END:
 
@@ -18144,7 +18185,7 @@ Open a block for a run of COMMAND ("C-c u G") on LABEL; ITEMS
 ** ~bcat-status-add~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 74
+:LINE: 75
 :SIGNATURE: (bcat-status-add file label after)
 :END:
 
@@ -18156,7 +18197,7 @@ no line.
 ** ~bcat-status-step~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 94
+:LINE: 95
 :SIGNATURE: (bcat-status-step file key text)
 :END:
 
@@ -18196,7 +18237,7 @@ The status buffer.
 ** ~bcat-status--entries~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 35
+:LINE: 36
 :DEFAULT: (make-hash-table :test 'equal)
 :END:
 

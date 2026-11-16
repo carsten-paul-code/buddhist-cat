@@ -5127,6 +5127,22 @@ Landung Meldung „Satz N ⟦M⟧: …“ + Statuszeile.  Kalibriert an den
 älter als der Neuschnitt der Segmente 669–671), 1011 ⟦693⟧ (iti),
 MSA 295 — Merker erst beim nächsten C-c u L/G.  yasya āḥ / yā sā /
 yat-vakṣyati erkennt der Vergleich nicht (zu wenig Buchstaben).
+Erster echter Abruf (TĀ 1001, C-u C-c u G): Claude vertauschte die
+Halbzeilen zweier Segmente (669 = Pāda a + c, 671 = b + d).  Dabei zwei
+BUGS: die Prüfung nannte nur Krümel („yaiv“, „pra“) — eine einfache LCS
+richtet bei so wenigen Klassen auch fremde Zeilen zu ~60 % aus; jetzt
+erst Anker (gemeinsame Strecken ≥ `bcat-analysis--anchor-length' = 6),
+dazwischen: groß und unähnlich (≥ 4 ohne Partner, < 3/4 gemeinsam) →
+die Seite ganz, sonst Läufe ≥ 3 (`bcat-analysis--skeleton-diff',
+`16652fe'); und die Statuszeile zeigte :check nicht (fehlte in
+`bcat-status--order', `51e7909').  Lehre: einen Vergleich nicht nur an
+„fehlt etwas“ kalibrieren, sondern auch an „steht etwas anderes da“;
+einen Prototyp (difflib) nicht durch einen schwächeren Algorithmus
+ersetzen, ohne dieselben Fälle erneut laufen zu lassen.  Die
+Tantrāloka-Session hat sent-1001 danach von Hand berichtigt und
+`bcat-export-upload' vorübergehend auf nil gesetzt (ungeprüfte
+Fassungen sollen nicht aufs Gerät) — sie lädt selbst hoch.  Offen: die
+PDF-Vorlagen zeigen den Merker nicht (nur die Satzdatei).
 
 #### Offen
 
