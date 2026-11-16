@@ -5107,6 +5107,27 @@ Ein ganzer Vers trägt die Marke `verse' (statt „hat scansion“).  TĀ 1:
 erkennt die Metrum-Erkennung nicht.  Live: sent-1012 neu gesetzt, PDF
 aufs Gerät.
 
+16.11.2026, PADAPĀṬHA TREU UND GEPRÜFT (Befunde der Tantrāloka-Session,
+Carsten bestätigt).  BUG zuerst (`62e4f4f'): Claude teilte Segment 704
+(TĀ 1016) am Komma in zwei Einträge gleicher Nummer, die Zuordnung per
+assoc nahm nur den ersten — `bcat-analysis-read' führt gleiche Nummern
+jetzt zusammen (`bcat-analysis--join-split-segments').  Prompt
+(`86dc319'): Padapāṭha = Segment vollständig, nur Sandhi aufgelöst,
+Endungen wie im Text, keine erfundenen Komposita, keine zerrissenen
+Wörter, Avagraha/Pronomina richtig (yāsāv = yā asau).  Prüfung
+(`f1d17be'): `bcat-analysis-padapatha-check' vergleicht Gerüste
+(Diakritika weg, Vokalfolge eine Klasse, Sandhi-Konsonantenklassen,
+LCS, Rest ≥ 3 Klassen zählt, editorische [ … ] nicht); `bcat-sentence--
+render' setzt `padapatha-check' für jedes Sanskrit-Segment, die
+Vorlagen schreiben „*Prüfen:* …“ unter die fette Zeile (C-c u L
+überspringt sie, Handkorrektur lässt sie verschwinden); nach der
+Landung Meldung „Satz N ⟦M⟧: …“ + Statuszeile.  Kalibriert an den
+.answers: TĀ meldet 705/708/704/693 (alle echt), AS nichts, MSA 295
+(Klammer-Lesart).  Lesend über die vorhandenen Dateien: 1001 (Datei
+älter als der Neuschnitt der Segmente 669–671), 1011 ⟦693⟧ (iti),
+MSA 295 — Merker erst beim nächsten C-c u L/G.  yasya āḥ / yā sā /
+yat-vakṣyati erkennt der Vergleich nicht (zu wenig Buchstaben).
+
 #### Offen
 
 - Mitgeben: seit 5.11. auch im tibetischen Abruf eines Paars.  Schlüssel
