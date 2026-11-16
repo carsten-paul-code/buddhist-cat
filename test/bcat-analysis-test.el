@@ -275,6 +275,32 @@ brackets in the source do not count.  The real cases of TĀ 1013–1020."
     (should-not (bcat-analysis-padapatha-check (car pair) (cadr pair))))
   (should-not (bcat-analysis-padapatha-check "atra /" nil)))
 
+(ert-deftest bcat-analysis-padapatha-check-swapped-halves ()
+  "16.11., TĀ 1001 (the first real fetch with the check): Claude gave
+segment 669 the pādas a + c and 671 the pādas b + d.  The check said
+only „yaiv“ / „pra“ / „sya eva“ — the plain common subsequence of two
+unrelated half-lines is long (few sandhi classes), what is left over
+are crumbs; a worse case would have passed.  Text and padapāṭha are
+aligned at their long common stretches; a stretch between them that is
+large and unlike on both sides is named whole.  Clusters of sandhi
+between short words stay silent."
+  (let ((c (bcat-analysis-test--check
+            "yasmādeṣaṇavitkriyā yaduditā hyānandacidbhūmayo yasyaivoddhuraśaktivaibhavamidaṃ sarvaṃ yadevaṃvidham /"
+            "yasmāt eṣaṇa vit kriyā yat uditā hi ānanda-cit-bhūmayaḥ tat dhāma trika-tattva-advaya-mayam svātantrya-pūrṇa-pratham /")))
+    (should (string-match-p (regexp-quote "im Text, nicht im Padapāṭha: „yasyaivoddhuraśaktivaibhavamidaṃ sarvaṃ yadevaṃvidham“") c))
+    (should (string-match-p (regexp-quote "nur im Padapāṭha: „tat dhāma trika-tattva-advaya-mayam svātantrya-pūrṇa-pratham“") c)))
+  (let ((c (bcat-analysis-test--check
+            "taddhāma trikatattvamadvayamayaṃ svātantryapūrṇaprathaṃ citte stācchivaśāsanāgamarahasyācchādanadhvaṃsi me // 1"
+            "yasya eva uddhura-śakti-vaibhavam idam sarvam yat evaṃvidham citte stāt śiva-śāsana-āgama-rahasya-ācchādana-dhvaṃsi me // 1")))
+    (should (string-match-p "im Text, nicht im Padapāṭha: „taddhāma trikatattvamadvayamayaṃ" c))
+    (should (string-match-p "nur im Padapāṭha: „yasya eva uddhura-śakti-vaibhavam idam sarvam yat" c)))
+  ;; sandhi between short words, three classes within a few letters: silent
+  (dolist (pair '(("iti vakṣyamāṇanītyā śaktiśaktimatsāmarasyātmā saṃghaṭṭaḥ, tataḥ sphuritabhāvaḥ parānapekṣatvena svata evollasitasattāko yo'sau"
+                   "iti vakṣyamāṇa-nītyā śakti-śaktimad-sāmarasya-ātmā saṃghaṭṭaḥ tataḥ sphurita-bhāvaḥ para-anapekṣatvena svataḥ eva ullasita-sattākaḥ yaḥ asau")
+                  ("kena kāraṇena dhātava āyatanāni ca sopādānadharmā ity ucyante."
+                   "kena kāraṇena dhātavaḥ āyatanāni ca sa-upādāna-dharmāḥ iti ucyante.")))
+    (should-not (bcat-analysis-padapatha-check (car pair) (cadr pair)))))
+
 (ert-deftest bcat-analysis-uchen-words ()
   "Carsten 31.10. abends, Tibetisch V: the Uchen of each word above its
 Wylie in the tables — from the segment's Uchen, syllable by syllable

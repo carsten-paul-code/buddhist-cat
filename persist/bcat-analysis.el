@@ -1992,31 +1992,100 @@ POSITIONS the index in S of each class."
         (setq prev f)))
     (list (concat (nreverse out)) (vconcat (nreverse pos)) s)))
 
-(defun bcat-analysis--skeleton-gaps (a b)
-  "The runs of A's and of B's skeleton classes outside their longest
-common subsequence: (A-RUNS . B-RUNS), each run (START . END) inclusive;
-nil when the strings are too long to compare."
+(defconst bcat-analysis--anchor-length 6
+  "Text and padapāṭha are aligned where their skeletons share a stretch
+of at least this many classes (`bcat-analysis--skeleton-diff').  Shorter
+agreements are chance between unrelated lines — the classes are few —;
+calibrated on the kept answers of TĀ 1, AS and MSA IX (16.11.).")
+
+(defun bcat-analysis--lcs-pairs (a b &optional ok)
+  "The pairs (I . J) of a longest common subsequence of the strings A
+and B, in order; OK, a function of I and J, says which positions may
+be paired (default: equal characters)."
+  (let* ((n (length a)) (m (length b))
+         (ok (or ok (lambda (i j) (eq (aref a i) (aref b j)))))
+         (l (make-vector (1+ n) nil)))
+    (dotimes (i (1+ n)) (aset l i (make-vector (1+ m) 0)))
+    (cl-loop for i from (1- n) downto 0
+             do (let ((row (aref l i)) (below (aref l (1+ i))))
+                  (cl-loop for j from (1- m) downto 0
+                           do (aset row j (if (funcall ok i j)
+                                              (1+ (aref below (1+ j)))
+                                            (max (aref below j) (aref row (1+ j))))))))
+    (let ((i 0) (j 0) (pairs '()))
+      (while (and (< i n) (< j m))
+        (cond ((and (funcall ok i j)
+                    (= (aref (aref l i) j) (1+ (aref (aref l (1+ i)) (1+ j)))))
+               (push (cons i j) pairs) (cl-incf i) (cl-incf j))
+              ((>= (aref (aref l (1+ i)) j) (aref (aref l i) (1+ j))) (cl-incf i))
+              (t (cl-incf j))))
+      (nreverse pairs))))
+
+(defun bcat-analysis--unmatched-runs (len matched)
+  "The runs (START . END), inclusive, of the positions below LEN that are
+not in MATCHED (ascending)."
+  (let ((runs '()) (start nil))
+    (dotimes (x len)
+      (if (and matched (= x (car matched)))
+          (progn (when start (push (cons start (1- x)) runs) (setq start nil))
+                 (setq matched (cdr matched)))
+        (unless start (setq start x))))
+    (when start (push (cons start (1- len)) runs))
+    (nreverse runs)))
+
+(defun bcat-analysis--skeleton-diff (a b)
+  "Where the skeletons A (the text) and B (the padapāṭha) differ beyond
+sandhi: (A-RUNS . B-RUNS), each run (START . END) inclusive; nil when
+the strings are too long to compare.  16.11., TĀ 1001: a plain common
+subsequence aligns unrelated lines too.  So the two are aligned first
+at their common stretches of `bcat-analysis--anchor-length' classes or
+more; of each stretch between such anchors: when it is large and unlike
+\(four classes or more without a partner, less than three quarters in
+common) each side with three or more left over counts whole; else its
+runs of three classes or more without a partner count.  What sandhi
+does between short words — a class here and there — stays below that."
   (let ((n (length a)) (m (length b)))
     (when (<= (* (1+ n) (1+ m)) 1000000)
-      (let ((l (make-vector (1+ n) nil)))
-        (dotimes (i (1+ n)) (aset l i (make-vector (1+ m) 0)))
-        (cl-loop for i from (1- n) downto 0
-                 do (cl-loop for j from (1- m) downto 0
-                             do (aset (aref l i) j
-                                      (if (eq (aref a i) (aref b j))
-                                          (1+ (aref (aref l (1+ i)) (1+ j)))
-                                        (max (aref (aref l (1+ i)) j) (aref (aref l i) (1+ j)))))))
-        (let ((i 0) (j 0) (ra '()) (rb '()) (ga nil) (gb nil))
-          (cl-flet ((close () (when ga (push ga ra) (setq ga nil)) (when gb (push gb rb) (setq gb nil))))
-            (while (or (< i n) (< j m))
-              (cond
-               ((and (< i n) (< j m) (eq (aref a i) (aref b j))
-                     (= (aref (aref l i) j) (1+ (aref (aref l (1+ i)) (1+ j)))))
-                (close) (cl-incf i) (cl-incf j))
-               ((and (< i n) (or (>= j m) (>= (aref (aref l (1+ i)) j) (aref (aref l i) (1+ j)))))
-                (setq ga (if ga (cons (car ga) i) (cons i i))) (cl-incf i))
-               (t (setq gb (if gb (cons (car gb) j) (cons j j))) (cl-incf j))))
-            (close))
+      ;; span[i][j]: the length of the common stretch through (i, j)
+      (let ((span (make-vector (1+ n) nil)))
+        (dotimes (i (1+ n)) (aset span i (make-vector (1+ m) 0)))
+        (dotimes (i n)
+          (dotimes (j m)
+            (when (eq (aref a i) (aref b j))
+              (aset (aref span (1+ i)) (1+ j) (1+ (aref (aref span i) j))))))
+        (let ((next (make-vector (1+ m) 0)))
+          (cl-loop for i from (1- n) downto 0
+                   do (let ((cur (make-vector (1+ m) 0)))
+                        (cl-loop for j from (1- m) downto 0
+                                 do (if (eq (aref a i) (aref b j))
+                                        (let ((run (1+ (aref next (1+ j)))))
+                                          (aset cur j run)
+                                          (aset (aref span (1+ i)) (1+ j)
+                                                (+ (aref (aref span (1+ i)) (1+ j)) run -1)))
+                                      (aset (aref span (1+ i)) (1+ j) 0)))
+                        (setq next cur))))
+        (let ((anchors (append (bcat-analysis--lcs-pairs
+                                a b (lambda (i j) (>= (aref (aref span (1+ i)) (1+ j))
+                                                      bcat-analysis--anchor-length)))
+                               (list (cons n m))))
+              (pi 0) (pj 0) (ra '()) (rb '()))
+          (dolist (anchor anchors)
+            (let* ((i (car anchor)) (j (cdr anchor))
+                   (la (- i pi)) (lb (- j pj)))
+              (when (or (> la 0) (> lb 0))
+                (let* ((inner (bcat-analysis--lcs-pairs (substring a pi i) (substring b pj j)))
+                       (l (length inner)))
+                  (if (and (>= (- (max la lb) l) 4)
+                           (< (* 4 l) (* 3 (max la lb))))
+                      (progn (when (>= (- la l) 3) (push (cons pi (1- i)) ra))
+                             (when (>= (- lb l) 3) (push (cons pj (1- j)) rb)))
+                    (dolist (r (bcat-analysis--unmatched-runs la (mapcar #'car inner)))
+                      (when (>= (- (cdr r) (car r)) 2)
+                        (push (cons (+ pi (car r)) (+ pi (cdr r))) ra)))
+                    (dolist (r (bcat-analysis--unmatched-runs lb (mapcar #'cdr inner)))
+                      (when (>= (- (cdr r) (car r)) 2)
+                        (push (cons (+ pj (car r)) (+ pj (cdr r))) rb))))))
+              (setq pi (1+ i) pj (1+ j))))
           (cons (nreverse ra) (nreverse rb)))))))
 
 (defun bcat-analysis--gap-text (gap)
@@ -2036,26 +2105,27 @@ class, so a run may take one in."
 the transmitted segment SAMHITA or adds to it, beyond what sandhi
 explains — a sentence for the file, or nil.  Carsten 16.11. (TĀ
 1013–1020: abhinavā for abhinavāyām, vyatiriktena for vyatiriktatvena,
-half a segment missing): compared are the skeletons
-\(`bcat-analysis--skeleton'); a run of three classes or more outside
-their common part counts, shown as the text has it.  Editorial brackets
-in SAMHITA ([cchilaṣṭaḥ]) do not count.  Words merely split or joined
-wrongly (yasya āḥ, yā sā, yat-vakṣyati) change too few letters to show."
+half a segment missing; TĀ 1001: the halves of two segments swapped):
+compared are the skeletons (`bcat-analysis--skeleton',
+`bcat-analysis--skeleton-diff'), shown is the text itself.  Editorial
+brackets in SAMHITA ([cchilaṣṭaḥ]) do not count.  Words merely split or
+joined wrongly (yasya āḥ, yā sā, yat-vakṣyati) change too few letters
+to show."
   (when (and (stringp samhita) (stringp padapatha)
              (not (string-blank-p samhita)) (not (string-blank-p padapatha)))
     (let* ((sa (bcat-analysis--skeleton (replace-regexp-in-string "\\[[^]\n]*\\]" "" samhita)))
            (pa (bcat-analysis--skeleton padapatha))
-           (gaps (bcat-analysis--skeleton-gaps (car sa) (car pa)))
+           (diff (bcat-analysis--skeleton-diff (car sa) (car pa)))
            (text (lambda (sk runs)
-                   (delq nil (mapcar (lambda (r)
-                                       (when (>= (- (cdr r) (car r)) 2)
-                                         (format "„%s“"
-                                                 (bcat-analysis--gap-text
-                                                  (substring (nth 2 sk) (aref (nth 1 sk) (car r))
-                                                             (1+ (aref (nth 1 sk) (cdr r))))))))
-                                     runs))))
-           (missing (and gaps (funcall text sa (car gaps))))
-           (extra (and gaps (funcall text pa (cdr gaps)))))
+                   (delete "„“"
+                           (mapcar (lambda (r)
+                                     (format "„%s“"
+                                             (bcat-analysis--gap-text
+                                              (substring (nth 2 sk) (aref (nth 1 sk) (car r))
+                                                         (1+ (aref (nth 1 sk) (cdr r)))))))
+                                   runs))))
+           (missing (and diff (funcall text sa (car diff))))
+           (extra (and diff (funcall text pa (cdr diff)))))
       (when (or missing extra)
         (concat "Padapāṭha weicht vom Text ab — "
                 (string-join
