@@ -1173,6 +1173,23 @@ the bold line, it is gone."
       (bcat-relayout-file file)
       (should-not (string-match-p "Prüfen:" (bcat-sentence-test--text-of file))))))
 
+(ert-deftest bcat-sentence-padapatha-check-status ()
+  "16.11., TĀ 1001 (the first real fetch): the message came, the status
+line did not say „Padapāṭha prüfen“ — the step was not among the steps
+the line shows.  It stands after Claude's."
+  (bcat-sentence-test--with-sa-source
+    (bcat-sentence-test--create-n src 1007)
+    (let ((bcat-status--entries (make-hash-table :test 'equal))
+          (bcat-status-show nil)
+          (answer (replace-regexp-in-string ",[ \n]*{[ \n]*\"word\": \"ullaset\"[^}]*}" ""
+                                            (bcat-sentence-test--sa-answer))))
+      (when (get-buffer bcat-status-buffer-name) (kill-buffer bcat-status-buffer-name))
+      (bcat-sentence-test--with-stubs answer
+        (bcat-sentence-test--fetch-n src 1007))
+      (let ((text (with-current-buffer bcat-status-buffer-name (buffer-string))))
+        (should (string-match-p "^  Satz 1007  .*Claude ✓ · Padapāṭha prüfen: ⟦685⟧" text)))
+      (kill-buffer bcat-status-buffer-name))))
+
 (ert-deftest bcat-sentence-fetch-aligns-sanskrit-reference ()
   "A reference added by hand to a filled Sanskrit file: the small
 alignment request speaks of a Sanskrit sentence and shows the segments

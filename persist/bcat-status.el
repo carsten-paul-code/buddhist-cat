@@ -29,8 +29,9 @@
 (defconst bcat-status-buffer-name "*Buddhist CAT*"
   "The status buffer.")
 
-(defconst bcat-status--order '(:file :state :dm :claude :tibetan :commentary :align :pdf :upload)
-  "The steps of a sentence line, in the order they are shown.")
+(defconst bcat-status--order '(:file :state :dm :claude :check :tibetan :commentary :align :pdf :upload)
+  "The steps of a sentence line, in the order they are shown (:check —
+16.11.: the padapāṭha against its text, `bcat-sentence--padapatha-warnings').")
 
 (defvar bcat-status--entries (make-hash-table :test 'equal)
   "Sentence file → (MARKER LABEL STEPS) of its line in the newest block.")
