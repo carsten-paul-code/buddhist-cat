@@ -216,6 +216,23 @@ words, the forms, the compounds one after the other, the texts joined
       (should (string-match-p "āśrayaḥ" (alist-get 'padapatha s)))
       (should (string-match-p "That is the foundation" (alist-get 'segment-translation s))))))
 
+(ert-deftest bcat-analysis-sanskrit-prompt-faithful-padapatha ()
+  "16.11. (Carsten über die Tantrāloka-Session, TĀ 1013–1020: yasya āḥ
+für yasyāḥ, yā sā für yāsāv, abhinavā für abhinavāyām, vyatiriktena für
+vyatiriktatvena, yat-vakṣyati als Kompositum): the padapāṭha renders the
+segment complete and in order — only the sandhi undone, no word
+changed, added or left out, endings as in the text, no compound of
+independent words, no word split, avagraha and pronouns resolved
+rightly."
+  (let ((sys (bcat-analysis-sanskrit-system-prompt "en")))
+    (should (string-match-p "complete and in the same order" sys))
+    (should (string-match-p "never change, add or leave out a word" sys))
+    (should (string-match-p "abhinavāyām stays abhinavāyām" sys))
+    (should (string-match-p "vyatiriktatvena stays vyatiriktatvena" sys))
+    (should (string-match-p "yat vakṣyati, not yat-vakṣyati" sys))
+    (should (string-match-p "yasyāḥ, not yasya āḥ" sys))
+    (should (string-match-p "yāsāv = yā asau, not yā sā" sys))))
+
 (ert-deftest bcat-analysis-uchen-words ()
   "Carsten 31.10. abends, Tibetisch V: the Uchen of each word above its
 Wylie in the tables — from the segment's Uchen, syllable by syllable
