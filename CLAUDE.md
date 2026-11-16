@@ -5141,8 +5141,10 @@ einen Prototyp (difflib) nicht durch einen schwächeren Algorithmus
 ersetzen, ohne dieselben Fälle erneut laufen zu lassen.  Die
 Tantrāloka-Session hat sent-1001 danach von Hand berichtigt und
 `bcat-export-upload' vorübergehend auf nil gesetzt (ungeprüfte
-Fassungen sollen nicht aufs Gerät) — sie lädt selbst hoch.  Offen: die
-PDF-Vorlagen zeigen den Merker nicht (nur die Satzdatei).
+Fassungen sollen nicht aufs Gerät) — sie lädt selbst hoch.  Der Merker
+steht seit `b99d450' auch im PDF (pdf-sanskrit, pdf-bilingual,
+pdf-bilingual-tibetan unter der \bcatorig-Zeile; `bcat-export-views'
+prüft die zurückgelesenen Segmente; das Lesedossier erbt ihn).
 
 #### Offen
 

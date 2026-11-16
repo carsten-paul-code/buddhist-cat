@@ -1,6 +1,6 @@
 #+TITLE: Function Reference — buddhist-cat
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-11-16T15:34:10
+#+DATE: 2026-11-16T15:42:15
 #+OPTIONS: toc:2 num:nil
 
 Source tree: ~/Users/cp/buddhist-cat~  ·  97 modules  ·  2387 forms
@@ -15870,7 +15870,7 @@ comma).  nil without a pdf template.
 ** ~bcat-export--bar-labels~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 903
+:LINE: 905
 :SIGNATURE: (bcat-export--bar-labels titles)
 :END:
 
@@ -15882,7 +15882,7 @@ eight titles over three lines) — for a numbered title its number
 ** ~bcat-export--parts-pages~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 916
+:LINE: 918
 :SIGNATURE: (bcat-export--parts-pages &rest _)
 :END:
 
@@ -15896,7 +15896,7 @@ For `org-export-before-processing-functions'.
 ** ~bcat-export--auto-parts~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 963
+:LINE: 965
 :SIGNATURE: (bcat-export--auto-parts &rest _)
 :END:
 
@@ -15912,7 +15912,7 @@ make it too long.  For `org-export-before-processing-functions'.
 ** ~bcat-export-remove-tex~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1000
+:LINE: 1002
 :SIGNATURE: (bcat-export-remove-tex pdf)
 :END:
 
@@ -15923,7 +15923,7 @@ old handout, discussion paper).
 ** ~bcat-export-pdf~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1009
+:LINE: 1011
 :SIGNATURE: (bcat-export-pdf file &optional head)
 :END:
 
@@ -15938,7 +15938,7 @@ LuaLaTeX could not set land in `bcat-export--missing'.
 ** ~bcat-export-file~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1086
+:LINE: 1088
 :SIGNATURE: (bcat-export-file file)
 :END:
 
@@ -15958,7 +15958,7 @@ commentary document too.  Returns the PDF path.
 ** ~bcat-export--lectures-pdf~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1160
+:LINE: 1162
 :SIGNATURE: (bcat-export--lectures-pdf file views head target)
 :END:
 
@@ -15971,7 +15971,7 @@ change; a copy per export would crowd the device).
 ** ~bcat-export-reading-document~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1183
+:LINE: 1185
 :SIGNATURE: (bcat-export-reading-document file)
 :END:
 
@@ -15986,7 +15986,7 @@ Returns the PDF.
 ** ~bcat-export-after-fetch~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1226
+:LINE: 1228
 :SIGNATURE: (bcat-export-after-fetch file)
 :END:
 
@@ -15999,7 +15999,7 @@ rmapi failure must not spoil the landed analysis.
 ** ~bcat-export~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 1248
+:LINE: 1250
 :SIGNATURE: (bcat-export)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -16202,7 +16202,7 @@ Font size of the PDF in pt — the page is shown at its size.
 ** ~bcat-export-bar-width~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 897
+:LINE: 899
 :TYPE: 'integer
 :GROUP: buddhist-cat
 :DEFAULT: 90
@@ -16214,7 +16214,7 @@ shortened (`bcat-export--bar-labels') — one line at the foot.
 ** ~bcat-export-keep-tex~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 992
+:LINE: 994
 :TYPE: 'boolean
 :GROUP: buddhist-cat
 :DEFAULT: nil
@@ -16367,7 +16367,7 @@ the Paper Pro not set.
 ** ~bcat-export-navbar-auto~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 959
+:LINE: 961
 :DEFAULT: nil
 :END:
 
@@ -16377,7 +16377,7 @@ its own the bar of links (as #+CAT_NAVBAR: t in the document does).
 ** ~bcat-export--copy-prefix~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 1079
+:LINE: 1081
 :DEFAULT: "pdfview-"
 :END:
 
