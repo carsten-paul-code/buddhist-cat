@@ -5094,6 +5094,19 @@ blockierte bis Netz) — Vers zweimal abgeholt.  Lehre: Wer eigenen
 Zustand an einen Abruf hängt, braucht den Fehlerpfad; „gelandet“ nie
 aus dem Dateizustand schließen, wenn der Abrufzustand bekannt ist.
 
+16.11.2026, VERSZITATE IN PROSA (`b8ba254'; Carsten, TĀ 1012: „in der
+Rezitation der Teil mit den Silben verloren gegangen“ — seit der
+Gliederung der Viveka nach Satzbau, 33422a17, steht der Śloka 696/697
+im Prosasatz 1012 statt als Satz 1017): `bcat-sentence--quoted-verses'
+findet Blöcke von Zeilen mit erkanntem Metrum (Stücke ≤ 4 Zeilen, an
+`//' geteilt, wo es geht), die Rezitation bekommt ihre Tabelle(n) und
+die Pāda-Grenzen (`bcat-analysis-quote-lines', Vergleich ohne
+Leerzeichen/¦/|) — im Rumpf, in Claudes Sinnabschnitten, beim C-c u L.
+Ein ganzer Vers trägt die Marke `verse' (statt „hat scansion“).  TĀ 1:
+11 Zitate in 60 Viveka-Sätzen, kein Fehltreffer; Halbverse (1011, 1013)
+erkennt die Metrum-Erkennung nicht.  Live: sent-1012 neu gesetzt, PDF
+aufs Gerät.
+
 #### Offen
 
 - Mitgeben: seit 5.11. auch im tibetischen Abruf eines Paars.  Schlüssel
