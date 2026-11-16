@@ -200,6 +200,84 @@ C-c u G brings the tables."
                                      "* Text\n\n* Sentence"))
                text)))))
 
+(defconst bcat-sentence-test--sa-quote
+  (concat "\n*** Sentence 1012\n:PROPERTIES:\n:VIVEKA: ad TĀ 1.1\n:END:\n"
+          "**** Segment 695\nanuttaraṃ katipayakāladārḍhyakāryamṛtāntaravailakṣaṇyāt utkṛṣṭaṃ ca tat\n"
+          "**** Segment 696\nyatrāsti na bhayaṃ kiṃcinna jarā vyādhayo'pi vā /\n"
+          "**** Segment 697\nna vighnā na ca vai mṛtyurna kālaḥ kalayecca tam //\n"
+          "**** Segment 698\nityakālakalitatvāt avidyamānaṃ mṛtaṃ yatra tat kulaṃ śarīraṃ yasya tat amākhyakalāsvarūpam ityarthaḥ /\n")
+  "TĀ sentence 1012: Jayaratha's prose with a quoted śloka (696–697).")
+
+(ert-deftest bcat-sentence-recitation-quoted-verse ()
+  "16.11., TĀ 1012: „in der Rezitation der Teil mit den Silben verloren
+gegangen“ — since the Viveka was grouped by syntax (33422a17) the
+quoted śloka 696–697 stands inside a prose sentence; only a sentence
+that is a verse as a whole was scanned.  A verse quoted in prose gets
+its syllable table under the recitation and its lines with the pāda
+marks; the prose stays as it is.  An old file without either gets both
+from C-c u L."
+  (bcat-sentence-test--with-sa-source
+    (write-region bcat-sentence-test--sa-quote nil src t)
+    (let* ((text (bcat-sentence-test--create-n src 1012))
+           (recitation (substring text (string-match "^\\* Recitation$" text)
+                                  (string-match "^\\* Text$" text))))
+      (should (string-match-p (regexp-quote "\nyatrāsti na bhayaṃ kiṃcin|na jarā vyādhayo'pi vā /\n") recitation))
+      (should (string-match-p (regexp-quote "\nanuttaraṃ katipayakāladārḍhyakāryamṛtāntaravailakṣaṇyāt utkṛṣṭaṃ ca tat\n") recitation))
+      (should (string-match-p "^| yat +| rās +|" recitation))
+      (should (string-match-p "^| na +| kā +| laḥ +|" recitation))
+      ;; an old file: no marks, no table — C-c u L brings both
+      (let ((file (tibetan-sentence--filepath 1012 folder src)))
+        (with-temp-file file
+          (insert (replace-regexp-in-string
+                   "^|.*\n" ""
+                   (replace-regexp-in-string "\\(kiṃcin\\||mṛtyur\\)|na" "\\1na" text))))
+        (bcat-relayout-file file)
+        (let ((new (bcat-sentence-test--text-of file)))
+          (should (string-match-p (regexp-quote "\nyatrāsti na bhayaṃ kiṃcin|na jarā vyādhayo'pi vā /\n") new))
+          (should (string-match-p "^| yat +| rās +|" new)))))
+    ;; the whole-verse sentence keeps its metre, and only it is a verse
+    (should (alist-get 'verse (bcat-sentence--recitation
+                               '("atra madvāgaśaktāpi yanniyantraṇamullaset /"
+                                 "tatpārameśvaraṃ śrīmanmahānandavijṛmbhitam // 7"))))
+    (should-not (alist-get 'verse (bcat-sentence--recitation
+                                   '("yatrāsti na bhayaṃ kiṃcinna jarā vyādhayo'pi vā /"
+                                     "na vighnā na ca vai mṛtyurna kālaḥ kalayecca tam //"
+                                     "ityakālakalitatvāt amākhyakalāsvarūpam ityarthaḥ /"))))
+    ;; prose without a quote: no table
+    (should-not (alist-get 'scansion (bcat-sentence--recitation
+                                      '("iha khalu śāstrādāv alaukikāśīrvādamukhena parāmṛśati"))))))
+
+(ert-deftest bcat-sentence-quoted-verses-blocks ()
+  "TĀ 1025: three ślokas quoted one after the other (six lines) are one
+block, cut at the verse ends (`//') — not 3 + 3 lines; TĀ 1033: a
+quote of a verse and a half (three lines, the last with `/') is one
+piece."
+  (let ((q (bcat-sentence--quoted-verses
+            '("taduktam"
+              "tatrāpi śaktyā sahitaḥ svātmamayyā maheśvaraḥ /"
+              "yadā saṃghaṭṭamāsādya samāpattiṃ parāṃ vrajet //"
+              "tadāsya paramaṃ vaktraṃ visargaprasarāspadam /"
+              "anuttaravikāsodyajjagadānandasundaram //"
+              "bhāvivaktrāvibhāgena bījaṃ sarvasya saṃsthitam /"
+              "hṛtspandodyatparāsāranirnāmormyādi tanmatam //"
+              "etatparaṃ trikaṃ sūkṣmaṃ sarvaśaktyavibhāgavat iti /"))))
+    (should (= 1 (length q)))
+    (should (= 6 (length (plist-get (car q) :lines))))
+    (should (= 6 (length (plist-get (car q) :verse))))
+    ;; two table rows (syllables, weights) per pāda, two pādas a line
+    (should (= 24 (length (split-string (plist-get (car q) :table) "\n"))))
+    ;; cut at the verse ends: a pāda mark in every line, the third
+    ;; verse's lines last
+    (should (string-match-p "\\`bhāvivaktrā" (nth 4 (plist-get (car q) :verse)))))
+  (let ((q (bcat-sentence--quoted-verses
+            '("yaduktam"
+              "yasya nityoditā hyekābhāsā kālakṣayaṃkarī /"
+              "rājate hṛdayāmbhojavikāsigaganodare //"
+              "sṛṣṭisthityupasaṃhārarūpā tadbharaṇe ratā /"
+              "iti /"))))
+    (should (= 1 (length q)))
+    (should (= 3 (length (plist-get (car q) :lines))))))
+
 (ert-deftest bcat-sentence-create-from-template ()
   "C-c u A on a Tibetan cascade source writes the template form: marker
 #+CAT_TEMPLATE: tibetan, * Text with the Uchen per segment and a

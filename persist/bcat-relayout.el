@@ -275,11 +275,23 @@ Claude divided into sense units."
         (push (cons 'bhasya-translation (match-string 1 bhasya)) out)))
     (when (string-match "^#\\+LAST_ANALYZED:[ \t]*\\(.+\\)$" text)
       (push (cons 'last-analyzed (string-trim (match-string 1 text))) out))
-    (unless (alist-get 'scansion base)
+    (unless (alist-get 'verse base)
       (let ((verse (bcat-relayout--verse-body
                     (car (last (bcat-relayout--paragraphs
                                 (bcat-relayout--section text 1 "Recitation")))))))
-        (when verse (push (cons 'recitation verse) out))))
+        (when verse
+          ;; 16.11.: a verse quoted in the prose gets its metrical lines
+          ;; (the IAST lines; the Devanāgarī follows from them).
+          (when (alist-get 'quotes base)
+            (setq verse (mapconcat (lambda (line)
+                                     (concat (tibetan-sanskrit-script-iast-to-devanagari line) "\n" line))
+                                   (bcat-analysis-quote-lines
+                                    (cl-remove-if (lambda (l) (or (string-blank-p l)
+                                                                  (string-match-p "[ऀ-ॿ]" l)))
+                                                  (split-string verse "\n"))
+                                    (alist-get 'quotes base))
+                                   "\n")))
+          (push (cons 'recitation verse) out))))
     (let* ((compared (bcat-relayout--old-proposal
                       (bcat-relayout--section sentence 2 "Translations compared")))
            (proposal (or (and proposal (string-join (nreverse proposal) "\n\n"))

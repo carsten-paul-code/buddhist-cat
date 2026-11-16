@@ -330,11 +330,35 @@ prompt of the other templates stays as it was."
     (should (equal "PLAIN" (alist-get 'recitation
                                       (bcat-analysis-sanskrit-context
                                        base `((segments) (recitation "iha khalu" "śāstrādāv alaukika"))))))
-    ;; A verse (its scansion in the rump): the metre's recitation stays.
+    ;; A verse (the rump says so): the metre's recitation stays.
     (should (equal "PLAIN" (alist-get 'recitation
                                       (bcat-analysis-sanskrit-context
-                                       (cons '(scansion . "| – |") base)
+                                       (cons '(verse . t) base)
                                        `((segments) (recitation . ,lines))))))))
+
+(ert-deftest bcat-analysis-prose-recitation-quoted-verse ()
+  "16.11., TĀ 1012: prose with a quoted verse — Claude's sense units are
+taken (the sentence is no verse, though it has a syllable table), and
+the lines that are the quote get its metrical lines with the pāda
+marks; the prose keeps Claude's breath pauses."
+  (let* ((l695 "anuttaraṃ katipayakāladārḍhyakāryamṛtāntaravailakṣaṇyāt utkṛṣṭaṃ ca tat")
+         (l696 "yatrāsti na bhayaṃ kiṃcinna jarā vyādhayo'pi vā /")
+         (l697 "na vighnā na ca vai mṛtyurna kālaḥ kalayecca tam //")
+         (base `((recitation . "PLAIN") (scansion . "| yat |")
+                 (quotes (:lines (,l696 ,l697)
+                          :verse ("yatrāsti na bhayaṃ kiṃcin|na jarā vyādhayo'pi vā /"
+                                  "na vighnā na ca vai mṛtyur|na kālaḥ kalayecca tam //")))
+                 (segments ((num . 695) (samhita . ,l695)) ((num . 696) (samhita . ,l696))
+                           ((num . 697) (samhita . ,l697)))))
+         (ctx (bcat-analysis-sanskrit-context
+               base `((segments) (recitation "anuttaraṃ katipayakāladārḍhyakāryamṛtāntaravailakṣaṇyāt ¦ utkṛṣṭaṃ ca tat"
+                                             "yatrāsti na bhayaṃ kiṃcinna ¦ jarā vyādhayo'pi vā /"
+                                             "na vighnā na ca vai ¦ mṛtyurna kālaḥ kalayecca tam //"))))
+         (rec (alist-get 'recitation ctx)))
+    (should (string-match-p (regexp-quote "\nyatrāsti na bhayaṃ kiṃcin|na jarā vyādhayo'pi vā /\n") rec))
+    (should (string-match-p (regexp-quote "\nna vighnā na ca vai mṛtyur|na kālaḥ kalayecca tam //") rec))
+    (should (string-match-p (regexp-quote "katipayakāladārḍhyakāryamṛtāntaravailakṣaṇyāt ¦ utkṛṣṭaṃ") rec))
+    (should (= 6 (length (split-string rec "\n"))))))
 
 (ert-deftest bcat-analysis-sanskrit-tables-wrap-long-cell ()
   "31.10., TĀ Satz 1008: the parts of „vakṣyamāṇa-ṣaḍardha-śāstra-artha-

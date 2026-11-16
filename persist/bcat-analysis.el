@@ -1955,19 +1955,43 @@ LEMMA; FORM' — \"\" when no segment has words."
    (cl-remove-if-not (lambda (seg) (alist-get 'words seg)) segments)
    "\n\n"))
 
+(defun bcat-analysis-quote-lines (lines quotes)
+  "LINES (IAST, the lines of a recitation) with the verses QUOTES
+\((:lines ORIGINAL :verse METRICAL) …, `bcat-sentence--quoted-verses')
+set in their metrical lines, with the pāda marks — wherever consecutive
+LINES are exactly a quote's text (spaces, ¦ and | aside: the pāda mark
+may stand inside a sandhi word, kiṃcin|na); the other lines stay.
+16.11., TĀ 1012: a śloka quoted in Jayaratha's prose."
+  (let ((bare (lambda (s) (replace-regexp-in-string "[ \t\n¦|]+" "" s))))
+    (dolist (q quotes lines)
+      (let ((target (funcall bare (string-join (plist-get q :lines) " ")))
+            (n (length lines))
+            (hit nil))
+        (cl-loop for i from 0 below n until hit
+                 do (cl-loop for j from i below n
+                             for joined = (funcall bare (string-join (cl-subseq lines i (1+ j)) " "))
+                             until (or hit (> (length joined) (length target)))
+                             when (equal joined target) do (setq hit (cons i j))))
+        (when hit
+          (setq lines (append (cl-subseq lines 0 (car hit))
+                              (plist-get q :verse)
+                              (nthcdr (1+ (cdr hit)) lines))))))))
+
 (defun bcat-analysis--prose-recitation (base parsed)
   "The recitation fields of a prose sentence from PARSED's `recitation'
 \(lines of sense units, ¦ a breath pause): each line in Devanāgarī over
-IAST, under a short header — when BASE has no scansion (no verse) and
-the lines are the transmitted text, broken at its spaces; else nil.
-31.10., TĀ 1008: prose had only the text as one long line."
+IAST, under a short header — when BASE is no verse and the lines are
+the transmitted text, broken at its spaces; else nil.  A verse quoted
+in the prose gets its metrical lines (`bcat-analysis-quote-lines',
+16.11.).  31.10., TĀ 1008: prose had only the text as one long line."
   (let* ((lines (cl-remove-if-not #'stringp (alist-get 'recitation parsed)))
          (norm (lambda (s) (string-trim (replace-regexp-in-string
                                          "[ \t\n]+" " " (replace-regexp-in-string "¦" " " s)))))
          (text (mapconcat (lambda (seg) (or (alist-get 'samhita seg) ""))
                           (alist-get 'segments base) " ")))
-    (when (and lines (not (alist-get 'scansion base))
+    (when (and lines (not (alist-get 'verse base))
                (equal (funcall norm (string-join lines " ")) (funcall norm text)))
+      (setq lines (bcat-analysis-quote-lines lines (alist-get 'quotes base)))
       `((recitation . ,(mapconcat (lambda (line)
                                     (let ((l (string-trim (replace-regexp-in-string
                                                            "[ \t]+" " "

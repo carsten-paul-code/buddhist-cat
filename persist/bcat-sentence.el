@@ -391,6 +391,70 @@ nil for another template."
        `((segments . ,(nth 1 lists))
          (sanskrit-segments . ,(nth 0 lists)))))))
 
+(defun bcat-sentence--verse-run-p (lines)
+  "Non-nil when LINES are a verse whose metre the tool knows."
+  (plist-get (tibetan-metre-identify (mapcar #'string-trim lines)) :name))
+
+(defun bcat-sentence--quoted-verses (texts)
+  "The verses quoted in the prose sentence with the segment lines TEXTS
+\(16.11., TĀ 1012: „in der Rezitation der Teil mit den Silben verloren
+gegangen“ — since the Viveka is grouped by syntax, quotes stand inside
+prose sentences): ((:lines ORIGINAL :verse METRICAL :table SCANSION) …),
+one per block of consecutive lines that belong to a known metre (a run
+of at most four lines; one line alone too when it is a whole verse).
+A block is cut into such runs at the verse ends (`//') where it can be
+— three ślokas are three verses, not 3 + 3 lines (TĀ 1025); its tables
+are one org table.  Prose lines are never part of a run."
+  (require 'tibetan-sanskrit-metre)
+  (let* ((v (vconcat texts))
+         (n (length v))
+         (run-p (lambda (i j) (bcat-sentence--verse-run-p (append (cl-subseq v i (1+ j)) nil))))
+         (covered (make-vector n nil))
+         (blocks '()))
+    (dotimes (i n)
+      (cl-loop for j from i to (min (1- n) (+ i 3))
+               when (funcall run-p i j)
+               do (cl-loop for k from i to j do (aset covered k t))))
+    ;; maximal blocks of covered lines
+    (let ((i 0))
+      (while (< i n)
+        (if (not (aref covered i))
+            (cl-incf i)
+          (let ((j i))
+            (while (and (< (1+ j) n) (aref covered (1+ j))) (cl-incf j))
+            (push (cons i j) blocks)
+            (setq i (1+ j))))))
+    (delq nil
+          (mapcar
+           (lambda (b)
+             ;; the block cut into runs: fewest runs, a run ending
+             ;; without `//' inside the block costing more
+             (let* ((s (car b)) (m (1+ (- (cdr b) s)))
+                    (cost (make-vector (1+ m) nil)) (from (make-vector (1+ m) nil)))
+               (aset cost 0 0)
+               (cl-loop for k from 1 to m
+                        do (cl-loop for len from 1 to (min 4 k)
+                                    for a = (- k len)
+                                    when (and (aref cost a) (funcall run-p (+ s a) (+ s k -1)))
+                                    do (let ((c (+ (aref cost a) 1
+                                                   (if (and (< k m)
+                                                            (not (string-match-p "//[ \t0-9]*\\'" (string-trim (aref v (+ s k -1))))))
+                                                       10 0))))
+                                         (when (or (null (aref cost k)) (< c (aref cost k)))
+                                           (aset cost k c) (aset from k a)))))
+               (when (aref cost m)
+                 (let ((runs '()) (k m))
+                   (while (> k 0)
+                     (push (cons (+ s (aref from k)) (+ s k -1)) runs)
+                     (setq k (aref from k)))
+                   (let ((rs (mapcar (lambda (r) (tibetan-metre-recitation
+                                                  (append (cl-subseq v (car r) (1+ (cdr r))) nil) t))
+                                     runs)))
+                     (list :lines (append (cl-subseq v s (1+ (cdr b))) nil)
+                           :verse (cl-mapcan (lambda (r) (split-string (plist-get r :verse) "\n")) rs)
+                           :table (mapconcat (lambda (r) (plist-get r :table)) rs "\n")))))))
+           (nreverse blocks)))))
+
 (defun bcat-sentence--recitation (texts)
   "Recitation fields of a Sanskrit sentence with the segment lines TEXTS:
 recitation — the original line by line in Devanāgarī with the IAST
@@ -400,20 +464,27 @@ im Original)“; „das IAST unter dem Devanagari“) —, and for a verse
 metre (its header lines with org line breaks) and scansion (IAST,
 without the pāda letters)."
   (require 'tibetan-sanskrit-metre)
-  (let ((r (tibetan-metre-recitation texts t)))
+  (let* ((r (tibetan-metre-recitation texts t))
+         ;; 16.11., TĀ 1012: prose with a quoted verse — its lines and
+         ;; its table (`bcat-sentence--quoted-verses').
+         (quotes (unless r (bcat-sentence--quoted-verses texts))))
     (append
      ;; Each line in Devanāgarī with the IAST under it (Carsten 29.10.:
      ;; „das IAST unter dem Devanagari, wie es vorher im Tibetischen war“).
      `((recitation . ,(mapconcat (lambda (line)
                                    (concat (tibetan-sanskrit-script-iast-to-devanagari line)
                                            "\n" line))
-                                 (if (plist-get r :verse)
-                                     (split-string (plist-get r :verse) "\n")
-                                   texts)
+                                 (cond ((plist-get r :verse) (split-string (plist-get r :verse) "\n"))
+                                       (quotes (bcat-analysis-quote-lines texts quotes))
+                                       (t texts))
                                  "\n")))
      (when r
-       `((metre . ,(mapconcat #'identity (plist-get r :header) " \\\\\n"))
-         (scansion . ,(plist-get r :table)))))))
+       `((verse . t)
+         (metre . ,(mapconcat #'identity (plist-get r :header) " \\\\\n"))
+         (scansion . ,(plist-get r :table))))
+     (when quotes
+       `((scansion . ,(mapconcat (lambda (q) (plist-get q :table)) quotes "\n\n"))
+         (quotes . ,quotes))))))
 
 (defun bcat-sentence--metre-name (segs)
   "The name of the metre the tool scans in the Sanskrit verse SEGS
