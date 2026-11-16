@@ -826,6 +826,42 @@ as it is; no request; no Word Analysis."
                               (bcat-export-test--part view "Discussion")))
       (should-not (string-match-p "Word Analysis\\|^\\* Working Translation\\|^\\* My Notes" view)))))
 
+(defun bcat-export-test--answer-without-ullaset ()
+  "The Sanskrit answer for TĀ 1007 with the last word of 685 left out."
+  (replace-regexp-in-string ",[ \n]*{[ \n]*\"word\": \"ullaset\"[^}]*}" ""
+                            (bcat-sentence-test--sa-answer)))
+
+(ert-deftest bcat-export-view-padapatha-check ()
+  "Carsten 16.11. (TĀ 1001: the PDF of 15:18 showed the swapped lines
+without a word): the PDF shows „Prüfen:“ under the original too, as the
+sentence file does — in the view of a Sanskrit file and, by the
+template, in both views of a pair; none where the padapāṭha is right."
+  (bcat-sentence-test--with-sa-source
+    (bcat-sentence-test--create-n src 1007)
+    (let ((file (tibetan-sentence--filepath 1007 folder src)))
+      (bcat-sentence-test--with-stubs (bcat-export-test--answer-without-ullaset)
+        (bcat-sentence-test--fetch-n src 1007))
+      (should (string-match-p
+               (regexp-quote (concat "@@latex:\\bcatorig{@@atra mad-vāk aśaktā api yat niyantraṇam /@@latex:}@@\n\n"
+                                     "*Prüfen:* Padapāṭha weicht vom Text ab — im Text, nicht im Padapāṭha: „ullaset“\n\n"
+                                     "| atra |"))
+               (bcat-export-test--part (bcat-export-view file) "Segments")))
+      (cl-letf (((symbol-function 'y-or-n-p) (lambda (&rest _) t)))
+        (bcat-sentence-test--with-stubs (bcat-sentence-test--sa-answer)
+          (tibetan-cascade-fetch (list :source src :sent-nums '(1007) :label "Satz 1007") t)))
+      (should-not (string-match-p "Prüfen:" (bcat-export-view file))))
+    ;; the pair's templates
+    (dolist (spec '(("pdf-bilingual" . segments) ("pdf-bilingual-tibetan" . sanskrit-segments)))
+      (let ((view (bcat-template-render-named
+                   (car spec)
+                   `((sent-num . 3) (sanskrit-p . t)
+                     (,(cdr spec) ((num . 22) (shown . t) (mark . "") (padapatha . "kasmāt pañca /")
+                                   (padapatha-check . "Padapāṭha weicht vom Text ab — CHECK"))))
+                   src)))
+        (should (string-match-p
+                 (regexp-quote "@@latex:\\bcatorig{@@kasmāt pañca /@@latex:}@@\n\n*Prüfen:* Padapāṭha weicht vom Text ab — CHECK\n")
+                 view))))))
+
 (ert-deftest bcat-export-view-tibetan ()
   "The Tibetan file as one document: Reading with every segment's Uchen
 over its Wylie, Segments with the tables, Grammar with structure and
@@ -1204,6 +1240,27 @@ lualatex is installed), no error in the log."
         (should (and pdf (file-exists-p pdf)))
         (should-not (cl-some (lambda (m) (string-match-p "with errors\\|wasn't produced" m)) said))
         (should-not (directory-files folder nil "pdfview"))))))
+
+(ert-deftest bcat-export-file-smoke-padapatha-check ()
+  "16.11.: the PDF with „Prüfen:“ under the original — a real LuaLaTeX
+run (only where lualatex is installed), no error in the log."
+  (skip-unless (executable-find "lualatex"))
+  (bcat-sentence-test--with-sa-source
+    (bcat-sentence-test--create-n src 1007)
+    (bcat-sentence-test--with-stubs (bcat-export-test--answer-without-ullaset)
+      (bcat-sentence-test--fetch-n src 1007))
+    (let ((bcat-export-upload nil)
+          (warning-minimum-level :emergency)
+          (said '()))
+      (should (string-match-p "Prüfen:" (bcat-export-view (tibetan-sentence--filepath 1007 folder src))))
+      (let ((pdf (cl-letf* ((orig (symbol-function 'message))
+                            ((symbol-function 'message)
+                             (lambda (fmt &rest args)
+                               (when fmt (push (apply #'format fmt args) said))
+                               (apply orig fmt args))))
+                   (bcat-export-file (tibetan-sentence--filepath 1007 folder src)))))
+        (should (and pdf (file-exists-p pdf)))
+        (should-not (cl-some (lambda (m) (string-match-p "with errors\\|wasn't produced" m)) said))))))
 
 (ert-deftest bcat-export-pdf-smoke ()
   "Real LuaLaTeX run (only where lualatex is installed): the reviewed

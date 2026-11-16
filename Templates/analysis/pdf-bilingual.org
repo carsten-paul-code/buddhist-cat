@@ -8,6 +8,8 @@ Sprungmarke genau einmal, die Links zwischen beiden bleiben ganz.
 Commentary vor Further Reading, wie in der Datei.  9.11. (Carsten,
 Notizen auf dem reMarkable): die zweite Sprache beginnt im Reading und
 in Segments auf einer neuen Seite (\clearpage).
+16.11.: „*Prüfen:*“ unter der Originalzeile, wenn der Padapāṭha vom
+Quellsegment abweicht (padapatha-check, wie in der Satzdatei).
 #+end_comment
 #+TITLE: Sentence {{sent-num}}
 #+OPTIONS: toc:nil num:nil title:nil author:nil date:nil
@@ -56,6 +58,10 @@ in Segments auf einer neuen Seite (\clearpage).
 {{#shown}}
 <<skt-{{num}}>>⟦{{num}}⟧{{mark}}{{grammar-link}}
 @@latex:\bcatorig{@@{{padapatha}}@@latex:}@@
+{{#padapatha-check}}
+
+*Prüfen:* {{padapatha-check}}
+{{/padapatha-check}}
 
 {{/shown}}
 {{#gloss-table}}

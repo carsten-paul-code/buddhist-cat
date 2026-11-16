@@ -885,7 +885,9 @@ comma).  nil without a pdf template."
     (when (and name (bcat-template-find name source))
       (let ((read (bcat-relayout-file-context file)))
         (unless (plist-get read :error)
-          (let* ((context (bcat-export--view-context (plist-get read :context)))
+          (let* ((context (bcat-export--view-context
+                           ;; 16.11.: „Prüfen:“ in the PDF as in the file
+                           (bcat-analysis-with-padapatha-checks (plist-get read :context))))
                  (lectures (alist-get 'lectures context)))
             (list :view (bcat-template-render-named name context (plist-get read :source))
                   :lectures (and lectures (bcat-template-find "pdf-lectures" source)
