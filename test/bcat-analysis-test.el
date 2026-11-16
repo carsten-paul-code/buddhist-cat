@@ -233,6 +233,48 @@ rightly."
     (should (string-match-p "yasyāḥ, not yasya āḥ" sys))
     (should (string-match-p "yāsāv = yā asau, not yā sā" sys))))
 
+(defun bcat-analysis-test--check (samhita padapatha)
+  "`bcat-analysis-padapatha-check', \"\" for none (assertions, not type errors)."
+  (or (bcat-analysis-padapatha-check samhita padapatha) ""))
+
+(ert-deftest bcat-analysis-padapatha-check ()
+  "16.11.: the padapāṭha against the transmitted segment — a skeleton
+without spaces, hyphens and diacritics, tolerant of sandhi (vowels
+fused, final consonants voiced, assimilated, visarga) — reports what is
+missing or added beyond a few letters, with the text itself; editorial
+brackets in the source do not count.  The real cases of TĀ 1013–1020."
+  ;; missing: the ending of abhinavāyām, the -tva- of vyatiriktatvena,
+  ;; the second half of 704
+  (should (string-match-p "„yām“"
+                          (bcat-analysis-test--check
+                           "ata eva abhinavāyām ādyāyāṃ sṛṣṭau śuddhādhvamārge"
+                           "atas eva abhinavā ādyāyām sṛṣṭau śuddha-adhva-mārge")))
+  (should (string-match-p "tve"
+                          (bcat-analysis-test--check
+                           "svāvyatiriktamapi vyatiriktatveneva jagat ābhāsayati ityananyāpekṣiṇaḥ"
+                           "sva-avyatiriktam api vyatiriktena iva jagat ābhāsayati iti ananya-apekṣiṇaḥ")))
+  (let ((c (bcat-analysis-test--check
+            "vigatā malā avacchedakā yasyāstādṛśī yā kalā paravimarśaikasvabhāvakartṛtālakṣaṇā, sā āśraya ālambanaṃ svarūpaṃ yasyāḥ sā śuddhasvātantryaśaktirūpā ityarthaḥ /"
+            "vigatā malāḥ avacchedakāḥ yasya āḥ tādṛśī yā kalā para-vimarśa-eka-svabhāva-kartṛtā-lakṣaṇā /")))
+    (should (string-match-p "im Text, nicht im Padapāṭha" c))
+    (should (string-match-p "sā āśraya" c)))
+  ;; added: an iti from the next segment
+  (should (string-match-p "nur im Padapāṭha: „iti“"
+                          (bcat-analysis-test--check
+                           "ata eva visargo'yamavyaktaha-kalātmakaḥ /"
+                           "ataḥ eva visargaḥ ayam avyakta-ha-kalā-ātmakaḥ iti /")))
+  ;; right ones: sandhi only
+  (dolist (pair '(("atra madvāgaśaktāpi yanniyantraṇamullaset /"
+                   "atra mad-vāk aśaktā api yat niyantraṇam ullaset /")
+                  ("tacca kīdṛk ? ityuktaṃ tadubhaya iti /"
+                   "tat ca kīdṛk iti uktam tad-ubhaya iti /")
+                  ("vimalakalāśrayābhinavasṛṣṭimahā jananī bharitatanuśca pañcamukhaguptarucirjanakaḥ /"
+                   "vimala-kalā-āśrayā abhinava-sṛṣṭi-mahā jananī bharita-tanuḥ ca pañca-mukha-gupta-ruciḥ janakaḥ /")
+                  ("samaḥ sūkṣmaśca tacchiṣṭaḥ[cchilaṣṭaḥ] kāyaḥ svābhāviko mataḥ /"
+                   "samaḥ sūkṣmaḥ ca tat-śiṣṭaḥ kāyaḥ svābhāvikaḥ mataḥ /")))
+    (should-not (bcat-analysis-padapatha-check (car pair) (cadr pair))))
+  (should-not (bcat-analysis-padapatha-check "atra /" nil)))
+
 (ert-deftest bcat-analysis-uchen-words ()
   "Carsten 31.10. abends, Tibetisch V: the Uchen of each word above its
 Wylie in the tables — from the segment's Uchen, syllable by syllable

@@ -1963,6 +1963,126 @@ closes the line set close (30.10.).  nil without words."
                     ((string-prefix-p "." close) close)
                     (t (concat " " close)))))))
 
+(defconst bcat-analysis--skeleton-fold
+  '((?ā . ?a) (?ī . ?i) (?ū . ?u) (?ṛ . ?r) (?ṝ . ?r) (?ḷ . ?l) (?ṅ . ?n) (?ñ . ?n)
+    (?ṇ . ?n) (?ṭ . ?t) (?ḍ . ?d) (?ś . ?s) (?ṣ . ?s) (?ṃ . ?m) (?ṁ . ?m) (?ḥ . ?h))
+  "IAST letters without their diacritics, for `bcat-analysis--skeleton'.")
+
+(defconst bcat-analysis--skeleton-class
+  '((?k . ?K) (?g . ?K) (?c . ?C) (?j . ?C) (?t . ?T) (?d . ?T) (?p . ?P) (?b . ?P)
+    (?m . ?M) (?n . ?M) (?s . ?S) (?h . ?S) (?r . ?S) (?v . ?V) (?w . ?V))
+  "The classes sandhi moves within: voiced and voiceless, the nasals,
+visarga with s and r — for `bcat-analysis--skeleton'.")
+
+(defun bcat-analysis--skeleton (s)
+  "The skeleton of the IAST string S, (CLASSES . POSITIONS) with S as
+compared (NFC, lower case): letters only, no diacritics, an aspirate's
+h dropped, vowels one class and a run of them one (a + i = e), the
+consonants in their sandhi classes (`bcat-analysis--skeleton-class');
+POSITIONS the index in S of each class."
+  (let ((s (downcase (ucs-normalize-NFC-string s))) (out '()) (pos '()) (prev nil))
+    (dotimes (i (length s))
+      (let ((f (or (cdr (assq (aref s i) bcat-analysis--skeleton-fold)) (aref s i))))
+        (when (and (>= f ?a) (<= f ?z))
+          (cond
+           ((and (eq f ?h) (memq prev '(?k ?g ?c ?j ?t ?d ?p ?b))))
+           ((memq f '(?a ?i ?u ?e ?o))
+            (unless (eq (car out) ?A) (push ?A out) (push i pos)))
+           (t (push (or (cdr (assq f bcat-analysis--skeleton-class)) f) out) (push i pos))))
+        (setq prev f)))
+    (list (concat (nreverse out)) (vconcat (nreverse pos)) s)))
+
+(defun bcat-analysis--skeleton-gaps (a b)
+  "The runs of A's and of B's skeleton classes outside their longest
+common subsequence: (A-RUNS . B-RUNS), each run (START . END) inclusive;
+nil when the strings are too long to compare."
+  (let ((n (length a)) (m (length b)))
+    (when (<= (* (1+ n) (1+ m)) 1000000)
+      (let ((l (make-vector (1+ n) nil)))
+        (dotimes (i (1+ n)) (aset l i (make-vector (1+ m) 0)))
+        (cl-loop for i from (1- n) downto 0
+                 do (cl-loop for j from (1- m) downto 0
+                             do (aset (aref l i) j
+                                      (if (eq (aref a i) (aref b j))
+                                          (1+ (aref (aref l (1+ i)) (1+ j)))
+                                        (max (aref (aref l (1+ i)) j) (aref (aref l i) (1+ j)))))))
+        (let ((i 0) (j 0) (ra '()) (rb '()) (ga nil) (gb nil))
+          (cl-flet ((close () (when ga (push ga ra) (setq ga nil)) (when gb (push gb rb) (setq gb nil))))
+            (while (or (< i n) (< j m))
+              (cond
+               ((and (< i n) (< j m) (eq (aref a i) (aref b j))
+                     (= (aref (aref l i) j) (1+ (aref (aref l (1+ i)) (1+ j)))))
+                (close) (cl-incf i) (cl-incf j))
+               ((and (< i n) (or (>= j m) (>= (aref (aref l (1+ i)) j) (aref (aref l i) (1+ j)))))
+                (setq ga (if ga (cons (car ga) i) (cons i i))) (cl-incf i))
+               (t (setq gb (if gb (cons (car gb) j) (cons j j))) (cl-incf j))))
+            (close))
+          (cons (nreverse ra) (nreverse rb)))))))
+
+(defun bcat-analysis--gap-text (gap)
+  "The text GAP of a skeleton run as shown: trimmed, without a bare vowel
+of a neighbouring word at either end („yām ā“ → „yām“) — vowels are one
+class, so a run may take one in."
+  (let ((parts (split-string (string-trim gap) "[ \t]+" t))
+        (vowel-only (lambda (w) (string-match-p "\\`[aāiīuūṛṝeoḥṃ]+\\'" w))))
+    (when (and (cdr parts) (funcall vowel-only (car (last parts))))
+      (setq parts (butlast parts)))
+    (when (and (cdr parts) (funcall vowel-only (car parts)))
+      (setq parts (cdr parts)))
+    (string-join parts " ")))
+
+(defun bcat-analysis-padapatha-check (samhita padapatha)
+  "What the padapāṭha PADAPATHA (Claude's words, in IAST) leaves out of
+the transmitted segment SAMHITA or adds to it, beyond what sandhi
+explains — a sentence for the file, or nil.  Carsten 16.11. (TĀ
+1013–1020: abhinavā for abhinavāyām, vyatiriktena for vyatiriktatvena,
+half a segment missing): compared are the skeletons
+\(`bcat-analysis--skeleton'); a run of three classes or more outside
+their common part counts, shown as the text has it.  Editorial brackets
+in SAMHITA ([cchilaṣṭaḥ]) do not count.  Words merely split or joined
+wrongly (yasya āḥ, yā sā, yat-vakṣyati) change too few letters to show."
+  (when (and (stringp samhita) (stringp padapatha)
+             (not (string-blank-p samhita)) (not (string-blank-p padapatha)))
+    (let* ((sa (bcat-analysis--skeleton (replace-regexp-in-string "\\[[^]\n]*\\]" "" samhita)))
+           (pa (bcat-analysis--skeleton padapatha))
+           (gaps (bcat-analysis--skeleton-gaps (car sa) (car pa)))
+           (text (lambda (sk runs)
+                   (delq nil (mapcar (lambda (r)
+                                       (when (>= (- (cdr r) (car r)) 2)
+                                         (format "„%s“"
+                                                 (bcat-analysis--gap-text
+                                                  (substring (nth 2 sk) (aref (nth 1 sk) (car r))
+                                                             (1+ (aref (nth 1 sk) (cdr r))))))))
+                                     runs))))
+           (missing (and gaps (funcall text sa (car gaps))))
+           (extra (and gaps (funcall text pa (cdr gaps)))))
+      (when (or missing extra)
+        (concat "Padapāṭha weicht vom Text ab — "
+                (string-join
+                 (delq nil (list (and missing (concat "im Text, nicht im Padapāṭha: " (string-join missing ", ")))
+                                 (and extra (concat "nur im Padapāṭha: " (string-join extra ", ")))))
+                 " · "))))))
+
+(defun bcat-analysis-with-padapatha-checks (context)
+  "CONTEXT with each Sanskrit segment that has a padapāṭha and its text
+\(`segments', `sanskrit-segments') checked: `padapatha-check' set to
+what `bcat-analysis-padapatha-check' finds, or removed — the line under
+⟦N⟧ comes and goes with the bold line (16.11.)."
+  (mapcar (lambda (entry)
+            (if (and (memq (car-safe entry) '(segments sanskrit-segments)) (listp (cdr entry)))
+                (cons (car entry)
+                      (mapcar (lambda (seg)
+                                (if (and (consp seg) (consp (car seg))
+                                         (alist-get 'padapatha seg) (alist-get 'samhita seg))
+                                    (let ((c (bcat-analysis-padapatha-check (alist-get 'samhita seg)
+                                                                            (alist-get 'padapatha seg)))
+                                          (rest (assq-delete-all 'padapatha-check (copy-alist seg))))
+                                      (if c (cons (cons 'padapatha-check c) rest) rest))
+                                  seg))
+                              (cdr entry)))
+              entry))
+          context))
+
 (defun bcat-analysis-table-padapatha (samhita tables)
   "The padapāṭha line of a Sanskrit segment read back from its overview
 TABLES — the words of their first row, then the daṇḍas closing the

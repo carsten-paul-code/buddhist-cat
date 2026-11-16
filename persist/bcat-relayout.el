@@ -153,6 +153,9 @@ the other language's blocks and differences."
               (setq own nil parts t)))
            ((and current (string-match "\\`\\*Differences:\\* " p))
             (bcat-relayout--put table current 'differences (substring p (match-end 0))))
+           ;; 16.11.: the check of the padapāṭha — computed anew, no end
+           ;; of the segment.
+           ((and current (string-match-p "\\`\\*Prüfen:\\* " p)))
            (t (setq current nil parts nil))))))
     ;; ⟦N⟧ under Concepts.
     (let ((current nil))

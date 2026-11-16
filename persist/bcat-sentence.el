@@ -649,9 +649,11 @@ followed by the file's own sections (`own-sections' in CONTEXT, from
 `bcat-sentence--keep') unchanged — the template does not know them.  A
 section the template writes itself (* Bhāṣya, a commentary's * Sentence
 258) is no own section."
-  (let* ((text (bcat-template-render-named
+  (let* ((context (bcat-analysis-with-padapatha-checks context))
+         (text (bcat-template-render-named
                 ;; 5.11.: the terms of the concept notes link to their
                 ;; zettels (bcat-zettel.el) — fetch and relayout alike.
+                ;; 16.11.: each padapāṭha checked against its text.
                 name (if (fboundp 'bcat-zettel-link-context) (bcat-zettel-link-context context source-file) context)
                 source-file))
          (tool (bcat-sentence--template-sections name source-file))
@@ -1243,6 +1245,28 @@ Returns the file."
               assignment)))))
     tfile))
 
+(defun bcat-sentence--padapatha-warnings (file sentence source-file parsed)
+  "Say which segments of the Sanskrit SENTENCE have a padapāṭha in
+Claude's answer PARSED that leaves out or adds to the text — a message
+with sentence and segment, the status of FILE (16.11., Carsten: „nicht
+still korrigieren“; the file shows „*Prüfen:*“ under ⟦N⟧).  Returns the
+segment numbers."
+  (when (bcat-sentence--sanskrit-p source-file)
+    (let ((bad '()))
+      (dolist (s (plist-get sentence :segs))
+        (let* ((c (cl-find (car s) (alist-get 'segments parsed) :key #'bcat-analysis--num))
+               (line (and c (bcat-analysis-padapatha-line (cdr s) (alist-get 'words c) t)))
+               (check (and line (bcat-analysis-padapatha-check (cdr s) line))))
+          (when check
+            (message "Satz %d ⟦%d⟧: %s" (plist-get sentence :sent-num) (car s) check)
+            (push (car s) bad))))
+      (when bad
+        (setq bad (nreverse bad))
+        (bcat-status-step file :check
+                          (concat "Padapāṭha prüfen: "
+                                  (mapconcat (lambda (n) (format "⟦%d⟧" n)) bad ", "))))
+      bad)))
+
 (defun bcat-sentence--land (file sentence source-file refs response)
   "Write Claude's RESPONSE for SENTENCE into the template FILE; nil and
 an untouched file when the answer is unreadable.  A bilingual sentence
@@ -1255,6 +1279,7 @@ finishes the file; any other ends here (C-c u H)."
       (bcat-sentence--write-fetched file sentence source-file refs parsed)
       (bcat-sentence--keep-answers file (list :parsed parsed :refs refs))
       (bcat-status-step file :claude "Claude ✓")
+      (bcat-sentence--padapatha-warnings file sentence source-file parsed)
       (if (bcat-sentence--parallel-segs (plist-get sentence :sent-num) source-file)
           (bcat-sentence--tibetan-one file sentence source-file refs parsed)
         (run-hook-with-args 'bcat-sentence-after-fetch-functions file))

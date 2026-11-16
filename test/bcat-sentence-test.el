@@ -1136,6 +1136,43 @@ with vocabulary under * Text, tables, Forms per segment — and the hook
         (should-not (string-match-p "Wylie\\|steinert:" text)))
       (should (= 1 (length done))))))
 
+(ert-deftest bcat-sentence-padapatha-check-marked ()
+  "16.11. (Carsten über die Tantrāloka-Session): a padapāṭha that leaves
+out what the text has is not corrected in silence — a message and the
+status name sentence and segment, and under ⟦N⟧ the file shows
+„*Prüfen:*“ with what is missing.  C-c u L keeps the segment whole
+\(the line is no end of it) and sets the line anew; corrected by hand in
+the bold line, it is gone."
+  (bcat-sentence-test--with-sa-source
+    (bcat-sentence-test--create-n src 1007)
+    (let ((file (tibetan-sentence--filepath 1007 folder src))
+          (answer (replace-regexp-in-string ",[ \n]*{[ \n]*\"word\": \"ullaset\"[^}]*}" ""
+                                            (bcat-sentence-test--sa-answer)))
+          (messages '()))
+      (cl-letf (((symbol-function 'message)
+                 (lambda (fmt &rest args) (push (apply #'format fmt args) messages))))
+        (bcat-sentence-test--with-stubs answer
+          (bcat-sentence-test--fetch-n src 1007)))
+      (should (cl-some (lambda (m) (string-match-p "Satz 1007 ⟦685⟧: Padapāṭha weicht vom Text ab" m))
+                       messages))
+      (let ((text (bcat-sentence-test--text-of file)))
+        (should (string-match-p
+                 (regexp-quote "** ⟦685⟧\n*atra mad-vāk aśaktā api yat niyantraṇam /*\n\n*Prüfen:* Padapāṭha weicht vom Text ab — im Text, nicht im Padapāṭha: „ullaset“")
+                 text))
+        (should-not (string-match-p "⟦686⟧\n\\*[^\n]*\\*\n\n\\*Prüfen" text)))
+      ;; C-c u L: the segment stays whole, the line comes again
+      (bcat-relayout-file file)
+      (let ((text (bcat-sentence-test--text-of file)))
+        (should (string-match-p "\\*Prüfen:\\* Padapāṭha weicht vom Text ab" text))
+        (should (string-match-p "^→ " text))
+        (should (string-match-p "^| atra | mad-vāk" text))
+        ;; corrected by hand: the line is gone
+        (with-temp-file file
+          (insert (replace-regexp-in-string "\\*atra mad-vāk aśaktā api yat niyantraṇam /\\*"
+                                            "*atra mad-vāk aśaktā api yat niyantraṇam ullaset /*" text t t))))
+      (bcat-relayout-file file)
+      (should-not (string-match-p "Prüfen:" (bcat-sentence-test--text-of file))))))
+
 (ert-deftest bcat-sentence-fetch-aligns-sanskrit-reference ()
   "A reference added by hand to a filled Sanskrit file: the small
 alignment request speaks of a Sanskrit sentence and shows the segments
