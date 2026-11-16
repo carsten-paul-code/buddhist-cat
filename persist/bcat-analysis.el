@@ -527,6 +527,52 @@ strings unable to form org links (`bcat-analysis-no-links')."
    (json-parse-string json :object-type 'alist :array-type 'list
                       :null-object nil :false-object nil)))
 
+(defun bcat-analysis--join-two (a b)
+  "The segment entries A and B (same number) as one: lists one after the
+other — a reference's parts under its one name —, texts joined (sandhi
+with „ · “, else a space), anything else A's."
+  (mapcar
+   (lambda (key)
+     (let ((x (alist-get key a)) (y (alist-get key b)))
+       (cons key
+             (cond
+              ((eq key 'num) x)
+              ((eq key 'references)
+               (let ((out (copy-tree x)))
+                 (dolist (r y out)
+                   (let ((same (cl-find (alist-get 'name r) out
+                                        :key (lambda (o) (alist-get 'name o)) :test #'equal)))
+                     (if same
+                         (setf (alist-get 'text same)
+                               (string-join (delete "" (list (or (alist-get 'text same) "")
+                                                             (or (alist-get 'text r) "")))
+                                            " "))
+                       (setq out (append out (list r))))))))
+              ((and (listp x) (listp y)) (append x y))
+              ((and (stringp x) (stringp y))
+               (string-join (delete "" (list x y)) (if (eq key 'sandhi) " · " " ")))
+              ((null x) y)
+              (t x)))))
+   (delete-dups (append (mapcar #'car a) (mapcar #'car b)))))
+
+(defun bcat-analysis--join-split-segments (segments)
+  "SEGMENTS with entries of the same number joined into one, in order
+\(`bcat-analysis--join-two') — 16.11., TĀ 1016: Claude split segment 704
+at a comma into two entries, and the lookup by number took only the
+first (* Text lost the second half, the Word Analysis showed both)."
+  (let ((out '()) (split '()))
+    (dolist (s segments)
+      (let* ((n (bcat-analysis--num s))
+             (prev (and n (cl-member n out :key #'bcat-analysis--num))))
+        (if (not prev)
+            (push s out)
+          (setcar prev (bcat-analysis--join-two (car prev) s))
+          (cl-pushnew n split))))
+    (when split
+      (message "Claude: Segment %s in Teilen beantwortet — zusammengeführt"
+               (mapconcat #'number-to-string (sort split #'<) ", ")))
+    (nreverse out)))
+
 (defun bcat-analysis-read (response)
   "(OBJECT . PROBLEM) for Claude's RESPONSE: the JSON object as an alist
 \(keys as symbols, arrays as lists) and nil, or nil and a short
@@ -548,7 +594,10 @@ what `bcat-analysis--repair-json' mends."
                              (ignore-errors
                                (bcat-analysis--decode (bcat-analysis--repair-json json)))))))
           (cond
-           ((and (consp obj) (assq 'segments obj)) (cons obj nil))
+           ((and (consp obj) (assq 'segments obj))
+            (setf (alist-get 'segments obj)
+                  (bcat-analysis--join-split-segments (alist-get 'segments obj)))
+            (cons obj nil))
            ((or obj (null (cdr strict))) (cons nil "JSON ohne segments"))
            ((bcat-analysis--unterminated-p (substring response start))
             (cons nil "abgeschnitten — Grenze `tibetan-claude-max-tokens' erreicht"))

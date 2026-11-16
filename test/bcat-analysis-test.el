@@ -164,6 +164,58 @@ Optativ“, kein āśīrliṅ (-yāt)."
     ;; Analyse und Wortbildung: Regel in beiden Prompt-Varianten.
     (should (string-match-p "-tāt" (bcat-analysis-sanskrit-system-prompt "de" t t)))))
 
+(defconst bcat-analysis-test--split-704
+  (concat "{\"segments\": ["
+          "{\"num\": 704, \"words\": [{\"word\": \"vigatā\", \"lemma\": \"vi-√gam\", \"gloss\": \"departed\", \"form\": \"ppp. f. nom. sg.\"},"
+          " {\"word\": \"malāḥ\", \"lemma\": \"mala\", \"gloss\": \"impurities\", \"form\": \"m. nom. pl.\"}],"
+          " \"translation\": \"The impurities have departed.\","
+          " \"references\": [{\"name\": \"Dyczkowski 2023\", \"text\": \"Its Impurities have ceased.\"}],"
+          " \"shift\": [], \"sandhi\": \"vigatā malāḥ: no change\","
+          " \"forms\": [{\"word\": \"vigatā\", \"analysis\": \"ppp.\"}], \"compounds\": [],"
+          " \"structure\": \"/vigatā/ [pred.]\", \"note\": \"\", \"concepts\": \"\"},"
+          "{\"num\": 704, \"words\": [{\"word\": \"sā\", \"lemma\": \"tad\", \"gloss\": \"that\", \"form\": \"pron. f. nom. sg.\"},"
+          " {\"word\": \"āśrayaḥ\", \"lemma\": \"āśraya\", \"gloss\": \"foundation\", \"form\": \"m. nom. sg.\"}],"
+          " \"translation\": \"That is the foundation.\","
+          " \"references\": [{\"name\": \"Dyczkowski 2023\", \"text\": \"That is Her foundation.\"}],"
+          " \"shift\": [], \"sandhi\": \"sā āśraya: no change\","
+          " \"forms\": [{\"word\": \"āśrayaḥ\", \"analysis\": \"m. nom. sg.\"}], \"compounds\": [],"
+          " \"structure\": \"/sā/ [subject]\", \"note\": \"\", \"concepts\": \"\"}],"
+          " \"grammar\": \"G\", \"translation\": \"T\"}")
+  "TĀ 1016 (16.11.): Claude split segment 704 at the comma — two entries
+with the same number, the second half lost under * Text.")
+
+(ert-deftest bcat-analysis-read-merges-split-segment ()
+  "16.11., TĀ 1016 (Tantrāloka-Session): Claude answered segment 704 in
+two entries with the same number; the Word Analysis showed both, * Text
+only the first (the lookup by number takes the first).  The reader
+joins entries with the same number into one segment, in order: the
+words, the forms, the compounds one after the other, the texts joined
+(sandhi with „ · “), a reference's two parts under its one name."
+  (let* ((parsed (car (bcat-analysis-read bcat-analysis-test--split-704)))
+         (segs (alist-get 'segments parsed))
+         (seg (car segs)))
+    (should (= 1 (length segs)))
+    (should (equal 704 (alist-get 'num seg)))
+    (should (equal '("vigatā" "malāḥ" "sā" "āśrayaḥ")
+                   (mapcar (lambda (w) (alist-get 'word w)) (alist-get 'words seg))))
+    (should (equal "The impurities have departed. That is the foundation."
+                   (alist-get 'translation seg)))
+    (should (equal "vigatā malāḥ: no change · sā āśraya: no change" (alist-get 'sandhi seg)))
+    (should (= 2 (length (alist-get 'forms seg))))
+    (should (equal "/vigatā/ [pred.] /sā/ [subject]" (alist-get 'structure seg)))
+    (should (equal "" (alist-get 'note seg)))
+    (let ((refs (alist-get 'references seg)))
+      (should (= 1 (length refs)))
+      (should (equal "Its Impurities have ceased. That is Her foundation."
+                     (alist-get 'text (car refs)))))
+    ;; * Text gets the whole segment
+    (let* ((base '((segments ((num . 704)
+                              (samhita . "vigatā malā avacchedakā … sā āśraya ālambanaṃ … ityarthaḥ /")))))
+           (ctx (bcat-analysis-sanskrit-context base parsed))
+           (s (car (alist-get 'segments ctx))))
+      (should (string-match-p "āśrayaḥ" (alist-get 'padapatha s)))
+      (should (string-match-p "That is the foundation" (alist-get 'segment-translation s))))))
+
 (ert-deftest bcat-analysis-uchen-words ()
   "Carsten 31.10. abends, Tibetisch V: the Uchen of each word above its
 Wylie in the tables — from the segment's Uchen, syllable by syllable
