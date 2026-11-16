@@ -317,6 +317,35 @@ word for word and once — setting anew is no analysis."
                  text))
         (should (= 1 (bcat-sentence-test--overview-count text)))))))
 
+(ert-deftest bcat-relayout-file-overview-from-answer ()
+  "C-c u L (16.11.): a generated „Worum es geht“ stays as it is, mark
+included, time and again; one deleted from the file comes back from
+the answer kept at the fetch; a file whose kept answer has none stays
+without."
+  (bcat-sentence-test--with-source
+    (bcat-sentence-test--create src)
+    (bcat-sentence-test--with-stubs (bcat-sentence-test--with-overview bcat-sentence-test--answer)
+      (bcat-sentence-test--fetch src))
+    (let* ((file (tibetan-sentence--filepath 9 folder src))
+           (fetched (bcat-sentence-test--text-of file)))
+      (should (string-match-p "^:GENERATED_HASH: [0-9a-f]\\{32\\}$" fetched))
+      (should (bcat-relayout-file file))
+      (should (equal (bcat-sentence-test--section fetched)
+                     (bcat-sentence-test--section (bcat-sentence-test--text-of file))))
+      (with-temp-file file
+        (insert (replace-regexp-in-string (regexp-quote (bcat-sentence-test--section fetched)) "" fetched t t)))
+      (should-not (string-match-p "Worum es geht" (bcat-sentence-test--text-of file)))
+      (should (bcat-relayout-file file))
+      (should (equal (bcat-sentence-test--section fetched)
+                     (bcat-sentence-test--section (bcat-sentence-test--text-of file))))))
+  (bcat-sentence-test--with-source
+    (bcat-sentence-test--create src)
+    (bcat-sentence-test--with-stubs bcat-sentence-test--answer
+      (bcat-sentence-test--fetch src))
+    (let ((file (tibetan-sentence--filepath 9 folder src)))
+      (should (bcat-relayout-file file))
+      (should-not (string-match-p "Worum es geht" (bcat-sentence-test--text-of file))))))
+
 (ert-deftest bcat-relayout-answers-kept ()
   "C-c u G keeps Claude's answer beside the file (Carsten 31.10.: „ab
 jetzt: Antwort aufbewahrt“ — a later change of the template needs no

@@ -497,7 +497,7 @@ each segment, the grammar of each sentence.  Constant per document."
   (let ((lang (bcat-analysis--language target)))
     (format "You prepare a passage of a Tibetan commentary on a verse for a university reading class that reads the verse first, then the commentary, sentence by sentence. Work segment by segment. Answer with ONE JSON object and nothing else (no prose, no code fence):
 
-{\"segments\": [{\"num\": <segment number>, \"lemma\": <verse line number or 0>, \"words\": [{\"wylie\": \"…\", \"gloss\": \"…\", \"function\": \"…\"}], \"translation\": \"…\", \"references\": [{\"name\": \"…\", \"text\": \"…\"}], \"shift\": \"…\", \"structure\": \"…\", \"note\": \"…\", \"concepts\": \"…\"}], \"sentences\": [{\"num\": <sentence number>, \"grammar\": \"…\"}]}
+{\"segments\": [{\"num\": <segment number>, \"lemma\": <verse line number or 0>, \"words\": [{\"wylie\": \"…\", \"gloss\": \"…\", \"function\": \"…\"}], \"translation\": \"…\", \"references\": [{\"name\": \"…\", \"text\": \"…\"}], \"shift\": \"…\", \"structure\": \"…\", \"note\": \"…\", \"concepts\": \"…\"}], \"sentences\": [{\"num\": <sentence number>, \"grammar\": \"…\"}], %s}
 
 Rules:
 - segments: one entry per given segment, same numbers, same order.
@@ -505,9 +505,13 @@ Rules:
 %s
 - In translations, give a quoted verse line in quotation marks — never a verse line's number (that belongs in lemma).
 - sentences: one entry per given sentence; grammar: its syntax in one or two sentences — clauses and their linkage, the quotation markers (zhes bya ba …).
+%s
 - JSON escaping: only \\\" and \\\\ — never a backslash before an apostrophe.
-- Write glosses, notes and explanations in %s. Never mention yourself."
-            (bcat-analysis--tibetan-segment-rules lang) lang)))
+- Write glosses, notes and explanations in %s; the overview in German. Never mention yourself."
+            bcat-analysis--overview-schema
+            (bcat-analysis--tibetan-segment-rules lang)
+            ;; 16.11.: „Worum es geht“ — what the commentator does
+            (bcat-analysis--overview-rule) lang)))
 
 (defun bcat-commentary-user-prompt (verse sentences refs &optional context)
   "The user prompt of a commentary request: VERSE ((NUM . WYLIE) …) the
@@ -560,13 +564,38 @@ fully analysed."
 verse, `bcat-commentary-fetch'), where its PDF and upload write too."
   (bcat-status-step (plist-get run :doc) :commentary text))
 
+(defun bcat-commentary--merged-overview (answers)
+  "The `overview' of ANSWERS (the parts in order) as one, or nil when
+none has one: a single one as it is; of several the first subject, the
+steps and the questions of all in order, the moves joined (16.11.; MSA
+IX.8 goes in parts)."
+  (let ((all (delq nil (mapcar (lambda (a)
+                                 (let ((o (alist-get 'overview a)))
+                                   (cond ((consp o) o)
+                                         ((and (stringp o) (not (string-blank-p o))) `((steps ,o))))))
+                               answers))))
+    (cond
+     ((null all) nil)
+     ((null (cdr all)) (car all))
+     (t `((subject . ,(or (cl-some (lambda (o) (let ((s (bcat-analysis--field o 'subject)))
+                                                 (and (not (string-empty-p s)) s)))
+                                   all)
+                          ""))
+          (steps . ,(cl-mapcan (lambda (o) (bcat-analysis--overview-list (alist-get 'steps o))) all))
+          (move . ,(string-join (delete "" (mapcar (lambda (o) (bcat-analysis--field o 'move)) all)) " "))
+          (questions . ,(cl-mapcan (lambda (o) (bcat-analysis--overview-list (alist-get 'questions o)))
+                                   all)))))))
+
 (defun bcat-commentary--merged (run)
   "The answers of RUN that have landed as one: their segments and
-sentences in the order of the parts."
-  (let ((answers (mapcar #'cdr (sort (copy-sequence (plist-get run :answers))
-                                     (lambda (a b) (< (car a) (car b)))))))
+sentences in the order of the parts, their overviews as one
+\(`bcat-commentary--merged-overview')."
+  (let* ((answers (mapcar #'cdr (sort (copy-sequence (plist-get run :answers))
+                                      (lambda (a b) (< (car a) (car b))))))
+         (overview (bcat-commentary--merged-overview answers)))
     `((segments . ,(cl-mapcan (lambda (a) (copy-sequence (alist-get 'segments a))) answers))
-      (sentences . ,(cl-mapcan (lambda (a) (copy-sequence (alist-get 'sentences a))) answers)))))
+      (sentences . ,(cl-mapcan (lambda (a) (copy-sequence (alist-get 'sentences a))) answers))
+      ,@(and overview `((overview . ,overview))))))
 
 (defun bcat-commentary--lemma-pada (value padas)
   "The pāda of PADAS ((NUM . WYLIE) …) that Claude's `lemma' VALUE names:
@@ -630,7 +659,8 @@ segment parts) and grammar; the whole translation."
                                              (cdr (assoc (alist-get 'num sent) by-num)) 'grammar)))
                               sent)))
                   (alist-get 'sentences base))))
-    (append `((sentences . ,sentences)
+    (append (bcat-analysis-overview-fields base parsed)
+            `((sentences . ,sentences)
               (translation-all . ,(mapconcat (lambda (s) (alist-get 'translation s))
                                              (cl-remove-if (lambda (s) (string-empty-p (alist-get 'translation s)))
                                                            sentences)

@@ -216,6 +216,113 @@ words, the forms, the compounds one after the other, the texts joined
       (should (string-match-p "āśrayaḥ" (alist-get 'padapatha s)))
       (should (string-match-p "That is the foundation" (alist-get 'segment-translation s))))))
 
+;; „Worum es geht“ (16.11.2026)
+
+(defconst bcat-analysis-test--overview
+  '((subject . "das Kompositum /anuttarāmṛtakulam/ aus Vers 1.1.")
+    (steps "/anuttara/: das Höchste." "/amṛta/: gelesen als /a-mṛta/.")
+    (move . "„tot“ bereitet das Wortspiel vor.")
+    (questions "Warum „tot“ statt „vergänglich“? DM verliert das Wortspiel." "Wessen Körper?"))
+  "Claude's `overview' as the JSON contract gives it.")
+
+(ert-deftest bcat-analysis-prompts-ask-for-overview ()
+  "16.11. (Carsten über die Tantrāloka-Session): every analysis asks for
+„Worum es geht“ — a field of the answer it gives anyway, no request of
+its own: the Tibetan, the Sanskrit and the commentary contract.  The
+rules as decided: German whatever the rest, plain, only from the own
+analysis and the neighbouring sentences, nothing invented, no
+doxographical label, what is open said to be open; questions tied to a
+place in the text.  The Tibetan request of a pair asks for none — one
+per sentence number, in the file of the Sanskrit."
+  (dolist (sys (list (bcat-analysis-system-prompt "en")
+                     (bcat-analysis-sanskrit-system-prompt "en")
+                     (bcat-analysis-sanskrit-system-prompt "en" t t)
+                     (bcat-commentary-system-prompt "en")))
+    (should (string-match-p
+             (regexp-quote "\"overview\": {\"subject\": \"…\", \"steps\": [\"…\"], \"move\": \"…\", \"questions\": [\"…\"]}}")
+             sys))
+    (should (string-match-p "^- overview: " sys))
+    (should (string-match-p "always in German" sys))
+    (should (string-match-p "only on your own analysis" sys))
+    (should (string-match-p "neighbouring sentences" sys))
+    (should (string-match-p "Invent nothing" sys))
+    (should (string-match-p "no school" sys))
+    (should (string-match-p "say that it is open" sys))
+    (should (string-match-p "^  - subject: " sys))
+    (should (string-match-p "^  - steps: " sys))
+    (should (string-match-p "^  - move: " sys))
+    (should (string-match-p "^  - questions: " sys))
+    ;; the last line names the language of the rest — and the exception
+    (should (string-match-p "explanations in English; the overview in German\\. Never mention yourself\\.\\'" sys))
+    ;; the overview after everything it draws on, the escaping rule last
+    (should (< (string-match "^- corrections: \\|^- sentences: " sys)
+               (string-match "^- overview: " sys)
+               (string-match "^- JSON escaping\\|^- Write glosses" sys))))
+  (should-not (string-match-p "\"overview\":\\|^- overview: " (bcat-analysis-tibetan-system-prompt "en"))))
+
+(ert-deftest bcat-analysis-overview-rendered ()
+  "The answer's `overview' as the section's text, in the form of the
+Tantrāloka files: *Erklärt wird:*, the train of thought (several steps
+numbered, one a paragraph), *Der Kniff:*, the questions as a list.  A
+part left empty is left out; a plain text is taken as it stands;
+nothing → nil."
+  (should (equal (concat "*Erklärt wird:* das Kompositum /anuttarāmṛtakulam/ aus Vers 1.1.\n\n"
+                         "1. /anuttara/: das Höchste.\n2. /amṛta/: gelesen als /a-mṛta/.\n\n"
+                         "*Der Kniff:* „tot“ bereitet das Wortspiel vor.\n\n"
+                         "*Fragen für die Diskussion:*\n"
+                         "- Warum „tot“ statt „vergänglich“? DM verliert das Wortspiel.\n- Wessen Körper?")
+                 (bcat-analysis-overview `((overview . ,bcat-analysis-test--overview)))))
+  (should (equal (concat "*Erklärt wird:* kein Versglied, sondern ein Beleg zu 1012.\n\n"
+                         "Jayaratha schiebt ein Zitat nach. Es schließt mit /iti/.\n\n"
+                         "*Fragen für die Diskussion:*\n- Woher stammt das Zitat?")
+                 (bcat-analysis-overview
+                  '((overview (subject . " kein Versglied, sondern ein Beleg zu 1012. ")
+                              (steps "Jayaratha schiebt ein Zitat nach. Es schließt mit /iti/.")
+                              (move . "")
+                              (questions "Woher stammt das Zitat?"))))))
+  ;; steps as one string, a question that brings its own dash
+  (should (equal "*Erklärt wird:* X.\n\nEin Absatz.\n\n*Fragen für die Diskussion:*\n- Frage?"
+                 (bcat-analysis-overview '((overview (subject . "X.") (steps . "Ein Absatz.")
+                                                     (questions "- Frage?"))))))
+  (should (equal "Schon fertiger Text." (bcat-analysis-overview '((overview . " Schon fertiger Text.\n")))))
+  (should-not (bcat-analysis-overview '((overview (subject . "") (steps) (move . "") (questions)))))
+  (should-not (bcat-analysis-overview '((translation . "x")))))
+
+(ert-deftest bcat-analysis-overview-fields-protect-hand-text ()
+  "16.11.: „Am Inhalt meiner Handtexte bitte nichts ändern“ — a section
+written by hand (no hash) or changed by hand (the hash no longer fits)
+stays, whatever the answer says; only a generated section nobody
+touched is replaced by a new answer.  `overview-hash' marks the
+generated text (:GENERATED_HASH: under the heading)."
+  (let* ((parsed `((overview . ,bcat-analysis-test--overview)))
+         (new (bcat-analysis-overview parsed))
+         (old "*Erklärt wird:* alt.")
+         (field (lambda (key base)
+                  (alist-get key (append (bcat-analysis-overview-fields base parsed) base)))))
+    (should (stringp new))
+    (should (string-match-p "\\`[0-9a-f]\\{32\\}\\'" (bcat-analysis-overview-hash new)))
+    (should (equal (bcat-analysis-overview-hash new) (bcat-analysis-overview-hash (concat "\n" new "\n\n"))))
+    ;; nothing in the file: the answer's, marked as generated
+    (should (equal new (funcall field 'overview '((sent-num . 9)))))
+    (should (equal (bcat-analysis-overview-hash new) (funcall field 'overview-hash '((sent-num . 9)))))
+    ;; written by hand: stays, without a mark
+    (should (equal "Von Hand." (funcall field 'overview '((overview . "Von Hand.")))))
+    (should-not (funcall field 'overview-hash '((overview . "Von Hand."))))
+    ;; generated and untouched: the new answer replaces it
+    (let ((base `((overview . ,old) (overview-hash . ,(bcat-analysis-overview-hash old)))))
+      (should (equal new (funcall field 'overview base)))
+      (should (equal (bcat-analysis-overview-hash new) (funcall field 'overview-hash base))))
+    ;; generated, then changed by hand: stays, the mark goes
+    (let ((base `((overview . "*Erklärt wird:* alt, von mir ergänzt.")
+                  (overview-hash . ,(bcat-analysis-overview-hash old)))))
+      (should (equal "*Erklärt wird:* alt, von mir ergänzt." (funcall field 'overview base)))
+      (should-not (funcall field 'overview-hash base)))
+    ;; an answer without one (a file fetched before): what is there stays
+    (let ((base `((overview . ,old) (overview-hash . ,(bcat-analysis-overview-hash old)))))
+      (should (equal old (alist-get 'overview (append (bcat-analysis-overview-fields base '((translation . "x"))) base))))
+      (should (equal (bcat-analysis-overview-hash old)
+                     (alist-get 'overview-hash (append (bcat-analysis-overview-fields base '((translation . "x"))) base)))))))
+
 (ert-deftest bcat-analysis-sanskrit-prompt-faithful-padapatha ()
   "16.11. (Carsten über die Tantrāloka-Session, TĀ 1013–1020: yasya āḥ
 für yasyāḥ, yā sā für yāsāv, abhinavā für abhinavāyām, vyatiriktena für

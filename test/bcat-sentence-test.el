@@ -823,6 +823,91 @@ Recitation (Tantrāloka 1012)."
                  text))
         (should (= 1 (bcat-sentence-test--overview-count text)))))))
 
+(defun bcat-sentence-test--with-overview (answer &optional subject)
+  "ANSWER (JSON text) with an `overview' as its last field — SUBJECT its
+subject (default: the compound of TĀ 1.1)."
+  (let ((end (string-match "}[ \t\n]*\\'" answer)))
+    (concat (substring answer 0 end)
+            ", \"overview\": {\"subject\": \"" (or subject "das Kompositum /anuttarāmṛtakulam/ aus Vers 1.1.") "\","
+            " \"steps\": [\"/anuttara/: das Höchste.\", \"/amṛta/: gelesen als /a-mṛta/.\"],"
+            " \"move\": \"„tot“ bereitet das Wortspiel vor.\","
+            " \"questions\": [\"Warum „tot“ statt „vergänglich“?\", \"Wessen Körper?\"]}}")))
+
+(defun bcat-sentence-test--generated (&optional subject)
+  "The text `bcat-sentence-test--with-overview' gives the section."
+  (concat "*Erklärt wird:* " (or subject "das Kompositum /anuttarāmṛtakulam/ aus Vers 1.1.") "\n\n"
+          "1. /anuttara/: das Höchste.\n2. /amṛta/: gelesen als /a-mṛta/.\n\n"
+          "*Der Kniff:* „tot“ bereitet das Wortspiel vor.\n\n"
+          "*Fragen für die Diskussion:*\n- Warum „tot“ statt „vergänglich“?\n- Wessen Körper?"))
+
+(defun bcat-sentence-test--section (text)
+  "The section „Worum es geht“ of TEXT, from its heading up to the next
+L1 heading."
+  (and (string-match "^\\* Worum es geht\n\\(?:.\\|\n\\)*?\n\\(\\* \\)" text)
+       (substring text (match-beginning 0) (match-beginning 1))))
+
+(ert-deftest bcat-sentence-fetch-writes-overview ()
+  "16.11.: C-c u G fills „Worum es geht“ from the answer's `overview' —
+in front, marked as generated (:GENERATED_HASH: of its text).  A later
+fetch replaces a generated section nobody touched; once it is changed
+by hand it stays, and the mark is gone."
+  (bcat-sentence-test--with-source
+    (bcat-sentence-test--create src)
+    (let ((file (tibetan-sentence--filepath 9 folder src))
+          (refetch (lambda (answer)
+                     (bcat-sentence-test--with-stubs answer
+                       (cl-letf (((symbol-function 'y-or-n-p) (lambda (&rest _) t)))
+                         (tibetan-cascade-fetch (list :source src :sent-nums '(9) :label "Satz 9") t))))))
+      (bcat-sentence-test--with-stubs (bcat-sentence-test--with-overview bcat-sentence-test--answer)
+        (bcat-sentence-test--fetch src))
+      (let ((text (bcat-sentence-test--text-of file))
+            (generated (bcat-sentence-test--generated)))
+        (should (string-match-p "^⟦38⟧ \\*Translation:\\*" text))
+        (should (equal (concat "* Worum es geht\n:PROPERTIES:\n:GENERATED_HASH: "
+                               (bcat-analysis-overview-hash generated) "\n:END:\n" generated "\n\n")
+                       (bcat-sentence-test--section text)))
+        (should (string-match-p "\n\n\\* Worum es geht\n\\(?:.\\|\n\\)*?\n\n\\* Text\n" text))
+        (should (equal (cons generated (bcat-analysis-overview-hash generated))
+                       (bcat-sentence--overview text))))
+      ;; untouched: the next answer's
+      (funcall refetch (bcat-sentence-test--with-overview bcat-sentence-test--answer "die zweite Fassung."))
+      (let ((text (bcat-sentence-test--text-of file))
+            (generated (bcat-sentence-test--generated "die zweite Fassung.")))
+        (should (equal (cons generated (bcat-analysis-overview-hash generated))
+                       (bcat-sentence--overview text)))
+        (should (= 1 (bcat-sentence-test--overview-count text))))
+      ;; changed by hand: stays, whatever the answer says
+      (with-temp-buffer
+        (insert-file-contents file)
+        (goto-char (point-min))
+        (search-forward "die zweite Fassung.")
+        (replace-match "die zweite Fassung, von mir ergänzt." t t)
+        (write-region (point-min) (point-max) file nil 0))
+      (funcall refetch (bcat-sentence-test--with-overview bcat-sentence-test--answer "die dritte Fassung."))
+      (let ((text (bcat-sentence-test--text-of file)))
+        (should (equal (concat "* Worum es geht\n"
+                               (bcat-sentence-test--generated "die zweite Fassung, von mir ergänzt.") "\n\n")
+                       (bcat-sentence-test--section text)))
+        (should-not (string-match-p "GENERATED_HASH\\|dritte Fassung" text))))))
+
+(ert-deftest bcat-sentence-fetch-overview-keeps-hand-text ()
+  "16.11. (Tantrāloka 1009–1040): „Am Inhalt meiner Handtexte bitte
+nichts ändern“ — the section written by hand stays word for word when
+the answer brings an overview of its own, at C-c u G and at C-u C-c u G."
+  (bcat-sentence-test--with-sa-source
+    (bcat-sentence-test--create-n src 1007)
+    (let ((file (tibetan-sentence--filepath 1007 folder src))
+          (hand (concat "* Worum es geht\n" bcat-sentence-test--overview "\n\n")))
+      (bcat-sentence-test--put-overview file "* Recitation")
+      (bcat-sentence-test--with-stubs (bcat-sentence-test--with-overview (bcat-sentence-test--sa-answer)
+                                                                         "etwas ganz anderes.")
+        (bcat-sentence-test--fetch-n src 1007)
+        (should (string-match-p (regexp-quote "* Text\n** ⟦685⟧\n") (bcat-sentence-test--text-of file)))
+        (should (equal hand (bcat-sentence-test--section (bcat-sentence-test--text-of file))))
+        (cl-letf (((symbol-function 'y-or-n-p) (lambda (&rest _) t)))
+          (tibetan-cascade-fetch (list :source src :sent-nums '(1007) :label "Satz 1007") t))
+        (should (equal hand (bcat-sentence-test--section (bcat-sentence-test--text-of file))))))))
+
 (ert-deftest bcat-sentence-templates-overview-first ()
   "Every template of a sentence file and of a commentary document has
 the section: with the field `overview' it is the first L1 section,

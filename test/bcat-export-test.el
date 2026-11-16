@@ -890,6 +890,19 @@ template."
                        (car (bcat-export-test--parts
                              (bcat-template-render-named name '((sent-num . 3)) src)))))))))
 
+(ert-deftest bcat-export-view-overview-generated ()
+  "16.11.: a generated „Worum es geht“ in the PDF — its text, not the
+drawer that marks it as generated."
+  (bcat-sentence-test--with-source
+    (bcat-sentence-test--create src)
+    (bcat-sentence-test--with-stubs (bcat-sentence-test--with-overview bcat-sentence-test--answer)
+      (bcat-sentence-test--fetch src))
+    (let ((view (bcat-export-view (tibetan-sentence--filepath 9 folder src))))
+      (should (equal (concat "* Worum es geht\n:PROPERTIES:\n:CUSTOM_ID: overview\n:END:\n"
+                             (bcat-sentence-test--generated) "\n\n")
+                     (bcat-export-test--part view "Worum es geht")))
+      (should-not (string-match-p "GENERATED_HASH" view)))))
+
 (ert-deftest bcat-export-view-tibetan ()
   "The Tibetan file as one document: Reading with every segment's Uchen
 over its Wylie, Segments with the tables, Grammar with structure and

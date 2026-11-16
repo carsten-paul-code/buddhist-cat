@@ -405,8 +405,13 @@ has one."
                                 "\\`\\(\\*\\* [^\n]*\n\\)"
                                 (concat "\\1:PROPERTIES:\n:CUSTOM_ID: comm-" n "\n:END:\n")
                                 (bcat-dossier--demote body) t)))
+                            ;; its text, without the drawer of a
+                            ;; generated one's mark
                             ((equal title bcat-sentence--overview-heading)
-                             (bcat-dossier--demote body))
+                             (let ((overview (bcat-sentence--overview text)))
+                               (if overview
+                                   (concat "** " title "\n" (car overview) "\n\n")
+                                 "")))
                             (t ""))))
                        (bcat-dossier--split-parts text) ""))))
 

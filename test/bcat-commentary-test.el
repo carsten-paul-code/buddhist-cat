@@ -559,6 +559,53 @@ before the verse, survives C-c u G where it stands."
                  text))
         (should (= 1 (bcat-sentence-test--overview-count text)))))))
 
+(ert-deftest bcat-commentary-fetch-writes-overview ()
+  "16.11.: the commentary document gets its „Worum es geht“ from the
+answer of its request — what the commentator does with the verse —,
+marked as generated; in the PDF of the dossier it stands at the head of
+the commentary's part without the mark's drawer."
+  (bcat-commentary-test--with-msa
+    (bcat-sentence-test--with-stubs
+        (lambda (kind)
+          (let ((answer (bcat-commentary-test--answers kind)))
+            (if (string-prefix-p "bcat-commentary" kind)
+                (bcat-sentence-test--with-overview answer "Vers IX.16, Pāda für Pāda.")
+              answer)))
+      (bcat-sentence-test--fetch-n src 36))
+    (let* ((doc (expand-file-name "comm-IX.16-savbh.org" cfolder))
+           (text (bcat-sentence-test--text-of doc))
+           (generated (bcat-sentence-test--generated "Vers IX.16, Pāda für Pāda.")))
+      (should (string-match-p "^⟦627⟧ \\*Translation:\\*" text))
+      (should (equal (concat "* Worum es geht\n:PROPERTIES:\n:GENERATED_HASH: "
+                             (bcat-analysis-overview-hash generated) "\n:END:\n" generated "\n\n")
+                     (bcat-sentence-test--section text)))
+      (should (string-match-p "\n\n\\* Worum es geht\n\\(?:.\\|\n\\)*?\n\n\\* Verse\n" text))
+      (let ((pdf (plist-get (bcat-dossier-pdf-text doc) :text)))
+        (should (string-match-p
+                 (regexp-quote (concat "* Sthiramati\n:PROPERTIES:\n:CUSTOM_ID: commentary\n:END:\n"
+                                       "** Worum es geht\n" generated "\n\n** Sentence 258\n"))
+                 pdf))
+        (should-not (string-match-p "GENERATED_HASH" pdf))))))
+
+(ert-deftest bcat-commentary-merged-overview ()
+  "A commentary in parts (MSA IX.8: 72 sentences): the overviews of the
+parts as one — the first subject, the steps and questions of all in the
+order of the parts, the moves joined."
+  (let* ((run (list :answers
+                    (list (cons 2 '((segments) (sentences)
+                                    (overview (subject . "zweiter Teil.") (steps "Schritt C.")
+                                              (move . "Zitat als Beleg.") (questions "Frage 2?"))))
+                          (cons 1 '((segments) (sentences)
+                                    (overview (subject . "Vers IX.8.") (steps "Schritt A." "Schritt B.")
+                                              (move . "Etymologie.") (questions "Frage 1?")))))))
+         (merged (bcat-commentary--merged run)))
+    (should (equal (concat "*Erklärt wird:* Vers IX.8.\n\n1. Schritt A.\n2. Schritt B.\n3. Schritt C.\n\n"
+                           "*Der Kniff:* Etymologie. Zitat als Beleg.\n\n"
+                           "*Fragen für die Diskussion:*\n- Frage 1?\n- Frage 2?")
+                   (bcat-analysis-overview merged))))
+  (should-not (bcat-analysis-overview
+               (bcat-commentary--merged (list :answers (list (cons 1 '((segments) (sentences)))))))))
+
 (ert-deftest bcat-commentary-status-line ()
   "30.10., IX.60: the commentary's PDF failed and the status said
 „Sthiramati: ✓“ — the error stood only in *Messages*.  The commentary

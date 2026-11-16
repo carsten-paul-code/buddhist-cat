@@ -23,6 +23,10 @@ Kommentar); working-translation my-notes footnotes.
 in die Diskussion): was der Satz erklärt, der Gedankengang, der Kniff,
 Fragen für die Diskussion — deutsch.  Von Hand geschrieben bleibt der
 Abschnitt bei jedem Neubau wörtlich stehen (`bcat-sentence--keep').
+Sonst füllt ihn C-c u G aus dem Feld overview der Antwort; der Drawer
+:GENERATED_HASH: (overview-hash) kennzeichnet den erzeugten Text —
+nur ein unveränderter erzeugter Abschnitt wird beim nächsten Abruf
+ersetzt (`bcat-analysis-overview-fields').
 #+end_comment
 #+TITLE: {{title}}
 #+STARTUP: showall
@@ -38,6 +42,11 @@ Abschnitt bei jedem Neubau wörtlich stehen (`bcat-sentence--keep').
 
 {{#overview}}
 * Worum es geht
+{{#overview-hash}}
+:PROPERTIES:
+:GENERATED_HASH: {{overview-hash}}
+:END:
+{{/overview-hash}}
 {{overview}}
 
 {{/overview}}

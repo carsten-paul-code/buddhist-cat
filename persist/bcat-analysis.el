@@ -197,19 +197,45 @@ in a prompt)."
                           lectures "\n"))
      "")))
 
+(defconst bcat-analysis--overview-schema
+  "\"overview\": {\"subject\": \"…\", \"steps\": [\"…\"], \"move\": \"…\", \"questions\": [\"…\"]}"
+  "The part of the JSON contract for „Worum es geht“
+\(`bcat-analysis--overview-rule') — the last field of an answer: it
+draws on everything before it.")
+
+(defun bcat-analysis--overview-rule ()
+  "The rule for `overview', the section „Worum es geht“ in front of a
+sentence file — one wording for every analysis (Tibetan, Sanskrit,
+commentary).  Carsten 16.11. (über die Tantrāloka-Session, Muster TĀ
+1009–1040 von Hand): he follows the translations but cannot join the
+discussion in class; the concepts give lexicon knowledge, „For the
+class“ only compares translations.  What is missing: what the sentence
+explains, what the commentator does, one or two questions to join in.
+German whatever the language of the rest; only from the own analysis
+and the neighbouring sentences (`bcat-sentence--neighbours-block');
+nothing invented, no doxographical label, the open said to be open.
+The labels are the tool's (`bcat-analysis-overview')."
+  "- overview: a short orientation for a participant who follows the translations but finds it hard to join the discussion in class — always in German, whatever the language of the rest; plain words, short sentences, about 8 to 14 lines in all; words of the original in /italic/, renderings in „…“. Draw only on your own analysis above (the grammar and, where there is one, the comparison of the translations with its decisions) and on the neighbouring sentences where the request gives them (a second round on the same word, a reference back or ahead: „zum zweiten Mal nach 1011“). Invent nothing: no source of a quotation, no parallel, no doctrinal position; assign the text to no school and no doxographical category; where the analysis leaves something open, say that it is open.
+  - subject: one sentence on what is explained here — in a commentary the word or member of the root text it glosses („das Kompositum /anuttarāmṛtakulam/ aus Vers 1.1“), for a quotation that it is no gloss but a proof, and of what („kein Versglied, sondern ein Beleg zu 1012“); in a root text its topic.
+  - steps: the train of thought in three to five plain sentences — one entry when it reads as a paragraph, one entry per step when the text proceeds member by member, each beginning with the word it explains („/anuttara/: das Höchste, weil …“); no numbers of your own.
+  - move: one or two sentences on what the author does as a method — an etymology, a wordplay, a quotation as proof, a compound resolved into relative clauses, a second round of glossing, a reference back; \"\" when nothing stands out.
+  - questions: two questions for the discussion, a third only for a real question of text or reading — each about a concrete place in the text, followed by a half sentence on where the answer lies or why it is open (the translations diverge: name them by their sigla; the analysis is uncertain).")
+
 (defun bcat-analysis-system-prompt (target)
   "The system prompt of the sentence analysis for the target language
 code TARGET — constant per document, so the prompt cache stays warm."
   (let ((lang (bcat-analysis--language target)))
     (format "You are a philologist preparing one sentence or verse of a Classical Tibetan Buddhist text for a university reading class. Work segment by segment, then on the whole sentence. Answer with ONE JSON object and nothing else (no prose, no code fence):
 
-{\"segments\": [{\"num\": <segment number>, \"words\": [{\"wylie\": \"…\", \"gloss\": \"…\", \"function\": \"…\"}], \"translation\": \"…\", \"references\": [{\"name\": \"…\", \"text\": \"…\"}], \"shift\": \"…\", \"structure\": \"…\", \"note\": \"…\", \"concepts\": \"…\"}], \"grammar\": \"…\", \"translation\": \"…\", %s}
+{\"segments\": [{\"num\": <segment number>, \"words\": [{\"wylie\": \"…\", \"gloss\": \"…\", \"function\": \"…\"}], \"translation\": \"…\", \"references\": [{\"name\": \"…\", \"text\": \"…\"}], \"shift\": \"…\", \"structure\": \"…\", \"note\": \"…\", \"concepts\": \"…\"}], \"grammar\": \"…\", \"translation\": \"…\", %s, %s}
 
 Rules:
 - segments: one entry per given segment, same numbers, same order.
 %s
-- Write glosses, notes and explanations in %s. Never mention yourself."
-            bcat-analysis--comparison-schema (bcat-analysis--tibetan-rules lang) lang)))
+%s
+- Write glosses, notes and explanations in %s; the overview in German. Never mention yourself."
+            bcat-analysis--comparison-schema bcat-analysis--overview-schema
+            (bcat-analysis--tibetan-rules lang) (bcat-analysis--overview-rule) lang)))
 
 (defun bcat-analysis-user-prompt (sent-num verse segs refs &optional context second lectures)
   "The user prompt for sentence SENT-NUM (VERSE its :VERSE: or nil):
@@ -282,7 +308,7 @@ answer gives `recitation', the text in sense units (31.10., TĀ 1008)."
   (let ((lang (bcat-analysis--language target)))
     (format "You are a Sanskritist preparing one sentence or verse of a Sanskrit text for a university reading class of experienced Sanskritists; one participant reads Sanskrit only haltingly, so every form is spelled out. Work segment by segment, then on the whole sentence. Use the grammatical terminology of Goldman & Sutherland Goldman, Devavāṇīpraveśikā: Sanskrit terms, with the English equivalent where it helps. Answer with ONE JSON object and nothing else (no prose, no code fence):
 
-{\"segments\": [{\"num\": <segment number>, \"words\": [{\"word\": \"…\", \"lemma\": \"…\", \"formation\": \"…\", \"parts\": \"…\", \"gloss\": \"…\", \"form\": \"…\"}], \"translation\": \"…\", \"references\": [{\"name\": \"…\", \"text\": \"…\"}], \"shift\": [\"…\"], \"sandhi\": \"…\", \"forms\": [{\"word\": \"…\", \"analysis\": \"…\"}], \"compounds\": [{\"word\": \"…\", \"analysis\": \"…\"}], \"structure\": \"…\", \"note\": \"…\", \"concepts\": \"…\"}], \"grammar\": \"…\", \"translation\": \"…\", %s%s}
+{\"segments\": [{\"num\": <segment number>, \"words\": [{\"word\": \"…\", \"lemma\": \"…\", \"formation\": \"…\", \"parts\": \"…\", \"gloss\": \"…\", \"form\": \"…\"}], \"translation\": \"…\", \"references\": [{\"name\": \"…\", \"text\": \"…\"}], \"shift\": [\"…\"], \"sandhi\": \"…\", \"forms\": [{\"word\": \"…\", \"analysis\": \"…\"}], \"compounds\": [{\"word\": \"…\", \"analysis\": \"…\"}], \"structure\": \"…\", \"note\": \"…\", \"concepts\": \"…\"}], \"grammar\": \"…\", \"translation\": \"…\", %s%s, %s}
 
 Rules:
 - segments: one entry per given segment, same numbers, same order.
@@ -305,10 +331,11 @@ Rules:
 - grammar: an overview of the whole sentence — the clauses and how they are linked, the verbs, subjects, elisions (an understood copula). Name a metre only as given under Metre in the request; none when none is given.
 %s
 %s- JSON escaping: only \\\" and \\\\ — never a backslash before an apostrophe.
-- Write glosses, notes and explanations in %s. Never mention yourself."
+- Write glosses, notes and explanations in %s; the overview in German. Never mention yourself."
             bcat-analysis--comparison-schema
             (concat (if bhasya ", \"bhasya_translation\": \"…\", \"bhasya_hint\": \"…\"" "")
                     (if recitation ", \"recitation\": [\"…\"]" ""))
+            bcat-analysis--overview-schema
             bcat-analysis--label-limit
             (bcat-analysis--sentence-rules lang)
             (concat
@@ -318,7 +345,9 @@ Rules:
                "")
              (if recitation
                  "- recitation: for prose only (for a verse []): the transmitted text of the whole sentence exactly as given — same spelling and sandhi, nothing added or left out —, divided for reading aloud into lines, one array entry per line, each a sense unit of a few words ending at a clause or phrase boundary (break only where the text has a space); inside a line mark a short breath pause with ¦.\n"
-               ""))
+               "")
+             ;; 16.11.: „Worum es geht“, after all it draws on
+             (bcat-analysis--overview-rule) "\n")
             lang)))
 
 (defun bcat-analysis-sanskrit-user-prompt (sent-num verse segs refs &optional context bhasya second lectures metre)
@@ -1662,6 +1691,7 @@ named again (`bcat-analysis--full-names')."
                   seg))))
            (alist-get 'segments base))))
     (append
+     (bcat-analysis-overview-fields base parsed)
      (bcat-analysis--second-translation parsed)
      `((segments . ,segments)
        (glosses . ,(bcat-analysis-glosses-p segments))
@@ -1670,6 +1700,74 @@ named again (`bcat-analysis--full-names')."
        (comparison . ,(bcat-analysis-comparison parsed refs (alist-get 'target-lang base)))
        (proposal . ,(bcat-analysis-comparison-proposal parsed (alist-get 'target-lang base))))
      base)))
+
+;; ----------------------------------------------------------------------------
+;; „Worum es geht“ (16.11.2026)
+;; ----------------------------------------------------------------------------
+
+(defun bcat-analysis--overview-list (value)
+  "VALUE — a list of strings, or one string — as the list of its
+non-blank strings, trimmed."
+  (delq nil (mapcar (lambda (s) (and (stringp s) (not (string-blank-p s)) (string-trim s)))
+                    (if (listp value) value (list value)))))
+
+(defun bcat-analysis-overview (parsed)
+  "The text of „Worum es geht“ from the `overview' of the answer PARSED
+\(`bcat-analysis--overview-rule'), in the form of the Tantrāloka files
+of 16.11.: *Erklärt wird:* the subject; the train of thought — several
+steps numbered, one a paragraph; *Der Kniff:* the move; *Fragen für die
+Diskussion:* as a list.  The labels are German like the text, whatever
+the language of the file.  A part left empty is left out; an overview
+given as plain text is taken as it stands; nil when there is nothing."
+  (let ((o (alist-get 'overview parsed)))
+    (cond
+     ((stringp o) (let ((text (string-trim o))) (unless (string-empty-p text) text)))
+     ((consp o)
+      (let* ((subject (bcat-analysis--field o 'subject))
+             (steps (mapcar (lambda (s) (replace-regexp-in-string "\\`[0-9]+[.)][ \t]+" "" s))
+                            (bcat-analysis--overview-list (alist-get 'steps o))))
+             (move (bcat-analysis--field o 'move))
+             (questions (bcat-analysis--overview-list (alist-get 'questions o)))
+             (parts (delq nil
+                          (list (unless (string-empty-p subject) (concat "*Erklärt wird:* " subject))
+                                (cond ((cdr steps)
+                                       (string-join (cl-loop for s in steps for i from 1
+                                                             collect (format "%d. %s" i s))
+                                                    "\n"))
+                                      (steps (car steps)))
+                                (unless (string-empty-p move) (concat "*Der Kniff:* " move))
+                                (and questions
+                                     (concat "*Fragen für die Diskussion:*\n"
+                                             (mapconcat (lambda (q)
+                                                          (concat "- " (replace-regexp-in-string
+                                                                        "\\`[-–•][ \t]+" "" q)))
+                                                        questions "\n")))))))
+        (and parts (string-join parts "\n\n")))))))
+
+(defun bcat-analysis-overview-hash (text)
+  "The mark of a generated „Worum es geht“ with the text TEXT: the md5 of
+its trimmed text — in the file :GENERATED_HASH: under the heading
+\(`bcat-sentence--overview').  A section whose text no longer has this
+hash was changed by hand."
+  (md5 (string-trim text) nil nil 'utf-8))
+
+(defun bcat-analysis-overview-fields (base parsed)
+  "The fields `overview' and `overview-hash' that go before BASE (the
+rump with what the file has: `overview', its text, and `overview-hash',
+its mark) for the answer PARSED — or nil when BASE's stay.  Carsten
+16.11. (über die Tantrāloka-Session, 32 sections written by hand: „Am
+Inhalt meiner Handtexte bitte nichts ändern“): a section written by
+hand (no mark) or changed by hand (the mark no longer fits its text)
+stays whatever the answer says — a stale mark goes; only where there is
+none, or a generated one nobody touched, the answer's overview is set,
+with its mark."
+  (let* ((kept (let ((k (alist-get 'overview base)))
+                 (and (stringp k) (not (string-blank-p k)) k)))
+         (mark (alist-get 'overview-hash base))
+         (by-hand (and kept (not (equal mark (bcat-analysis-overview-hash kept)))))
+         (new (bcat-analysis-overview parsed)))
+    (cond (by-hand (and mark (list (list 'overview-hash))))
+          (new `((overview . ,new) (overview-hash . ,(bcat-analysis-overview-hash new)))))))
 
 ;; ----------------------------------------------------------------------------
 ;; Sanskrit (§5.74, Carsten 29.10.)
@@ -2283,6 +2381,7 @@ skipped keeps its rump fields; sigla used as names are named again
                   seg))))
            (alist-get 'segments base))))
     (append
+     (bcat-analysis-overview-fields base parsed)
      (bcat-analysis--prose-recitation base parsed)
      (bcat-analysis--second-translation parsed)
      `((segments . ,segments)

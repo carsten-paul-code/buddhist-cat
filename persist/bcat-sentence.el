@@ -730,21 +730,40 @@ discussion in class): what the sentence explains, the train of thought,
 the commentator's move, questions for the discussion — in German,
 whatever the language of the rest.")
 
+(defun bcat-sentence--overview (text)
+  "(BODY . MARK) of „* Worum es geht“ in TEXT, a sentence file or a
+commentary document: BODY its text without the drawer under the
+heading, MARK the drawer's :GENERATED_HASH: — set for a generated
+section (`bcat-analysis-overview-hash'), nil for one written by hand.
+nil when the file has no such section or it is empty."
+  (let ((body (bcat-sentence--l1-body text bcat-sentence--overview-heading)))
+    (when body
+      (if (string-match "\\`:PROPERTIES:[ \t]*\n\\(\\(?:.*\n\\)*?\\):END:[ \t]*\\(?:\n\\|\\'\\)" body)
+          (let ((drawer (match-string 1 body))
+                (rest (string-trim (substring body (match-end 0)))))
+            (unless (string-empty-p rest)
+              (cons rest (and (string-match "^:GENERATED_HASH:[ \t]*\\(\\S-+\\)" drawer)
+                              (match-string 1 drawer)))))
+        (cons body nil)))))
+
 (defun bcat-sentence--keep (file)
   "Fields of FILE that a rebuild carries over: the user slots, the
 #+CREATED date, the file's own sections (30.10.: the rebuild from the
-old layout dropped the AS/MSA * Handout) and `overview', the body of
+old layout dropped the AS/MSA * Handout) and `overview', the text of
 „* Worum es geht“ (16.11., Tantrāloka 1009–1040: written by hand —
-the template sets it in front again, word for word)."
+the template sets it in front again, word for word), with
+`overview-hash', its mark when it was generated
+\(`bcat-sentence--overview')."
   (let* ((text (bcat-sentence--text file))
          (own (bcat-sentence--own-sections text))
-         (overview (bcat-sentence--l1-body text bcat-sentence--overview-heading)))
+         (overview (bcat-sentence--overview text)))
     (append
      (delq nil (mapcar (lambda (slot)
                          (let ((body (bcat-sentence--l1-body text (cdr slot))))
                            (and body (cons (car slot) body))))
                        bcat-sentence--user-slots))
-     (and overview (list (cons 'overview overview)))
+     (and overview (cons (cons 'overview (car overview))
+                         (and (cdr overview) (list (cons 'overview-hash (cdr overview))))))
      (and own (list (cons 'own-sections own)))
      (and (string-match "^#\\+CREATED:[ \t]*\\(.+\\)$" text)
           (list (cons 'created (string-trim (match-string 1 text))))))))
