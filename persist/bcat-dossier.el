@@ -392,18 +392,22 @@ first file's (AS: the bhāṣya sentence)."
 (defun bcat-dossier--commentary-part (doc author)
   "The sentences of the commentary document DOC as the part „* AUTHOR“
 of the PDF (CUSTOM_ID commentary), one level down, each a jump target
-comm-N."
+comm-N; before them the document's „Worum es geht“ (16.11.), when it
+has one."
   (let ((text (with-temp-buffer (insert-file-contents doc) (buffer-string))))
     (concat "* " author "\n:PROPERTIES:\n:CUSTOM_ID: commentary\n:END:\n"
             (mapconcat (lambda (p)
                          (let ((title (nth 1 p)) (body (nth 2 p)))
-                           (if (string-match "\\`Sentence \\([0-9]+\\)" title)
-                               (let ((n (match-string 1 title)))
-                                 (replace-regexp-in-string
-                                  "\\`\\(\\*\\* [^\n]*\n\\)"
-                                  (concat "\\1:PROPERTIES:\n:CUSTOM_ID: comm-" n "\n:END:\n")
-                                  (bcat-dossier--demote body) t))
-                             "")))
+                           (cond
+                            ((string-match "\\`Sentence \\([0-9]+\\)" title)
+                             (let ((n (match-string 1 title)))
+                               (replace-regexp-in-string
+                                "\\`\\(\\*\\* [^\n]*\n\\)"
+                                (concat "\\1:PROPERTIES:\n:CUSTOM_ID: comm-" n "\n:END:\n")
+                                (bcat-dossier--demote body) t)))
+                            ((equal title bcat-sentence--overview-heading)
+                             (bcat-dossier--demote body))
+                            (t ""))))
                        (bcat-dossier--split-parts text) ""))))
 
 (defun bcat-dossier--lead-of (file)
@@ -417,7 +421,8 @@ document the first verse of its #+CAT_VERSE, else FILE."
 
 (defun bcat-dossier-pdf-text (file)
   "The PDF of the dossier FILE belongs to (Carsten 5.11.): (:lead LEAD
-:text ORG) — the reading page first (the layers as in the dossier, each
+:text ORG) — the verse's „Worum es geht“ in front (16.11., when its
+file has one), the reading page (the layers as in the dossier, each
 with its jump into the analysis), then the verse's Segments and Grammar,
 the bhāṣya sentence's analysis (AS), the commentary's sentences, the
 verse's Concepts, Discussion, Further Reading, Notes; the dossier's
@@ -440,13 +445,15 @@ view (`bcat-export-views')."
              (bh-file (plist-get files :bhasya))
              (bh (and bh-file (let ((v (plist-get (bcat-export-views bh-file) :view)))
                                 (and v (bcat-dossier--nest-view v "Bhāṣya" "bhasya"
-                                                                '("segments" "grammar" "concepts" "discussion"))))))
+                                                                '("overview" "segments" "grammar" "concepts" "discussion"))))))
              (doc (alist-get 'commentary-doc ctx))
              (notes (bcat-dossier--filled (bcat-dossier--keep-notes (alist-get 'path ctx)))))
         (list :lead lead
               :text (concat
                      (format "#+TITLE: %s — Lesedossier\n#+OPTIONS: toc:nil num:nil title:nil author:nil date:nil\n\n"
                              (alist-get 'label ctx))
+                     ;; 16.11.: „Worum es geht“ of the verse in front
+                     (funcall part "overview")
                      "* Reading\n:PROPERTIES:\n:CUSTOM_ID: reading\n:END:\n" reading
                      (funcall part "segments") (funcall part "grammar")
                      (or bh "")

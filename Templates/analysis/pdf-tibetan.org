@@ -4,10 +4,13 @@ wie pdf-sanskrit: ein Dokument mit Sprungmarken, jeder Teil der Ebene 1
 mit CUSTOM_ID auf einer neuen Seite, die Leiste der Teile am Fuß jeder
 Seite.  Reading: je Segment Uchen über Wylie (die Tabellen stehen im
 Teil Segments, deshalb hier jede Wylie-Zeile), dann die Übersetzung.
+16.11.: vor Reading der Teil „Worum es geht“ (pdf-part-overview), wenn
+die Datei den Abschnitt hat.
 #+end_comment
 #+TITLE: Sentence {{sent-num}}
 #+OPTIONS: toc:nil num:nil title:nil author:nil date:nil
 
+{{> pdf-part-overview}}
 * Reading
 :PROPERTIES:
 :CUSTOM_ID: reading

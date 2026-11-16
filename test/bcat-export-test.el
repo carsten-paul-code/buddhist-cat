@@ -862,6 +862,34 @@ template, in both views of a pair; none where the padapāṭha is right."
                  (regexp-quote "@@latex:\\bcatorig{@@kasmāt pañca /@@latex:}@@\n\n*Prüfen:* Padapāṭha weicht vom Text ab — CHECK\n")
                  view))))))
 
+(ert-deftest bcat-export-view-overview-first ()
+  "16.11. (Tantrāloka-Session): „Worum es geht“ stands in the PDF in
+front of everything — a part of its own before Reading (so: its own
+page, its link in the bar), the text as in the file; a file without
+the section starts with Reading as before.  The same in every pdf
+template."
+  (bcat-sentence-test--with-sa-source
+    (bcat-sentence-test--create-n src 1007)
+    (let ((file (tibetan-sentence--filepath 1007 folder src)))
+      (bcat-sentence-test--with-stubs (bcat-sentence-test--sa-answer)
+        (bcat-sentence-test--fetch-n src 1007))
+      (should (equal "Reading" (car (bcat-export-test--parts (bcat-export-view file)))))
+      (bcat-sentence-test--put-overview file "* Recitation")
+      (let ((view (bcat-export-view file)))
+        (should (equal '("Worum es geht" "Reading") (cl-subseq (bcat-export-test--parts view) 0 2)))
+        (should (equal (concat "* Worum es geht\n:PROPERTIES:\n:CUSTOM_ID: overview\n:END:\n"
+                               bcat-sentence-test--overview "\n\n")
+                       (bcat-export-test--part view "Worum es geht")))))
+    (dolist (name '("pdf-tibetan" "pdf-sanskrit" "pdf-bilingual" "pdf-bilingual-tibetan"))
+      (ert-info ((format "Vorlage %s" name))
+        (should (equal '("Worum es geht" "Reading")
+                       (cl-subseq (bcat-export-test--parts
+                                   (bcat-template-render-named name '((sent-num . 3) (overview . "Kurz.")) src))
+                                  0 2)))
+        (should (equal "Reading"
+                       (car (bcat-export-test--parts
+                             (bcat-template-render-named name '((sent-num . 3)) src)))))))))
+
 (ert-deftest bcat-export-view-tibetan ()
   "The Tibetan file as one document: Reading with every segment's Uchen
 over its Wylie, Segments with the tables, Grammar with structure and
@@ -1261,6 +1289,39 @@ run (only where lualatex is installed), no error in the log."
                    (bcat-export-file (tibetan-sentence--filepath 1007 folder src)))))
         (should (and pdf (file-exists-p pdf)))
         (should-not (cl-some (lambda (m) (string-match-p "with errors\\|wasn't produced" m)) said))))))
+
+(ert-deftest bcat-export-file-smoke-overview ()
+  "16.11.: the PDF with „Worum es geht“ in front — a real LuaLaTeX run
+\(only where lualatex is installed), no error in the log; the section
+has the first page to itself (checked where pdftotext is installed):
+the recitation begins on the second."
+  (skip-unless (executable-find "lualatex"))
+  (bcat-sentence-test--with-sa-source
+    (bcat-sentence-test--create-n src 1007)
+    (bcat-sentence-test--with-stubs (bcat-sentence-test--sa-answer)
+      (bcat-sentence-test--fetch-n src 1007))
+    (bcat-sentence-test--put-overview (tibetan-sentence--filepath 1007 folder src) "* Recitation")
+    (let ((bcat-export-upload nil)
+          (warning-minimum-level :emergency)
+          (said '()))
+      (let ((pdf (cl-letf* ((orig (symbol-function 'message))
+                            ((symbol-function 'message)
+                             (lambda (fmt &rest args)
+                               (when fmt (push (apply #'format fmt args) said))
+                               (apply orig fmt args))))
+                   (bcat-export-file (tibetan-sentence--filepath 1007 folder src)))))
+        (should (and pdf (file-exists-p pdf)))
+        (should-not (cl-some (lambda (m) (string-match-p "with errors\\|wasn't produced" m)) said))
+        (when (executable-find "pdftotext")
+          (let ((page (lambda (n)
+                        (with-temp-buffer
+                          (call-process "pdftotext" nil t nil "-f" (number-to-string n)
+                                        "-l" (number-to-string n) pdf "-")
+                          (buffer-string)))))
+            (should (string-match-p "Worum es geht" (funcall page 1)))
+            (should (string-match-p "Fragen für die Diskussion" (funcall page 1)))
+            (should-not (string-match-p "yanniyantraṇam" (funcall page 1)))
+            (should (string-match-p "yanniyantraṇam" (funcall page 2)))))))))
 
 (ert-deftest bcat-export-pdf-smoke ()
   "Real LuaLaTeX run (only where lualatex is installed): the reviewed

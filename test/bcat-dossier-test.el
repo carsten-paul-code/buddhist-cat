@@ -186,6 +186,33 @@ file of the verse: the verse files and the commentary document."
       (should (equal file (plist-get (bcat-dossier-pdf-text doc) :lead)))
       (should (equal file (plist-get (bcat-dossier-pdf-text (tibetan-sentence--filepath 64 tfolder tsrc)) :lead))))))
 
+(ert-deftest bcat-dossier-pdf-overview ()
+  "16.11.: in the PDF of the dossier the verse's „Worum es geht“ is the
+first part, before the reading page; the commentary document's own
+stands at the head of the commentary's part, before its sentences.
+Without the sections the dossier starts with Reading (bcat-dossier-pdf-msa)."
+  (bcat-commentary-test--with-msa
+    (bcat-sentence-test--with-stubs #'bcat-commentary-test--answers
+      (bcat-sentence-test--fetch-n src 36))
+    (let ((file (tibetan-sentence--filepath 36 folder src))
+          (doc (expand-file-name "comm-IX.16-savbh.org" cfolder)))
+      (bcat-sentence-test--put-overview file "* Text")
+      (bcat-sentence-test--put-overview doc "* Verse" "*Erklärt wird:* Vers IX.16, Pāda für Pāda.")
+      (let* ((text (plist-get (bcat-dossier-pdf-text file) :text))
+             (parts (bcat-dossier-test--parts text)))
+        (should (equal '("Worum es geht" "Reading" "Segments") (cl-subseq parts 0 3)))
+        (should (= 1 (cl-count "Worum es geht" parts :test #'equal)))
+        (should (string-match-p
+                 (regexp-quote (concat "* Worum es geht\n:PROPERTIES:\n:CUSTOM_ID: overview\n:END:\n"
+                                       bcat-sentence-test--overview "\n\n* Reading\n"))
+                 text))
+        (should (string-match-p
+                 (regexp-quote (concat "* Sthiramati\n:PROPERTIES:\n:CUSTOM_ID: commentary\n:END:\n"
+                                       "** Worum es geht\n*Erklärt wird:* Vers IX.16, Pāda für Pāda.\n\n"
+                                       "** Sentence 258\n"))
+                 text))
+        (should (bcat-dossier-test--links-resolve text))))))
+
 (ert-deftest bcat-dossier-pdf-page-breaks ()
   "Carsten 9.11.: im PDF des Lesedossiers beginnt jede Schicht der
 Reading-Seite (01 Vers, 02 Bhāṣya, 03 Kommentar) auf einer neuen Seite,

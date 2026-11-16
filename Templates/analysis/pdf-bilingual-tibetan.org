@@ -9,10 +9,13 @@ Partners (<<skt-N>>); dessen Teile der Wörter im Teil Grammar.  9.11.
 Reading und in Segments auf einer neuen Seite (\clearpage).
 16.11.: „*Prüfen:*“ unter der Originalzeile, wenn der Padapāṭha vom
 Quellsegment abweicht (padapatha-check, wie in der Satzdatei).
+16.11.: vor Reading der Teil „Worum es geht“ (pdf-part-overview), wenn
+die Datei den Abschnitt hat.
 #+end_comment
 #+TITLE: Sentence {{sent-num}}
 #+OPTIONS: toc:nil num:nil title:nil author:nil date:nil
 
+{{> pdf-part-overview}}
 * Reading
 :PROPERTIES:
 :CUSTOM_ID: reading
