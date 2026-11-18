@@ -583,14 +583,24 @@ export lays the tables out anew (`bcat-export--rechunk-gloss-tables')."
   :group 'buddhist-cat)
 
 (defun bcat-export--gloss-run-start-p ()
-  "Non-nil when the table at point begins the tables of a segment: the
-line above it — blank lines skipped — is a ⟦N⟧ mark, or its first row
-is in Tibetan script (files without marks)."
-  (or (looking-at "|[^-\n].*[\u0F00-\u0FFF]")
+  "Non-nil when the table at point begins the tables of a segment: above
+it — blank lines skipped — stands a ⟦N⟧ mark, alone or as a heading
+\(the file since 9.11.), or its first row is in Tibetan script (files
+without marks).  Between the mark and the table may stand the original
+\(9.11.: a bold line in the file, \\bcatorig in the view) and under it
+„Prüfen:“ (16.11.) — 18.11., TĀ 1016: with the original in between no
+table was a segment's any more, none was laid out for the page."
+  (or (looking-at "|[^-\n].*[ༀ-࿿]")
       (save-excursion
-        (and (zerop (forward-line -1))
-             (progn (while (and (looking-at "[ \t]*$") (zerop (forward-line -1))))
-                    (looking-at "\\(?:<<[^>\n]*>>\\)?⟦[0-9]+⟧[^\n]*$"))))))
+        (let ((up (lambda ()
+                    (and (zerop (forward-line -1))
+                         (progn (while (and (looking-at "[ \t]*$") (zerop (forward-line -1))))
+                                t)))))
+          (and (funcall up)
+               (progn
+                 (when (looking-at "\\*Prüfen:\\* ") (funcall up))
+                 (when (looking-at "@@latex:\\\\bcatorig{@@\\|\\*[^* \n][^\n]*\\*[ \t]*$") (funcall up))
+                 (looking-at "\\(?:\\*+ \\)?\\(?:<<[^>\n]*>>\\)?⟦[0-9]+⟧[^\n]*$")))))))
 
 (defun bcat-export--rechunk-gloss-tables (&rest _)
   "In the current (export) buffer: the tables of each segment — a run of

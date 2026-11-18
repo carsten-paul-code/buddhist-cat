@@ -622,6 +622,45 @@ read back, the columns are those of the file."
         (should (equal columns (apply #'append (mapcar #'bcat-analysis--table-columns tables))))
         (should (string-match-p "\n→ t\n\n| Nr\\. | Stelle |\n|-----\\+--------|\n|   1 | /a/    |\n\\'" text))))))
 
+(ert-deftest bcat-export-rechunk-under-original-line ()
+  "Bug (18.11., Carsten, TĀ 1016: the last table of the overview in a
+larger font than the others): since 9.11. the original stands between
+⟦N⟧ and the first table — in the view as \\bcatorig, in the file as a
+bold line under the heading ⟦N⟧, with „Prüfen:“ below it since 16.11.
+— and the export took no table of a segment for one any more: none was
+laid out for the page, each wide table of the file was shrunk to the
+line on its own (TĀ 1016: four tables in four sizes, 77 % to 100 %).
+The run under the original is laid out anew, in the view and in the
+file; nothing lost."
+  (let* ((file-tables (bcat-analysis-sanskrit-tables
+                       (append (seq-take bcat-analysis-test--ta-1-1-words 5)
+                               (last bcat-analysis-test--ta-1-1-words))))
+         (columns (apply #'append (mapcar #'bcat-analysis--table-columns (split-string file-tables "\n\n")))))
+    (should-not (cl-every #'bcat-export-test--fits-page (split-string file-tables "\n\n")))
+    (dolist (head (list
+                   ;; the view (pdf-sanskrit)
+                   "⟦1⟧ · [[#grammar-1][Grammar]]\n@@latex:\\bcatorig{@@a b c /@@latex:}@@\n"
+                   ;; with the check of the padapāṭha
+                   "⟦1⟧ · [[#grammar-1][Grammar]]\n@@latex:\\bcatorig{@@a b c /@@latex:}@@\n*Prüfen:* fehlt: d\n"
+                   ;; the file itself
+                   "** ⟦1⟧\n*a b c /*\n\n"
+                   "** <<skt-1>>⟦1⟧ · [[tib-7][Tib. 7]]\n*a b c /*\n\n*Prüfen:* fehlt: d\n\n"))
+      (with-temp-buffer
+        (insert "* Text\n" head file-tables "\n\n→ t\n")
+        (bcat-export--rechunk-gloss-tables)
+        (let* ((text (buffer-string))
+               (run (progn (should (string-match "\n\\(|\\(?:.*\n\\|\n\\)+\\)\n→ t" text))
+                           (string-trim (match-string 1 text))))
+               (tables (split-string run "\n\n")))
+          (should (cl-every #'bcat-export-test--fits-page tables))
+          (should (equal columns (apply #'append (mapcar #'bcat-analysis--table-columns tables))))
+          (should (string-prefix-p (concat "* Text\n" head "|") text)))))
+    ;; A bold line that follows no ⟦N⟧ opens no run.
+    (with-temp-buffer
+      (insert "* Text\n*a b c*\n\n" file-tables "\n")
+      (bcat-export--rechunk-gloss-tables)
+      (should (equal (concat "* Text\n*a b c*\n\n" file-tables "\n") (buffer-string))))))
+
 (ert-deftest bcat-export-rechunk-header-tables ()
   "The tables of the parts of a word (a header row, its rule, the parts
 below) are laid out for the page too (5.11., TĀ 1.1 ⟦2⟧: seven members
