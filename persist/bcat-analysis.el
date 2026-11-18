@@ -819,19 +819,28 @@ below: it ends in a separator (`bcat-analysis--wrap-cell')."
 (defun bcat-analysis--join-continuations (rows)
   "ROWS (lists of cells) with the lines of broken cells joined: a row
 whose filled cells all stand under a cell that goes on
-\(`bcat-analysis--continued-p') belongs to the row above."
-  (let ((out '()))
+\(`bcat-analysis--continued-p') belongs to the row above.  Never below
+the rows the words have — four with the Uchen in the first row, three
+without: a gloss from the dictionary may end in „;“ like the line of a
+broken cell („understand; opportunity;“, Kadam 2067 — its function row
+„?“ was joined to it, 18.11.)."
+  (let* ((out '())
+         (least (if (and rows (cl-some (lambda (c) (string-match-p "[\u0F00-\u0FFF]" c)) (car rows))) 4 3))
+         (left (length rows)))
     (dolist (row rows (nreverse out))
       (let ((prev (car out)))
         (if (and prev
+                 (> left least)
                  (cl-some (lambda (c) (not (string-empty-p c))) row)
                  (cl-every (lambda (j)
                              (or (string-empty-p (or (nth j row) ""))
                                  (bcat-analysis--continued-p (or (nth j prev) ""))))
                            (number-sequence 0 (1- (length row)))))
-            (setcar out (cl-loop for j below (max (length prev) (length row))
-                                 collect (let ((a (or (nth j prev) "")) (b (or (nth j row) "")))
-                                           (if (string-empty-p b) a (concat a " " b)))))
+            (progn
+              (setq left (1- left))
+              (setcar out (cl-loop for j below (max (length prev) (length row))
+                                   collect (let ((a (or (nth j prev) "")) (b (or (nth j row) "")))
+                                             (if (string-empty-p b) a (concat a " " b))))))
           (push row out))))))
 
 (defun bcat-analysis-wrap-rows (rows max)

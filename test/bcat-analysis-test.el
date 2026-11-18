@@ -1926,6 +1926,31 @@ the export)."
     (should (equal (list (mapcar #'car rows) (mapcar #'cadr rows))
                    (bcat-analysis--table-columns table)))))
 
+(ert-deftest bcat-analysis-table-columns-keeps-the-rows-of-words ()
+  "18.11. (trial run of C-c u L over all 313 sentence files, Kadam 2067):
+a gloss from the dictionary that ends in „;“ („understand;
+opportunity;“) looked like the first line of a broken cell — set anew a
+second time, the table of that one word lost its function row
+\(„understand; opportunity; ?“).  Joining never leaves a band with fewer
+rows than its words have: four with the Uchen in the first row, three
+without.  A cell really broken is joined as before."
+  (should (equal '(("གོ" "[[steinert:go][go]]" "understand; opportunity;" "?"))
+                 (bcat-analysis--table-columns
+                  "| གོ |\n| [[steinert:go][go]] |\n| understand; opportunity; |\n| ? |")))
+  (should (equal '(("go" "understand; opportunity;" "V"))
+                 (bcat-analysis--table-columns "| go |\n| understand; opportunity; |\n| V |")))
+  ;; really broken: five rows, the gloss in two
+  (should (equal '(("གོ" "go" "understand; opportunity; armour" "N"))
+                 (bcat-analysis--table-columns
+                  "| གོ |\n| go |\n| understand; opportunity; |\n| armour |\n| N |")))
+  ;; set anew twice, the table stays
+  (let* ((table (concat "| གོ                       |\n| [[steinert:go][go]]      |\n"
+                        "| understand; opportunity; |\n| ?                        |"))
+         (once (car (bcat-analysis-compact-tables table)))
+         (twice (car (bcat-analysis-compact-tables once))))
+    (should (= 4 (length (split-string once "\n" t))))
+    (should (equal once twice))))
+
 (defconst bcat-analysis-test--ta-1-1-words
   '(((word . "vimala-kalā-āśrayā") (lemma . "vimala-kalā-āśraya") (formation . "vi-mala · kalā · ā-√śri-a")
      (parts . "vi- apart · √mal (1) be impure · -a adj; kalā part, power; ā- unto · √śri (1) resort · -a whose basis")
