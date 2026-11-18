@@ -15,7 +15,9 @@ C-c u L setzt alte Dateien um, der Block „Word Formation“ nur noch Auffang;
 Tabellen im .org: Wortzeile fett, Gitter grau, Spalte unter dem Cursor;
 SEIT 18.11. NACHMITTAGS DREI OBERABSCHNITTE * Text / * Philology / * Worum es
 geht in den vier Satzdatei-Vorlagen, gelesen über `bcat-relayout--legacy-text';
-offen: Vorlage commentary, Philologie pointierter, Worum es geht ausführlicher).
+die Übersetzung des Satzes schließt * Text; Reihenfolge der Klassen: Tantrāloka →
+Tibetisch V → AS → MSA, Sthiramati/commentary später; offen: Philologie-Teil
+gliedern, Worum es geht ausführlicher).
 Before that 2026-10-28 (§5.74: SATZDATEIEN
 NACH VORLAGE — Reading-Klassen, Tibetisch: `#+CAT_TEMPLATE: tibetan' im
 Quellkopf, Gliederung * Text / * Segments / * Sentence, C-c u A = Rumpf
@@ -5482,6 +5484,43 @@ OFFEN:
   der Abschnitt * Text; der Sitzung gemeldet.
 - Punkte 2 und 3 der Vereinbarung oben (Philologie pointierter, „Worum
   es geht“ ausführlicher) unverändert offen.
+
+18.11.2026 nachmittags, DIE ÜBERSETZUNG SCHLIESST * Text (`ecc5298';
+Carsten, bevor es an den Philologie-Teil geht: „die proposed
+Translation sollte als letzter Teil im Text Abschnitt kommen“).
+- * Text = Original (+ Silbentabelle) + die Übersetzung des Satzes: Feld
+  `reading-translation' — die vorgeschlagene(n) Übersetzung(en) ohne
+  ihre Entscheidungen, sonst „*Translation:* …“, bei einem Rumpf nichts
+  (`bcat-analysis-reading-fields').  Dieselbe Trennung wie die
+  Reading-Seite des PDF; dafür jetzt EINE Funktion
+  `bcat-analysis-split-proposal' (die Kopie in bcat-export ist weg).
+- * Philology nach den Segmenten: `decisions', zweite Sprache,
+  *Grammar:* — Sanskrit unter ** Translation, Tibetisch ohne
+  Überschrift.  ** Proposed translation gibt es nicht mehr.  Die
+  Überschrift ** Translation ist ein Provisorium (unter ihr steht die
+  Übersetzung selbst nicht mehr) — der Philologie-Teil wird als
+  Nächstes mit Carsten gegliedert.
+- Das Feld `proposal' (Zitate + Entscheidungen) bleibt, wie es ist —
+  PDF-Vorlagen, Export und Dossier nehmen es weiter; die beiden neuen
+  Felder sind daraus ABGELEITET und müssen überall gesetzt werden, wo
+  `proposal'/`translation' entstehen: `bcat-analysis-context',
+  `bcat-analysis-sanskrit-context', `bcat-relayout-context' (dort aus
+  dem, was die Datei zeigt).  Ein Kontext von Hand (Tests, Fixtures):
+  `bcat-template-test--with-reading'.
+- Adapter: `bcat-relayout--legacy-text' nimmt im neuen * Text alles ab
+  der ersten Zeile „*Proposed translation…:*“ / „*Übersetzungsvorschlag
+  …:*“ / „*Translation:*“ heraus und setzt es an den Anfang des
+  früheren * Text — sonst läse der Sanskrit-Leser das Zitat als letzte
+  Zeile der Rezitation.
+- Die Sanskrit-Vorlage schreibt * Text immer (vorher nur mit
+  Rezitation).
+REIHENFOLGE DER WEITEREN ARBEIT (Carsten 18.11.): „ich will erst
+Tantraloka (nur Sanskrit), dann Tibetisch V (nur Tibetisch), dann
+Abhidharmasamuccaya (zweisprachig) und letztlich Mahāyānasūtrālaṃkāra
+(zweisprachig + Kommentar) optimieren.“  Sthiramati (Vorlage
+commentary) „machen wir später“ — nicht anfassen, bis er es sagt.
+Testsatz für das Tantrāloka: 1012.  Generisch bauen (alle vier
+Vorlagen), an der jeweiligen Klasse prüfen.
 
 #### Offen
 
