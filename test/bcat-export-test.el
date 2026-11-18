@@ -822,6 +822,40 @@ between „vi- away“ and „-ta ppp“).  The rules of booktabs count like
                             "1 & \\cellcolor{bad}rot\\\\\n2 & \\cellcolor{ok}grün\\\\\n\\bottomrule\n\\end{tabular}")))
     (should (equal comparison (bcat-export--detail-rows comparison)))))
 
+(ert-deftest bcat-export-member-row-and-resolution ()
+  "18.11. (TĀ 1016): in the table of a compound's parts the row of the
+members' meanings — the first under the members, no Sanskrit form in
+italics in it — stays black like the members: it is what is read; roots
+and suffixes below blue.  The table of the resolution (no header, three
+cells a row, the relation in brackets in the middle) has only the
+relation blue.  With \\hline and with the rules of booktabs."
+  (dolist (rules '(("" "\\hline\n" "") ("\\toprule\n" "\\midrule\n" "\\bottomrule\n")))
+    (should (equal (concat "\\begin{tabular}{ll}\n" (nth 0 rules) "para & vimarśa\\\\\n" (nth 1 rules)
+                           "supreme & reflective awareness\\\\\n"
+                           " & \\bcatg{\\emph{vi-√mṛś} (6) reflect}\\\\\n"
+                           " & \\bcatg{\\emph{-a} action noun}\\\\\n" (nth 2 rules) "\\end{tabular}")
+                   (bcat-export--detail-rows
+                    (concat "\\begin{tabular}{ll}\n" (nth 0 rules) "para & vimarśa\\\\\n" (nth 1 rules)
+                            "supreme & reflective awareness\\\\\n"
+                            " & \\emph{vi-√mṛś} (6) reflect\\\\\n"
+                            " & \\emph{-a} action noun\\\\\n" (nth 2 rules) "\\end{tabular}"))))
+    (should (equal (concat "\\begin{tabular}{lll}\n" (nth 0 rules)
+                           "…-lakṣaṇā & \\bcatg{[bahuvrīhi, of kalā]} & whose mark is\\\\\n"
+                           "…-kartṛtā- & \\bcatg{[head]} & agency,\\\\\n"
+                           "para-vimarśa- & \\bcatg{[karmadhāraya]} & supreme reflective awareness\\\\\n"
+                           (nth 2 rules) "\\end{tabular}")
+                   (bcat-export--detail-rows
+                    (concat "\\begin{tabular}{lll}\n" (nth 0 rules)
+                            "…-lakṣaṇā & [bahuvrīhi, of kalā] & whose mark is\\\\\n"
+                            "…-kartṛtā- & [head] & agency,\\\\\n"
+                            "para-vimarśa- & [karmadhāraya] & supreme reflective awareness\\\\\n"
+                            (nth 2 rules) "\\end{tabular}")))))
+  ;; A first row of parts with a form in italics is no row of meanings.
+  (should (string-match-p (regexp-quote "\\bcatg{\\emph{vi-} apart} & \\bcatg{part, power}")
+                          (bcat-export--detail-rows
+                           (concat "\\begin{tabular}{ll}\nvimala & kalā\\\\\n\\hline\n"
+                                   "\\emph{vi-} apart & part, power\\\\\n\\end{tabular}")))))
+
 (ert-deftest bcat-export-comparison-table ()
   "2.11. (Muster vergleich-ta1-1.org): the overview table of the
 comparison — the ratings with \\cellcolor{ok|mid|bad} — needs colortbl
@@ -1435,6 +1469,38 @@ lualatex is installed), no error in the log."
         (should (and pdf (file-exists-p pdf)))
         (should-not (cl-some (lambda (m) (string-match-p "with errors\\|wasn't produced" m)) said))
         (should-not (directory-files folder nil "pdfview"))))))
+
+(ert-deftest bcat-export-file-smoke-resolution ()
+  "18.11. (TĀ 1016): the PDF of a Sanskrit sentence file whose compound
+has the row of its members' meanings and the table of its resolution —
+the relation in brackets — under the translation of its segment: a real
+LuaLaTeX run (only where lualatex is installed), no error in the log;
+where pdftotext is installed, the relation and the meanings are on the
+page of the segments."
+  (skip-unless (executable-find "lualatex"))
+  (bcat-sentence-test--with-sa-source
+    (bcat-sentence-test--create-n src 1007)
+    (bcat-sentence-test--with-stubs (bcat-sentence-test--sa-answer-with-layers)
+      (bcat-sentence-test--fetch-n src 1007))
+    (let ((bcat-export-upload nil)
+          (warning-minimum-level :emergency)
+          (said '()))
+      (let* ((file (tibetan-sentence--filepath 1007 folder src))
+             (segments (bcat-export-test--part (bcat-export-view file) "Segments"))
+             (pdf (cl-letf* ((orig (symbol-function 'message))
+                             ((symbol-function 'message)
+                              (lambda (fmt &rest args)
+                                (when fmt (push (apply #'format fmt args) said))
+                                (apply orig fmt args))))
+                    (bcat-export-file file))))
+        (should (string-match-p "^| …-vijṛmbhitam +| \\[tatpuruṣa, head\\] +| the unfolding of |$" segments))
+        (should (and pdf (file-exists-p pdf)))
+        (should-not (cl-some (lambda (m) (string-match-p "with errors\\|wasn't produced" m)) said))
+        (when (executable-find "pdftotext")
+          (let ((text (with-temp-buffer (call-process "pdftotext" nil t nil pdf "-") (buffer-string))))
+            (should (string-match-p "\\[tatpuruṣa, head\\]" text))
+            (should (string-match-p "\\[karmadhāraya\\]" text))
+            (should (string-match-p "the unfolding of" text))))))))
 
 (ert-deftest bcat-export-file-smoke-padapatha-check ()
   "16.11.: the PDF with „Prüfen:“ under the original — a real LuaLaTeX

@@ -1784,6 +1784,49 @@ Tibetan), not „one each“."
       (should (string-match-p "je zwei DharmaMitra- und zwei Claude-Abrufe (Sanskrit, Tibetisch)"
                               (car questions))))))
 
+(defun bcat-sentence-test--sa-answer-with-layers ()
+  "Claude's answer for TĀ 1007 with the meanings of the members and the
+layers of the resolution for the compound of segment 686 (18.11.)."
+  (let* ((answer (bcat-sentence-test--sa-answer))
+         (at "     \"parts\": \"śrī glory · -mat having · mahā great · ā-√nand (1) rejoice · vi- apart · √jṛmbh (1) open · -ita ppp\",\n")
+         (pos (string-search at answer)))
+    (cl-assert pos)
+    (concat (substring answer 0 (+ pos (length at)))
+            "     \"members\": \"glorious · great · bliss · unfolding\",\n"
+            "     \"layers\": [{\"part\": \"…-vijṛmbhitam\", \"role\": \"tatpuruṣa, head\", \"phrase\": \"the unfolding of\"}, "
+            "{\"part\": \"śrīmat-\", \"role\": \"karmadhāraya\", \"phrase\": \"glorious\"}, "
+            "{\"part\": \"…-mahā-ānanda-\", \"role\": \"karmadhāraya\", \"phrase\": \"great bliss\"}],\n"
+            (substring answer (+ pos (length at))))))
+
+(ert-deftest bcat-sentence-fetch-members-and-layers ()
+  "18.11. (Carsten, TĀ 1016): C-c u G with an answer that gives the
+meanings of a compound's members and the layers of its resolution writes
+both under Word Formation of the segment — the meanings under the
+members, the resolution after the compound, the words of one member
+last; C-c u L leaves the file as it is."
+  (bcat-sentence-test--with-sa-source
+    (bcat-sentence-test--create-n src 1007)
+    (let ((file (tibetan-sentence--filepath 1007 folder src)))
+      (bcat-sentence-test--with-stubs (bcat-sentence-test--sa-answer-with-layers)
+        (bcat-sentence-test--fetch-n src 1007))
+      (let ((text (bcat-sentence-test--text-of file)))
+        (should (string-match-p
+                 (regexp-quote
+                  (concat "*** Word Formation\n"
+                          "| śrīmat        | mahā  | ānanda                | vijṛmbhitam       |\n"
+                          "|---------------+-------+-----------------------+-------------------|\n"
+                          "| glorious      | great | bliss                 | unfolding         |\n"
+                          "| /śrī/ glory   |       | /ā-√nand/ (1) rejoice | /vi-/ apart       |\n"
+                          "| /-mat/ having |       |                       | /√jṛmbh/ (1) open |\n"
+                          "|               |       |                       | /-ita/ ppp        |\n\n"
+                          "| …-vijṛmbhitam  | [tatpuruṣa, head] | the unfolding of |\n"
+                          "| śrīmat-        | [karmadhāraya]    | glorious         |\n"
+                          "| …-mahā-ānanda- | [karmadhāraya]    | great bliss      |\n\n"
+                          "| pārameśvaram "))
+                 text))
+        (bcat-relayout-file file)
+        (should (equal text (bcat-sentence-test--text-of file)))))))
+
 (ert-deftest bcat-sentence-word-formation-open-by-default ()
   "18.11. (Carsten, after the Tantrāloka reading: the parts of the words
 back at the segment — „ich würde es gerne erstmal standardmäßig nicht

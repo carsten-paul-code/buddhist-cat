@@ -308,7 +308,7 @@ answer gives `recitation', the text in sense units (31.10., TĀ 1008)."
   (let ((lang (bcat-analysis--language target)))
     (format "You are a Sanskritist preparing one sentence or verse of a Sanskrit text for a university reading class of experienced Sanskritists; one participant reads Sanskrit only haltingly, so every form is spelled out. Work segment by segment, then on the whole sentence. Use the grammatical terminology of Goldman & Sutherland Goldman, Devavāṇīpraveśikā: Sanskrit terms, with the English equivalent where it helps. Answer with ONE JSON object and nothing else (no prose, no code fence):
 
-{\"segments\": [{\"num\": <segment number>, \"words\": [{\"word\": \"…\", \"lemma\": \"…\", \"formation\": \"…\", \"parts\": \"…\", \"gloss\": \"…\", \"form\": \"…\"}], \"translation\": \"…\", \"references\": [{\"name\": \"…\", \"text\": \"…\"}], \"shift\": [\"…\"], \"sandhi\": \"…\", \"forms\": [{\"word\": \"…\", \"analysis\": \"…\"}], \"compounds\": [{\"word\": \"…\", \"analysis\": \"…\"}], \"structure\": \"…\", \"note\": \"…\", \"concepts\": \"…\"}], \"grammar\": \"…\", \"translation\": \"…\", %s%s, %s}
+{\"segments\": [{\"num\": <segment number>, \"words\": [{\"word\": \"…\", \"lemma\": \"…\", \"formation\": \"…\", \"parts\": \"…\", \"members\": \"…\", \"layers\": [{\"part\": \"…\", \"role\": \"…\", \"phrase\": \"…\"}], \"gloss\": \"…\", \"form\": \"…\"}], \"translation\": \"…\", \"references\": [{\"name\": \"…\", \"text\": \"…\"}], \"shift\": [\"…\"], \"sandhi\": \"…\", \"forms\": [{\"word\": \"…\", \"analysis\": \"…\"}], \"compounds\": [{\"word\": \"…\", \"analysis\": \"…\"}], \"structure\": \"…\", \"note\": \"…\", \"concepts\": \"…\"}], \"grammar\": \"…\", \"translation\": \"…\", %s%s, %s}
 
 Rules:
 - segments: one entry per given segment, same numbers, same order.
@@ -316,6 +316,8 @@ Rules:
 - lemma: the dictionary form — a nominal's stem (\"aśakta\", \"niyantraṇa\", \"vāc\"), a verb's prefixes and √root (\"ud-√las\"), a compound's members as stems joined by hyphens (\"mad-vāc\", \"śrīmat-mahā-ānanda-vijṛmbhita\"); an indeclinable as it stands.
 - formation: how the word is built — prefixes, √root, suffix: \"a-√śak-ta\", \"ni-√yantr-ana\", \"ud-√las\"; for a compound its members separated by \" · \", each with its formation (\"śrī-mat · mahā · ā-√nand-a · vi-√jṛmbh-ita\"); \"—\" for indeclinables and pronouns.
 - parts: the meaning of each part of the formation in one or two words, in the same order, separated by \" · \", a root with its gaṇa number: \"a- not · √śak (5) be able · -ta ppp\"; \"\" when formation is \"—\".
+- members: only for a compound — the meaning of each member as your translation uses it, in the order of the members, separated by \" · \", exactly one entry per member of word: for \"para-vimarśa-eka-svabhāva-kartṛtā-lakṣaṇā\" \"supreme · reflective awareness · sole · nature · agency · mark\". Leave the field out for a word of one member.
+- layers: only for a compound of three or more members — how it is resolved, from its last member backwards, one entry per step. part: the member or members taken in this step as word writes them, the rest of the compound as \"…\" (\"…-lakṣaṇā\", then \"…-kartṛtā-\", \"…-eka-svabhāva-\", last \"para-vimarśa-\"); role: the relation in a few words — the samāsa type and what it refers to (\"bahuvrīhi, of kalā\", \"head\", \"bahuvrīhi, of kartṛtā\", \"karmadhāraya\"); phrase: the words this step has in your translation (\"whose mark is\", \"agency,\", \"the sole nature of which is\", \"supreme reflective awareness\") — the phrases read in order are the translation of the compound. Leave the field out otherwise.
 - gloss: the meaning in THIS context, at most 30 characters, no comments or cross-references (those belong in structure or note).
 - form: a compact label, at most %d characters — \"f. nom. sg.\", \"ppp. f. nom. sg.\", \"opt. 3 sg. P\", \"pron. n. nom. sg.\", \"adj. n. nom. sg.\", \"ind.\"; no remarks in parentheses — the compound type, what the word agrees with and any further explanation belong in compounds or structure.
 - translation (segment): this segment's part of your translation; the parts read in order form the sentence translation. Give key terms with the Sanskrit in parentheses, e.g. \"incapable (aśakta)\".
@@ -1997,33 +1999,73 @@ shorter columns filled up, a row empty in one of the tables left out
                  (bcat-analysis--even-chunks padded (bcat-analysis--layout 'table-width "sa") 3)
                  "\n\n"))))
 
+(defun bcat-analysis--member-meanings (w heads)
+  "The meanings of the members HEADS of the compound W as its answer
+gives them (`members', 18.11.: „ · “ between them) — a list as long as
+HEADS, or nil: no compound, none given, or not one for each member."
+  (let ((meanings (split-string (bcat-analysis--field w 'members) "[ \t]*·[ \t]*" t "[ \t]+")))
+    (and (cdr heads) (= (length meanings) (length heads)) meanings)))
+
 (defun bcat-analysis--word-columns (w)
   "What the parts of the Sanskrit word W add to the overview, as the
 columns of a table — each a member above its parts, one a cell (a
 compound: a column per member; a word of one member: the word above
 its parts) —, or nil when the parts only repeat the word.  A member
-that is one bare stem shows only its meaning."
+that is one bare stem shows only its meaning.  18.11. (TĀ 1016): with
+the meanings of a compound's members (`bcat-analysis--member-meanings')
+each member has its meaning right under it — what the translation makes
+of it —, its roots and suffixes below; a bare stem then has nothing
+below its meaning."
   (let ((wp (bcat-analysis--word-parts w)))
     (when wp
       (let* ((heads (car wp)) (groups (cdr wp))
              (word (bcat-analysis--field w 'word))
              (keys (cons (bcat-analysis--field w 'formation) heads))
+             (meanings (bcat-analysis--member-meanings w heads))
              (cell (lambda (item) (tibetan-gloss-table--cell (bcat-analysis--part-cell item keys)))))
         (if (= 1 (length heads))
             (unless (bcat-analysis--bare-part-p (car groups) word keys)
               (list (cons (tibetan-gloss-table--cell word) (mapcar cell (car groups)))))
-          (let ((columns (cl-mapcar (lambda (head items)
-                                      (cons (tibetan-gloss-table--cell head)
-                                            (cond ((not (bcat-analysis--bare-part-p items head keys))
-                                                   (mapcar cell items))
-                                                  ;; the member itself: its meaning
-                                                  ((bcat-analysis--part-form-p (caar items) keys)
-                                                   (list (tibetan-gloss-table--cell (cdar items))))
-                                                  ;; only a meaning (mad-vāk: „my“)
-                                                  (t (mapcar cell items)))))
-                                    heads groups)))
+          (let ((columns (cl-mapcar
+                          (lambda (head items meaning)
+                            (cons (tibetan-gloss-table--cell head)
+                                  (cond (meaning
+                                         (cons (tibetan-gloss-table--cell meaning)
+                                               (unless (bcat-analysis--bare-part-p items head keys)
+                                                 (mapcar cell items))))
+                                        ((not (bcat-analysis--bare-part-p items head keys))
+                                         (mapcar cell items))
+                                        ;; the member itself: its meaning
+                                        ((bcat-analysis--part-form-p (caar items) keys)
+                                         (list (tibetan-gloss-table--cell (cdar items))))
+                                        ;; only a meaning (mad-vāk: „my“)
+                                        (t (mapcar cell items)))))
+                          heads groups (or meanings (make-list (length heads) nil)))))
             (unless (cl-every (lambda (col) (cl-every #'string-empty-p (cdr col))) columns)
               columns)))))))
+
+(defun bcat-analysis--resolution-table (w)
+  "The table of how the compound W is resolved (`layers' of its answer,
+18.11., TĀ 1016), or nil: a row per step from the last member
+backwards — the members taken, their relation in brackets, their words
+in the translation; the last column read down is the translation of the
+compound.  A step without its members or its words is left out; one
+step alone is no resolution."
+  (let* ((layers (alist-get 'layers w))
+         (rows (delq nil
+                     (mapcar (lambda (l)
+                               (when (consp l)
+                                 (let ((part (bcat-analysis--field l 'part))
+                                       (role (string-trim (bcat-analysis--field l 'role) "\\[" "\\]"))
+                                       (phrase (bcat-analysis--field l 'phrase)))
+                                   (unless (or (string-empty-p part) (string-empty-p phrase))
+                                     (list (tibetan-gloss-table--cell part)
+                                           (tibetan-gloss-table--cell
+                                            (concat "[" (if (string-empty-p role) "—" role) "]"))
+                                           (tibetan-gloss-table--cell phrase))))))
+                             (and (listp layers) layers)))))
+    (when (cdr rows)
+      (string-trim-right (tibetan-gloss-table--format-rows rows)))))
 
 (defun bcat-analysis-parts-line-table (line)
   "The table of one column for LINE, the line of a word of one member as
@@ -2046,11 +2088,17 @@ table, a word a column (`bcat-analysis--word-columns',
 and the parts rows of the old table said every part twice and broke a
 compound across lines.  18.11., TĀ 1016: a table for every word of one
 member (9.11.) took a page of the PDF — together they are four lines,
-and the parts stand at the segment again."
+and the parts stand at the segment again; a compound has the meanings
+of its members under them and, of three members on, the table of its
+resolution after it (`bcat-analysis--resolution-table')."
   (let ((compounds '()) (simple '()))
     (dolist (w words)
       (let ((columns (bcat-analysis--word-columns w)))
-        (cond ((cdr columns) (push (bcat-analysis--header-tables columns) compounds))
+        (cond ((cdr columns)
+               (push (bcat-analysis--header-tables columns) compounds)
+               ;; 18.11.: how the compound is resolved, right under it
+               (let ((resolution (bcat-analysis--resolution-table w)))
+                 (when resolution (push resolution compounds))))
               (columns (push (car columns) simple)))))
     (string-join (append (nreverse compounds)
                          (and simple (list (bcat-analysis--header-tables (nreverse simple)))))

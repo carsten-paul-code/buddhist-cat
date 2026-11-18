@@ -2156,6 +2156,90 @@ already in the new form stays as it is."
     (should (equal "" (bcat-analysis-merge-word-tables "" words)))
     (should-not (bcat-analysis-merge-word-tables nil words))))
 
+(defconst bcat-analysis-test--ta-1016-compound
+  '((word . "para-vimarśa-eka-svabhāva-kartṛtā-lakṣaṇā")
+    (lemma . "para-vimarśa-eka-svabhāva-kartṛtā-lakṣaṇa")
+    (formation . "para · vi-√mṛś-a · eka · sva-bhāva · √kṛ-tṛ-tā · √lakṣ-aṇa")
+    (parts . "para supreme; vi-√mṛś (6) reflect · -a action noun; eka sole; sva own · bhāva being; √kṛ (8) do · -tṛ agent suffix · -tā abstract suffix; √lakṣ (10) mark · -aṇa action noun")
+    (members . "supreme · reflective awareness · sole · nature · agency · mark")
+    (layers . (((part . "…-lakṣaṇā") (role . "bahuvrīhi, of kalā") (phrase . "whose mark is"))
+               ((part . "…-kartṛtā-") (role . "head") (phrase . "agency,"))
+               ((part . "…-eka-svabhāva-") (role . "[bahuvrīhi, of kartṛtā]") (phrase . "the sole nature of which is"))
+               ((part . "para-vimarśa-") (role . "karmadhāraya") (phrase . "supreme reflective awareness"))))
+    (gloss . "whose mark is agency …") (form . "adj. f. nom. sg."))
+  "The compound of TĀ 1016 ⟦704⟧ with the meanings of its members and
+the layers of its resolution (18.11.).")
+
+(ert-deftest bcat-analysis-formation-tables-members-and-layers ()
+  "18.11. (Carsten, TĀ 1016: „Die Übersetzung ist für mich auf den
+ersten Blick nicht nachvollziehbar“ — para-vimarśa-eka-svabhāva-
+kartṛtā-lakṣaṇā; the table of its parts gave root and suffixes of a
+member, not what the member means, and nothing said how the members
+hang together).  With `members' the table of a compound has the meaning
+of each member right under it — a member that is one bare stem has
+nothing below —, then roots and suffixes as before; with `layers' a
+second table follows, a row per step from the last member backwards:
+the members taken, their relation in brackets, their words in the
+translation — the last column read down is the translation of the
+compound.  Expected text from the agreed sketch."
+  (should (equal "| para    | vimarśa               | eka  | svabhāva      | kartṛtā               | lakṣaṇā            |
+|---------+-----------------------+------+---------------+-----------------------+--------------------|
+| supreme | reflective awareness  | sole | nature        | agency                | mark               |
+|         | /vi-√mṛś/ (6) reflect |      | /sva/ own     | /√kṛ/ (8) do          | /√lakṣ/ (10) mark  |
+|         | /-a/ action noun      |      | /bhāva/ being | /-tṛ/ agent suffix    | /-aṇa/ action noun |
+|         |                       |      |               | /-tā/ abstract suffix |                    |
+
+| …-lakṣaṇā       | [bahuvrīhi, of kalā]    | whose mark is                |
+| …-kartṛtā-      | [head]                  | agency,                      |
+| …-eka-svabhāva- | [bahuvrīhi, of kartṛtā] | the sole nature of which is  |
+| para-vimarśa-   | [karmadhāraya]          | supreme reflective awareness |"
+                 (bcat-analysis-formation-tables (list bcat-analysis-test--ta-1016-compound))))
+  (let ((with (lambda (&rest changes)
+                (bcat-analysis-formation-tables
+                 (list (append changes bcat-analysis-test--ta-1016-compound))))))
+    ;; Not as many meanings as members: the table as before, no row of
+    ;; meanings (para: its meaning below it).
+    (should (string-prefix-p "| para    | vimarśa               | eka  | svabhāva      | kartṛtā               | lakṣaṇā            |
+|---------+-----------------------+------+---------------+-----------------------+--------------------|
+| supreme | /vi-√mṛś/ (6) reflect | sole | /sva/ own "
+                             (funcall with '(members . "supreme · awareness"))))
+    ;; One step is no resolution; a step without its words is left out.
+    (should-not (string-search "[" (funcall with '(layers . (((part . "a-") (role . "x") (phrase . "y")))))))
+    (should-not (string-search "[" (funcall with '(layers . nil))))
+    (should (equal '(("…-lakṣaṇā" "[bahuvrīhi, of kalā]" "whose mark is")
+                     ("para-vimarśa-" "[karmadhāraya]" "supreme reflective awareness"))
+                   (bcat-analysis-test--rows
+                    (cadr (split-string
+                           (funcall with '(layers . (((part . "…-lakṣaṇā") (role . "bahuvrīhi, of kalā") (phrase . "whose mark is"))
+                                                     ((part . "…-kartṛtā-") (role . "head") (phrase . ""))
+                                                     ((part . "para-vimarśa-") (role . "karmadhāraya") (phrase . "supreme reflective awareness")))))
+                           "\n\n"))))))
+  ;; The simple words still come last, after the compound and its resolution.
+  (let ((tables (split-string (bcat-analysis-formation-tables
+                               (list '((word . "vigatā") (formation . "vi-√gam-ta") (parts . "vi- away · √gam (1) go · -ta ppp") (gloss . "g") (form . "f"))
+                                     bcat-analysis-test--ta-1016-compound))
+                              "\n\n")))
+    (should (= 3 (length tables)))
+    (should (string-prefix-p "| para " (nth 0 tables)))
+    (should (string-prefix-p "| …-lakṣaṇā " (nth 1 tables)))
+    (should (string-prefix-p "| vigatā " (nth 2 tables)))))
+
+(ert-deftest bcat-analysis-sanskrit-prompt-members-and-layers ()
+  "18.11. (Carsten: „Prompt-Änderung ist ok“): the Sanskrit request asks
+for the meanings of a compound's members (`members') and for the layers
+of its resolution (`layers') — in the schema of a word and with a rule
+each; the Tibetan requests do not."
+  (let ((sa (bcat-analysis-sanskrit-system-prompt "en")))
+    (should (string-match-p (regexp-quote "\"parts\": \"…\", \"members\": \"…\", \"layers\": [{\"part\": \"…\", \"role\": \"…\", \"phrase\": \"…\"}], \"gloss\": \"…\"") sa))
+    (should (string-match-p "^- members: " sa))
+    (should (string-match-p "^- layers: " sa))
+    (should (string-match-p "supreme · reflective awareness · sole · nature · agency · mark" sa))
+    ;; before the rule of the gloss, in the order of the schema
+    (should (< (string-match "^- parts: " sa) (string-match "^- members: " sa)
+               (string-match "^- layers: " sa) (string-match "^- gloss: " sa))))
+  (dolist (other (list (bcat-analysis-system-prompt "en") (bcat-analysis-tibetan-system-prompt "en")))
+    (should-not (string-match-p "\"members\"\\|\"layers\"\\|^- members: \\|^- layers: " other))))
+
 (ert-deftest bcat-analysis-formation-tables-members-from-the-word ()
   "Most answers separate every part by „ · “ — the members of a compound
 cannot be read from the parts (395 words in the files on 5.11.: 6 with

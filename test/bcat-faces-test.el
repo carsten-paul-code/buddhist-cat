@@ -94,6 +94,26 @@ overview (\\cellcolor) stays plain, a Structure line of the same shape
     (should (equal '("/√jan/ (1) be born · /-anī/ f. agent")
                    (bcat-faces-test--matches #'bcat-faces--parts-line-matcher 1)))))
 
+(ert-deftest bcat-faces-member-row-and-resolution ()
+  "18.11. (TĀ 1016): in the table of a compound's parts the row of the
+members' meanings (the first under the members, no /form/ in it) stays
+black, the roots and suffixes below blue; in the table of the
+resolution only the relation in brackets is blue."
+  (with-temp-buffer
+    (insert "* Text\n** ⟦1⟧\n*a b*\n\n| a-b-c |\n| g     |\n| f     |\n\n→ t\n\n*** Word Formation\n"
+            "| para    | vimarśa               |\n|---------+-----------------------|\n"
+            "| supreme | reflective awareness  |\n|         | /vi-√mṛś/ (6) reflect |\n|         | /-a/ action noun      |\n\n"
+            "| …-lakṣaṇā     | [bahuvrīhi, of kalā] | whose mark is                |\n"
+            "| …-kartṛtā-    | [head]               | agency,                      |\n"
+            "| para-vimarśa- | [karmadhāraya]       | supreme reflective awareness |\n\n"
+            "* Segments\n** Segment 1\n*Structure:* /a/ [subject]\n\n| x | [y] | z |\n")
+    (org-mode)
+    (should (equal '("| f     |" "|         | /vi-√mṛś/ (6) reflect |" "|         | /-a/ action noun      |")
+                   (bcat-faces-test--matches #'bcat-faces--detail-row-matcher 0)))
+    (should (equal '("[bahuvrīhi, of kalā]" "[head]" "[karmadhāraya]")
+                   (bcat-faces-test--matches #'bcat-faces--relation-cell-matcher 1)))
+    (should (assq 'bcat-faces--relation-cell-matcher bcat-faces--keywords))))
+
 (ert-deftest bcat-faces-translation-line ()
   "9.11. (TĀ 1009, Carsten: „hatten wir nicht mal Original und
 Übersetzung hervorgehoben?“; draft B: „einzeilig, kursiv“): the „→“

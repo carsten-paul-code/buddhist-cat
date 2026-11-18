@@ -476,7 +476,9 @@ Tibetisch V: Uchen and Wylie black.  A metre table (its second row only
 – and ⏑) stays as it is, as does the comparison's overview (2.11.: a
 header row — one row, then \\hline — and \\cellcolor); a table of a
 word's parts (5.11.: the members as a header row) has every row but the
-members' in \\bcatg.  The rules of booktabs (\\toprule, \\midrule,
+members' in \\bcatg — but not the row of the members' meanings right
+under them (18.11.); the table of a compound's resolution has only the
+relation, in brackets, in \\bcatg.  The rules of booktabs (\\toprule, \\midrule,
 \\bottomrule — `org-latex-tables-booktabs', Carsten's setting) count
 like \\hline (18.11.)."
   (let* ((lines (split-string tabular "\n"))
@@ -490,15 +492,38 @@ like \\hline (18.11.)."
          (header (let ((first (cl-position-if row-p lines)))
                    (and first (nth (1+ first) lines)
                         (funcall rule-p (nth (1+ first) lines))))))
-    (if (or (< (length rows) 2)
-            (and header (string-match-p "\\\\cellcolor" tabular))
-            (bcat-export--metre-row-p (nth 1 rows)))
-        tabular
+    (cond
+     ((or (< (length rows) 2)
+          (and header (string-match-p "\\\\cellcolor" tabular))
+          (bcat-export--metre-row-p (nth 1 rows)))
+      tabular)
+     ;; 18.11.: the resolution of a compound — no header, three cells a
+     ;; row, the relation in brackets in the middle: only that in \bcatg.
+     ((and (not header)
+           (cl-every (lambda (l)
+                       (let ((cells (bcat-export--cells
+                                     (replace-regexp-in-string "\\\\\\\\[ \t]*\\'" "" l))))
+                         (and (= 3 (length cells))
+                              (string-match-p "\\`\\[.*\\]\\'" (string-trim (nth 1 cells))))))
+                     rows))
+      (mapconcat
+       (lambda (l)
+         (if (not (memq l rows))
+             l
+           (let ((cells (bcat-export--cells (replace-regexp-in-string "\\\\\\\\[ \t]*\\'" "" l))))
+             (concat (string-trim (nth 0 cells)) " & \\bcatg{" (string-trim (nth 1 cells)) "} & "
+                     (string-trim (nth 2 cells)) "\\\\"))))
+       lines "\n"))
+     (t
       (let ((blue '()) (band '()))
         (if header
             ;; 5.11.: a table of a word's parts — the members, \hline, the
-            ;; parts: every row but the members'.
-            (setq blue (cdr rows))
+            ;; parts: every row but the members'.  18.11.: nor the row
+            ;; of the members' meanings — the first under the members,
+            ;; no Sanskrit form in italics in it.
+            (setq blue (if (and (cdr rows) (not (string-match-p "\\\\emph{" (nth 1 rows))))
+                           (cddr rows)
+                         (cdr rows)))
           ;; The bands, each closed by an \hline or the end.
           (dolist (l (append lines (list "\\hline")))
             (cond ((funcall row-p l) (push l band))
@@ -522,7 +547,7 @@ like \\hline (18.11.)."
                                         (if (string-empty-p c) "" (format "\\bcatg{%s}" c))))
                                     cells " & ")
                          "\\\\")))))
-         lines "\n")))))
+         lines "\n"))))))
 
 (defvar bcat-export--missing nil
   "The missing characters of the last `bcat-export-pdf', ((CHAR . FONT) …).")

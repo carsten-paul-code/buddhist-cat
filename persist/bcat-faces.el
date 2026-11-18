@@ -119,13 +119,47 @@ a word of one member under * Text or * Sanskrit (Carsten 5.11.:
         (setq found t)))
     found))
 
+(defun bcat-faces--table-rows (pos)
+  "The lines of the table around POS, its rules included."
+  (save-excursion
+    (goto-char pos)
+    (split-string (buffer-substring-no-properties (org-table-begin) (org-table-end)) "\n" t)))
+
+(defun bcat-faces--resolution-table-p (pos)
+  "Non-nil when the table row at POS belongs to the table of a
+compound's resolution (18.11., TĀ 1016): no rule, three cells a row,
+the middle one — the relation — in brackets."
+  (let ((rows (bcat-faces--table-rows pos)))
+    (and rows
+         (cl-every (lambda (l)
+                     (string-match-p "\\`[ \t]*|[^|\n]*|[ \t]*\\[[^|\n]*\\][ \t]*|[^|\n]*|[ \t]*\\'" l))
+                   rows))))
+
+(defun bcat-faces--relation-cell-matcher (limit)
+  "Font-lock matcher: the next relation of a compound's resolution
+before LIMIT — group 1 the cell in brackets (blue) — in a table of
+resolution (`bcat-faces--resolution-table-p') under * Text or
+* Sanskrit; the members and the words of the translation stay black."
+  (let ((found nil))
+    (while (and (not found)
+                (re-search-forward "^[ \t]*|[^|\n]*|[ \t]*\\(\\[[^|\n]*\\]\\)[ \t]*|[^|\n]*|[ \t]*$" limit t))
+      (when (save-match-data
+              (and (bcat-faces--resolution-table-p (match-beginning 0))
+                   (save-excursion
+                     (and (re-search-backward "^\\* \\(.*\\)$" nil t)
+                          (member (string-trim (match-string 1)) '("Text" "Sanskrit"))))))
+        (setq found t)))
+    found))
+
 (defun bcat-faces--detail-row-matcher (limit)
   "Font-lock matcher: the next table row before LIMIT that explains the
 words — group 0 the row: in its band (rows between hlines) neither the
 first (the words), nor the second when the first is Uchen (its Wylie),
 nor the one next to last (the gloss); none of a metre table or of a
 table with a header row — but in a table of a word's parts every row
-under the members (5.11., `bcat-faces--parts-table-p')."
+under the members (5.11., `bcat-faces--parts-table-p'), save the row of
+their meanings right under them (18.11.); none of a compound's
+resolution (`bcat-faces--resolution-table-p')."
   (let ((found nil))
     (while (and (not found) (re-search-forward "^[ \t]*|[^-\n].*$" limit t))
       (let* ((beg (match-beginning 0)) (end (match-end 0))
@@ -140,9 +174,20 @@ under the members (5.11., `bcat-faces--parts-table-p')."
         (when (and i
                    (if (bcat-faces--parts-table-p beg)
                        ;; 5.11.: a table of a word's parts — all but the
-                       ;; members' row
-                       (save-excursion (goto-char beg) (forward-line -1) (looking-at "[ \t]*|"))
+                       ;; members' row; 18.11.: nor the row of their
+                       ;; meanings — the first under the members, no
+                       ;; /form/ in it.
+                       (save-excursion
+                         (goto-char beg)
+                         (forward-line -1)
+                         (and (looking-at "[ \t]*|")
+                              (not (and (looking-at "[ \t]*|-")
+                                        (not (string-match-p
+                                              "/[^/ \n][^/\n]*/"
+                                              (buffer-substring-no-properties beg end)))))))
                      (and (/= i 0) (/= i (- (length band) 2))
+                          ;; 18.11.: the resolution of a compound
+                          (not (bcat-faces--resolution-table-p beg))
                           (not (and uchen (= i 1)))
                           (not (bcat-faces--metre-table-p beg))
                           (not (bcat-faces--header-table-p beg)))))
@@ -348,6 +393,7 @@ whole, so a later chunk of jit-lock never unfolds a part of it."
      ("[^|\n]+" (progn (goto-char (match-beginning 0)) (match-end 0)) nil
       (0 'bcat-gloss-face prepend)))
     (bcat-faces--parts-line-matcher (1 'bcat-gloss-face prepend))
+    (bcat-faces--relation-cell-matcher (1 'bcat-gloss-face prepend))
     (bcat-faces--translation-matcher (0 'bcat-translation-face prepend))
     (bcat-faces--rating-matcher
      (3 'shadow prepend t)

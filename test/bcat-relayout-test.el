@@ -128,6 +128,37 @@ tables stay as they are — a second run changes nothing."
       (should (string-match-p "^→ t\n\n\\*\\*\\* Word Formation\n| vimala " once))
       (should (equal once again)))))
 
+(ert-deftest bcat-relayout-keeps-member-row-and-resolution ()
+  "18.11.: C-c u L reads the table of a compound with its row of
+meanings and the table of its resolution back as they stand (a hand
+correction stays) — set anew, the file is the same; the word of one
+member goes behind them."
+  (let* ((old (concat "* Text\n** ⟦1⟧\n*x para-vimarśa-lakṣaṇā /*\n\n"
+                      "| x | para-vimarśa-lakṣaṇā |\n| g | whose mark …         |\n| f | adj.                 |\n\n→ t\n\n"
+                      "*** Word Formation\n"
+                      "| x        |\n|----------|\n| /√x/ (1) |\n\n"
+                      "| para    | vimarśa               | lakṣaṇā           |\n"
+                      "|---------+-----------------------+-------------------|\n"
+                      "| supreme | reflective awareness  | mark              |\n"
+                      "|         | /vi-√mṛś/ (6) reflect | /√lakṣ/ (10) mark |\n\n"
+                      "| …-lakṣaṇā     | [bahuvrīhi, of kalā] | whose mark is                |\n"
+                      "| para-vimarśa- | [my own wording]     | supreme reflective awareness |\n\n"
+                      "** Translation\n*Translation:* T\n\n* Segments\n** Segment 1\n\n*Structure:* s\n"))
+         (base '((segments ((num . 1) (samhita . "x paravimarśalakṣaṇā /"))) (sent-num . "1") (translation . "T")))
+         (once (bcat-relayout-test--render "sanskrit" base old))
+         (again (bcat-relayout-test--render "sanskrit" base once)))
+    (should (string-match-p
+             (regexp-quote (concat "*** Word Formation\n"
+                                   "| para    | vimarśa               | lakṣaṇā           |\n"
+                                   "|---------+-----------------------+-------------------|\n"
+                                   "| supreme | reflective awareness  | mark              |\n"
+                                   "|         | /vi-√mṛś/ (6) reflect | /√lakṣ/ (10) mark |\n\n"
+                                   "| …-lakṣaṇā     | [bahuvrīhi, of kalā] | whose mark is                |\n"
+                                   "| para-vimarśa- | [my own wording]     | supreme reflective awareness |\n\n"
+                                   "| x        |\n|----------|\n| /√x/ (1) |\n"))
+             once))
+    (should (equal once again))))
+
 (ert-deftest bcat-relayout-parts-lines-to-tables ()
   "Carsten 9.11., TĀ 1009 („der Formatwechsel (Tabelle/Fließtext)
 verwirrt mich“): C-c u L sets a file of 5.11. (draft B) with the line
