@@ -27,6 +27,11 @@
 ;; Reading a sentence file back
 ;; ----------------------------------------------------------------------------
 
+(defconst bcat-relayout--proposal-words
+  "\\(?:Proposed translation\\|Übersetzungsvorschlag\\)"
+  "The words of the proposal, English and German
+\(`bcat-analysis--comparison-labels').")
+
 (defconst bcat-relayout--wrappers '("Tibetan" "Sanskrit" "Commentary")
   "The headings under * Philology whose content stands one level down:
 the other language of a pair and the commentary — before 18.11.
@@ -38,31 +43,46 @@ it — the sections of the first level as they were until 18.11.:
 * Recitation (Sanskrit), * Text with the segments, * Tibetan or
 * Sanskrit, * Sentence, * Segments, * Commentary.  Since 18.11. a file
 has three parts (Carsten: Content, Philologie, „Worum es geht“): * Text
-is the original alone, * Philology holds the rest with its headings as
-they were, the other language and the commentary under a heading of
-their own, their content one level down.  A file in that form is taken
-apart again: the original becomes * Recitation (the Sanskrit file: its
-lines are read back) or * Original (no reader asks for it), * Philology
-becomes * Text, with * Sentence before its Concepts, * Segments before
-its first Segment N, and each of `bcat-relayout--wrappers' a section of
-the first level, its headings one level up.  TEXT without * Philology
-comes back as it is."
+is the original with, as its last part, the translation of the sentence
+\(the proposed one, else the own); * Philology holds the rest with its
+headings as they were, the other language and the commentary under a
+heading of their own, their content one level down.  A file in that
+form is taken apart again: the original becomes * Recitation (the
+Sanskrit file: its lines are read back) or * Original (no reader asks
+for it); * Philology becomes * Text — the translation that closed the
+original first in it —, with * Sentence before its Concepts, * Segments
+before its first Segment N, and each of `bcat-relayout--wrappers' a
+section of the first level, its headings one level up.  TEXT without
+* Philology comes back as it is."
   (if (not (and text (string-match-p "^\\* Philology[ \t]*$" text)))
       text
-    (let ((part nil) (wrapper nil) (sentence nil) (segments nil) (out '()))
+    (let ((part nil) (wrapper nil) (sentence nil) (segments nil) (out '())
+          (translation '()) (moving nil))
       (dolist (line (split-string text "\n"))
         (cond
          ;; a section of the first level
          ((string-match "\\`\\* \\(.*?\\)[ \t]*\\'" line)
           (let ((title (match-string 1 line)))
-            (setq wrapper nil)
+            (setq wrapper nil moving nil)
             (cond ((equal title "Philology")
                    (setq part 'philology)
-                   (push "* Text" out))
+                   (push "* Text" out)
+                   ;; the translation that closed the original
+                   (dolist (l (nreverse translation)) (push l out))
+                   (setq translation nil))
                   ((and (equal title "Text") (null part))
+                   (setq part 'original)
                    (push (if (equal template "sanskrit") "* Recitation" "* Original") out))
                   (t (setq part 'other)
                      (push line out)))))
+         ;; the original: from the label of the translation on, its last part
+         ((eq part 'original)
+          (when (and (not moving)
+                     (string-match-p (concat "\\`\\*\\(?:" bcat-relayout--proposal-words "\\|Translation\\)"
+                                             "\\(?: — [^*\n]*\\)?:\\*")
+                                     line))
+            (setq moving t))
+          (if moving (push line translation) (push line out)))
          ((not (eq part 'philology)) (push line out))
          ;; under * Philology: a heading of the second level
          ((string-match "\\`\\*\\* \\(.*?\\)[ \t]*\\'" line)
@@ -273,11 +293,6 @@ the other language's blocks and differences."
                    (from (car ends)) (to (or (cadr ends) from)))
               (cl-loop for tib from from to to do (push (cons tib num) out)))))))
     (nreverse out)))
-
-(defconst bcat-relayout--proposal-words
-  "\\(?:Proposed translation\\|Übersetzungsvorschlag\\)"
-  "The words of the proposal, English and German
-\(`bcat-analysis--comparison-labels').")
 
 (defun bcat-relayout--old-proposal (comparison)
   "(COMPARISON-WITHOUT . PROPOSAL) for a Translations compared of the
@@ -513,10 +528,15 @@ OTHER-TEXT in the form of three parts (18.11.) or in an earlier one
                            (alist-get 'segments base)))
          (pair (and other (bcat-relayout--pair-fields template segments assignment
                                                        other other-text base))))
-    (append (or pair `((segments . ,segments)))
-            (and assignment `((assignment . ,assignment)))
-            (bcat-relayout--sentence-fields text base)
-            base)))
+    (let ((fields (append (or pair `((segments . ,segments)))
+                          (and assignment `((assignment . ,assignment)))
+                          (bcat-relayout--sentence-fields text base)
+                          base)))
+      ;; 18.11.: the translation closes * Text, the decisions stay in
+      ;; * Philology — from what the file shows (a hand correction of the
+      ;; proposal stays)
+      (append (bcat-analysis-reading-fields (alist-get 'proposal fields) (alist-get 'translation fields))
+              fields))))
 
 ;; ----------------------------------------------------------------------------
 ;; C-c u L

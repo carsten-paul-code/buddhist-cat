@@ -116,6 +116,17 @@ Dateien der früheren Gliederung liest C-c u L und setzt sie um
 (`bcat-relayout--legacy-text').  Was oben über die Reihenfolge und
 über „* Worum es geht vor allem anderen“ steht, beschreibt die Zeit bis
 zum 18.11.
+18.11. nachmittags (Carsten: „die proposed Translation sollte als
+letzter Teil im Text Abschnitt kommen“): * Text schließt mit der
+Übersetzung des Satzes — reading-translation: die vorgeschlagene(n)
+Übersetzung(en) mit ihren Beschriftungen, ohne die Entscheidungen; ohne
+Vorschlag die eigene, „*Translation:* …“ (`bcat-analysis-reading-fields',
+wie die Reading-Seite des PDF seit 5.11.).  In * Philology bleibt nach
+den Segmenten, was sie begründet: decisions, die Übersetzung in der
+zweiten Sprache, *Grammar:* — in einer Sanskrit-Datei unter
+** Translation (ihre Segmente sind Überschriften), in einer tibetischen
+direkt nach dem letzten Segment.  Die Überschrift ** Proposed translation
+gibt es nicht mehr.
 #+end_comment
 #+TITLE: Sentence {{sent-num}} Analysis
 #+STARTUP: showall
@@ -149,6 +160,10 @@ zum 18.11.
 #+end_verse
 {{/tibetan-p}}
 
+{{#reading-translation}}
+{{reading-translation}}
+
+{{/reading-translation}}
 * Philology
 {{#segments}}
 {{#shown}}
@@ -179,25 +194,21 @@ zum 18.11.
 
 {{/formation-tables}}
 {{/segments}}
-{{#proposal}}
-** Proposed translation
-{{proposal}}
-{{/proposal}}
-{{^proposal}}
 {{#translation}}
 ** Translation
 {{/translation}}
-*Translation:* {{translation}}
-{{/proposal}}
-{{#second-translation}}
+{{#decisions}}
+{{decisions}}
 
+{{/decisions}}
+{{#second-translation}}
 *{{second-label}}:* {{second-translation}}
+
 {{/second-translation}}
 {{#grammar}}
-
 *Grammar:* {{grammar}}
-{{/grammar}}
 
+{{/grammar}}
 {{#tibetan-p}}
 ** Tibetan
 {{#tibetan-segments}}

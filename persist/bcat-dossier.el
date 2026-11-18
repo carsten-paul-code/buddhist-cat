@@ -32,7 +32,6 @@
 
 (declare-function bcat-relayout-file-context "bcat-relayout" (file))
 (declare-function bcat-export-info "bcat-export" (file))
-(declare-function bcat-export--split-proposal "bcat-export" (proposal))
 (declare-function bcat-export-views "bcat-export" (file))
 (declare-function bcat-commentary-source "bcat-commentary" (source-file))
 (declare-function bcat-commentary-section "bcat-commentary" (label lead commentary-source))
@@ -84,7 +83,7 @@ Wylie made from the Uchen."
 (defun bcat-dossier--translation (context)
   "The translation of the text of CONTEXT as it is read first: the
 proposal without its decisions, else „*Translation:* …“; nil without."
-  (let* ((proposal (car (bcat-export--split-proposal (or (alist-get 'proposal context) "")))))
+  (let* ((proposal (car (bcat-analysis-split-proposal (alist-get 'proposal context)))))
     (or (bcat-dossier--filled proposal)
         (let ((tr (bcat-dossier--filled (alist-get 'translation context))))
           (and tr (concat "*Translation:* " tr))))))

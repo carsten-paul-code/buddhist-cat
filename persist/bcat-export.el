@@ -939,15 +939,6 @@ not count.  Mechanical — the transcript goes to no one."
               collect (cdr p))
      "\n\n")))
 
-(defun bcat-export--split-proposal (proposal)
-  "(PROPOSAL . DECISIONS) of PROPOSAL: the proposed translation(s), read
-first, and from *Decisions:* (*Entscheidungen:*) on what justifies them
-— both trimmed, \"\" when missing."
-  (let ((cut (and (string-match "^\\*\\(?:Decisions\\|Entscheidungen\\)\\(?: — [^*\n]*\\)?:\\*" proposal)
-                  (match-beginning 0))))
-    (cons (string-trim (if cut (substring proposal 0 cut) proposal))
-          (if cut (string-trim (substring proposal cut)) ""))))
-
 (defun bcat-export--tex (s)
   "S, the text of a table cell, as LaTeX: the special characters escaped
 \(`bcat-export--latex-escape'), /x/ in italics, the bar of a cell
@@ -1035,7 +1026,7 @@ when there is some); whether the parts Grammar, Concepts, Discussion,
 Notes have anything (`grammar-p', `concepts-p', `discussion-p',
 `translations-p', `notes-p').  TEMPLATE, the template of the file:
 the tables of its Sanskrit segments are laid out for the page (18.11.)."
-  (let* ((split (bcat-export--split-proposal (or (alist-get 'proposal context) "")))
+  (let* ((split (bcat-analysis-split-proposal (alist-get 'proposal context)))
          (proposal (car split))
          (decisions (cdr split))
          ;; 18.11.: the tables of a Sanskrit segment for the page — the

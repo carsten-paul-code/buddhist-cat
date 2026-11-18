@@ -524,8 +524,13 @@ reference added by hand.  The field lands under the translation."
         (bcat-template-directory (expand-file-name "Templates/analysis" bcat-analysis-test--root)))
     (should (equal "Deutsch" (alist-get 'second-label ctx)))
     (should (string-match-p
-             ;; 9.11.: the translation and its German first, the Grammar after
-             (regexp-quote "glorious great bliss (mahānanda).\n\n*Deutsch:* Obwohl meine Rede hier unfähig ist …\n\n*Grammar:* Two clauses.")
+             ;; 9.11.: the translation and its German first, the Grammar
+             ;; after; 18.11.: the translation closes * Text, its German
+             ;; and the Grammar under ** Translation
+             (regexp-quote "glorious great bliss (mahānanda).\n\n* Philology\n")
+             (bcat-template-render-named "sanskrit" ctx)))
+    (should (string-match-p
+             (regexp-quote "\n** Translation\n*Deutsch:* Obwohl meine Rede hier unfähig ist …\n\n*Grammar:* Two clauses.")
              (bcat-template-render-named "sanskrit" ctx))))
   (let ((ctx (bcat-analysis-context (bcat-analysis-test--base)
                                     '((segments) (translation . "t") (translation_en . "In English.")))))
@@ -1165,7 +1170,9 @@ the sentence."
              text))
     (should-not (string-match-p "Word Formation" out))
     (should-not (string-match-p "བདག\\|Differences" text))
-    (should (string-match-p "\n\\*Translation:\\* Why are there just five aggregates" text))
+    ;; 18.11.: the translation of the sentence closes * Text
+    (should (string-match-p "\n\\*Translation:\\* Why are there just five aggregates[^\n]*\n\n\\'" original))
+    (should-not (string-match-p "^\\*Translation:\\*" text))
     (should (string-match-p "\\`\\*\\* Tibetan\n<<tib-77>>⟦77⟧ · " tib))
     (should (string-match-p
              (concat "^<<tib-78>>⟦78⟧ · \\[\\[skt-23\\]\\[Skt\\. 23\\]\\]\n| བདག་གི་གཞི .*\n| \\[\\[steinert:bdag gi gzhi\\].*\n\\(?:|.*\n\\)*"
@@ -1732,6 +1739,35 @@ class shows every yellow and red unit with them."
     (should (string-match-p (regexp-quote "  - Grammar: all readings possible — ") en))
     (should (string-match-p (regexp-quote "  - Decision: *open* · Impact: *low* — ") en))))
 
+(ert-deftest bcat-analysis-reading-fields ()
+  "18.11. (Carsten: „die proposed Translation sollte als letzter Teil im
+Text Abschnitt kommen“): what closes * Text is the translation of the
+sentence alone — the proposed translation(s) with their labels, without
+the decisions (as the reading page of the PDF has it since 5.11.: „die
+Entscheidungen gehören zur Diskussion“); without a proposal the own
+translation, „*Translation:* …“; nothing for a sentence not analysed.
+The decisions are a field of their own for * Philology."
+  (let ((proposal (concat "*Proposed translation — First sense:*\n#+begin_quote\nOne.\n#+end_quote\n\n"
+                          "*Proposed translation:*\n#+begin_quote\nTwo.\n#+end_quote\n\n"
+                          "*Decisions:* Unit 1: kept.")))
+    (should (equal `((reading-translation
+                      . ,(concat "*Proposed translation — First sense:*\n#+begin_quote\nOne.\n#+end_quote\n\n"
+                                 "*Proposed translation:*\n#+begin_quote\nTwo.\n#+end_quote"))
+                     (decisions . "*Decisions:* Unit 1: kept."))
+                   (bcat-analysis-reading-fields proposal "Own.")))
+    (should (equal '((reading-translation . "*Übersetzungsvorschlag:*\n#+begin_quote\nEins.\n#+end_quote")
+                     (decisions . "*Entscheidungen:* Nr. 1."))
+                   (bcat-analysis-reading-fields
+                    "*Übersetzungsvorschlag:*\n#+begin_quote\nEins.\n#+end_quote\n\n*Entscheidungen:* Nr. 1." "Eigen.")))
+    (should (equal '((reading-translation . "*Translation:* Own.") (decisions . ""))
+                   (bcat-analysis-reading-fields "" " Own. ")))
+    (should (equal '((reading-translation . "*Translation:* Own.") (decisions . ""))
+                   (bcat-analysis-reading-fields nil "Own.")))
+    (should (equal '((reading-translation . "") (decisions . ""))
+                   (bcat-analysis-reading-fields nil "")))
+    (should (equal '((reading-translation . "") (decisions . ""))
+                   (bcat-analysis-reading-fields nil nil)))))
+
 (ert-deftest bcat-analysis-proposal-under-the-tables ()
   "Carsten 4.11.: „Darunter könnte ja dann die Grammar stehen und
 danach die proposed translation und die decisions. Die ursprüngliche
@@ -1753,12 +1789,18 @@ own translation stays under the tables."
                "tibetan" (bcat-analysis-context base (bcat-analysis-parse answer) bcat-analysis-test--refs)))
          (text (substring out (string-match "^\\* Philology$" out) (string-match "^\\*\\* Concepts$" out))))
     ;; 9.11.: the proposal before the Grammar (Carsten, TĀ 1009).
+    ;; 18.11.: the proposal closes * Text; the decisions and the grammar
+    ;; stay after the segments
     (should (string-match-p
-             (regexp-quote (concat "*Proposed translation — First sense:*\n#+begin_quote\nProposed one.\n#+end_quote\n\n"
+             (regexp-quote (concat "#+end_verse\n\n"
+                                   "*Proposed translation — First sense:*\n#+begin_quote\nProposed one.\n#+end_quote\n\n"
                                    "*Proposed translation — Second sense:*\n#+begin_quote\nProposed two.\n#+end_quote\n\n"
-                                   "*Decisions:* Unit 1: kept.\n\n"
-                                   "*Grammar:* Two predicate pādas.\n\n** Concepts\n"))
+                                   "* Philology\n"))
              out))
+    (should (string-match-p
+             (regexp-quote "*Decisions:* Unit 1: kept.\n\n*Grammar:* Two predicate pādas.\n\n** Concepts\n")
+             out))
+    (should-not (string-match-p "Proposed translation" text))
     (should-not (string-match-p "^\\*Translation:\\*" text))
     (should-not (string-match-p "^\\*\\* Grammar$" out))
     (should (string-match-p "^\\*\\* Translations compared\n\\*Translation:\\* Own translation\\." out))
@@ -1768,7 +1810,8 @@ own translation stays under the tables."
     (let* ((plain (bcat-template-render-named
                    "tibetan" (bcat-analysis-context base (bcat-analysis-parse (bcat-analysis-test--answer))
                                                     bcat-analysis-test--refs))))
-      (should (string-match-p "^\\*Translation:\\* Indescribable.*\n\n\\(?:\\*[A-Z][a-z]+:\\* .*\n\n\\)?\\*Grammar:\\* " plain)))))
+      (should (string-match-p "#\\+end_verse\n\n\\*Translation:\\* Indescribable.*\n\n\\* Philology\n" plain))
+      (should (string-match-p "^→ .*\n\n\\(?:\\*[A-Z][a-z]+:\\* .*\n\n\\)?\\*Grammar:\\* " plain)))))
 
 (ert-deftest bcat-analysis-proposal-reads-aloud ()
   "Carsten 4.11. on the proposal of bDen 15 — „If one asks, \"By whom is

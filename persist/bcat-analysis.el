@@ -1493,6 +1493,33 @@ ich bin mir nicht sicher, ob das richtig ist weil … Dafür müsste ich es
         (sort items (lambda (a b) (if (= (car a) (car b)) (< (nth 1 a) (nth 1 b)) (< (car a) (car b)))))
         "\n")))))
 
+(defun bcat-analysis-split-proposal (proposal)
+  "(PROPOSAL . DECISIONS) of PROPOSAL: the proposed translation(s), read
+first, and from *Decisions:* (*Entscheidungen:*) on what justifies them
+— both trimmed, \"\" when missing."
+  (let* ((proposal (or proposal ""))
+         (cut (and (string-match "^\\*\\(?:Decisions\\|Entscheidungen\\)\\(?: — [^*\n]*\\)?:\\*" proposal)
+                   (match-beginning 0))))
+    (cons (string-trim (if cut (substring proposal 0 cut) proposal))
+          (if cut (string-trim (substring proposal cut)) ""))))
+
+(defun bcat-analysis-reading-fields (proposal translation)
+  "The fields that part the translation of the sentence between * Text
+and * Philology (18.11., Carsten: „die proposed Translation sollte als
+letzter Teil im Text Abschnitt kommen“): `reading-translation' — what
+closes * Text: the proposed translation(s) of PROPOSAL with their
+labels, without the decisions; without a proposal the own TRANSLATION as
+„*Translation:* …“; \"\" for a sentence not analysed — and `decisions',
+what justifies the proposal, for * Philology.  As the reading page of
+the PDF has it since 5.11. (`bcat-analysis-split-proposal')."
+  (let ((split (bcat-analysis-split-proposal proposal)))
+    `((reading-translation
+       . ,(cond ((not (string-empty-p (car split))) (car split))
+                ((and (stringp translation) (not (string-blank-p translation)))
+                 (concat "*Translation:* " (string-trim translation)))
+                (t "")))
+      (decisions . ,(cdr split)))))
+
 (defun bcat-analysis-comparison-proposal (parsed &optional target)
   "The proposal of PARSED for the place under the segment tables — per
 sense „*Proposed translation — LABEL:*“ (without a label „*Proposed
@@ -1710,6 +1737,9 @@ named again (`bcat-analysis--full-names')."
        (grammar . ,(bcat-analysis--field parsed 'grammar))
        (comparison . ,(bcat-analysis-comparison parsed refs (alist-get 'target-lang base)))
        (proposal . ,(bcat-analysis-comparison-proposal parsed (alist-get 'target-lang base))))
+     ;; 18.11.: the translation closes * Text, the decisions stay
+     (bcat-analysis-reading-fields (bcat-analysis-comparison-proposal parsed (alist-get 'target-lang base))
+                                   (bcat-analysis--field parsed 'translation))
      base)))
 
 ;; ----------------------------------------------------------------------------
@@ -2739,6 +2769,9 @@ skipped keeps its rump fields; sigla used as names are named again
        (word-analysis . ,(bcat-analysis-word-analysis (alist-get 'segments parsed)))
        (bhasya-hint . ,(bcat-analysis--field parsed 'bhasya_hint))
        (bhasya-translation . ,(bcat-analysis--field parsed 'bhasya_translation)))
+     ;; 18.11.: the translation closes * Text, the decisions stay
+     (bcat-analysis-reading-fields (bcat-analysis-comparison-proposal parsed (alist-get 'target-lang base))
+                                   (bcat-analysis--field parsed 'translation))
      base)))
 
 ;; ----------------------------------------------------------------------------

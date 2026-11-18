@@ -150,7 +150,7 @@ Wylie under the Uchen; * Philology begins with the Concepts."
                (regexp-quote (concat "* Text\n#+begin_verse\n"
                                      "བརྗོད་དུ་མེད་པ་བལྟར་མེད་པ། །\nbrjod du med pa bltar med pa/ /\n"
                                      "འགྱུར་བ་མེད་པ་འདུས་མ་བྱས། །\n'gyur ba med pa 'dus ma byas/ /\n"
-                                     "#+end_verse\n\n* Philology\n\n** Concepts"))
+                                     "#+end_verse\n\n* Philology\n** Concepts"))
                (bcat-sentence-test--create src))))))
 
 (ert-deftest bcat-sentence-create-sanskrit ()
@@ -178,7 +178,7 @@ empty.  No AI."
                             "| at  | ra | mad |"))
                    text))
           (should (string-match-p
-                   (regexp-quote "\n\n* Philology\n\n** Concepts\n")
+                   (regexp-quote "\n\n* Philology\n** Concepts\n")
                    text))
           (should-not (string-match-p "Śloka (Anuṣṭubh)" text))
           (should (string-match-p
@@ -200,7 +200,7 @@ C-c u G brings them."
                (regexp-quote (concat "* Text\n#+begin_verse\n"
                                      "इह खलु शास्त्रादाव् अलौकिकाशीर्वादमुखेन परामृशति\n"
                                      "iha khalu śāstrādāv alaukikāśīrvādamukhena parāmṛśati\n#+end_verse\n\n"
-                                     "* Philology\n\n** Concepts"))
+                                     "* Philology\n** Concepts"))
                text)))))
 
 (defconst bcat-sentence-test--sa-quote
@@ -1822,9 +1822,13 @@ The PDF is made of the Sanskrit file only („nur die zweisprachige“)."
           (should (string-match-p (regexp-quote "→ the body with what it appropriated,\n\n*Differences:* /udbhāvanatā/") text))
           (should (string-match-p (regexp-quote "** <<skt-23>>⟦23⟧ · [[tib-78][Tib. 78–79]]\n*pañca-ākāra-ātma-vastu-udbhāvanatām upādāya.*\n\n| pañca-ākāra-ātma-vastu-udbhāvanatām") text))
           (should (< (string-match "^→ the body with what it appropriated,$" text) (string-match "^\\*Differences:\\*" text)))
+          ;; 18.11.: the translation of the sentence closes * Text; after
+          ;; the last segment's differences what justifies it, then the
+          ;; Sanskrit part
           (should (string-match-p (concat (regexp-quote "*Differences:* /udbhāvanatā/ is rendered /brjod pa/ („stating“).\n\n")
-                                          "\\(?:\\*Grammar:\\* [^\n]*\n\n\\)?\\*Translation:\\*")
+                                          "\\(?:\\*[A-Z][a-z]+:\\* [^\n]*\n\n\\)*\\*\\* Sanskrit\n")
                                   text))
+          (should (string-match-p "#\\+end_verse\n\n\\*Translation:\\* [^\n]+\n\n\\* Philology\n" text))
           (should (string-match-p (regexp-quote "** Segment 78 · Skt. 23\n⟦78⟧ *Translation:* because they state") text))
           (should (= 1 (with-temp-buffer (insert text) (how-many "^\\*Differences:\\*" (point-min) (point-max)))))
           (should (string-match-p "^⟦77⟧ \\*Translation:\\* Why are the aggregates only five" text))

@@ -196,7 +196,9 @@ changes under a word stays."
                       "para-vimarśa- [my own wording] supreme reflective awareness"))
                    (bcat-relayout-test--segment-columns once)))
     (should-not (string-match-p "Word Formation\\|VISIBILITY" once))
-    (should (string-match-p "\n→ t\n\n\\*\\* Translation\n\\*Translation:\\* T\n" once))
+    ;; 18.11.: the translation of the sentence closes * Text
+    (should (string-match-p "^\\* Text\n\\*Translation:\\* T\n\n\\* Philology\n" once))
+    (should (string-match-p "\n→ t\n\n\\*\\* Translation\n\\*\\* Concepts\n" once))
     (should (equal once again))
     (let ((fixed (replace-regexp-in-string "para: supreme " "para: highest " once t t)))
       (should-not (equal fixed once))
@@ -239,7 +241,8 @@ nothing, and a hand correction of the bold line stays."
     (should (equal '((("hṛdayam" "heart" "n.") "/hṛd/ heart" "/-aya/ suffix") (("ab" "g" "f")))
                    (bcat-relayout-test--segment-columns once)))
     (should-not (string-match-p "Word Formation" once))
-    (should (string-match-p (regexp-quote "\n** Translation\n*Translation:* T\n\n*Grammar:* g\n") once))
+    (should (string-match-p (regexp-quote "* Text\n*Translation:* T\n\n* Philology\n") once))
+    (should (string-match-p (regexp-quote "\n** Translation\n*Grammar:* g\n") once))
     (should-not (string-match-p "^/hṛdayam/:" once))
     (should (equal once again))
     (let ((fixed (replace-regexp-in-string "^\\*hṛdayam ab /\\*$" "*hṛdayam a-b /*" once)))
@@ -283,11 +286,16 @@ second run changes nothing."
          (base '((segments ((num . 38))) (sent-num . "9")))
          (once (bcat-relayout-test--render "tibetan" base old))
          (twice (bcat-relayout-test--render "tibetan" base once)))
+    ;; 18.11.: the proposal closes * Text; its decisions and the grammar
+    ;; after the segments
     (should (string-match-p
-             (regexp-quote (concat "→ s\n\n"
+             (regexp-quote (concat "#+end_verse\n\n"
                                    "*Übersetzungsvorschlag — Erster Sinn:*\n#+begin_quote\nEins.\n#+end_quote\n\n"
                                    "*Übersetzungsvorschlag:*\n#+begin_quote\nZwei.\n#+end_quote\n\n"
-                                   "*Entscheidungen:* Nr. 1.\n\n*Grammar:* Two pādas.\n\n** Concepts\n"))
+                                   "* Philology\n⟦38⟧\n"))
+             once))
+    (should (string-match-p
+             (regexp-quote "→ s\n\n*Entscheidungen:* Nr. 1.\n\n*Grammar:* Two pādas.\n\n** Concepts\n")
              once))
     (should-not (string-match-p "^\\*\\*\\* Übersetzungsvorschlag" once))
     (should (string-match-p "^\\*\\*\\* Berichtigungen zur Analyse\n- k\\." once))
@@ -375,7 +383,7 @@ order — My Notes, a section of its own (* Handout), #+CREATED and
       (let ((text (bcat-sentence-test--text-of file)))
         (should-not fired)
         ;; The old table gets its Uchen row (31.10. abends, Tibetisch V).
-        (should (string-match-p "#\\+end_verse\n\n\\* Philology\n⟦38⟧\n| བརྗོད་དུ་མེད་པ +|\n| \\[\\[steinert:brjod du med pa\\]\\[brjod du med pa\\]\\] |\n| indescribable +|" text))
+        (should (string-match-p "#\\+end_verse\n\n\\*Translation:\\* [^\n]+\n\n\\* Philology\n⟦38⟧\n| བརྗོད་དུ་མེད་པ +|\n| \\[\\[steinert:brjod du med pa\\]\\[brjod du med pa\\]\\] |\n| indescribable +|" text))
         ;; 18.11.: the file of the earlier form comes out in three parts
         (should-not (string-match-p "^\\* \\(?:Sentence\\|Segments\\)$" text))
         (should (string-match-p (regexp-quote "** Concepts\n⟦39⟧ *'dus ma byas* (asaṃskṛta)\n") text))
