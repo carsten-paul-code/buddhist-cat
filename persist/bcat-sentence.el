@@ -748,14 +748,16 @@ whatever the language of the rest.")
 commentary document: BODY its text without the drawer under the
 heading, MARK the drawer's :GENERATED_HASH: — set for a generated
 section (`bcat-analysis-overview-hash'), nil for one written by hand.
-nil when the file has no such section or it is empty."
+nil when the file has no such section or it is empty.  The mark is read
+letter by letter, not by a syntax class: \\S- depends on the buffer that
+happens to be current (in a Lisp buffer a line end is no whitespace)."
   (let ((body (bcat-sentence--l1-body text bcat-sentence--overview-heading)))
     (when body
       (if (string-match "\\`:PROPERTIES:[ \t]*\n\\(\\(?:.*\n\\)*?\\):END:[ \t]*\\(?:\n\\|\\'\\)" body)
           (let ((drawer (match-string 1 body))
                 (rest (string-trim (substring body (match-end 0)))))
             (unless (string-empty-p rest)
-              (cons rest (and (string-match "^:GENERATED_HASH:[ \t]*\\(\\S-+\\)" drawer)
+              (cons rest (and (string-match "^:GENERATED_HASH:[ \t]*\\([^ \t\n]+\\)" drawer)
                               (match-string 1 drawer)))))
         (cons body nil)))))
 

@@ -346,7 +346,7 @@ first heading is left out."
              (title (match-string 1 view))
              (end (if (string-match "^\\* " view (match-end 0)) (match-beginning 0) (length view)))
              (text (substring view beg end))
-             (id (and (string-match "\\`[^\n]*\n:PROPERTIES:\n\\(?:[^\n]*\n\\)*?:CUSTOM_ID: \\(\\S-+\\)" text)
+             (id (and (string-match "\\`[^\n]*\n:PROPERTIES:\n\\(?:[^\n]*\n\\)*?:CUSTOM_ID: \\([^ \t\n]+\\)" text)
                       (match-string 1 text))))
         (push (list id title text) parts)
         (setq start end)))

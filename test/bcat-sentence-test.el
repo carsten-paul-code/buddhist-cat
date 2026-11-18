@@ -890,6 +890,23 @@ by hand it stays, and the mark is gone."
                        (bcat-sentence-test--section text)))
         (should-not (string-match-p "GENERATED_HASH\\|dritte Fassung" text))))))
 
+(ert-deftest bcat-sentence-overview-mark-in-any-buffer ()
+  "18.11. (trial run of C-c u L over the Sanskrit sentence files, from a
+batch Emacs: TĀ 001 lost the drawer of its generated „Worum es geht“):
+the mark of a generated section is its hash, whatever buffer is
+current.  In a Lisp buffer (*scratch*: batch runs, emacsclient) a line
+end is no whitespace for the regexp class \\S-, the mark came with the
+line end, was not the hash of the text, the text counted as written by
+hand — the next C-c u G would not have renewed it."
+  (let* ((body "*Erklärt wird:* Vers 1.1.")
+         (hash (bcat-analysis-overview-hash body))
+         (text (concat "#+TITLE: x\n\n* Worum es geht\n:PROPERTIES:\n:GENERATED_HASH: " hash "\n:END:\n"
+                       body "\n\n* Text\n")))
+    (dolist (mode '(fundamental-mode emacs-lisp-mode))
+      (with-temp-buffer
+        (funcall mode)
+        (should (equal (cons body hash) (bcat-sentence--overview text)))))))
+
 (ert-deftest bcat-sentence-fetch-overview-keeps-hand-text ()
   "16.11. (Tantrāloka 1009–1040): „Am Inhalt meiner Handtexte bitte
 nichts ändern“ — the section written by hand stays word for word when

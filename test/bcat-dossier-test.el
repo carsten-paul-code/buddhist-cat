@@ -186,6 +186,18 @@ file of the verse: the verse files and the commentary document."
       (should (equal file (plist-get (bcat-dossier-pdf-text doc) :lead)))
       (should (equal file (plist-get (bcat-dossier-pdf-text (tibetan-sentence--filepath 64 tfolder tsrc)) :lead))))))
 
+(ert-deftest bcat-dossier-split-parts-in-any-buffer ()
+  "18.11.: the CUSTOM_ID of a part is read the same whatever buffer is
+current — in a Lisp buffer (*scratch*: batch runs, emacsclient) a line
+end is no whitespace for the regexp class \\S-, the ID ran on into the
+lines after it."
+  (let ((view "* Reading\n:PROPERTIES:\n:CUSTOM_ID: reading\n:END:\nText.\n* Notes\nMore.\n"))
+    (dolist (mode '(fundamental-mode emacs-lisp-mode))
+      (with-temp-buffer
+        (funcall mode)
+        (should (equal '(("reading" "Reading") (nil "Notes"))
+                       (mapcar (lambda (p) (seq-take p 2)) (bcat-dossier--split-parts view))))))))
+
 (ert-deftest bcat-dossier-pdf-overview ()
   "16.11.: in the PDF of the dossier the verse's „Worum es geht“ is the
 first part, before the reading page; the commentary document's own
