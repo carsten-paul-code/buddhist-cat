@@ -114,6 +114,48 @@ resolution only the relation in brackets is blue."
                    (bcat-faces-test--matches #'bcat-faces--relation-cell-matcher 1)))
     (should (assq 'bcat-faces--relation-cell-matcher bcat-faces--keywords))))
 
+(ert-deftest bcat-faces-parts-under-the-words ()
+  "18.11. (Carsten: „mir geht es mehr um's .org. Das nehme ich im
+Reading“): in the table of a Sanskrit segment the rows under the rule
+explain the words — the parts of a word blue; of a compound's line
+member and meaning black, „← roots and suffixes“ blue; a member without
+its meaning black, its parts blue; of a step of the resolution only the
+relation in brackets.  The rows above the rule as before (the form
+blue).  Only in the Sanskrit part of a Sanskrit file — the bands of an
+old Tibetan table are words."
+  (let ((table (concat "| vigatā     | a-vimarśa-b                                |\n"
+                       "| departed   | g                                          |\n"
+                       "| ppp.       | adj.                                       |\n"
+                       "|------------+--------------------------------------------|\n"
+                       "| /vi-/ away | a: one                                     |\n"
+                       "| /-ta/ ppp  | vimarśa: awareness ← /vi-√mṛś/ (6) reflect |\n"
+                       "|            | b: /√b/ (1) be                             |\n"
+                       "|            | …-b [bahuvrīhi, of x] whose b is           |\n")))
+    (with-temp-buffer
+      (insert "#+CAT_TEMPLATE: sanskrit\n* Text\n** ⟦1⟧\n*a b*\n\n" table "\n→ t\n\n"
+              "* Segments\n** Segment 1\n*Structure:* s\n")
+      (org-mode)
+      (should (equal '("| ppp.       | adj.                                       |")
+                     (bcat-faces-test--matches #'bcat-faces--detail-row-matcher 0)))
+      (should (equal '("/vi-/ away" "/-ta/ ppp" "← /vi-√mṛś/ (6) reflect" "/√b/ (1) be" "[bahuvrīhi, of x]")
+                     (bcat-faces-test--matches #'bcat-faces--sub-cell-matcher 0)))
+      (should (assq 'bcat-faces--sub-cell-matcher bcat-faces--keywords)))
+    ;; the Sanskrit part of the Tibetan file of a pair
+    (with-temp-buffer
+      (insert "#+CAT_TEMPLATE: bilingual-tibetan\n* Text\n⟦7⟧\n| ཆོས  |\n| chos |\n| dharma |\n| N |\n\n"
+              "* Sanskrit\n** ⟦1⟧\n*a b*\n\n" table "\n→ t\n")
+      (org-mode)
+      (should (= 5 (length (bcat-faces-test--matches #'bcat-faces--sub-cell-matcher 0)))))
+    ;; a Tibetan file: bands are words, as before
+    (with-temp-buffer
+      (insert "#+CAT_TEMPLATE: tibetan\n* Text\n⟦7⟧\n" table "\n→ t\n")
+      (org-mode)
+      (should-not (bcat-faces-test--matches #'bcat-faces--sub-cell-matcher 0))
+      (should (member "| ppp.       | adj.                                       |"
+                      (bcat-faces-test--matches #'bcat-faces--detail-row-matcher 0)))
+      (should (member "| /-ta/ ppp  | vimarśa: awareness ← /vi-√mṛś/ (6) reflect |"
+                      (bcat-faces-test--matches #'bcat-faces--detail-row-matcher 0))))))
+
 (ert-deftest bcat-faces-translation-line ()
   "9.11. (TĀ 1009, Carsten: „hatten wir nicht mal Original und
 Übersetzung hervorgehoben?“; draft B: „einzeilig, kursiv“): the „→“

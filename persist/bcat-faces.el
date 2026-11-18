@@ -151,6 +151,83 @@ resolution (`bcat-faces--resolution-table-p') under * Text or
         (setq found t)))
     found))
 
+(defvar-local bcat-faces--template-cache nil
+  "The #+CAT_TEMPLATE of the buffer (\"\" for none), read once.")
+
+(defun bcat-faces--template ()
+  "The template of the sentence file in the buffer (#+CAT_TEMPLATE), or
+\"\"."
+  (or bcat-faces--template-cache
+      (setq bcat-faces--template-cache
+            (save-excursion
+              (save-match-data
+                (goto-char (point-min))
+                (if (re-search-forward "^#\\+CAT_TEMPLATE:[ \t]*\\(\\S-+\\)" (min (point-max) 4000) t)
+                    (match-string-no-properties 1)
+                  ""))))))
+
+(defun bcat-faces--sanskrit-table-p (pos)
+  "Non-nil when a table at POS is one of a Sanskrit segment: under
+* Text in a Sanskrit file (templates sanskrit, bilingual), under
+* Sanskrit in the Tibetan file of a pair."
+  (save-excursion
+    (save-match-data
+      (goto-char pos)
+      (and (re-search-backward "^\\* \\(.*\\)$" nil t)
+           (let ((section (string-trim (match-string-no-properties 1)))
+                 (template (bcat-faces--template)))
+             (or (and (equal section "Text") (member template '("sanskrit" "bilingual")))
+                 (and (equal section "Sanskrit") (equal template "bilingual-tibetan"))))))))
+
+(defun bcat-faces--sub-row-p (pos)
+  "Non-nil when the table row at POS stands under the rule of a Sanskrit
+segment's table (18.11.): it explains the words above — their parts, a
+compound's members and its resolution."
+  (save-excursion
+    (save-match-data
+      (goto-char pos)
+      (beginning-of-line)
+      (and (looking-at "[ \t]*|[^-\n]")
+           (let ((rule nil))
+             (while (and (not rule) (zerop (forward-line -1)) (looking-at "[ \t]*|"))
+               (when (looking-at "[ \t]*|-") (setq rule t)))
+             rule)
+           (bcat-faces--sanskrit-table-p pos)))))
+
+(defun bcat-faces--sub-cell-blue (cell)
+  "(START . END) of what is blue in CELL, a cell under the rule of a
+Sanskrit segment's table, or nil: of a step of a compound's resolution
+\(„MEMBERS [RELATION] WORDS“) the relation; of a member's line
+\(„MEMBER: MEANING ← PARTS“) from the arrow on, without a meaning
+\(„MEMBER: PARTS“) the parts — a member with only its meaning stays
+black —; any other cell (a part of a word) whole."
+  (cond
+   ((string-match "\\`[^ ]+ \\(\\[[^]]*\\]\\) " cell)
+    (cons (match-beginning 1) (match-end 1)))
+   ((string-match "\\`[^ /:|]+: " cell)
+    (let ((rest (match-end 0)))
+      (cond ((string-match "←" cell rest) (cons (match-beginning 0) (length cell)))
+            ((string-match-p "/[^/ \t\n][^/\n]*/" (substring cell rest)) (cons rest (length cell))))))
+   (t (cons 0 (length cell)))))
+
+(defun bcat-faces--sub-cell-matcher (limit)
+  "Font-lock matcher: the next piece before LIMIT that is blue under the
+rule of a Sanskrit segment's table (`bcat-faces--sub-row-p',
+`bcat-faces--sub-cell-blue') — group 0."
+  (let ((found nil))
+    (while (and (not found)
+                (re-search-forward "|[ \t]*\\([^|\n]*[^|\n \t]\\)[ \t]*|" limit t))
+      (let* ((b (match-beginning 1))
+             (bar (1- (match-end 0)))
+             (cell (match-string-no-properties 1))
+             (blue (and (bcat-faces--sub-row-p b) (bcat-faces--sub-cell-blue cell))))
+        ;; the closing bar opens the next cell
+        (goto-char bar)
+        (when blue
+          (set-match-data (list (+ b (car blue)) (+ b (cdr blue))))
+          (setq found t))))
+    found))
+
 (defun bcat-faces--detail-row-matcher (limit)
   "Font-lock matcher: the next table row before LIMIT that explains the
 words — group 0 the row: in its band (rows between hlines) neither the
@@ -172,6 +249,10 @@ resolution (`bcat-faces--resolution-table-p')."
                                                 (buffer-substring-no-properties
                                                  (point) (line-end-position)))))))
         (when (and i
+                   ;; 18.11.: the rows under the rule of a Sanskrit
+                   ;; segment's table have colours of their own
+                   ;; (`bcat-faces--sub-cell-matcher')
+                   (not (bcat-faces--sub-row-p beg))
                    (if (bcat-faces--parts-table-p beg)
                        ;; 5.11.: a table of a word's parts — all but the
                        ;; members' row; 18.11.: nor the row of their
@@ -394,6 +475,7 @@ whole, so a later chunk of jit-lock never unfolds a part of it."
       (0 'bcat-gloss-face prepend)))
     (bcat-faces--parts-line-matcher (1 'bcat-gloss-face prepend))
     (bcat-faces--relation-cell-matcher (1 'bcat-gloss-face prepend))
+    (bcat-faces--sub-cell-matcher (0 'bcat-gloss-face prepend))
     (bcat-faces--translation-matcher (0 'bcat-translation-face prepend))
     (bcat-faces--rating-matcher
      (3 'shadow prepend t)
