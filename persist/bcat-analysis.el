@@ -101,6 +101,13 @@ alles in der Zielsprache“ — so nil; \"de\" or \"en\" fixes one."
                  (const :tag "Deutsch" "de") (const :tag "English" "en"))
   :group 'buddhist-cat)
 
+(defconst bcat-analysis-machine-references '("DharmaMitra")
+  "Reference translations that are a machine's.  Carsten 18.11.: „Dharma
+Mitra ist inzwischen für mich keine Referenz mehr und sollte nur der
+Vollständigkeit halber mit aufgeführt sein“ — such a translation stands
+last under Translations compared, under a heading that says what it is,
+and its renderings alone make no point for the discussion.")
+
 (defconst bcat-analysis--comparison-schema
   "\"units\": [{\"passage\": \"…\", \"rating\": \"green|yellow|red\", \"core\": \"…\", \"readings\": [{\"sigla\": \"…\", \"text\": \"…\"}], \"finding\": \"…\", \"weight\": \"…\", \"grammatical\": \"all|one\", \"grammar_note\": \"…\", \"certainty\": \"certain|likely|open\", \"impact\": \"low|medium|high\", \"impact_note\": \"…\", \"doubts\": [{\"who\": \"…\", \"verdict\": \"doubtful|wrong\", \"reason\": \"…\", \"better\": \"…\"}]}], \"proposal\": [{\"label\": \"…\", \"text\": \"…\"}], \"decisions\": \"…\", \"corrections\": [\"…\"]"
   "The comparison's part of the JSON contract of every sentence analysis
@@ -1334,7 +1341,13 @@ comparison below it (*** Übersicht …, 2.11.) stay where they are."
      (grammar . "Grammatik") (grammar-all . "alle Lesarten möglich") (grammar-one . "nur eine Lesart möglich")
      (decision . "Entscheidung") (certain . "sicher") (likely . "wahrscheinlich") (open . "offen")
      (impact . "Auswirkung") (low . "gering") (medium . "mittel") (high . "groß")
-     (green . "grün") (yellow . "gelb") (red . "rot"))
+     (green . "grün") (yellow . "gelb") (red . "rot")
+     ;; 18.11.: the comparison on the point
+     (points . "Diskussionspunkte") (none . "Keine: die Übersetzungen stimmen in der Sache überein.")
+     (discuss . "Zu besprechen") (here . "hier") (point . "Punkt") (depends . "Was daran hängt")
+     (not-at-issue . "Unstrittig") (agree . "%d Stelle(n), an denen alle übereinstimmen")
+     (machine-only . "nur %s weicht ab") (minor . "geringfügig")
+     (machine . "%s (maschinelle Übersetzung, der Vollständigkeit halber)"))
     ("en" (overview . "Overview") (passages . "The passages")
      (proposal . "Proposed translation") (corrections . "Corrections to the analysis")
      (columns "No." "Passage" "Rating" "Point")
@@ -1345,7 +1358,12 @@ comparison below it (*** Übersicht …, 2.11.) stay where they are."
      (grammar . "Grammar") (grammar-all . "all readings possible") (grammar-one . "only one reading possible")
      (decision . "Decision") (certain . "certain") (likely . "likely") (open . "open")
      (impact . "Impact") (low . "low") (medium . "medium") (high . "high")
-     (green . "green") (yellow . "yellow") (red . "red")))
+     (green . "green") (yellow . "yellow") (red . "red")
+     (points . "Discussion points") (none . "None: the translations agree in substance.")
+     (discuss . "Discuss") (here . "here") (point . "point") (depends . "What depends on it")
+     (not-at-issue . "Not at issue") (agree . "%d passage(s) on which all agree")
+     (machine-only . "only %s differs") (minor . "minor")
+     (machine . "%s (machine translation, for completeness)")))
   "The words of the comparison in the file, by
 `bcat-analysis-comparison-language' — the Muster's (2.11.) for German.")
 
@@ -1493,6 +1511,268 @@ ich bin mir nicht sicher, ob das richtig ist weil … Dafür müsste ich es
         (sort items (lambda (a b) (if (= (car a) (car b)) (< (nth 1 a) (nth 1 b)) (< (car a) (car b)))))
         "\n")))))
 
+;; ----------------------------------------------------------------------------
+;; The comparison on the point (18.11.2026)
+;; ----------------------------------------------------------------------------
+
+(defun bcat-analysis--machine-sigla (refs)
+  "The sigla of the machine translations among REFS ((NAME . TEXT) …) —
+\"DM\" when REFS names none."
+  (or (delq nil (mapcar (lambda (s) (and (member (car s) bcat-analysis-machine-references) (cdr s)))
+                        (bcat-analysis-sigla (mapcar #'car refs))))
+      '("DM")))
+
+(defun bcat-analysis--known-sigla (refs)
+  "The sigla of a comparison with REFS: C, the own translation, and
+those of REFS."
+  (cons "C" (mapcar #'cdr (bcat-analysis-sigla (mapcar #'car refs)))))
+
+(defun bcat-analysis--who-sigla (who known)
+  "The sigla WHO names — a doubt's `who', „D „the hidden light“, DM
+„concealed““: the wordings in quotes do not count — among KNOWN; when
+KNOWN has only C (no references at hand) every short word in capitals."
+  (let ((bare (replace-regexp-in-string
+               "„[^“”\"\n]*[“”\"]\\|\"[^\"\n]*\"\\|‚[^‘'\n]*[‘']" " " (or who "")))
+        (case-fold-search nil))
+    (cl-remove-if-not (lambda (tk)
+                        (if (cdr known)
+                            (member tk known)
+                          (string-match-p "\\`[A-Z][A-Za-z0-9]\\{0,3\\}\\'" tk)))
+                      (split-string bare "[^[:alnum:]]+" t))))
+
+(defun bcat-analysis--reading-sigla (reading)
+  "The sigla of READING, an entry of a unit's readings."
+  (split-string (bcat-analysis--field reading 'sigla) "[^[:alnum:]]+" t))
+
+(defun bcat-analysis--unit-reading (unit siglum)
+  "The wording SIGLUM has for UNIT, or nil."
+  (cl-loop for r in (alist-get 'readings unit)
+           when (member siglum (bcat-analysis--reading-sigla r))
+           return (let ((text (replace-regexp-in-string "[ \t]*\n[ \t]*" " " (bcat-analysis--field r 'text))))
+                    (and (not (string-empty-p text)) text))))
+
+(defun bcat-analysis--scholar-doubts (unit machine known)
+  "The doubts of UNIT that question a rendering other than a machine's:
+\((SIGLA . DOUBT) …), SIGLA those the doubt names without MACHINE's."
+  (delq nil
+        (mapcar (lambda (d)
+                  (let ((sigla (cl-remove-if (lambda (s) (member s machine))
+                                             (bcat-analysis--who-sigla (bcat-analysis--field d 'who) known))))
+                    (and sigla (cons sigla d))))
+                (alist-get 'doubts unit))))
+
+(defun bcat-analysis--point-p (unit machine known)
+  "Non-nil when UNIT of the comparison is a point for the discussion
+\(Carsten 18.11.: „wirklich bloß … was diskussionswürdig ist“): not
+agreed (rated green — the answers until 18.11.), its impact not low, and
+the rendering of a translator other than a machine in question — or,
+where no rendering has a verdict, two such renderings standing apart."
+  (and (not (eq 'green (bcat-analysis--rating (bcat-analysis--field unit 'rating))))
+       (not (member (downcase (string-trim (bcat-analysis--field unit 'impact))) '("low" "gering")))
+       (if (cl-some (lambda (d) (not (string-empty-p (bcat-analysis--field d 'who)))) (alist-get 'doubts unit))
+           (and (bcat-analysis--scholar-doubts unit machine known) t)
+         (> (cl-count-if (lambda (r)
+                           (let ((sigla (bcat-analysis--reading-sigla r)))
+                             (and sigla (not (cl-every (lambda (s) (member s machine)) sigla)))))
+                         (alist-get 'readings unit))
+            1))))
+
+(defun bcat-analysis--letters (text)
+  "TEXT reduced to its letters, in small — to find a passage in a text
+whatever the hyphens, spaces and marks."
+  (downcase (replace-regexp-in-string "[^[:alpha:]]" "" (or text ""))))
+
+(defun bcat-analysis--segment-keys (base parsed)
+  "((NUM KEY …) …) for the segments of BASE (the rump): the texts a
+passage of the comparison is looked for in — as transmitted (saṃhitā,
+Wylie) and as PARSED divides it (its words joined), letters only."
+  (let ((by-num (mapcar (lambda (s) (cons (bcat-analysis--num s) s)) (alist-get 'segments parsed))))
+    (mapcar (lambda (seg)
+              (let* ((num (bcat-analysis--num seg))
+                     (c (cdr (assoc num by-num))))
+                (cons num
+                      (cl-remove-if
+                       #'string-empty-p
+                       (list (bcat-analysis--letters (or (alist-get 'samhita seg) (alist-get 'wylie seg)))
+                             (bcat-analysis--letters
+                              (mapconcat (lambda (w)
+                                           (let ((word (bcat-analysis--field w 'word)))
+                                             (if (string-empty-p word) (bcat-analysis--field w 'wylie) word)))
+                                         (alist-get 'words c) "")))))))
+            (alist-get 'segments base))))
+
+(defun bcat-analysis--unit-segment (unit keys)
+  "The number of the segment UNIT belongs to, or nil (a point on the
+whole verse): its own `segment' (the answers since 18.11.); else the
+number its passage names („(segment 694)“, „(seg. 47)“, „⟦47⟧“) when it
+is one of KEYS (`bcat-analysis--segment-keys'); the only segment of a
+sentence of one; the first of KEYS in whose text the passage stands —
+its first words in /italic/ up to an ellipsis —, else its first word in
+any final sandhi (the last letter dropped: „sopādānāḥ“ in „sopādānā“)."
+  (let ((own (alist-get 'segment unit))
+        (passage (bcat-analysis--field unit 'passage))
+        (nums (mapcar #'car keys)))
+    (cond
+     ((integerp own) own)
+     ((and (stringp own) (string-match-p "\\`[0-9]+\\'" (string-trim own))) (string-to-number own))
+     ((string-match "\\(?:\\_<seg\\(?:ment\\)?\\.?\\|⟦\\)[ \t]*\\([0-9]+\\)" passage)
+      (car (memql (string-to-number (match-string 1 passage)) nums)))
+     ((and nums (null (cdr nums))) (car nums))
+     (t
+      (let* ((piece (if (string-match "/\\([^/\n]+\\)/" passage) (match-string 1 passage) passage))
+             (key (bcat-analysis--letters (car (split-string piece "…"))))
+             (word (bcat-analysis--letters (car (split-string piece "[ \t…]+" t))))
+             (stem (and (> (length word) 4) (substring word 0 -1)))
+             (find (lambda (k) (and k (not (string-empty-p k))
+                                    (car (cl-find-if (lambda (e) (cl-some (lambda (text) (string-search k text)) (cdr e)))
+                                                     keys))))))
+        (or (funcall find key) (funcall find stem)))))))
+
+(defun bcat-analysis-discussion-points (parsed &optional refs base)
+  "The points for the discussion among the units of the comparison in
+PARSED (`bcat-analysis--point-p'), in the order of the text: plists
+\(:k NUMBER-OF-THE-POINT :n NUMBER-OF-THE-UNIT :unit UNIT :segment NUM).
+REFS, the references sent with the request, give the sigla; BASE, the
+rump, the segments (`bcat-analysis--unit-segment')."
+  (let ((machine (bcat-analysis--machine-sigla refs))
+        (known (bcat-analysis--known-sigla refs))
+        (keys (bcat-analysis--segment-keys base parsed))
+        (k 0))
+    (cl-loop for u in (alist-get 'units parsed) for n from 1
+             when (bcat-analysis--point-p u machine known)
+             collect (list :k (cl-incf k) :n n :unit u :segment (bcat-analysis--unit-segment u keys)))))
+
+(defun bcat-analysis--point-renderings (unit machine known)
+  "((SIGLUM . WORDING) …) of UNIT in question: those of the translators
+its doubts name; without a verdict every one but the own and a
+machine's."
+  (let* ((doubted (delete-dups (apply #'append (mapcar #'car (bcat-analysis--scholar-doubts unit machine known)))))
+         (sigla (or (remove "C" doubted)
+                    (cl-remove-if (lambda (s) (or (equal s "C") (member s machine)))
+                                  (delete-dups (apply #'append (mapcar #'bcat-analysis--reading-sigla
+                                                                       (alist-get 'readings unit))))))))
+    (delq nil (mapcar (lambda (s) (let ((text (bcat-analysis--unit-reading unit s))) (and text (cons s text))))
+                      sigla))))
+
+(defun bcat-analysis-discuss-lines (parsed &optional refs base)
+  "The lines that mark the points for the discussion at their segments
+\(Carsten 18.11.: „Schon bei den Segmenten hätte ich gerne schon
+*wesentliche* Unterschiede bzw. Diskussionspunkte markiert“): ((NUM .
+TEXT) …) — per point „*Discuss:* PASSAGE — D: „…“; here: „…“ (→ point
+K)“, the link to the point under Translations compared; several points
+of a segment a paragraph each.  In the language of the comparison."
+  (let* ((bcat-analysis--comparison-lang (or bcat-analysis-comparison-language (alist-get 'target-lang base) "en"))
+         (label #'bcat-analysis--comparison-label)
+         (machine (bcat-analysis--machine-sigla refs))
+         (known (bcat-analysis--known-sigla refs))
+         (out '()))
+    (dolist (p (bcat-analysis-discussion-points parsed refs base))
+      (let* ((u (plist-get p :unit)) (seg (plist-get p :segment)) (k (plist-get p :k))
+             (own (bcat-analysis--unit-reading u "C"))
+             (others (bcat-analysis--point-renderings u machine known))
+             (line (concat "*" (funcall label 'discuss) ":* "
+                           (replace-regexp-in-string "[ \t]*\n[ \t]*" " " (bcat-analysis--field u 'passage))
+                           (if others
+                               (concat " — " (mapconcat (lambda (r) (format "%s: %s" (car r) (cdr r))) others " · "))
+                             "")
+                           (if own (format "; %s: %s" (funcall label 'here) own) "")
+                           (format " (→ [[point-%d][%s %d]])" k (funcall label 'point) k))))
+        (when seg
+          (let ((cell (assoc seg out)))
+            (if cell (setcdr cell (concat (cdr cell) "\n\n" line)) (push (cons seg line) out))))))
+    (nreverse out)))
+
+(defun bcat-analysis--with-discuss (segments parsed refs base)
+  "SEGMENTS (template fields) with `discuss' — the line(s) of
+`bcat-analysis-discuss-lines' — on those that have a point."
+  (let ((lines (bcat-analysis-discuss-lines parsed refs base)))
+    (if (null lines)
+        segments
+      (mapcar (lambda (seg)
+                (let ((line (cdr (assoc (bcat-analysis--num seg) lines))))
+                  (if line (cons (cons 'discuss line) seg) seg)))
+              segments))))
+
+(defun bcat-analysis--point-block (point machine known)
+  "The paragraphs of POINT (`bcat-analysis-discussion-points') under
+Discussion points: its heading with the jump target and its segment,
+the renderings but a machine's, per rendering in question the verdict —
+why, and what is better —, without a verdict the finding; then what
+depends on it."
+  (let* ((label #'bcat-analysis--comparison-label)
+         (one (lambda (s) (replace-regexp-in-string "[ \t]*\n[ \t]*" " " (string-trim (or s "")))))
+         (u (plist-get point :unit)) (k (plist-get point :k)) (seg (plist-get point :segment))
+         (doubts (bcat-analysis--scholar-doubts u machine known))
+         (note (funcall one (bcat-analysis--field u 'impact_note))))
+    (string-join
+     (delq nil
+           (append
+            (list
+             (string-join
+              (cons (format "**** <<point-%d>>%d. %s%s" k k (funcall one (bcat-analysis--field u 'passage))
+                            (if seg (format " (⟦%s⟧)" seg) ""))
+                    (delq nil (mapcar (lambda (r)
+                                        (let ((sigla (bcat-analysis--reading-sigla r))
+                                              (text (funcall one (bcat-analysis--field r 'text))))
+                                          (unless (or (string-empty-p text)
+                                                      (and sigla (cl-every (lambda (s) (member s machine)) sigla)))
+                                            (format "- %s :: %s" (bcat-analysis--field r 'sigla) text))))
+                                      (alist-get 'readings u))))
+              "\n"))
+            (if doubts
+                (mapcar (lambda (sd)
+                          (let* ((d (cdr sd))
+                                 (verdict (if (equal (downcase (bcat-analysis--field d 'verdict)) "wrong")
+                                              'wrong 'doubtful))
+                                 (reason (string-remove-suffix
+                                          "." (replace-regexp-in-string
+                                               "\\`\\(?:[Bb]ecause\\|[Ss]ince\\|[Aa]s\\|[Ww]eil\\|[Dd]a\\)[ \t]+" ""
+                                               (funcall one (bcat-analysis--field d 'reason)))))
+                                 (better (string-remove-suffix "." (funcall one (bcat-analysis--field d 'better)))))
+                            (concat (format "*%s — %s:*" (string-join (car sd) ", ") (funcall label verdict))
+                                    (if (string-empty-p reason) "" (concat " " reason "."))
+                                    (if (string-empty-p better) ""
+                                      (format " %s: %s." (funcall label 'better) better)))))
+                        doubts)
+              (let ((finding (funcall one (bcat-analysis--field u 'finding))))
+                (unless (string-empty-p finding)
+                  (list (format "*%s:* %s" (funcall label 'finding) finding)))))
+            (unless (string-empty-p note)
+              (list (format "*%s:* %s" (funcall label 'depends) note)))))
+     "\n\n")))
+
+(defun bcat-analysis--not-at-issue (parsed points machine known)
+  "The line for what the comparison found but is no point: how many
+passages all agree on, where only the machine differs, what is minor —
+from the units of PARSED that are not among POINTS (the answers until
+18.11. rated every passage) — and what an answer says itself (`minor');
+nil when there is nothing."
+  (let* ((label #'bcat-analysis--comparison-label)
+         (one (lambda (u) (replace-regexp-in-string "[ \t]*\n[ \t]*" " " (bcat-analysis--field u 'passage))))
+         (taken (mapcar (lambda (p) (plist-get p :unit)) points))
+         (rest (cl-remove-if (lambda (u) (memq u taken)) (alist-get 'units parsed)))
+         (agree (cl-remove-if-not (lambda (u) (eq 'green (bcat-analysis--rating (bcat-analysis--field u 'rating)))) rest))
+         (others (cl-remove-if (lambda (u) (memq u agree)) rest))
+         (machine-only (cl-remove-if-not
+                        (lambda (u) (and (alist-get 'doubts u)
+                                         (not (bcat-analysis--scholar-doubts u machine known))))
+                        others))
+         (minor (cl-remove-if (lambda (u) (memq u machine-only)) others))
+         (said (string-trim (bcat-analysis--field parsed 'minor)))
+         (parts (delq nil
+                      (list (and agree (format (funcall label 'agree) (length agree)))
+                            (and machine-only
+                                 (format "%s: %s"
+                                         (format (funcall label 'machine-only)
+                                                 (string-join bcat-analysis-machine-references ", "))
+                                         (mapconcat one machine-only ", ")))
+                            (and minor (format "%s: %s" (funcall label 'minor) (mapconcat one minor ", ")))))))
+    (when (or parts (not (string-empty-p said)))
+      (concat "*" (funcall label 'not-at-issue) ":* "
+              (if parts (concat (string-join parts " · ") ".") "")
+              (if (and parts (not (string-empty-p said))) " " "")
+              said))))
+
 (defun bcat-analysis-split-proposal (proposal)
   "(PROPOSAL . DECISIONS) of PROPOSAL: the proposed translation(s), read
 first, and from *Decisions:* (*Entscheidungen:*) on what justifies them
@@ -1548,8 +1828,47 @@ Comparison.“"
           (list (format "*%s:* %s" (bcat-analysis--comparison-label 'decisions) decisions))))
        "\n\n"))))
 
-(defun bcat-analysis-comparison-units (parsed &optional refs target)
-  "The comparison of the translations unit by unit from PARSED (Carsten
+(defun bcat-analysis-comparison-units (parsed &optional refs target base)
+  "What follows the translations under Translations compared, from PARSED
+\(Carsten 18.11.: „auf dem Punkt … wirklich bloß enthalten was
+diskussionswürdig ist“; no green/yellow/red, no table): *** Discussion
+points — per point its paragraphs (`bcat-analysis--point-block'), or
+that there is none —, the line for the rest
+\(`bcat-analysis--not-at-issue'), *** Corrections to the analysis;
+\"\" when the answer has neither.  The points are named only when the
+answer compared at all (it has `units') and there is a translator to
+compare with — a machine translation alone is none.  REFS give the
+sigla, BASE (the rump) the segments of the points.  In
+`bcat-analysis-comparison-language', else in the target language
+TARGET.  Until 18.11.: `bcat-analysis-comparison-units-rated'."
+  (let* ((bcat-analysis--comparison-lang (or bcat-analysis-comparison-language target "en"))
+         (label #'bcat-analysis--comparison-label)
+         (machine (bcat-analysis--machine-sigla refs))
+         (known (bcat-analysis--known-sigla refs))
+         (points (bcat-analysis-discussion-points parsed refs base))
+         (scholars (cl-remove-if (lambda (r) (member (car r) bcat-analysis-machine-references)) refs))
+         (compared (and (assq 'units parsed) (or points scholars)))
+         (corrections (cl-remove-if-not (lambda (c) (and (stringp c) (not (string-blank-p c))))
+                                        (alist-get 'corrections parsed))))
+    (string-join
+     (delq nil
+           (list
+            (and compared
+                 (concat "*** " (funcall label 'points) "\n"
+                         (if points
+                             (mapconcat (lambda (p) (bcat-analysis--point-block p machine known)) points "\n\n")
+                           (funcall label 'none))))
+            (and compared (bcat-analysis--not-at-issue parsed points machine known))
+            (and corrections
+                 (concat "*** " (funcall label 'corrections) "\n"
+                         (mapconcat (lambda (c) (concat "- " (string-trim c))) corrections "\n")))))
+     "\n\n")))
+
+(defun bcat-analysis-comparison-units-rated (parsed &optional refs target)
+  "The comparison as it was written from 2.11. to 18.11. — every unit
+rated green, yellow or red; kept to know such a part in a file again
+\(C-c u L sets it anew from the answer only when nobody changed it).
+The comparison of the translations unit by unit from PARSED (Carsten
 2.11., Muster vergleich-ta1-1.org): *** Übersicht — the sigla of REFS
 and the table Nr. | Stelle | Einstufung | Kern, each rating with its
 cell colour —, *** Die Stellen im Einzelnen (per unit the readings, the
@@ -1650,32 +1969,49 @@ of Translations compared, looked up by „Lindtner 1981“, were lost."
                      (alist-get 'segments parsed)))
               parsed)))))
 
-(defun bcat-analysis-comparison (parsed &optional refs target)
+(defun bcat-analysis-comparison (parsed &optional refs target base)
   "Translations compared of the sentence: the own translation from
 PARSED, each of REFS ((NAME . TEXT) …, the texts sent with the request)
 with the marks of its segment parts, the comparison paragraph of an
-older answer, then the units of the comparison in the target language
-TARGET (`bcat-analysis-comparison-units')."
-  (let ((segments (alist-get 'segments parsed))
-        (units (bcat-analysis-comparison-units parsed refs target)))
-    (concat
-     (bcat-analysis-footnotes-last
-     (string-join
-     (delq nil
-           (append
-            (let ((tr (bcat-analysis--field parsed 'translation)))
-              (unless (string-empty-p tr) (list (concat "*Translation:* " tr))))
-            (mapcar (lambda (r)
+older answer, then the points for the discussion in the target language
+TARGET (`bcat-analysis-comparison-units'; BASE, the rump, for their
+segments).  18.11.: a machine translation among REFS
+\(`bcat-analysis-machine-references') stands last, under a heading of
+its own that says what it is."
+  (let* ((segments (alist-get 'segments parsed))
+         (units (bcat-analysis-comparison-units parsed refs target base))
+         (paragraph (lambda (r)
                       (let ((text (string-trim (or (cdr r) ""))))
                         (unless (string-empty-p text)
                           (format "*%s:* %s" (car r)
                                   (bcat-analysis-mark-reference
-                                   text (bcat-analysis--reference-parts segments (car r)))))))
-                    refs)
-            (let ((c (bcat-analysis--field parsed 'comparison)))
-              (unless (string-empty-p c) (list c)))))
-     "\n\n"))
-     (if (string-empty-p units) "" (concat "\n\n" units)))))
+                                   text (bcat-analysis--reference-parts segments (car r))))))))
+         (machine-p (lambda (r) (member (car r) bcat-analysis-machine-references)))
+         (machines (let ((bcat-analysis--comparison-lang (or bcat-analysis-comparison-language target "en")))
+                     (delq nil
+                           (mapcar (lambda (r)
+                                     (let ((p (funcall paragraph r)))
+                                       (and p (concat "*** " (format (bcat-analysis--comparison-label 'machine) (car r))
+                                                      "\n" p))))
+                                   (cl-remove-if-not machine-p refs))))))
+    (string-join
+     (delq nil
+           (append
+            (list
+             (let ((top (bcat-analysis-footnotes-last
+                         (string-join
+                          (delq nil
+                                (append
+                                 (let ((tr (bcat-analysis--field parsed 'translation)))
+                                   (unless (string-empty-p tr) (list (concat "*Translation:* " tr))))
+                                 (mapcar paragraph (cl-remove-if machine-p refs))
+                                 (let ((c (bcat-analysis--field parsed 'comparison)))
+                                   (unless (string-empty-p c) (list c)))))
+                          "\n\n"))))
+               (and top (not (string-empty-p top)) top))
+             (and (not (string-empty-p units)) units))
+            machines))
+     "\n\n")))
 
 (defun bcat-analysis--second-translation (parsed)
   "The fields of the translation in the second language PARSED gives —
@@ -1731,11 +2067,12 @@ named again (`bcat-analysis--full-names')."
     (append
      (bcat-analysis-overview-fields base parsed)
      (bcat-analysis--second-translation parsed)
-     `((segments . ,segments)
+     ;; 18.11.: the points for the discussion marked at their segments
+     `((segments . ,(bcat-analysis--with-discuss segments parsed refs base))
        (glosses . ,(bcat-analysis-glosses-p segments))
        (translation . ,(bcat-analysis--field parsed 'translation))
        (grammar . ,(bcat-analysis--field parsed 'grammar))
-       (comparison . ,(bcat-analysis-comparison parsed refs (alist-get 'target-lang base)))
+       (comparison . ,(bcat-analysis-comparison parsed refs (alist-get 'target-lang base) base))
        (proposal . ,(bcat-analysis-comparison-proposal parsed (alist-get 'target-lang base))))
      ;; 18.11.: the translation closes * Text, the decisions stay
      (bcat-analysis-reading-fields (bcat-analysis-comparison-proposal parsed (alist-get 'target-lang base))
@@ -2760,11 +3097,12 @@ skipped keeps its rump fields; sigla used as names are named again
      (bcat-analysis-overview-fields base parsed)
      (bcat-analysis--prose-recitation base parsed)
      (bcat-analysis--second-translation parsed)
-     `((segments . ,segments)
+     ;; 18.11.: the points for the discussion marked at their segments
+     `((segments . ,(bcat-analysis--with-discuss segments parsed refs base))
        (glosses . ,(and (cl-some (lambda (s) (alist-get 'glossed s)) segments) t))
        (translation . ,(bcat-analysis--field parsed 'translation))
        (grammar . ,(bcat-analysis--field parsed 'grammar))
-       (comparison . ,(bcat-analysis-comparison parsed refs (alist-get 'target-lang base)))
+       (comparison . ,(bcat-analysis-comparison parsed refs (alist-get 'target-lang base) base))
        (proposal . ,(bcat-analysis-comparison-proposal parsed (alist-get 'target-lang base)))
        (word-analysis . ,(bcat-analysis-word-analysis (alist-get 'segments parsed)))
        (bhasya-hint . ,(bcat-analysis--field parsed 'bhasya_hint))

@@ -825,11 +825,32 @@ a reference — sent to Claude as „E = Entscheidungen“."
              (end (if (string-match "^\\*\\{1,3\\} " text start)
                       (match-beginning 0)
                     (length text))))
-        (delq nil
-              (mapcar (lambda (p)
-                        (when (string-match "\\`\\*\\([^*\n]+?\\):\\* \\(\\(?:.\\|\n\\)*\\)" p)
-                          (cons (match-string 1 p) (string-trim (match-string 2 p)))))
-                      (split-string (substring text start end) "\n[ \t]*\n" t)))))))
+        (append
+         (delq nil
+               (mapcar (lambda (p)
+                         (when (string-match "\\`\\*\\([^*\n]+?\\):\\* \\(\\(?:.\\|\n\\)*\\)" p)
+                           (cons (match-string 1 p) (string-trim (match-string 2 p)))))
+                       (split-string (substring text start end) "\n[ \t]*\n" t)))
+         ;; 18.11.: a machine translation stands last, under a heading
+         ;; of its own — its text whole (every paragraph), down to the
+         ;; next heading or the next labelled paragraph: a reference
+         ;; pasted at the very end of the section is one too.
+         (let ((whole (if (string-match "^\\*\\{1,2\\} " text start) (match-beginning 0) (length text)))
+               (pos start) (out '()))
+           (while (and (string-match "^\\*\\*\\* [^\n]*\n\\*\\([^*\n]+?\\):\\* " text pos)
+                       (< (match-beginning 0) whole))
+             (let* ((name (match-string 1 text))
+                    (b (progn (string-match "\n" text (match-beginning 0)) (match-end 0)))
+                    (e (min whole (if (string-match "^\\*+ " text b) (match-beginning 0) (length text)))))
+               (when (member name bcat-analysis-machine-references)
+                 (let ((current nil))
+                   (dolist (p (split-string (substring text b e) "\n[ \t]*\n" t))
+                     (if (string-match "\\`\\*\\([^*\n]+?\\):\\* \\(\\(?:.\\|\n\\)*\\)" p)
+                         (progn (setq current (cons (match-string 1 p) (string-trim (match-string 2 p))))
+                                (push current out))
+                       (when current (setcdr current (concat (cdr current) "\n\n" (string-trim p))))))))
+               (setq pos e)))
+           (nreverse out)))))))
 
 (defun bcat-sentence--old-references (file)
   "References pasted into the old layout's `* Provided Translations' of
@@ -1485,16 +1506,24 @@ two requests."
       (bcat-sentence-fetch-state file (mapcar #'car (plist-get sentence :segs))))))
 
 (defun bcat-sentence--add-compared (file name text)
-  "Add the paragraph *NAME:* TEXT at the end of ** Translations compared
-in FILE (before the next heading)."
+  "Add the paragraph *NAME:* TEXT to ** Translations compared in FILE:
+at the end of the translations (before the next heading); a machine
+translation (`bcat-analysis-machine-references', 18.11.) last, after the
+points for the discussion, under its own heading."
   (let ((content (bcat-sentence--text file)))
     (with-temp-buffer
       (insert content)
       (goto-char (point-min))
       (when (re-search-forward "^\\*\\* Translations compared\n" nil t)
-        (goto-char (if (re-search-forward "^\\*+ " nil t) (line-beginning-position) (point-max)))
-        (skip-chars-backward " \t\n")
-        (insert (format "\n\n*%s:* %s" name text))
+        (if (member name bcat-analysis-machine-references)
+            (progn
+              (goto-char (if (re-search-forward "^\\*\\{1,2\\} " nil t) (line-beginning-position) (point-max)))
+              (skip-chars-backward " \t\n")
+              (insert (format "\n\n*** %s\n*%s:* %s" (format (bcat-analysis--comparison-label 'machine) name)
+                              name text)))
+          (goto-char (if (re-search-forward "^\\*+ " nil t) (line-beginning-position) (point-max)))
+          (skip-chars-backward " \t\n")
+          (insert (format "\n\n*%s:* %s" name text)))
         (bcat-sentence--save-visit file)
         (bcat-sentence--write file (buffer-string))))))
 

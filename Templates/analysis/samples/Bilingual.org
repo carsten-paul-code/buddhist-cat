@@ -230,6 +230,9 @@ The Tibetan keeps the structure: /zhe na/ marks the question, /phyir te/ opens a
 
 *Rahula/Boin-Webb 2001:* Why are there only five aggregates? Because of the five methods by means of which *[the idea] of self (ātman)* makes its appearance: self as *physical apprehension*, self as experience, self as expression, self as *the agent* of all right and all wrong, and self as the basis of all that.
 
+Rahula/Boin-Webb reduce ātmavastu to „self“ and turn the forming of merit and demerit into „the agent“; DharmaMitra keeps the basis („objective basis“, with an added „objective“) and stays close to udbhāvanatā („manifest“).  Neither reflects the Tibetan's „stating“ (brjod pa).
+
+*** DharmaMitra (machine translation, for completeness)
 *DharmaMitra:* Why are there exactly five aggregates (skandhas)?
 Because they serve to manifest the objective basis of the self (ātmavastu) in five ways:
 1. By manifesting the objective basis of the self as the body together with its possessions;
@@ -237,8 +240,6 @@ Because they serve to manifest the objective basis of the self (ātmavastu) in f
 3. By manifesting the objective basis of the self as the ground for conventional designation (vyavahāra);
 4. By manifesting the objective basis of the self as the formative activity (abhisaṃskāra) of merit and demerit (dharma-adharma);
 5. By manifesting the objective basis of the self as the support (āśraya) for those [preceding aggregates].
-
-Rahula/Boin-Webb reduce ātmavastu to „self“ and turn the forming of merit and demerit into „the agent“; DharmaMitra keeps the basis („objective basis“, with an added „objective“) and stays close to udbhāvanatā („manifest“).  Neither reflects the Tibetan's „stating“ (brjod pa).
 
 ** Segment 22 · Tib. 77
 ⟦22⟧ *Translation:* Why are there just five aggregates (skandha)? — \\

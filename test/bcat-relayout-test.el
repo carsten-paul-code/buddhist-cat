@@ -111,6 +111,111 @@ no heading stands in the new one."
                           (bcat-relayout-test--file
                            (format "Templates/analysis/samples/%s.org" (nth 3 case)))))))))))
 
+(ert-deftest bcat-relayout-comparison-on-the-point ()
+  "18.11. (Carsten: the comparison „auf dem Punkt“, the points marked at
+the segments; prototype on TĀ 1012: „passt“): C-c u L sets a file whose
+Translations compared still has the rated form of 2.11.–18.11. (overview
+table, For the class, every passage) anew from the answer kept at the
+fetch — the translations as the file shows them (a reference added by
+hand stays), then the points, the machine translation last; the
+segments get their „Discuss:“ lines.  Only when nobody changed the
+rated part: a part edited by hand stays as it is, and without the new
+part no segment gets a line (its link would lead nowhere).  A file in
+the new form comes back as it is — a line reworded by hand included."
+  (let* ((parsed bcat-analysis-test--discussion-answer)
+         (refs bcat-analysis-test--discussion-refs)
+         (record (list :parsed parsed :refs refs))
+         (rated (bcat-analysis-comparison-units-rated parsed refs "en"))
+         (old (concat "*Translation:* Own translation.\n\n"
+                      "*Dyczkowski 2023:* The Absolute is what is *most excellent*.\n\n"
+                      "*DharmaMitra:* It is supreme.\n\nSuch is the meaning.\n\n"
+                      "*Ruegg 1981:* Added by hand.\n\n"
+                      rated))
+         (discuss (cdr (car (bcat-analysis-discuss-lines parsed refs bcat-analysis-test--discussion-base))))
+         (context (lambda (comparison)
+                    `((comparison . ,comparison) (target-lang . "en")
+                      (segments ((num . 1) (samhita . "anuttaraṃ katipayakālamṛtāntaravailakṣaṇyāt"))
+                                ((discuss . ,discuss) (num . 2) (samhita . "amākhyakalāsvarūpam iti /"))))))
+         (new (bcat-relayout--pointed (funcall context old) record))
+         (text (alist-get 'comparison new)))
+    (should (string-match-p "^\\*\\*\\* Overview\nSigla: " old))
+    (should (string-prefix-p (concat "*Translation:* Own translation.\n\n"
+                                     "*Dyczkowski 2023:* The Absolute is what is *most excellent*.\n\n"
+                                     "*Ruegg 1981:* Added by hand.\n\n"
+                                     "*** Discussion points\n**** <<point-1>>1. /amākhyakalāsvarūpam/ (⟦2⟧)\n")
+                             text))
+    (should (string-suffix-p (concat "\n\n*** DharmaMitra (machine translation, for completeness)\n"
+                                     "*DharmaMitra:* It is supreme.\n\nSuch is the meaning.")
+                             text))
+    (should-not (string-match-p "Overview\\|cellcolor\\|For the class" text))
+    (should (equal discuss (alist-get 'discuss (nth 1 (alist-get 'segments new)))))
+    ;; written by an older version of the renderer — „(above)“ in the
+    ;; sigla, „because because“, other column widths, sigla of references
+    ;; since removed: no hand in it, set anew all the same
+    (let* ((older (replace-regexp-in-string
+                   "^Sigla: C = Translation" "Sigla: C = Translation (above)"
+                   (replace-regexp-in-string
+                    "— \\*doubtful\\*, because " "— *doubtful*, because because "
+                    (replace-regexp-in-string
+                     "-+|$" "-----|"
+                     (replace-regexp-in-string
+                      "D = Dyczkowski 2023" "D = Dyczkowski 2023, E = Entscheidungen" old t t)))
+                   t t))
+           (set (bcat-relayout--pointed (funcall context older) record)))
+      (should-not (equal older old))
+      (should (string-match-p "because because" older))
+      (should (equal text (alist-get 'comparison set))))
+    ;; the rated part changed by hand: it stays, and no line at a segment
+    (let* ((edited (replace-regexp-in-string "All agree\\." "All agree, I think." old t t))
+           (kept (bcat-relayout--pointed (funcall context edited) record)))
+      (should-not (equal edited old))
+      ;; (only the machine translation goes last, as at every C-c u L)
+      (should (equal (bcat-relayout--machine-last edited "en") (alist-get 'comparison kept)))
+      (should (string-match-p "^\\*\\*\\* Overview\nSigla: " (alist-get 'comparison kept)))
+      (should (string-match-p "All agree, I think\\." (alist-get 'comparison kept)))
+      (should (string-suffix-p (concat "\n\n*** DharmaMitra (machine translation, for completeness)\n"
+                                       "*DharmaMitra:* It is supreme.\n\nSuch is the meaning.")
+                               (alist-get 'comparison kept)))
+      (should-not (cl-some (lambda (s) (alist-get 'discuss s)) (alist-get 'segments kept))))
+    ;; no answer kept: the same
+    (let ((kept (bcat-relayout--pointed (funcall context old) nil)))
+      (should (equal (bcat-relayout--machine-last old "en") (alist-get 'comparison kept)))
+      (should (string-match-p "^\\*\\*\\* Overview\nSigla: " (alist-get 'comparison kept)))
+      (should-not (cl-some (lambda (s) (alist-get 'discuss s)) (alist-get 'segments kept))))
+    ;; a comparison of before 2.11. — a paragraph after the translations:
+    ;; it stays there, only the machine's labelled paragraph goes last
+    (should (equal (concat "*Translation:* T\n\n*Lindtner 1981:* L. [fn:l]\n\nBoth agree.\n\n[fn:l] A note.\n\n"
+                           "*** DharmaMitra (machine translation, for completeness)\n*DharmaMitra:* M.")
+                   (bcat-relayout--machine-last
+                    "*Translation:* T\n\n*Lindtner 1981:* L. [fn:l]\n\n*DharmaMitra:* M.\n\nBoth agree.\n\n[fn:l] A note."
+                    "en")))
+    (should (equal "*Translation:* T\n\n*Lindtner 1981:* L." 
+                   (bcat-relayout--machine-last "*Translation:* T\n\n*Lindtner 1981:* L." "en")))
+    ;; the new form: as it is
+    (let ((again (bcat-relayout--pointed (funcall context text) record)))
+      (should (equal text (alist-get 'comparison again)))
+      (should (equal discuss (alist-get 'discuss (nth 1 (alist-get 'segments again))))))))
+
+(ert-deftest bcat-relayout-reads-discuss-lines ()
+  "18.11.: the „Discuss:“ line of a segment is read back with it — what
+the file shows wins over the answer (a hand's wording stays); a segment
+without one has none."
+  (let* ((old (concat "* Text\n#+begin_verse\nཀ།\nka/\nཁ།\nkha/\n#+end_verse\n\n*Translation:* T\n\n"
+                      "* Philology\n⟦38⟧\n| ཀ |\n| ka |\n| a |\n| N |\n\n→ one\n\n"
+                      "*Discuss:* /ka/ — my own wording (→ [[point-1][point 1]])\n\n"
+                      "⟦39⟧\n| ཁ |\n| kha |\n| b |\n| N |\n\n→ two\n\n"
+                      "** Concepts\n** Translations compared\n*Translation:* T\n\n"
+                      "** Segment 38\n⟦38⟧ *Translation:* one\n\n** Segment 39\n⟦39⟧ *Translation:* two\n\n"
+                      "* Working Translation\n\n* My Notes\n\n* Footnotes\n"))
+         (base '((segments ((discuss . "*Discuss:* /ka/ — from the answer") (num . 38) (uchen . "ཀ།") (wylie . "ka/"))
+                           ((num . 39) (uchen . "ཁ།") (wylie . "kha/")))
+                 (sent-num . "9")))
+         (once (bcat-relayout-test--render "tibetan" base old)))
+    (should (string-match-p (regexp-quote "→ one\n\n*Discuss:* /ka/ — my own wording (→ [[point-1][point 1]])\n\n⟦39⟧\n")
+                            once))
+    (should (= 1 (with-temp-buffer (insert once) (how-many "^\\*Discuss:\\*" (point-min) (point-max)))))
+    (should (equal once (bcat-relayout-test--render "tibetan" base once)))))
+
 (ert-deftest bcat-relayout-new-order-unchanged ()
   "A file in the new order read back and set anew is the same file —
 for each template."

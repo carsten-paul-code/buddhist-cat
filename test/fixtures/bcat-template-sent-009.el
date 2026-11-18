@@ -78,9 +78,10 @@
 
 *Lindtner 1981:* [It is also] inexpressible (avācya) and invisible (adraṣṭavya), unchangeable (avikāra) and uncompounded (asaṃskṛta). *When* a yogi understands it *he abandons* the obstructions of defilement and cognizable *(kleśajñeyāvaraṇa)*.
 
-*DharmaMitra:* Inexpressible and invisible, / Unchanging and unconditioned— / *When* a yogi realizes this, / The obscurations of afflictions and the knowable are abandoned.
+Both read the realization temporally (\"when\"). Lindtner makes the yogin the agent of the abandoning and gives the two obstructions as one compound; DharmaMitra and the translation here read two obstructions and a passive result.
 
-Both read the realization temporally (\"when\"). Lindtner makes the yogin the agent of the abandoning and gives the two obstructions as one compound; DharmaMitra and the translation here read two obstructions and a passive result.")
+*** DharmaMitra (machine translation, for completeness)
+*DharmaMitra:* Inexpressible and invisible, / Unchanging and unconditioned— / *When* a yogi realizes this, / The obscurations of afflictions and the knowable are abandoned.")
     (working-translation . "") (my-notes . "") (footnotes . ""))
   "Felder von bDen Satz 9 (Tibetisch V) in der Form der Vorlage.")
 

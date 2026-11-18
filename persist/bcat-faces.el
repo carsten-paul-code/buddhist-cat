@@ -459,6 +459,26 @@ the mark away — with `bcat-faces-highlight-column' nil always."
   (bcat-faces--column-update)
   (message "Spalte des Worts unter dem Cursor: %s" (if bcat-faces-highlight-column "an" "aus")))
 
+(defface bcat-discuss-face
+  '((((background dark)) :foreground "#FFB454" :weight bold)
+    (t :foreground "#B45F06" :weight bold))
+  "What is to be discussed: the label of the „Discuss:“ line at a
+segment and the title of the points under Translations compared.
+Carsten 18.11.: „das grün/gelb/rot hilft mir dabei nicht wirklich weiter
+und macht es eher unübersichtlich. Eigentlich also nur vielleicht
+farblich hervorheben was es zu beachten gilt“ — one colour, used for
+nothing else."
+  :group 'buddhist-cat)
+
+(defun bcat-faces--discuss-matcher (limit)
+  "Font-lock matcher: the next mark of a point for the discussion before
+LIMIT — group 1 the label „*Discuss:*“ („*Zu besprechen:*“) of a line,
+or the title „Discussion points“ („Diskussionspunkte“) of their heading."
+  (re-search-forward
+   (concat "^\\(?:\\(?1:\\*\\(?:Discuss\\|Zu besprechen\\):\\*\\)"
+           "\\|\\*\\*\\* \\(?1:Discussion points\\|Diskussionspunkte\\)[ \t]*$\\)")
+   limit t))
+
 (defface bcat-translation-face
   '((((background dark)) :slant italic :foreground "#7FCF9A")
     (t :slant italic :foreground "#1E6B3A"))
@@ -683,6 +703,7 @@ whole, so a later chunk of jit-lock never unfolds a part of it."
       (0 'bcat-word-face prepend)))
     (bcat-faces--grid-matcher (0 'bcat-grid-face prepend))
     (bcat-faces--translation-matcher (0 'bcat-translation-face prepend))
+    (bcat-faces--discuss-matcher (1 'bcat-discuss-face prepend))
     (bcat-faces--rating-matcher
      (3 'shadow prepend t)
      (2 (bcat-faces--rating-face (match-string 1)) prepend))

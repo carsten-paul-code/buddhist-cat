@@ -525,6 +525,24 @@ neither."
              (funcall render "bilingual-tibetan" with
                       '((sanskrit-p . t) (sanskrit ((devanagari . "अ") (samhita . "a b")))))))))
 
+(ert-deftest bcat-template-discuss-line ()
+  "18.11.: the line that marks a point for the discussion (`discuss')
+stands at its segment, right after the „→“ translation — in every
+template of a sentence file; a segment without a point has none."
+  (let* ((bcat-template-directory
+          (expand-file-name "Templates/analysis" bcat-template-test--root))
+         (line "*Discuss:* /a/ — D: „x“; here: „y“ (→ [[point-1][point 1]])")
+         (seg (lambda (num &optional discuss)
+                `((num . ,num) (shown . t) (mark . "") (uchen . "ཀ།") (wylie . "ka/") (devanagari . "अ")
+                  (samhita . "a") (padapatha . "a") (gloss-table . "| a |") (segment-translation . "t")
+                  ,@(and discuss `((discuss . ,discuss)))))))
+    (dolist (template '("sanskrit" "tibetan" "bilingual" "bilingual-tibetan"))
+      (ert-info ((format "Vorlage %s" template))
+        (let ((out (bcat-template-render-named
+                    template `((segments ,(funcall seg "1" line) ,(funcall seg "2")) (recitation . "अ\na")))))
+          (should (string-match-p (regexp-quote (concat "\n→ t\n\n" line "\n\n")) out))
+          (should (= 1 (with-temp-buffer (insert out) (how-many "^\\*Discuss:\\*" (point-min) (point-max))))))))))
+
 (ert-deftest bcat-template-sanskrit-prose ()
   "Viveka prose (no metre): * Text holds only the Devanāgarī original
 \(no metre line, no scansion); in the rump * Philology has no segments —

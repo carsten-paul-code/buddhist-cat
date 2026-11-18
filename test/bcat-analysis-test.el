@@ -466,9 +466,11 @@ Translations compared, the marker stays in the text."
     (should (equal (concat "*Translation:* Own.\n\n"
                            "*Lindtner 1981:* Perception and inference. [fn:l10]\n\n"
                            "*Apple 2019:* Direct perception and inference.\n\n"
-                           "*DharmaMitra:* Direct perception.\n\n"
                            "All three agree.\n\n"
-                           "[fn:l10] Lindtner 1981, Anm. 10: a note.")
+                           "[fn:l10] Lindtner 1981, Anm. 10: a note.\n\n"
+                           ;; 18.11.: the machine translation last, under its heading
+                           "*** DharmaMitra (machine translation, for completeness)\n"
+                           "*DharmaMitra:* Direct perception.")
                    out))
     (should (equal "A [fn:x]\n\nB\n\n[fn:x] n.\n\n[fn:y] m."
                    (bcat-analysis-footnotes-last "A [fn:x]\n\n[fn:x] n.\n\nB\n\n[fn:y] m.")))))
@@ -1551,9 +1553,9 @@ prompt) — their YouTube links reduced to the time mark."
   "A Sanskrit answer with the comparison of Carsten's Muster (TĀ 1.1).")
 
 (ert-deftest bcat-analysis-comparison-units-render ()
-  "Translations compared as in the Muster: the translations with their
-marks (footnote definitions still before the first heading), then
-*** Übersicht — the sigla, the table Nr. | Stelle | Einstufung | Kern
+  "The rated comparison of 2.11.–18.11. (`bcat-analysis-comparison-units-rated'
+— since 18.11. only to know such a part in a file again, C-c u L): as in
+the Muster *** Übersicht — the sigla, the table Nr. | Stelle | Einstufung | Kern
 with fixed column widths and the cell colour of the rating
 \(@@latex:\\cellcolor{ok|mid|bad}@@grün/gelb/rot), a bar in a cell
 escaped —, *** Die Stellen im Einzelnen (**** per unit: readings as a
@@ -1562,17 +1564,13 @@ only its finding), *** Berichtigungen zur Analyse.  The proposal (a quote
 per sense, *Entscheidungen:*) stands under the tables since 4.11.
 \(`bcat-analysis-comparison-proposal')."
   (let* ((parsed (bcat-analysis-parse bcat-analysis-test--units-answer))
-         (out (bcat-analysis-comparison
+         (out (bcat-analysis-comparison-units-rated
                parsed '(("Dyczkowski 2023" . "the glory [fn:d1]\n\n[fn:d1] Dyczkowski's note.")
                         ("DharmaMitra" . "the great Mother"))
                "de"))
          (table (cl-remove-if-not (lambda (l) (string-prefix-p "|" l)) (split-string out "\n"))))
     (should (string-prefix-p
-             (concat "*Translation:* May my heart flash forth.\n\n"
-                     "*Dyczkowski 2023:* the glory [fn:d1]\n\n"
-                     "*DharmaMitra:* the great Mother\n\n"
-                     "[fn:d1] Dyczkowski's note.\n\n"
-                     "*** Übersicht\n"
+             (concat "*** Übersicht\n"
                      "Sigel: C = Translation, D = Dyczkowski 2023, DM = DharmaMitra\n\n"
                      "#+ATTR_LATEX: :align rp{4.3cm}p{1.6cm}p{8cm} :font \\small\n")
              out))
@@ -1601,7 +1599,7 @@ per sense, *Entscheidungen:*) stands under the tables since 4.11.
                      "- Die Grammar nennt /saṃsphuratāt/ āśīrliṅ — falsch, -tāt-Imperativ.")
              out))
     ;; One sense: the quote without a label; no corrections: no heading.
-    (let ((one (bcat-analysis-comparison
+    (let ((one (bcat-analysis-comparison-units-rated
                 (append '((proposal ((label . "") (text . "One."))) (corrections))
                         parsed)
                 nil "de")))
@@ -1616,7 +1614,7 @@ per sense, *Entscheidungen:*) stands under the tables since 4.11.
       (should-not (string-match-p "Übersetzungsvorschlag" out))
       (should-not (string-match-p "Berichtigungen" one)))
     ;; English labels.
-    (let ((en (bcat-analysis-comparison parsed nil "en")))
+    (let ((en (bcat-analysis-comparison-units-rated parsed nil "en")))
       (dolist (s '("*** Overview\nSigla: C = Translation" "| No. | Passage" "| Rating" "| Point"
                    "@@latex:\\cellcolor{bad}@@red" "**** 1. /abhinavasṛṣṭimahā/ — red" "*Finding:* "
                    "*Weight:* " "*** Corrections to the analysis"))
@@ -1665,8 +1663,9 @@ rejected, yet rated yellow)."
 red first, its number, passage and rating, then one line per doubt —
 who and how, *abzulehnen*/*fraglich*, weil …, Besser: …; nothing for
 units without doubts, no section without any."
+  ;; (the rated form of 2.11.–18.11., `bcat-analysis-comparison-units-rated')
   (let* ((parsed (bcat-analysis-parse bcat-analysis-test--doubts-answer))
-         (out (bcat-analysis-comparison parsed nil "de")))
+         (out (bcat-analysis-comparison-units-rated parsed nil "de")))
     (should (string-match-p
              (regexp-quote
               (concat "|   3 | /pañcamukhaguptarucir/ | @@latex:\\cellcolor{bad}@@rot  | gupta  |\n\n"
@@ -1680,12 +1679,12 @@ units without doubts, no section without any."
                       "*** Die Stellen im Einzelnen\n"))
              out))
     (should-not (string-match-p "2\\. /jananī/ — grün\\*" out))
-    (let ((en (bcat-analysis-comparison parsed nil "en")))
+    (let ((en (bcat-analysis-comparison-units-rated parsed nil "en")))
       (should (string-match-p (regexp-quote "*** For the class\n- *3. /pañcamukhaguptarucir/ — red*") en))
       (should (string-match-p (regexp-quote "— *wrong*, because gupta") en))
       (should (string-match-p (regexp-quote "Better: „whose radiance") en)))
     (should-not (string-match-p "Für die Klasse"
-                                (bcat-analysis-comparison
+                                (bcat-analysis-comparison-units-rated
                                  (bcat-analysis-parse bcat-analysis-test--units-answer) nil "de")))))
 
 (ert-deftest bcat-analysis-class-reason-no-double-because ()
@@ -1728,8 +1727,9 @@ class shows every yellow and red unit with them."
                           " \"grammatical\": \"all\", \"grammar_note\": \"/klu sgrub/ can stand as a second subject or as genitive to /slob ma/\","
                           " \"certainty\": \"open\", \"impact\": \"low\", \"impact_note\": \"Nāgārjuna counts as realized either way\", \"doubts\": []},"
                           "{\"passage\": \"/x/\", \"rating\": \"green\", \"core\": \"c\", \"readings\": [], \"finding\": \"f\", \"weight\": \"\"}]}")))
-         (de (bcat-analysis-comparison parsed nil "de"))
-         (en (bcat-analysis-comparison parsed nil "en")))
+         ;; (the rated form of 2.11.–18.11.)
+         (de (bcat-analysis-comparison-units-rated parsed nil "de"))
+         (en (bcat-analysis-comparison-units-rated parsed nil "en")))
     (should (string-match-p
              (regexp-quote (concat "- *1. /klu sgrub slob ma zla grags yin/ — gelb*\n"
                                    "  - Grammatik: alle Lesarten möglich — /klu sgrub/ can stand as a second subject or as genitive to /slob ma/.\n"
@@ -1738,6 +1738,201 @@ class shows every yellow and red unit with them."
     (should-not (string-match-p "2\\. /x/ — grün\\*" de))
     (should (string-match-p (regexp-quote "  - Grammar: all readings possible — ") en))
     (should (string-match-p (regexp-quote "  - Decision: *open* · Impact: *low* — ") en))))
+
+(defconst bcat-analysis-test--discussion-answer
+  '((translation . "Own translation.")
+    (segments ((num . 1) (words ((word . "anuttaram")) ((word . "katipaya-kāla-mṛta-antara-vailakṣaṇyāt"))))
+              ((num . 2) (words ((word . "amā-ākhya-kalā-svarūpam")) ((word . "iti")))))
+    (units
+     ((passage . "/anuttaram/") (rating . "green") (core . "anuttara glossed")
+      (readings ((sigla . "C, D, DM") (text . "C: „most excellent“; D: „most excellent“; DM: „supreme“")))
+      (finding . "All agree."))
+     ((passage . "/katipaya-kāla-mṛta-antara-vailakṣaṇyāt/") (rating . "yellow") (core . "mṛta: dead or transient?")
+      (readings ((sigla . "C") (text . "„other dead phenomena“")) ((sigla . "D") (text . "„other insentient phenomena“"))
+                ((sigla . "DM") (text . "„transient states“")))
+      (finding . "mṛta is literally dead.") (certainty . "likely") (impact . "medium")
+      (impact_note . "The wordplay with amṛta is lost.")
+      (doubts ((who . "DM") (verdict . "doubtful") (reason . "it loses the wordplay") (better . "„dead“ (C, D)"))))
+     ((passage . "/avidyamānaṃ mṛtam/") (rating . "yellow") (core . "misprint")
+      (readings ((sigla . "C") (text . "„death (mṛta)“")) ((sigla . "D") (text . "„death (nṛta)“")))
+      (finding . "A misprint.") (certainty . "certain") (impact . "low") (impact_note . "None.")
+      (doubts ((who . "D „death (nṛta)“") (verdict . "doubtful") (reason . "the text reads mṛtam") (better . "„mṛta“ (C)"))))
+     ((passage . "/amākhyakalāsvarūpam/") (rating . "yellow") (core . "svarūpa or possessor?")
+      (readings ((sigla . "C") (text . "„whose essential nature is the digit called amā“"))
+                ((sigla . "D") (text . "„the possessor of which is the energy of the New Moon“"))
+                ((sigla . "DM") (text . "„whose true essence is the sixteenth digit“")))
+      (finding . "A bahuvrīhi with svarūpa as its head.") (certainty . "likely") (impact . "medium")
+      (impact_note . "Whether the body is the nature or merely has it.")
+      (doubts ((who . "D „the possessor of which …“, DM „the sixteenth digit“") (verdict . "doubtful")
+               (reason . "because the head of the compound is /svarūpa/, not a possessor.")
+               (better . "„whose essential nature is the digit called amā“ (C)")))))
+    (corrections "The form of /mṛtam/ was misidentified."))
+  "An answer of the form of 2.11. (TĀ 1012, shortened): eight units rated
+there, four here — one agreed, one where only DharmaMitra differs, one
+of low impact, one worth discussing.")
+
+(defconst bcat-analysis-test--discussion-refs
+  '(("Dyczkowski 2023" . "The Absolute is what is most excellent.")
+    ("DharmaMitra" . "It is supreme.\n\nSuch is the meaning."))
+  "The references sent with `bcat-analysis-test--discussion-answer'.")
+
+(defconst bcat-analysis-test--discussion-base
+  '((target-lang . "en")
+    (segments ((num . 1) (samhita . "anuttaraṃ katipayakālamṛtāntaravailakṣaṇyāt"))
+              ((num . 2) (samhita . "amākhyakalāsvarūpam iti /"))))
+  "The rump of the sentence of `bcat-analysis-test--discussion-answer'.")
+
+(ert-deftest bcat-analysis-discussion-points ()
+  "18.11. (Carsten: „Vergleich der Übersetzungen stört mich im Moment am
+meisten … Dharma Mitra ist inzwischen für mich keine Referenz mehr und
+sollte nur der Vollständigkeit halber mit aufgeführt sein. Und der
+Vergleich sollte dann auf dem Punkt sein und wirklich bloß enthalten
+was diskussionswürdig ist. das grün/gelb/rot hilft mir dabei nicht
+wirklich weiter“; the prototype on TĀ 1012: „passt“).  A unit of the
+comparison is a point for the discussion when it is not agreed (green),
+its impact is not low, and the rendering of a translator other than the
+machine (DharmaMitra) is in question — or, without a verdict, two such
+renderings stand apart.  Each point with its number, its unit and the
+segment its passage stands in (the unit's own `segment', else found in
+the text of the segments, as transmitted or divided)."
+  (let ((points (bcat-analysis-discussion-points bcat-analysis-test--discussion-answer
+                                                 bcat-analysis-test--discussion-refs
+                                                 bcat-analysis-test--discussion-base)))
+    (should (equal '((1 "/amākhyakalāsvarūpam/" 2))
+                   (mapcar (lambda (p) (list (plist-get p :k) (alist-get 'passage (plist-get p :unit))
+                                             (plist-get p :segment)))
+                           points))))
+  (let* ((unit (lambda (&rest fields) (append fields '((passage . "/x/") (impact . "high")))))
+         (points (lambda (&rest units)
+                   (mapcar (lambda (p) (plist-get p :segment))
+                           (bcat-analysis-discussion-points
+                            `((units ,@units)) '(("Dyczkowski 2023" . "d") ("Sanderson 2022" . "s") ("DharmaMitra" . "m"))
+                            '((segments ((num . 7) (wylie . "a b x c")) ((num . 8) (wylie . "y"))))))))
+         (one (lambda (u) (length (funcall points u)))))
+    ;; an answer of the new form has no rating: open between two translators
+    (should (= 1 (funcall one (funcall unit '(readings ((sigla . "C") (text . "a")) ((sigla . "D") (text . "b")))))))
+    ;; two entries, but the second is the machine's alone
+    (should (= 0 (funcall one (funcall unit '(readings ((sigla . "C, D") (text . "a")) ((sigla . "DM") (text . "b")))))))
+    ;; the own translation in question
+    (should (= 1 (funcall one (funcall unit '(doubts ((who . "C „a“") (verdict . "wrong") (reason . "r") (better . "")))))))
+    ;; a translator and the machine in one verdict
+    (should (= 1 (funcall one (funcall unit '(doubts ((who . "S „a“, DM „b“") (verdict . "doubtful") (reason . "r")))))))
+    (should (= 0 (funcall one (funcall unit '(rating . "green") '(doubts ((who . "D") (verdict . "wrong") (reason . "r")))))))
+    (should (= 0 (funcall one (append '((impact . "low") (doubts ((who . "D") (verdict . "wrong") (reason . "r"))))
+                                      '((passage . "/x/"))))))
+    ;; the segment: the unit's own, else where its passage stands, else none
+    (should (equal '(8) (funcall points (funcall unit '(segment . 8) '(doubts ((who . "D") (reason . "r")))))))
+    (should (equal '(7) (funcall points (funcall unit '(doubts ((who . "D") (reason . "r")))))))
+    (should (equal '(nil) (funcall points (append '((passage . "/zzz/") (doubts ((who . "D") (reason . "r"))))))))
+    ;; the whole verse: no segment
+    (should (equal '(nil) (funcall points (append '((passage . "Whole verse") (doubts ((who . "D") (reason . "r")))))))))
+  ;; Trial run over the answers kept until 18.11. (points without their
+  ;; segment): the number the passage names, „(segment 694)“, „(seg. 47)“;
+  ;; the only segment of the sentence; the first word in its final sandhi
+  ;; — „sopādānāḥ“ in „sopādānā dharmā“, „āyadvāramātratvāt“ in
+  ;; „āyadvāramātratvād“, „sākūtam uktam anyaiḥ“ in „sākūtamuktamanyair“.
+  (let* ((base '((segments ((num . 59) (samhita . "kena kāraṇena dhātava āyatanāni ca"))
+                           ((num . 60) (samhita . "sopādānā dharmā ity ucyante."))
+                           ((num . 683) (samhita . "anākarṇya gūḍhārtham"))
+                           ((num . 684) (samhita . "sākūtamuktamanyairyat|tena dolāyate manaḥ // 6")))))
+         (seg (lambda (passage &optional b)
+                (plist-get (car (bcat-analysis-discussion-points
+                                 `((units ((passage . ,passage) (impact . "high")
+                                           (doubts ((who . "D") (reason . "r"))))))
+                                 '(("Dyczkowski 2023" . "d")) (or b base)))
+                           :segment))))
+    (should (eql 60 (funcall seg "/sopādānāḥ dharmāḥ/ /iti/ /ucyante/")))
+    (should (eql 684 (funcall seg "/sākūtam uktam anyaiḥ/")))
+    (should (eql 683 (funcall seg "/gūḍha-artham/ (segment 683)")))
+    (should (eql 59 (funcall seg "/x/ (seg. 59)")))
+    (should (eql 59 (funcall seg "/x/ ⟦59⟧")))
+    (should-not (funcall seg "/x/ (segment 12)"))
+    (should (eql 43 (funcall seg "/āyadvāramātratvāt/"
+                             '((segments ((num . 43) (samhita . "ganz anders")))))))))
+
+(ert-deftest bcat-analysis-comparison-on-the-point ()
+  "18.11. („auf dem Punkt … wirklich bloß enthalten was diskussionswürdig
+ist“): Translations compared holds the own translation and the
+translators' in full; then „Discussion points“ — only the points, each
+with the renderings in question, why, and what depends on it, no
+ratings, no table; one line „Not at issue“ for the rest; the
+corrections; the machine translation last, under a heading that says
+what it is.  Without a point: „None“.  An answer without units (before
+2.11.) has no such part."
+  (let ((out (bcat-analysis-comparison bcat-analysis-test--discussion-answer
+                                       bcat-analysis-test--discussion-refs "en"
+                                       bcat-analysis-test--discussion-base)))
+    (should (equal (concat
+                    "*Translation:* Own translation.\n\n"
+                    "*Dyczkowski 2023:* The Absolute is what is most excellent.\n\n"
+                    "*** Discussion points\n"
+                    "**** <<point-1>>1. /amākhyakalāsvarūpam/ (⟦2⟧)\n"
+                    "- C :: „whose essential nature is the digit called amā“\n"
+                    "- D :: „the possessor of which is the energy of the New Moon“\n\n"
+                    "*D — doubtful:* the head of the compound is /svarūpa/, not a possessor."
+                    " Better: „whose essential nature is the digit called amā“ (C).\n\n"
+                    "*What depends on it:* Whether the body is the nature or merely has it.\n\n"
+                    "*Not at issue:* 1 passage(s) on which all agree · only DharmaMitra differs: "
+                    "/katipaya-kāla-mṛta-antara-vailakṣaṇyāt/ · minor: /avidyamānaṃ mṛtam/.\n\n"
+                    "*** Corrections to the analysis\n- The form of /mṛtam/ was misidentified.\n\n"
+                    "*** DharmaMitra (machine translation, for completeness)\n"
+                    "*DharmaMitra:* It is supreme.\n\nSuch is the meaning.")
+                   out))
+    (should-not (string-match-p "cellcolor\\|yellow\\|green\\|Overview\\|For the class" out)))
+  ;; German
+  (let* ((bcat-analysis-comparison-language "de")
+         (out (bcat-analysis-comparison bcat-analysis-test--discussion-answer
+                                        bcat-analysis-test--discussion-refs "en"
+                                        bcat-analysis-test--discussion-base)))
+    (should (string-match-p
+             (regexp-quote (concat "*** Diskussionspunkte\n**** <<point-1>>1. /amākhyakalāsvarūpam/ (⟦2⟧)\n"))
+             out))
+    (should (string-match-p (regexp-quote "*D — fraglich:* ") out))
+    (should (string-match-p (regexp-quote "*Was daran hängt:* ") out))
+    (should (string-match-p (regexp-quote "*Unstrittig:* 1 Stelle(n), an denen alle übereinstimmen · nur DharmaMitra weicht ab: ") out))
+    (should (string-match-p (regexp-quote "*** DharmaMitra (maschinelle Übersetzung, der Vollständigkeit halber)\n*DharmaMitra:* ") out)))
+  ;; no point: said so; an answer of the new form names the rest itself
+  (should (string-match-p
+           (regexp-quote "*** Discussion points\nNone: the translations agree in substance.\n\n*Not at issue:* A misprint in D.")
+           (bcat-analysis-comparison '((translation . "T") (units) (minor . "A misprint in D."))
+                                     '(("Dyczkowski 2023" . "d")) "en")))
+  ;; only the machine to compare with: no points to speak of
+  (should (equal "*Translation:* T\n\n*** DharmaMitra (machine translation, for completeness)\n*DharmaMitra:* m"
+                 (bcat-analysis-comparison '((translation . "T") (units)) '(("DharmaMitra" . "m")) "en")))
+  ;; before 2.11.: a paragraph, no units
+  (should (equal "*Translation:* T\n\n*Dyczkowski 2023:* d\n\nThey differ in one word."
+                 (bcat-analysis-comparison '((translation . "T") (comparison . "They differ in one word."))
+                                           '(("Dyczkowski 2023" . "d")) "en"))))
+
+(ert-deftest bcat-analysis-discuss-at-the-segment ()
+  "18.11. (Carsten: „Schon bei den Segmenten hätte ich gerne schon
+*wesentliche* Unterschiede bzw. Diskussionspunkte markiert“): the
+segment a point belongs to gets a line „Discuss:“ — the passage, the
+rendering in question, the own one, a link to the point under
+Translations compared; a segment without a point gets none.  The
+template sets it after the „→“ translation of the segment."
+  (let ((lines (bcat-analysis-discuss-lines bcat-analysis-test--discussion-answer
+                                            bcat-analysis-test--discussion-refs
+                                            bcat-analysis-test--discussion-base)))
+    (should (equal `((2 . ,(concat "*Discuss:* /amākhyakalāsvarūpam/ — "
+                                   "D: „the possessor of which is the energy of the New Moon“; "
+                                   "here: „whose essential nature is the digit called amā“ "
+                                   "(→ [[point-1][point 1]])")))
+                   lines)))
+  (let ((bcat-analysis-comparison-language "de"))
+    (should (string-match-p
+             "\\`\\*Zu besprechen:\\* .*; hier: „whose essential nature .* (→ \\[\\[point-1\\]\\[Punkt 1\\]\\])\\'"
+             (cdr (car (bcat-analysis-discuss-lines bcat-analysis-test--discussion-answer
+                                                    bcat-analysis-test--discussion-refs
+                                                    bcat-analysis-test--discussion-base))))))
+  ;; in the fields of the sentence
+  (let* ((ctx (bcat-analysis-sanskrit-context bcat-analysis-test--discussion-base
+                                              bcat-analysis-test--discussion-answer
+                                              bcat-analysis-test--discussion-refs))
+         (segs (alist-get 'segments ctx)))
+    (should (string-empty-p (or (alist-get 'discuss (nth 0 segs)) "")))
+    (should (string-prefix-p "*Discuss:* /amākhyakalāsvarūpam/ — D: " (alist-get 'discuss (nth 1 segs))))
+    (should (string-match-p "^\\*\\*\\* Discussion points\n\\*\\*\\*\\* <<point-1>>1\\. " (alist-get 'comparison ctx)))))
 
 (ert-deftest bcat-analysis-reading-fields ()
   "18.11. (Carsten: „die proposed Translation sollte als letzter Teil im
@@ -1804,7 +1999,10 @@ own translation stays under the tables."
     (should-not (string-match-p "^\\*Translation:\\*" text))
     (should-not (string-match-p "^\\*\\* Grammar$" out))
     (should (string-match-p "^\\*\\* Translations compared\n\\*Translation:\\* Own translation\\." out))
-    (should (string-match-p "^Sigla: C = Translation, L = Lindtner 1981" out))
+    ;; 18.11.: no table of ratings — the unit of this answer has no
+    ;; rendering in question, so no point
+    (should (string-match-p "^\\*\\*\\* Discussion points\nNone: " out))
+    (should-not (string-match-p "^Sigla: \\|cellcolor" out))
     (should-not (string-match-p "^\\*\\*\\* Proposed translation" out))
     ;; no proposal: the own translation under the tables
     (let* ((plain (bcat-template-render-named
@@ -1840,14 +2038,16 @@ target comes with the rump (`target-lang') into the context."
     (should (string-match-p "reason, decisions and corrections in German"
                             (bcat-analysis-sanskrit-system-prompt "de")))
     (let ((parsed (bcat-analysis-parse bcat-analysis-test--units-answer)))
-      (should (string-match-p "^\\*\\*\\* Overview$" (bcat-analysis-comparison parsed nil "en")))
-      (should (string-match-p "^\\*\\*\\* Übersicht$" (bcat-analysis-comparison parsed nil "de")))
-      (should (string-match-p "^\\*\\*\\* Overview$"
+      (should (string-match-p "^\\*\\*\\* Discussion points$" (bcat-analysis-comparison parsed nil "en")))
+      (should (string-match-p "^\\*\\*\\* Diskussionspunkte$" (bcat-analysis-comparison parsed nil "de")))
+      (should (string-match-p "^\\*\\*\\* Overview$" (bcat-analysis-comparison-units-rated parsed nil "en")))
+      (should (string-match-p "^\\*\\*\\* Übersicht$" (bcat-analysis-comparison-units-rated parsed nil "de")))
+      (should (string-match-p "^\\*\\*\\* Discussion points$"
                               (alist-get 'comparison
                                          (bcat-analysis-sanskrit-context
                                           (cons '(target-lang . "en") (bcat-analysis-test--base-1007))
                                           parsed nil))))
-      (should (string-match-p "^\\*\\*\\* Overview$"
+      (should (string-match-p "^\\*\\*\\* Discussion points$"
                               (alist-get 'comparison
                                          (bcat-analysis-context
                                           (cons '(target-lang . "en") (bcat-analysis-test--base))
@@ -1855,7 +2055,7 @@ target comes with the rump (`target-lang') into the context."
   (let ((bcat-analysis-comparison-language "de"))
     (should (string-match-p "reason, decisions and corrections in German"
                             (bcat-analysis-sanskrit-system-prompt "en")))
-    (should (string-match-p "^\\*\\*\\* Übersicht$"
+    (should (string-match-p "^\\*\\*\\* Diskussionspunkte$"
                             (bcat-analysis-comparison
                              (bcat-analysis-parse bcat-analysis-test--units-answer) nil "en")))))
 

@@ -119,6 +119,12 @@ zweiten Sprache, *Grammar:* — in einer Sanskrit-Datei unter
 ** Translation (ihre Segmente sind Überschriften), in einer tibetischen
 direkt nach dem letzten Segment.  Die Überschrift ** Proposed translation
 gibt es nicht mehr.
+18.11. abends (Carsten: „Schon bei den Segmenten hätte ich gerne schon
+*wesentliche* Unterschiede bzw. Diskussionspunkte markiert“): nach der
+„→“-Übersetzung eines Segments die Zeile(n) discuss — „*Discuss:* Stelle
+— D: „…“; here: „…“ (→ point K)“, nur wo der Vergleich der Übersetzungen
+einen Punkt für die Diskussion hat (`bcat-analysis-discuss-lines'); der
+Link führt zum Punkt unter ** Translations compared.
 #+end_comment
 #+TITLE: Sentence {{sent-num}} Analysis
 #+STARTUP: showall
@@ -163,6 +169,10 @@ gibt es nicht mehr.
 → {{segment-translation}}
 
 {{/segment-translation}}
+{{#discuss}}
+{{discuss}}
+
+{{/discuss}}
 {{#formation-tables}}
 *** Word Formation
 {{#formation-folded}}

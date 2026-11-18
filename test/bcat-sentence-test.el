@@ -1041,10 +1041,12 @@ bold marks come from the answer."
     (let ((text (bcat-sentence-test--file-text src)))
       (should (string-match-p
                (regexp-quote (concat "*Lindtner 1981:* [It is also] inexpressible (avācya) and "
-                                     "invisible (adraṣṭavya). [fn:l9]\n\n*DharmaMitra:*"))
+                                     "invisible (adraṣṭavya). [fn:l9]\n\n"))
                text))
       (should (string-match-p
-               (regexp-quote "\n\n[fn:l9] Lindtner 1981, S. 197: Eimer's \"Befleckungen\" is wrong.\n\n** Segment 38\n")
+               ;; 18.11.: the machine translation last, under its heading
+               (regexp-quote (concat "\n\n[fn:l9] Lindtner 1981, S. 197: Eimer's \"Befleckungen\" is wrong.\n\n"
+                                     "*** DharmaMitra (machine translation, for completeness)\n*DharmaMitra:* "))
                text)))))
 
 (ert-deftest bcat-sentence-fetch-unreadable-answer-keeps-file ()
@@ -1129,12 +1131,13 @@ reference was added under Translations compared that no segment shows."
   "Alignment answer for the reference Ruegg 1981 added by hand.")
 
 (defun bcat-sentence-test--goto-compared-end ()
-  "Point to the end of Translations compared in the current buffer: the
-next heading of the first or second level after it (until 18.11.
-* Segments, since then ** Segment N)."
+  "Point to the end of the translations under Translations compared in
+the current buffer — where a reference is added by hand: before the
+next heading (the points for the discussion, since 18.11.; else the
+next section)."
   (goto-char (point-min))
   (re-search-forward "^\\*\\* Translations compared$")
-  (re-search-forward "^\\*\\*? ")
+  (re-search-forward "^\\*+ ")
   (beginning-of-line))
 
 (defun bcat-sentence-test--add-reference (file name text)
@@ -1167,6 +1170,49 @@ Translations compared."
     (should (string-match-p (regexp-quote "⟦39⟧ *Translation:* Own two. \\\\\n*Ruegg 1981:* unchanging, unconditioned.\n") out))
     (should (string-match-p (regexp-quote "Ruegg reads a modal nuance.\n\n** Segment 38\n") out))
     (should (string-match-p (regexp-quote "* Worum es geht\n⟦38⟧ steht auch hier.\n\n* Working Translation\n") out))))
+
+(ert-deftest bcat-sentence-compared-machine-last ()
+  "18.11.: the machine translation stands last under Translations
+compared, under a heading of its own — it is still one of the
+references of the file (its text whole, every paragraph), and one
+fetched later (30.10.: the daily limit) is added there, the heading
+with it."
+  (bcat-sentence-test--with-source
+    (let ((file (expand-file-name "sent-009-x.org" dir)))
+      (with-temp-file file
+        (insert "* Philology\n** Translations compared\n*Translation:* T\n\n*Lindtner 1981:* L.\n\n"
+                "*** Discussion points\nNone: the translations agree in substance.\n\n"
+                "*** DharmaMitra (machine translation, for completeness)\n*DharmaMitra:* One.\n\nTwo.\n\n"
+                "** Segment 38\n⟦38⟧ *Translation:* t\n"))
+      (should (equal '(("Translation" . "T") ("Lindtner 1981" . "L.") ("DharmaMitra" . "One.\n\nTwo."))
+                     (bcat-sentence--compared file)))
+      ;; a reference pasted at the very end of the section counts too
+      (with-temp-buffer
+        (insert-file-contents file)
+        (goto-char (point-min))
+        (re-search-forward "^\\*\\* Segment 38$")
+        (beginning-of-line)
+        (insert "*Ruegg 1981:* Pasted last.\n\n")
+        (write-region (point-min) (point-max) file nil 0))
+      (should (equal '(("Translation" . "T") ("Lindtner 1981" . "L.") ("DharmaMitra" . "One.\n\nTwo.")
+                       ("Ruegg 1981" . "Pasted last."))
+                     (bcat-sentence--compared file)))
+      ;; added later
+      (with-temp-file file
+        (insert "* Philology\n** Translations compared\n*Translation:* T\n\n*Lindtner 1981:* L.\n\n"
+                "*** Discussion points\nNone: the translations agree in substance.\n\n"
+                "** Segment 38\n⟦38⟧ *Translation:* t\n"))
+      (bcat-sentence--add-compared file "DharmaMitra" "It is supreme.")
+      (bcat-sentence--add-compared file "Ruegg 1981" "R.")
+      (let ((text (bcat-sentence-test--text-of file)))
+        (should (string-match-p
+                 (regexp-quote (concat "*Lindtner 1981:* L.\n\n*Ruegg 1981:* R.\n\n*** Discussion points\n"
+                                       "None: the translations agree in substance.\n\n"
+                                       "*** DharmaMitra (machine translation, for completeness)\n"
+                                       "*DharmaMitra:* It is supreme.\n\n** Segment 38\n"))
+                 text))
+        (should (equal '("Translation" "Lindtner 1981" "Ruegg 1981" "DharmaMitra")
+                       (mapcar #'car (bcat-sentence--compared file))))))))
 
 (ert-deftest bcat-sentence-compared-stops-at-the-units ()
   "The references under Translations compared are the *NAME:* paragraphs

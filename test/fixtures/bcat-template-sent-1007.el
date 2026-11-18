@@ -98,9 +98,10 @@ tat pārameśvaram śrīmat-mahā-ānanda-vijṛmbhitam
 
 *Dyczkowski 2023:* Although my speech is powerless here (in this task), whatever *restriction* may arise (on one's understanding of the teachings is not my fault, rather) that is (all) the venerable expansion of the Supreme Lord's great bliss (which both hides and reveals the truth). (7)
 
-*DharmaMitra:* In this matter, whatever *unfettered expression* may emerge, even though my own voice is powerless, that is the unfolding of the glorious Great Bliss of the Supreme Lord.
+All three read the concessive clause alike. They part over niyantraṇa: Dyczkowski takes it as a restriction on the reader's understanding (and adds that it is not the author's fault), DharmaMitra reverses it into „unfettered expression“; the translation here reads control or ordering of the words, which the Lord, not the commentator, brings about.
 
-All three read the concessive clause alike. They part over niyantraṇa: Dyczkowski takes it as a restriction on the reader's understanding (and adds that it is not the author's fault), DharmaMitra reverses it into „unfettered expression“; the translation here reads control or ordering of the words, which the Lord, not the commentator, brings about."))
+*** DharmaMitra (machine translation, for completeness)
+*DharmaMitra:* In this matter, whatever *unfettered expression* may emerge, even though my own voice is powerless, that is the unfolding of the glorious Great Bliss of the Supreme Lord."))
   "Template fields of TĀ sentence 1007 — the reviewed Sanskrit sample.")
 
 (provide 'bcat-template-sent-1007)

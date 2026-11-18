@@ -561,6 +561,23 @@ Tibetan one never is — whatever the template and the section."
       (should (equal '("| vigatā     | yā    |" "| de     |" "| chos   |")
                      (bcat-faces-test--matches #'bcat-faces--word-row-matcher 0))))))
 
+(ert-deftest bcat-faces-discuss ()
+  "18.11. (Carsten: „das grün/gelb/rot hilft mir dabei nicht wirklich
+weiter … Eigentlich also nur vielleicht farblich hervorheben was es zu
+beachten gilt“): ONE colour (`bcat-discuss-face') for what is to be
+discussed — the label of the line at a segment and the title of the
+points under Translations compared, English or German; nothing else."
+  (with-temp-buffer
+    (insert "* Philology\n⟦1⟧\n| a |\n\n→ t\n\n*Discuss:* /a/ — D: „x“; here: „y“ (→ [[point-1][point 1]])\n\n"
+            "*Zu besprechen:* /b/\n\nWe discuss: nothing.\n\n"
+            "** Translations compared\n*Translation:* T\n\n*** Discussion points\n**** <<point-1>>1. /a/ (⟦1⟧)\n"
+            "*** Diskussionspunkte\n*** Corrections to the analysis\n")
+    (org-mode)
+    (should (equal '("*Discuss:*" "*Zu besprechen:*" "Discussion points" "Diskussionspunkte")
+                   (bcat-faces-test--matches #'bcat-faces--discuss-matcher 1))))
+  (should (assq 'bcat-faces--discuss-matcher bcat-faces--keywords))
+  (should (stringp (face-attribute 'bcat-discuss-face :foreground nil t))))
+
 (ert-deftest bcat-faces-only-in-sentence-files ()
   "Switched on in a sentence file of a template (sent-…, comm-… with
 #+CAT_TEMPLATE:), not in other org files."

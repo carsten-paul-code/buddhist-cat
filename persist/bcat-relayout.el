@@ -233,6 +233,10 @@ the other language's blocks and differences."
               (setq own nil parts t)))
            ((and current (string-match "\\`\\*Differences:\\* " p))
             (bcat-relayout--put table current 'differences (substring p (match-end 0))))
+           ;; 18.11.: the line that marks a point for the discussion — as
+           ;; the file has it (a hand's wording stays).
+           ((and current (string-match-p "\\`\\*\\(?:Discuss\\|Zu besprechen\\):\\* " p))
+            (bcat-relayout--put table current 'discuss p t))
            ;; 16.11.: the check of the padapāṭha — computed anew, no end
            ;; of the segment.
            ((and current (string-match-p "\\`\\*Prüfen:\\* " p)))
@@ -383,7 +387,12 @@ Claude divided into sense units."
        (delq nil
              (list (funcall field 'grammar (or grammar (bcat-relayout--section sentence 2 "Grammar")))
                    (funcall field 'proposal proposal)
-                   (funcall field 'comparison (bcat-analysis-footnotes-last (car compared)))
+                   ;; 18.11.: a machine translation among the translations
+                   ;; goes last, under its heading
+                   (funcall field 'comparison
+                            (bcat-relayout--machine-last
+                             (bcat-analysis-footnotes-last (car compared))
+                             (or bcat-analysis-comparison-language (alist-get 'target-lang base) "en")))
                    (funcall field 'rendering (or (bcat-relayout--section text 2 "Tibetan rendering")))
                    (funcall field 'word-analysis
                             (bcat-relayout--section (or (bcat-relayout--section text 1 "Segments") "")
@@ -455,6 +464,137 @@ sentence translation.  ASSIGNMENT from the segment headings."
       `((segments . ,(nth 1 lists))
         (sanskrit-segments . ,(nth 0 lists))
         (sanskrit-translation . ,(or translation ""))))))
+
+(defconst bcat-relayout--rated-heading
+  "^\\*\\*\\* \\(?:Overview\\|Übersicht\\)[ \t]*\n\\(?:Sigla\\|Sigel\\): "
+  "How the rated comparison of 2.11.–18.11. begins under Translations
+compared: the overview with the sigla.")
+
+(defun bcat-relayout--squeeze (text)
+  "TEXT with every run of blank space a single space — to compare two
+texts whatever their line breaks."
+  (string-trim (replace-regexp-in-string "[ \t\n]+" " " (or text ""))))
+
+(defun bcat-relayout--rated-key (text)
+  "TEXT, a rated comparison of 2.11.–18.11., without what the versions
+of its renderer wrote differently — so that one written by an older
+version is known as the answer's, a hand's change is not: the line of
+the sigla (it follows the references), the rules of the table and the
+padding of its cells, „because because“ / „weil weil“ (the conjunction
+doubled until 4.11.).  Squeezed (`bcat-relayout--squeeze')."
+  (bcat-relayout--squeeze
+   (replace-regexp-in-string
+    "\\_<\\(because\\|weil\\) \\1\\_>" "\\1"
+    (replace-regexp-in-string
+     "^\\(?:Sigla\\|Sigel\\): .*$" ""
+     (replace-regexp-in-string
+      "[ \t]*|[ \t]*" " | "
+      (replace-regexp-in-string "^[ \t]*|[-+|]*[ \t]*$" "" (or text "")))))))
+
+(defun bcat-relayout--comparison-parts (comparison)
+  "(TOP MIDDLE MACHINES) of COMPARISON, the text under Translations
+compared: TOP the translations, before the first heading; MACHINES from
+the heading of the first machine translation — a heading right above a
+paragraph labelled with one of `bcat-analysis-machine-references' — to
+the end; MIDDLE what stands between: the points for the discussion, or
+the rated part of 2.11.–18.11.  Each trimmed, \"\" when missing."
+  (let* ((cut (or (string-match "^\\*\\*\\* " comparison) (length comparison)))
+         (mcut (let ((pos cut) (found nil))
+                 (while (and (not found)
+                             (string-match "^\\*\\*\\* [^\n]*\n\\*\\([^*\n]+?\\):\\* " comparison pos))
+                   (if (member (match-string 1 comparison) bcat-analysis-machine-references)
+                       (setq found (match-beginning 0))
+                     (setq pos (match-end 0))))
+                 (or found (length comparison)))))
+    (list (string-trim (substring comparison 0 cut))
+          (string-trim (substring comparison cut mcut))
+          (string-trim (substring comparison mcut)))))
+
+(defun bcat-relayout--machine-last (comparison lang)
+  "COMPARISON, the text under Translations compared, with the machine
+translations among its translations put last, each under its heading
+\(Carsten 18.11.: DharmaMitra „nur der Vollständigkeit halber“) — a
+machine's paragraphs run from its label to the next labelled paragraph;
+footnote definitions stay with the translations (as does, in a file of
+before 2.11., the paragraph that compares them).  The heading in LANG.
+COMPARISON itself when its translations have none: a file in the new
+form, a rump."
+  (if (or (not (stringp comparison)) (string-blank-p comparison))
+      comparison
+    (pcase-let ((`(,top ,middle ,machines) (bcat-relayout--comparison-parts comparison)))
+      (let ((bcat-analysis--comparison-lang (or lang "en"))
+            ;; A machine's text may run over several paragraphs (TĀ 1012:
+            ;; prose around a verse).  Before 2.11. the comparison itself
+            ;; was a paragraph after the translations — there only the
+            ;; labelled paragraph is the machine's; since then (headings
+            ;; below) what follows its label up to the next label is.
+            (runs-on (not (and (string-empty-p middle) (string-empty-p machines))))
+            (keep '()) (moved '()) (current nil))
+        (dolist (p (bcat-relayout--paragraphs top))
+          (cond
+           ((string-match "\\`\\*\\([^*\n]+?\\):\\* " p)
+            (if (member (match-string 1 p) bcat-analysis-machine-references)
+                (progn (setq current (list p (match-string 1 p)))
+                       (push current moved))
+              (setq current nil)
+              (push p keep)))
+           ((and current runs-on (not (string-prefix-p "[fn:" p)))
+            (setcar current (concat (car current) "\n\n" p)))
+           (t (setq current nil) (push p keep))))
+        (if (null moved)
+            comparison
+          (string-join
+           (delq nil
+                 (append
+                  (and keep (list (string-join (nreverse keep) "\n\n")))
+                  (and (not (string-empty-p middle)) (list middle))
+                  (and (not (string-empty-p machines)) (list machines))
+                  (mapcar (lambda (m)
+                            (concat "*** " (format (bcat-analysis--comparison-label 'machine) (cadr m))
+                                    "\n" (car m)))
+                          (nreverse moved))))
+           "\n\n"))))))
+
+(defun bcat-relayout--pointed (context record)
+  "CONTEXT (read back from a sentence file) with its Translations
+compared on the point (Carsten 18.11.: only what is worth discussing,
+no ratings) where the file still has the rated form of 2.11.–18.11.: the
+points set anew from RECORD, the answer kept at the fetch
+\(`bcat-sentence--answers', `bcat-analysis-comparison-units') — the
+translations stay as the file shows them, the machine's last
+\(`bcat-relayout--machine-last').  Only when the rated part is the one
+the answer gave, word for word whatever the version of its renderer
+\(`bcat-relayout--rated-key'): one changed by hand stays as it is, as
+does one without an answer — and then no segment keeps a „Discuss:“
+line from the answer (its link would lead nowhere).  Any other
+comparison — the new form, a paragraph of before 2.11., none — comes
+back untouched."
+  (let* ((target (alist-get 'target-lang context))
+         (lang (or bcat-analysis-comparison-language target "en"))
+         (comparison (bcat-relayout--machine-last (alist-get 'comparison context) lang))
+         (parts (and (stringp comparison) (bcat-relayout--comparison-parts comparison)))
+         (middle (nth 1 parts)))
+    (if (not (and middle (eq 0 (string-match bcat-relayout--rated-heading middle))))
+        (if (equal comparison (alist-get 'comparison context))
+            context
+          (cons (cons 'comparison comparison) context))
+      (let* ((parsed (plist-get record :parsed))
+             (refs (plist-get record :refs))
+             (untouched (and parsed
+                             (equal (bcat-relayout--rated-key middle)
+                                    (bcat-relayout--rated-key
+                                     (bcat-analysis-comparison-units-rated parsed refs target))))))
+        (if (not untouched)
+            (append `((comparison . ,comparison)
+                      (segments . ,(mapcar (lambda (seg) (assq-delete-all 'discuss (copy-alist seg)))
+                                           (alist-get 'segments context))))
+                    context)
+          (let ((units (bcat-analysis-comparison-units parsed refs target context)))
+            (cons (cons 'comparison
+                        (string-join
+                         (cl-remove-if #'string-empty-p (list (nth 0 parts) units (nth 2 parts)))
+                         "\n\n"))
+                  context)))))))
 
 (defun bcat-relayout-context (base text template &optional other-text)
   "The template fields of the sentence file TEXT (template TEMPLATE):
@@ -578,6 +718,8 @@ no sentence file of a template, or its source has another template now
              (context (bcat-relayout-context base text template
                                              (and partner (file-readable-p partner)
                                                   (bcat-sentence--text partner))))
+             ;; 18.11.: the comparison on the point, from the answer kept
+             (context (bcat-relayout--pointed context record))
              (assignment (alist-get 'assignment context))
              (context (if assignment
                           (bcat-sentence--commentary-fields sent-num source context assignment)
