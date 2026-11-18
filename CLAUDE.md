@@ -13,8 +13,9 @@ Kompositums (Prompt-Felder `members'/`layers'), drei PDF-Fehler; nachmittags
 IN DIE TABELLE DES SEGMENTS: die Teile unter den Wörtern, eine Zeile je Glied,
 C-c u L setzt alte Dateien um, der Block „Word Formation“ nur noch Auffang;
 Tabellen im .org: Wortzeile fett, Gitter grau, Spalte unter dem Cursor;
-VEREINBART, noch nicht gebaut: alle Vorlagen in drei Oberabschnitte Inhalt /
-Philologie / Worum es geht).
+SEIT 18.11. NACHMITTAGS DREI OBERABSCHNITTE * Text / * Philology / * Worum es
+geht in den vier Satzdatei-Vorlagen, gelesen über `bcat-relayout--legacy-text';
+offen: Vorlage commentary, Philologie pointierter, Worum es geht ausführlicher).
 Before that 2026-10-28 (§5.74: SATZDATEIEN
 NACH VORLAGE — Reading-Klassen, Tibetisch: `#+CAT_TEMPLATE: tibetan' im
 Quellkopf, Gliederung * Text / * Segments / * Sentence, C-c u A = Rumpf
@@ -5406,6 +5407,81 @@ GLIED (sieben für katipaya-…-vailakṣaṇyāt) mit langen Etiketten
 („[karmadhāraya head of inner compound]“) — 14 Zeilen unter einem Wort.
 Die Regel im Prompt ist zu straffen (ein Schritt = eine Schicht, kurze
 Etiketten); gehört zu Punkt 2, nur mit Carstens Zustimmung.
+
+18.11.2026 nachmittags, DREI OBERABSCHNITTE (`3ec176c'; Punkt 1 der
+Vereinbarung oben, Carsten: „ja, passt, bau die drei Oberabschnitte“ —
+Namen * Text, * Philology, * Worum es geht).  Die vier
+Satzdatei-Vorlagen (tibetan, sanskrit, bilingual, bilingual-tibetan):
+- * Text = nur das Original, Schrift über Umschrift: Sanskrit die
+  frühere * Recitation (Silbentabelle nur beim Vers), Tibetisch Uchen
+  über Wylie IMMER (auch mit Tabelle; hebt die Regel vom 31.10. auf),
+  beim Paar beide Originale (`bcat-analysis-pair-lists' gibt den
+  tibetischen Zeilen dafür ihr Wylie immer mit — wirkt auch im PDF der
+  Sanskrit-Datei eines Paars).
+- * Philology = die früheren * Text (Segmente) + * Sentence +
+  * Segments, FLACH: die Überschriften darunter auf ihrer alten Ebene
+  (** ⟦N⟧, ** Proposed translation / ** Translation, ** Concepts,
+  ** Tibetan rendering, ** Translations compared, ** Segment N,
+  ** Word Analysis).  Absicht: jeder Leser, der „^\*\* Segment N“,
+  „^\*\* Concepts“, „^\*\* Translations compared“, „^\*\* Word
+  Analysis“ sucht (bcat-sentence, -parallel, -commentary, -zettel,
+  -export, tibetan-zettel-highlight, Diskussionspapier,
+  padapatha-pdf.py), läuft unverändert; und die innere Gliederung des
+  Philologie-Teils will Carsten erst noch besprechen (Punkt 2).  Nur
+  die zweite Sprache eines Paars und der Kommentar haben eine eigene
+  Überschrift, ihr Inhalt eine Ebene tiefer: ** Tibetan (Sanskrit-Datei;
+  keine Unterüberschriften), ** Sanskrit (tibetische Datei: *** ⟦N⟧,
+  **** Word Formation, *** Translation), ** Commentary (*** Bhāṣya).
+- * Worum es geht = dritter Teil, vor * Further Reading und den
+  Nutzerabschnitten; eigene Abschnitte der Datei (* Handout) wie bisher
+  am Ende.
+Was man wissen muss:
+- ZURÜCKLESEN ÜBER EINEN ADAPTER: `bcat-relayout--legacy-text' nimmt
+  eine Datei der drei Teile wieder in die früheren Abschnitte
+  auseinander (* Text → * Recitation bzw. * Original; * Philology →
+  * Text, mit * Sentence vor ** Concepts und * Segments vor dem ersten
+  ** Segment N; die Hüllen ** Tibetan / ** Sanskrit / ** Commentary
+  wieder erste Ebene, ihr Inhalt eine Ebene hoch).  Der große Leser
+  `bcat-relayout-context' kennt weiter nur die frühere Form — wer ein
+  neues Feld zurücklesen will, schreibt den Leser gegen die frühere
+  Form und prüft, dass der Adapter es dorthin bringt.  Die Datei selbst
+  hat IMMER die neue Form; der Adapter ist nur zum Lesen.
+- Stellen, die IN der Datei arbeiten (nicht über den Adapter): 
+  `bcat-sentence--segments-part' / `--goto-segments' (ab dem ersten
+  ** Segment N bis zum Ende von * Philology — davor stehen ⟦N⟧-Marken
+  der Tabellen und Konzepte, die nicht zählen),
+  `bcat-commentary--patch-links' (** Commentary als letzte Überschrift
+  von * Philology), `bcat-sentence--tool-sections' (+ „Philology“).
+- Farben ohne Abschnittsnamen: ein Sanskrit-Segment ist eine
+  Überschrift ⟦N⟧ (`bcat-faces--segment-heading'), ein tibetisches nie
+  (Marke auf eigener Zeile) — `bcat-faces--sanskrit-table-p',
+  `--translation-line-p'.  Der Vorlagen-Cache der Farben ist weg.
+- Alte und neue Dateien stehen nebeneinander: jede stellt sich beim
+  nächsten C-c u L / C-c u G um, kein Massenlauf.  In den echten
+  Ordnern ist am 18.11. nur TĀ 1012 umgestellt.
+- PRÜFVERFAHREN FÜR GLIEDERUNGSÄNDERUNGEN (bewährt): die Textdateien
+  von WS26-27 per rsync in einen Scratch-Spiegel (nur *.org, *.eld …;
+  Quellen KOPIEREN, nicht verlinken — sonst zeigt die Partnerdatei in
+  den echten Baum), den Stand davor als `git worktree' daneben; alle
+  Vorlagen-Satzdateien einmal mit altem, einmal mit neuem Code neu
+  setzen und vergleichen: Zeilen ohne Überschriften als Multimenge,
+  erste Ebene, zweiter Lauf (= gleich), `bcat-sentence-fetch-state' und
+  die PDF-Ansicht (`bcat-export-views') vor und nach.  313 Dateien,
+  etwa fünf Minuten.  So fiel auch `74ed0f2' auf (Glosse auf „;“ +
+  Funktionszeile „?“ wurden beim Zurücklesen verschmolzen; sechs
+  Kadam-Rümpfe hätte ein C-c u L mit dem alten Code beschädigt).
+OFFEN:
+- Vorlage `commentary' (Kommentardokument je Vers, 5 Dateien MSA IX):
+  noch die alte Gliederung (* Worum es geht / * Verse / * Sentence N /
+  * Commentary).  Hängt am Dossier (`bcat-dossier--commentary-items'
+  liest das Original jedes Satzes aus seinem * Sentence N) und wird nur
+  per Abruf gebaut — C-c u L kann sie nicht umsetzen.  Braucht Carstens
+  Entscheidung zur Form und einen Umsetzer ohne Abruf.
+- `padapatha-pdf.py' (Tantraloka, Ordner der Tantrāloka-Sitzung) liest
+  die Rezitation unter „^\* Recitation“ — in umgestellten Dateien heißt
+  der Abschnitt * Text; der Sitzung gemeldet.
+- Punkte 2 und 3 der Vereinbarung oben (Philologie pointierter, „Worum
+  es geht“ ausführlicher) unverändert offen.
 
 #### Offen
 
