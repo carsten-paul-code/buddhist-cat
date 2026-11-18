@@ -7,9 +7,11 @@ work on **Buddhist CAT** (`~/buddhist-cat`, GitHub
 Computer-Assisted Translation (CAT) system for Classical Tibetan and
 Sanskrit. Read it in full before editing. Symbols keep their
 `tibetan-' prefix until their module is rebuilt; new and rebuilt
-modules use `bcat-' (§5.73). Last updated 2026-11-18 (§5.74, Nachtrag 18.11.:
-Wortbildung zurück am Segment — gemeinsame Tabelle, Bedeutungen der Glieder,
-Auflösung des Kompositums, im PDF unter dem Segment, offen; drei PDF-Fehler).
+modules use `bcat-' (§5.73). Last updated 2026-11-18 (§5.74, Nachträge 18.11.:
+Wortbildung zurück am Segment — Bedeutungen der Glieder und Auflösung des
+Kompositums (Prompt-Felder `members'/`layers'), drei PDF-Fehler; nachmittags
+IN DIE TABELLE DES SEGMENTS: die Teile unter den Wörtern, eine Zeile je Glied,
+C-c u L setzt alte Dateien um, der Block „Word Formation“ nur noch Auffang).
 Before that 2026-10-28 (§5.74: SATZDATEIEN
 NACH VORLAGE — Reading-Klassen, Tibetisch: `#+CAT_TEMPLATE: tibetan' im
 Quellkopf, Gliederung * Text / * Segments / * Sentence, C-c u A = Rumpf
@@ -5254,6 +5256,91 @@ Trockenlauf im Speicher über alle 60 Satzdateien mit Word Formation
 (TĀ, MSA, AS): keine Zelle geht verloren, 291 Ein-Spalten-Tabellen → 41.
 Noch kein echter Abruf mit `members'/`layers' (Abrufe nur auf Zuruf);
 die übrigen 59 Dateien sind noch nicht neu gesetzt.  ERT 2933.
+
+18.11.2026 nachmittags, DIE WORTBILDUNG IN DER TABELLE DES SEGMENTS
+(Carsten, wenige Stunden nach dem Block: „können wir mal versuchen, dass
+die Word Formation näher am Text ist, also als Subtable im Table?“ —
+„mir geht es mehr um's .org. Das nehme ich im Reading. Das PDF würde ich
+mit Mitstreitern teilen, für ihre Vorbereitung“; von zwei Prototypen an
+TĀ 1016: „B, bau es so ein“).  Der Block vom Vormittag ist damit
+abgelöst — was oben über die gemeinsame Tabelle, die Bedeutungszeile und
+die Auflösungstabelle steht, beschreibt nur noch, was ALTE Dateien
+enthalten; die Felder `members'/`layers' des Prompts bleiben.
+- Zwei Bänder (`838df4c'): die Tabelle eines Sanskrit-Segments ist Wort
+  / Glosse / Form, eine Linie, darunter je Wort seine Teile in dessen
+  Spalte (`bcat-analysis--sub-cells' → `--band-tables',
+  `bcat-analysis-sanskrit-tables').  Einfaches Wort: ein Teil je Zeile
+  („/vi-/ away“).  Kompositum: eine Zeile je Glied — „Glied: Bedeutung ←
+  Wurzel · Suffix“ (mit `members'), „Glied: Wurzel · Suffix“ (ohne), ein
+  bloßer Stamm nur „Glied: Bedeutung“ —, dann die Schritte der Auflösung
+  „Glieder [Verhältnis] Worte“ (`--resolution-lines', ab zwei
+  Schritten).  Keine Linie, wo kein Wort Teile hat.  Die Zeilen unter
+  den Wörtern zählen bei der Breite mit, werden aber nie umbrochen.
+- Ausrichtung nach SICHTBARER Breite: Carsten liest mit
+  `org-hide-emphasis-markers' — `bcat-analysis-emphasis-hidden'
+  (defcustom, Standard t; Option des Werkzeugs, nicht aus der Init
+  gelesen) zählt die Schrägstriche der Kursive nicht.  Im rohen Text
+  stehen die Balken deshalb je Kursive zwei Zeichen versetzt — kein
+  Fehler; Tests, die Spalten vergleichen, nehmen
+  `bcat-analysis--strip-emphasis'.
+- Bandbedeutung nur aus der Vorlage: Sanskrit sind `segments' von
+  sanskrit/bilingual und `sanskrit-segments' von bilingual-tibetan.  In
+  alten TIBETISCHEN Tabellen trennt die Linie Fortsetzungszeilen breiter
+  Tabellen — niemals aus der Linie auf „Teile“ schließen.  Wer nur die
+  Wörter braucht (Padapāṭha, Belege der Zettel: `bcat-zettel--passage'
+  mit SANSKRIT), liest `bcat-analysis-band-columns' → (OVER . SUB).
+- C-c u L setzt alte Dateien um (`bcat-relayout-context' →
+  `bcat-analysis-sanskrit-relayout-tables' → (TABLES LEFTOVER
+  OVERFLOW)): der Block geht Zelle für Zelle unter sein Wort
+  (`--block-sub-cells': Tabelle je Wort, gemeinsame Tabelle, Kompositum
+  mit Bedeutungszeile und über mehrere Tabellen geteilt, Auflösung);
+  was die Tabelle schon unter einem Wort zeigt, gewinnt.  Zuordnung,
+  wenn die Tabelle ihr Wort anders nennt (`--block-word', Dateien der
+  ersten Wochen): gleich → ohne Bindestriche und mit -s/-r als Visarga
+  („mahas“ für „mahaḥ“) → ab acht Buchstaben das EINZIGE Wort höchstens
+  zwei Buchstaben entfernt (Sandhi: „tattadbhāva…“); die Tabelle eines
+  einzelnen Glieds wird eine Zeile des einzigen Kompositums, das es hat
+  (`--block-compound').  Mehrdeutig oder unbekannt: die Tabelle bleibt
+  unter `*** Word Formation' (Feld `formation-tables' = der Rest; die
+  Vorlagen behalten den Block dafür, offen, mit
+  `bcat-sentence-word-formation-folded' eingeklappt).
+- PDF (`bcat-export--view-context' mit TEMPLATE →
+  `bcat-export-sanskrit-page-tables'): dieselben Tabellen für die
+  Seitenbreite neu gesetzt, die Teile unter den Wörtern als
+  LaTeX-Schnipsel — blau \bcatg, das Glied (und seine Bedeutung) schwarz
+  \bcatk —, OHNE die Schritte der Auflösung („Für das PDF ist das 1.
+  Bild ok“).  org-Kursive wirkt in @@latex:…@@ nicht: `bcat-export--tex'
+  setzt /x/ als \emph{x} und schützt die LaTeX-Zeichen.  Zeilen mit
+  eigener Farbe überspringt `bcat-export--detail-rows'.
+- Farben in Emacs (`87782e9'): `bcat-faces--sub-cell-matcher' — unter
+  der Linie einer Sanskrit-Tabelle Teile blau, in der Zeile eines Glieds
+  nur die Herleitung (nach „←“ bzw. dem Doppelpunkt), in einem Schritt
+  der Auflösung nur die Klammer.  Nach einem `load' von bcat-faces in
+  offenen Puffern `bcat-faces-mode' aus- und einschalten, sonst gelten
+  die alten Regeln weiter.
+- Aufgeräumt (`b59abb1'): der Erzeuger des Blocks ist entfernt
+  (`bcat-analysis-formation-tables', `--header-tables', `--even-chunks',
+  `--word-columns', `--resolution-table',
+  `bcat-analysis-merge-word-tables', `bcat-analysis-table-words');
+  gelesen wird der Block weiter.
+Dabei ein älterer Fehler behoben (`7d87b20'): `bcat-sentence--overview'
+las die Kennung :GENERATED_HASH: mit der Regexp-Klasse \S- —
+`string-match' auf einer Zeichenkette nimmt die Syntaxtabelle des
+AKTUELLEN Puffers, in einem Lisp-Puffer (*scratch*: Batch, emacsclient)
+ist das Zeilenende kein Leerraum; die Kennung kam mit „\n“, der erzeugte
+Text von „Worum es geht“ galt als handgeschrieben und wäre nie mehr
+erneuert worden (dieselbe Stelle in `bcat-dossier--split-parts').
+Lehre, wie §5.34: in Zeichenketten keine Syntaxklassen (\s-, \S-, \w),
+sondern Zeichenmengen; ERT lässt Tests im fundamental-mode laufen und
+sieht so etwas nur, wenn der Test den Modus selbst setzt.
+Stand: Trockenlauf im Speicher über alle 60 Sanskrit-Satzdateien (TĀ,
+AS, MSA): 2362 Zellen des alten Blocks, keine verloren, kein Block
+bleibt.  Geschrieben ist nur TĀ 1016 (C-c u L; ohne `members'/`layers',
+weil noch nicht neu abgerufen — Abrufe nur auf Zuruf); die übrigen 59
+Dateien setzt das nächste C-c u L / C-c u G um, kein Massenlauf
+(Carsten: „Keine“).  Im laufenden Emacs geprüft: Balken aller 38
+Tabellen von 1016 in einer Linie, Farben, PDF-Seite mit seinen
+Schriften.  ERT 2939, BDD 251.
 
 #### Offen
 
