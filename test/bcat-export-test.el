@@ -793,6 +793,35 @@ overview, also a table with a header row, keeps its \\cellcolor and no
                           "\\emph{vi-} apart & part, power\\\\\n"
                           "\\emph{-a} adj & \\\\\n\\end{tabular}")))))
 
+(ert-deftest bcat-export-detail-rows-booktabs ()
+  "Bug (18.11., in Carsten's PDFs since 5.11.): with
+`org-latex-tables-booktabs' — his export setting — the rules of a table
+are \\toprule, \\midrule and \\bottomrule, not \\hline.  The table of a
+word's parts was not taken for one (no header row seen) and coloured
+like an overview: blue, black, blue (TĀ 1016: „√gam (1) go“ black
+between „vi- away“ and „-ta ppp“).  The rules of booktabs count like
+\\hline: every part blue, the members black; the overview as before
+\(word and gloss black, form blue); the comparison's overview untouched."
+  (should (equal (concat "\\begin{tabular}{l}\n\\toprule\nvigatā\\\\\n\\midrule\n"
+                         "\\bcatg{\\emph{vi-} away}\\\\\n"
+                         "\\bcatg{\\emph{√gam} (1) go}\\\\\n"
+                         "\\bcatg{\\emph{-ta} ppp}\\\\\n\\bottomrule\n\\end{tabular}")
+                 (bcat-export--detail-rows
+                  (concat "\\begin{tabular}{l}\n\\toprule\nvigatā\\\\\n\\midrule\n"
+                          "\\emph{vi-} away\\\\\n"
+                          "\\emph{√gam} (1) go\\\\\n"
+                          "\\emph{-ta} ppp\\\\\n\\bottomrule\n\\end{tabular}"))))
+  (should (equal (concat "\\begin{tabular}{ll}\n\\toprule\nkalā & sā\\\\\n"
+                         "power & that\\\\\n"
+                         "\\bcatg{f. nom. sg.} & \\bcatg{pron.}\\\\\n\\bottomrule\n\\end{tabular}")
+                 (bcat-export--detail-rows
+                  (concat "\\begin{tabular}{ll}\n\\toprule\nkalā & sā\\\\\n"
+                          "power & that\\\\\n"
+                          "f. nom. sg. & pron.\\\\\n\\bottomrule\n\\end{tabular}"))))
+  (let ((comparison (concat "\\begin{tabular}{rp{4.3cm}}\n\\toprule\nNr. & Einstufung\\\\\n\\midrule\n"
+                            "1 & \\cellcolor{bad}rot\\\\\n2 & \\cellcolor{ok}grün\\\\\n\\bottomrule\n\\end{tabular}")))
+    (should (equal comparison (bcat-export--detail-rows comparison)))))
+
 (ert-deftest bcat-export-comparison-table ()
   "2.11. (Muster vergleich-ta1-1.org): the overview table of the
 comparison — the ratings with \\cellcolor{ok|mid|bad} — needs colortbl

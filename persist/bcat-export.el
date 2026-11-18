@@ -476,13 +476,20 @@ Tibetisch V: Uchen and Wylie black.  A metre table (its second row only
 – and ⏑) stays as it is, as does the comparison's overview (2.11.: a
 header row — one row, then \\hline — and \\cellcolor); a table of a
 word's parts (5.11.: the members as a header row) has every row but the
-members' in \\bcatg."
+members' in \\bcatg.  The rules of booktabs (\\toprule, \\midrule,
+\\bottomrule — `org-latex-tables-booktabs', Carsten's setting) count
+like \\hline (18.11.)."
   (let* ((lines (split-string tabular "\n"))
          (row-p (lambda (l) (string-match-p "\\\\\\\\[ \t]*\\'" l)))
          (rows (cl-remove-if-not row-p lines))
+         ;; 18.11.: the rules of booktabs (Carsten's export setting)
+         ;; count like \hline — without them no table of parts was seen,
+         ;; its rows came out blue, black, blue.
+         (rule-p (lambda (l) (string-match-p
+                              "\\`[ \t]*\\\\\\(?:hline\\|toprule\\|midrule\\|bottomrule\\)\\b" l)))
          (header (let ((first (cl-position-if row-p lines)))
                    (and first (nth (1+ first) lines)
-                        (string-match-p "\\`[ \t]*\\\\hline" (nth (1+ first) lines))))))
+                        (funcall rule-p (nth (1+ first) lines))))))
     (if (or (< (length rows) 2)
             (and header (string-match-p "\\\\cellcolor" tabular))
             (bcat-export--metre-row-p (nth 1 rows)))
@@ -495,7 +502,7 @@ members' in \\bcatg."
           ;; The bands, each closed by an \hline or the end.
           (dolist (l (append lines (list "\\hline")))
             (cond ((funcall row-p l) (push l band))
-                  ((string-match-p "\\`[ \t]*\\\\hline" l)
+                  ((funcall rule-p l)
                    (let* ((b (nreverse band)) (n (length b))
                           (uchen (and b (string-match-p "[\u0F00-\u0FFF]" (car b)))))
                      (cl-loop for r in b for i from 0
