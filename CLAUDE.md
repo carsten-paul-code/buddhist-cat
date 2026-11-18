@@ -11,7 +11,10 @@ modules use `bcat-' (§5.73). Last updated 2026-11-18 (§5.74, Nachträge 18.11.
 Wortbildung zurück am Segment — Bedeutungen der Glieder und Auflösung des
 Kompositums (Prompt-Felder `members'/`layers'), drei PDF-Fehler; nachmittags
 IN DIE TABELLE DES SEGMENTS: die Teile unter den Wörtern, eine Zeile je Glied,
-C-c u L setzt alte Dateien um, der Block „Word Formation“ nur noch Auffang).
+C-c u L setzt alte Dateien um, der Block „Word Formation“ nur noch Auffang;
+Tabellen im .org: Wortzeile fett, Gitter grau, Spalte unter dem Cursor;
+VEREINBART, noch nicht gebaut: alle Vorlagen in drei Oberabschnitte Inhalt /
+Philologie / Worum es geht).
 Before that 2026-10-28 (§5.74: SATZDATEIEN
 NACH VORLAGE — Reading-Klassen, Tibetisch: `#+CAT_TEMPLATE: tibetan' im
 Quellkopf, Gliederung * Text / * Segments / * Sentence, C-c u A = Rumpf
@@ -5341,6 +5344,68 @@ Dateien setzt das nächste C-c u L / C-c u G um, kein Massenlauf
 (Carsten: „Keine“).  Im laufenden Emacs geprüft: Balken aller 38
 Tabellen von 1016 in einer Linie, Farben, PDF-Seite mit seinen
 Schriften.  ERT 2939, BDD 251.
+
+18.11.2026 nachmittags, DIE TABELLEN IM .org AUF EINEN BLICK (`bbd79e8';
+Carsten: „Gibt es eine Möglichkeit die Tabellen im .org besser
+darzustellen? ich komme klar, aber ‚verirre‘ mich dennoch hin und
+wieder. Vielleicht auch die Zeile mit dem Wylie oder IAST in weiß“; von
+drei Varianten live an TĀ 1012: „B mit Spaltenhervorhebung“).  Reine
+Anzeige in `bcat-faces-mode', keine Datei ändert sich:
+- Wortzeile (`bcat-word-face', Textfarbe + fett): die Zeile der Wörter
+  in Lateinschrift — Sanskrit die erste Zeile über der Linie, Tibetisch
+  das Wylie unter dem Uchen, je Band (`bcat-faces--word-row-p').  Die
+  Uchen-Zeile bleibt unberührt (Schrift und Höhe vom 4.11.).
+- Gitter (`bcat-grid-face', grau): Balken und Linien aller Tabellen.
+- Spalte des Worts unter dem Cursor (`bcat-column-face', Overlays über
+  `post-command-hook'; `bcat-faces-highlight-column', Standard t;
+  `bcat-faces-toggle-column'): Sanskrit die ganze Spalte samt Linie und
+  Teilen, sonst das Band.
+Was man wissen muss:
+- In Carstens Theme (modus-vivendi) haben Tabellenzeilen NICHT die
+  Textfarbe: org legt `org-table' (helles Blau) darauf.  „Die Wörter
+  bleiben schwarz“ (31.10.) galt nur fürs PDF.  Wer eine Zeile absetzen
+  will, braucht eine eigene Face mit `prepend'.
+- Ein „+“ steht auch in Zellen („DEM+QUANT“, „COP + CONV“) — Spalten
+  zählen mit „|“, das Plus trennt nur in einer Linie
+  (`bcat-faces--cell-separator').
+- Bilder für Carsten aus dem laufenden Emacs: `htmlize-region' auf dem
+  echten Puffer → `qlmanage -t -s 2600' → `magick -crop' (kein PIL; sips
+  schneidet nur mittig).  Bei ihm läuft `dimmer-mode': nicht gewählte
+  Fenster sind über `face-remapping-alist' abgedunkelt, mit 12-stelligen
+  Farbwerten, die als CSS ungültig sind — für das Bild
+  `face-remapping-alist' auf nil binden und den body-Hintergrund selbst
+  setzen.  Overlays zeigt htmlize nicht verlässlich: für das Bild als
+  Texteigenschaft setzen (`add-face-text-property', danach
+  `font-lock-flush').  Die Uchen-Zeile ist im Bild weder maßstäblich
+  noch ausgerichtet (Kailasa-Höhe, :align-to fehlen im HTML).
+- Varianten zeigt man am besten als Prototyp-Datei im Scratch, die nur
+  font-lock-Regeln und Overlays in EINEM Puffer setzt, mit einem Befehl
+  zum Durchschalten; danach den Prototyp aus dem laufenden Emacs
+  entfernen (Regeln, Hook, Overlays, Funktionen).
+VEREINBART am 18.11., NOCH NICHT GEBAUT („Wir kümmern uns erstmal nur
+ums .org, die PDFs ergeben sich dann hoffentlich“):
+1. Alle Vorlagen in DREI OBERABSCHNITTE (Carsten: „drei Oberabschnitte
+   passen“): (1) Inhalt — Originaltext in Schrift und Umschrift, die
+   Rezitationstabelle nur bei einem Vers zum Rezitieren; (2) Philologie
+   — Segmente mit Tabellen und „→“, Proposed translation, Sentence,
+   Segments; (3) „Worum es geht“.  Teil 1 und 2 nutzt er auf dem
+   MacBook im Reading, Teil 3 liest er in der Vorbereitung zuerst.
+   Further Reading, Working Translation, My Notes, Footnotes bleiben
+   dahinter.  Der Aufwand liegt in allem, was Überschriften liest
+   (Neusetzen, PDF, Zettel-Belege, Sprünge, `bcat-faces' prüft
+   „* Text“/„* Sanskrit“); bestehende Dateien stellt C-c u L um.
+2. Philologie-Teil besser gliedern, der Vergleich der Übersetzungen
+   pointierter — Einzelheiten will er noch besprechen.
+3. „Worum es geht“ ausführlicher — Prompt-Änderung, wirkt erst beim
+   nächsten C-c u G; die Handtexte TĀ 1009–1040 sind geschützt und
+   würden nicht ersetzt (eigens entscheiden).  Offene Frage an ihn: was
+   ihm heute fehlt.
+Befund zum ersten echten Abruf mit `members'/`layers' (TĀ 1012, von
+Carsten am 18.11. abgerufen): die Auflösung kommt als EINE ZEILE JE
+GLIED (sieben für katipaya-…-vailakṣaṇyāt) mit langen Etiketten
+(„[karmadhāraya head of inner compound]“) — 14 Zeilen unter einem Wort.
+Die Regel im Prompt ist zu straffen (ein Schritt = eine Schicht, kurze
+Etiketten); gehört zu Punkt 2, nur mit Carstens Zustimmung.
 
 #### Offen
 

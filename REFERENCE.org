@@ -1,9 +1,9 @@
 #+TITLE: Function Reference — buddhist-cat
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-11-18T13:13:06
+#+DATE: 2026-11-18T14:42:14
 #+OPTIONS: toc:2 num:nil
 
-Source tree: ~/Users/cp/buddhist-cat~  ·  97 modules  ·  2431 forms
+Source tree: ~/Users/cp/buddhist-cat~  ·  97 modules  ·  2444 forms
 
 Regenerated automatically by:
 
@@ -66,7 +66,7 @@ python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/buddhist-c
   - [[#persist/bcat-commentary.el][persist/bcat-commentary.el]]  (59)
   - [[#persist/bcat-dossier.el][persist/bcat-dossier.el]]  (36)
   - [[#persist/bcat-export.el][persist/bcat-export.el]]  (89)
-  - [[#persist/bcat-faces.el][persist/bcat-faces.el]]  (41)
+  - [[#persist/bcat-faces.el][persist/bcat-faces.el]]  (54)
   - [[#persist/bcat-parallel.el][persist/bcat-parallel.el]]  (7)
   - [[#persist/bcat-relayout.el][persist/bcat-relayout.el]]  (17)
   - [[#persist/bcat-sentence.el][persist/bcat-sentence.el]]  (100)
@@ -16807,7 +16807,7 @@ for a sentence file.
 ** ~bcat-faces-mode~  /minor mode/  ↗
 :PROPERTIES:
 :KIND: define-minor-mode
-:LINE: 489
+:LINE: 685
 :SIGNATURE: (bcat-faces-mode …)
 :AUTOLOAD: t
 :END:
@@ -16817,12 +16817,15 @@ colour, blue the glosses in the line with the vocabulary and the rows
 that explain the words — formation, parts, form — in the tables
 (Carsten 31.10.); the ratings of the comparison in green, yellow, red
 (2.11.); the keyword lines at the top folded behind #+TITLE (4.11.,
-`bcat-faces-toggle-header'); Tibetan in `bcat-tibetan-face' (4.11.).
+`bcat-faces-toggle-header'); Tibetan in `bcat-tibetan-face' (4.11.);
+the row of the words in IAST or Wylie bold in `bcat-word-face', bars and
+rules grey, the column of the word at point marked (18.11.,
+`bcat-faces-toggle-column').
 
 ** ~bcat-faces--unit-matcher~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 37
+:LINE: 47
 :SIGNATURE: (bcat-faces--unit-matcher limit)
 :END:
 
@@ -16833,7 +16836,7 @@ verse block (a Structure line's brackets are no glosses).
 ** ~bcat-faces--metre-row-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 49
+:LINE: 59
 :SIGNATURE: (bcat-faces--metre-row-p line)
 :END:
 
@@ -16842,7 +16845,7 @@ Non-nil when the table LINE holds only metre signs (– ⏑ ¦).
 ** ~bcat-faces--band~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 53
+:LINE: 63
 :SIGNATURE: (bcat-faces--band pos)
 :END:
 
@@ -16852,7 +16855,7 @@ hlines), as a list of their line starts.
 ** ~bcat-faces--metre-table-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 68
+:LINE: 78
 :SIGNATURE: (bcat-faces--metre-table-p pos)
 :END:
 
@@ -16862,7 +16865,7 @@ table's second row holds only – ⏑ ¦.
 ** ~bcat-faces--header-table-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 82
+:LINE: 92
 :SIGNATURE: (bcat-faces--header-table-p pos)
 :END:
 
@@ -16873,7 +16876,7 @@ table of words has one.
 ** ~bcat-faces--parts-table-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 95
+:LINE: 105
 :SIGNATURE: (bcat-faces--parts-table-p pos)
 :END:
 
@@ -16886,7 +16889,7 @@ comparison's overview has @@latex:\cellcolor{…}@@ in every row.
 ** ~bcat-faces--parts-line-matcher~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 107
+:LINE: 117
 :SIGNATURE: (bcat-faces--parts-line-matcher limit)
 :END:
 
@@ -16899,7 +16902,7 @@ a word of one member under * Text or * Sanskrit (Carsten 5.11.:
 ** ~bcat-faces--table-rows~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 122
+:LINE: 132
 :SIGNATURE: (bcat-faces--table-rows pos)
 :END:
 
@@ -16908,7 +16911,7 @@ The lines of the table around POS, its rules included.
 ** ~bcat-faces--resolution-table-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 128
+:LINE: 138
 :SIGNATURE: (bcat-faces--resolution-table-p pos)
 :END:
 
@@ -16919,7 +16922,7 @@ the middle one — the relation — in brackets.
 ** ~bcat-faces--relation-cell-matcher~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 138
+:LINE: 148
 :SIGNATURE: (bcat-faces--relation-cell-matcher limit)
 :END:
 
@@ -16931,7 +16934,7 @@ resolution (`bcat-faces--resolution-table-p') under * Text or
 ** ~bcat-faces--template~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 157
+:LINE: 167
 :SIGNATURE: (bcat-faces--template)
 :END:
 
@@ -16941,7 +16944,7 @@ The template of the sentence file in the buffer (#+CAT_TEMPLATE), or
 ** ~bcat-faces--sanskrit-table-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 169
+:LINE: 179
 :SIGNATURE: (bcat-faces--sanskrit-table-p pos)
 :END:
 
@@ -16952,7 +16955,7 @@ Non-nil when a table at POS is one of a Sanskrit segment: under
 ** ~bcat-faces--sub-row-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 182
+:LINE: 192
 :SIGNATURE: (bcat-faces--sub-row-p pos)
 :END:
 
@@ -16963,7 +16966,7 @@ compound's members and its resolution.
 ** ~bcat-faces--sub-cell-blue~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 197
+:LINE: 207
 :SIGNATURE: (bcat-faces--sub-cell-blue cell)
 :END:
 
@@ -16977,7 +16980,7 @@ black —; any other cell (a part of a word) whole.
 ** ~bcat-faces--sub-cell-matcher~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 213
+:LINE: 223
 :SIGNATURE: (bcat-faces--sub-cell-matcher limit)
 :END:
 
@@ -16988,7 +16991,7 @@ rule of a Sanskrit segment's table (`bcat-faces--sub-row-p',
 ** ~bcat-faces--detail-row-matcher~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 231
+:LINE: 241
 :SIGNATURE: (bcat-faces--detail-row-matcher limit)
 :END:
 
@@ -17001,10 +17004,104 @@ under the members (5.11., `bcat-faces--parts-table-p'), save the row of
 their meanings right under them (18.11.); none of a compound's
 resolution (`bcat-faces--resolution-table-p').
 
+** ~bcat-faces--word-row-p~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 329
+:SIGNATURE: (bcat-faces--word-row-p pos)
+:END:
+
+Non-nil when the table row at POS shows the words of a segment in
+Latin script: the first row of its band (the rows between rules) — the
+second when the first is their Uchen, or empty (the column of a shad
+alone) —, a band of three rows or more.  None under the rule of a
+Sanskrit segment's table (the parts of the words), of a metre table, of
+a table with a header row (the comparison; a table of parts left under
+Word Formation) or of a compound's resolution.
+
+** ~bcat-faces--word-row-matcher~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 355
+:SIGNATURE: (bcat-faces--word-row-matcher limit)
+:END:
+
+Font-lock matcher: the next table row before LIMIT with the words of
+a segment in Latin script (`bcat-faces--word-row-p') — group 0 the row.
+
+** ~bcat-faces--grid-matcher~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 366
+:SIGNATURE: (bcat-faces--grid-matcher limit)
+:END:
+
+Font-lock matcher: the next piece of a table's grid before LIMIT —
+group 0 a rule from its first bar to its end, or one bar of a row.  A
+bar in a line that is no table row (the caesura in a verse) is none.
+
+** ~bcat-faces--cell-separator~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 387
+:SIGNATURE: (bcat-faces--cell-separator)
+:END:
+
+The regexp of what ends a cell in the table line at point: a bar; in
+a rule a bar or a plus — a plus in a cell is text („DEM+QUANT“, „COP +
+CONV“, Kadam 2003).
+
+** ~bcat-faces--cell-bounds~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 395
+:SIGNATURE: (bcat-faces--cell-bounds col)
+:END:
+
+(BEG . END) of the cell number COL (from 0) of the table line at
+point — between its bars, in a rule between bar and plus —, or nil.
+
+** ~bcat-faces--column-cells~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 411
+:SIGNATURE: (bcat-faces--column-cells pos)
+:END:
+
+The cells (BEG . END), top to bottom, of the table column at POS that
+belong to the word there, or nil.  In the table of a Sanskrit segment
+the whole column — word, gloss, form, the rule, the parts under it
+(`bcat-faces--sanskrit-table-p'); in any other table of words the rows
+of the band at POS: an old Tibetan table continues its words in a new
+band.  nil beside the bars, outside a table, in a metre table and in a
+table with a header row (the comparison).
+
+** ~bcat-faces--column-update~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 448
+:SIGNATURE: (bcat-faces--column-update)
+:END:
+
+`post-command-hook' of `bcat-faces-mode': mark the column of the word
+at point (`bcat-faces--column-cells') in the selected window, or take
+the mark away — with `bcat-faces-highlight-column' nil always.
+
+** ~bcat-faces-toggle-column~  /function/  ⚡
+:PROPERTIES:
+:KIND: defun
+:LINE: 463
+:SIGNATURE: (bcat-faces-toggle-column)
+:INTERACTIVE: t
+:END:
+
+Switch the mark on the column of the word at point on or off
+(`bcat-faces-highlight-column').
+
 ** ~bcat-faces--translation-matcher~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 288
+:LINE: 480
 :SIGNATURE: (bcat-faces--translation-matcher limit)
 :END:
 
@@ -17015,7 +17112,7 @@ group 0 the line.  A translator's „→“ line under * Segments is none.
 ** ~bcat-faces--rating-face~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 319
+:LINE: 511
 :SIGNATURE: (bcat-faces--rating-face rating)
 :END:
 
@@ -17025,7 +17122,7 @@ The face of RATING — a cell colour (ok, mid, bad) or the rating word
 ** ~bcat-faces--rating-matcher~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 327
+:LINE: 519
 :SIGNATURE: (bcat-faces--rating-matcher limit)
 :END:
 
@@ -17039,7 +17136,7 @@ to colour, group 3 the LaTeX snippet (only in the table).
 ** ~bcat-faces--tibetan-matcher~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 350
+:LINE: 542
 :SIGNATURE: (bcat-faces--tibetan-matcher limit)
 :END:
 
@@ -17050,7 +17147,7 @@ beside others (§5.31).
 ** ~bcat-faces--tibetan-fontset~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 356
+:LINE: 548
 :SIGNATURE: (bcat-faces--tibetan-fontset)
 :END:
 
@@ -17063,7 +17160,7 @@ the face alone left the lines at 43 px, with its own fontset 27.
 ** ~bcat-faces--remap-shads~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 374
+:LINE: 566
 :SIGNATURE: (bcat-faces--remap-shads on)
 :END:
 
@@ -17079,7 +17176,7 @@ redisplay of a shad).
 ** ~bcat-faces--bar-columns~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 394
+:LINE: 586
 :SIGNATURE: (bcat-faces--bar-columns line)
 :END:
 
@@ -17089,7 +17186,7 @@ their text (whether or not font-lock has hidden the rest yet).
 ** ~bcat-faces--uchen-row-matcher~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 405
+:LINE: 597
 :SIGNATURE: (bcat-faces--uchen-row-matcher limit)
 :END:
 
@@ -17104,7 +17201,7 @@ them.  Returns nil.
 ** ~bcat-faces--header-end~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 437
+:LINE: 629
 :SIGNATURE: (bcat-faces--header-end)
 :END:
 
@@ -17114,7 +17211,7 @@ before the newline), or nil when the buffer does not begin with one.
 ** ~bcat-faces--header-matcher~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 449
+:LINE: 641
 :SIGNATURE: (bcat-faces--header-matcher limit)
 :END:
 
@@ -17127,7 +17224,7 @@ whole, so a later chunk of jit-lock never unfolds a part of it.
 ** ~bcat-faces-toggle-header~  /function/  ⚡
 :PROPERTIES:
 :KIND: defun
-:LINE: 463
+:LINE: 655
 :SIGNATURE: (bcat-faces-toggle-header)
 :INTERACTIVE: t
 :END:
@@ -17137,7 +17234,7 @@ Show or fold the keyword lines at the top of the sentence file.
 ** ~bcat-faces-maybe~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 510
+:LINE: 713
 :SIGNATURE: (bcat-faces-maybe)
 :END:
 
@@ -17147,7 +17244,7 @@ template — sent-… or comm-… with a #+CAT_TEMPLATE: line.
 ** ~bcat-faces--reading-file-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 530
+:LINE: 733
 :SIGNATURE: (bcat-faces--reading-file-p)
 :END:
 
@@ -17156,17 +17253,32 @@ Non-nil in a sentence file of a template or a cascade source.
 ** ~bcat-faces--reading-view~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 539
+:LINE: 742
 :SIGNATURE: (bcat-faces--reading-view)
 :END:
 
 `after-change-major-mode-hook' (late, after the globalized modes):
 no line numbers in a reading file unless `bcat-faces-line-numbers'.
 
+** ~bcat-faces-highlight-column~  /customize variable/
+:PROPERTIES:
+:KIND: defcustom
+:LINE: 320
+:TYPE: 'boolean
+:GROUP: buddhist-cat
+:DEFAULT: t
+:END:
+
+Non-nil: in a sentence file the column of the word at point is marked
+(`bcat-column-face') — the word with its gloss, form and parts.
+Carsten 18.11., of three variants on TĀ 1012: „B mit
+Spaltenhervorhebung“ — to find a word again „wenn wir Teile
+diskutieren“.  `bcat-faces-toggle-column' switches it.
+
 ** ~bcat-faces-line-numbers~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 522
+:LINE: 725
 :TYPE: 'boolean
 :GROUP: buddhist-cat
 :DEFAULT: nil
@@ -17180,16 +17292,25 @@ was 22 characters wide.
 ** ~bcat-faces--template-cache~  /variable (buffer-local)/
 :PROPERTIES:
 :KIND: defvar-local
-:LINE: 154
+:LINE: 164
 :DEFAULT: nil
 :END:
 
 The #+CAT_TEMPLATE of the buffer ("" for none), read once.
 
+** ~bcat-faces--column-overlays~  /variable (buffer-local)/
+:PROPERTIES:
+:KIND: defvar-local
+:LINE: 445
+:DEFAULT: nil
+:END:
+
+The overlays that mark the column of the word at point.
+
 ** ~bcat-faces--shad-remap~  /variable (buffer-local)/
 :PROPERTIES:
 :KIND: defvar-local
-:LINE: 371
+:LINE: 563
 :DEFAULT: nil
 :END:
 
@@ -17198,7 +17319,7 @@ The face remapping of `cp/tibetan-shad-face' in this buffer, or nil.
 ** ~bcat-faces--keywords~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 471
+:LINE: 663
 :DEFAULT: '
 :END:
 
@@ -17207,36 +17328,28 @@ The face remapping of `cp/tibetan-shad-face' in this buffer, or nil.
 ** ~bcat-gloss-face~  /face/
 :PROPERTIES:
 :KIND: defface
-:LINE: 29
+:LINE: 39
 :END:
 
 /(no docstring)/
 
-** ~bcat-translation-face~  /face/
+** ~bcat-word-face~  /face/
 :PROPERTIES:
 :KIND: defface
-:LINE: 279
+:LINE: 294
 :END:
 
 /(no docstring)/
 
-** ~bcat-rating-ok-face~  /face/
+** ~bcat-grid-face~  /face/
 :PROPERTIES:
 :KIND: defface
-:LINE: 301
+:LINE: 306
 :END:
 
 /(no docstring)/
 
-** ~bcat-rating-mid-face~  /face/
-:PROPERTIES:
-:KIND: defface
-:LINE: 307
-:END:
-
-/(no docstring)/
-
-** ~bcat-rating-bad-face~  /face/
+** ~bcat-column-face~  /face/
 :PROPERTIES:
 :KIND: defface
 :LINE: 313
@@ -17244,10 +17357,42 @@ The face remapping of `cp/tibetan-shad-face' in this buffer, or nil.
 
 /(no docstring)/
 
+** ~bcat-translation-face~  /face/
+:PROPERTIES:
+:KIND: defface
+:LINE: 471
+:END:
+
+/(no docstring)/
+
+** ~bcat-rating-ok-face~  /face/
+:PROPERTIES:
+:KIND: defface
+:LINE: 493
+:END:
+
+/(no docstring)/
+
+** ~bcat-rating-mid-face~  /face/
+:PROPERTIES:
+:KIND: defface
+:LINE: 499
+:END:
+
+/(no docstring)/
+
+** ~bcat-rating-bad-face~  /face/
+:PROPERTIES:
+:KIND: defface
+:LINE: 505
+:END:
+
+/(no docstring)/
+
 ** ~bcat-tibetan-face~  /face/
 :PROPERTIES:
 :KIND: defface
-:LINE: 341
+:LINE: 533
 :END:
 
 /(no docstring)/
