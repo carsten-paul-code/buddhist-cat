@@ -315,11 +315,12 @@ last gloss word.  Shorter units stay whole (29.10.)."
 (ert-deftest bcat-export-tables-fit ()
   "30.10., TĀ Satz 1001: the metre table (19 syllables and the pause)
 ran off the page.  A table wider than the line is scaled down to it
-\(adjustbox, max width) — narrower ones keep their size; the package
-comes with the header."
-  (should (equal (concat "\\begin{adjustbox}{max width=\\linewidth}\n"
+\(bcattable: measured, then scaled) — narrower ones keep their size;
+18.11.: inside the tables of a segment all by the widest
+\(`bcat-export-table-runs').  graphicx's \\scalebox comes with adjustbox."
+  (should (equal (concat "\\begin{bcattable}\n"
                          "\\begin{tabular}{ll}\na & b\\\\\n\\end{tabular}\n"
-                         "\\end{adjustbox}\n")
+                         "\\end{bcattable}\n")
                  (bcat-export--table-filter "\\begin{tabular}{ll}\na & b\\\\\n\\end{tabular}\n"
                                             'latex nil)))
   (should (string-match-p (regexp-quote "\\usepackage{adjustbox}") (bcat-export--font-lines))))
@@ -330,14 +331,14 @@ the segment table in the PDF — the table filter cut the blank line
 after the table, and the next paragraph ran on beside the adjustbox.
 The table keeps its blank line: in the LaTeX of a table and a
 paragraph, a blank line stands between them."
-  (should (string-suffix-p "\\end{adjustbox}\n\n"
+  (should (string-suffix-p "\\end{bcattable}\n\n"
                            (bcat-export--table-filter
                             "\\begin{tabular}{l}\na\\\\\n\\end{tabular}\n\n" 'latex nil)))
   (require 'ox-latex)
   (let* ((org-export-filter-table-functions (list #'bcat-export--table-filter))
          (latex (org-export-string-as "| a | b |\n\n⟦683⟧ *Translation:* Not having heard\n"
                                       'latex t)))
-    (should (string-match-p "\\\\end{adjustbox}\n\n+⟦683⟧" latex))))
+    (should (string-match-p "\\\\end{bcattable}\n\n+⟦683⟧" latex))))
 
 (ert-deftest bcat-export-missing-characters ()
   "30.10.: Satz 1001 showed boxes for ¦ and the status said „PDF ✓“ — a
@@ -660,6 +661,84 @@ file; nothing lost."
       (insert "* Text\n*a b c*\n\n" file-tables "\n")
       (bcat-export--rechunk-gloss-tables)
       (should (equal (concat "* Text\n*a b c*\n\n" file-tables "\n") (buffer-string))))))
+
+(ert-deftest bcat-export-table-runs ()
+  "18.11. (Carsten, TĀ 1016): the tables of a segment are one run — the
+overview and what stands under its translation (the parts of the
+words) —, marked for LaTeX by \\bcatrunbegin before the first and
+\\bcatrunend after the last, so all of them get one size
+\(`bcat-export--font-lines').  The next ⟦N⟧ or heading ends the run;
+tables elsewhere (the comparison's overview) belong to none."
+  (with-temp-buffer
+    (insert "* Segments\n⟦1⟧ · [[#grammar-1][Grammar]]\n@@latex:\\bcatorig{@@a b@@latex:}@@\n"
+            "| a |\n| x |\n\n| b |\n| y |\n\n"
+            "@@latex:\\bcattrans{@@→ t@@latex:}@@\n\n"
+            "| b1 | b2 |\n|----+----|\n| p  | q  |\n\n"
+            "⟦2⟧\n\n| c |\n| z |\n\n"
+            "* Discussion\n| Nr. | Stelle |\n|-----+--------|\n|   1 | /a/    |\n")
+    (bcat-export--table-runs)
+    (should (equal (concat "* Segments\n⟦1⟧ · [[#grammar-1][Grammar]]\n@@latex:\\bcatorig{@@a b@@latex:}@@\n"
+                           "#+LATEX: \\bcatrunbegin\n"
+                           "| a |\n| x |\n\n| b |\n| y |\n\n"
+                           "@@latex:\\bcattrans{@@→ t@@latex:}@@\n\n"
+                           "| b1 | b2 |\n|----+----|\n| p  | q  |\n"
+                           "#+LATEX: \\bcatrunend\n\n"
+                           "⟦2⟧\n\n"
+                           "#+LATEX: \\bcatrunbegin\n"
+                           "| c |\n| z |\n"
+                           "#+LATEX: \\bcatrunend\n\n"
+                           "* Discussion\n| Nr. | Stelle |\n|-----+--------|\n|   1 | /a/    |\n")
+                   (buffer-string))))
+  ;; Tibetan without marks: the tables with an Uchen row are the run.
+  (with-temp-buffer
+    (insert "* Text\n| ཆོས |\n| chos |\n\n| ཉིད |\n| nyid |\n\n→ t\n")
+    (bcat-export--table-runs)
+    (should (equal (concat "* Text\n#+LATEX: \\bcatrunbegin\n| ཆོས |\n| chos |\n\n| ཉིད |\n| nyid |\n"
+                           "#+LATEX: \\bcatrunend\n\n→ t\n")
+                   (buffer-string))))
+  (let ((head (bcat-export--font-lines)))
+    (should (string-match-p (regexp-quote "\\newcommand{\\bcatrunbegin}") head))
+    (should (string-match-p (regexp-quote "\\newcommand{\\bcatrunend}") head))
+    (should (string-match-p (regexp-quote "\\newenvironment{bcattable}") head))))
+
+(ert-deftest bcat-export-file-smoke-one-table-size ()
+  "Bug (18.11., Carsten, TĀ 1016): each table wider than the line was
+shrunk to it on its own (adjustbox) — the tables of one segment stood in
+different sizes, a narrow one in the largest.  All tables of a segment
+are set in one size, that of its widest (measured in the first LaTeX
+run, applied in the second).  A real LuaLaTeX run (only where lualatex
+and pdftotext are installed): the words of a wide and of a narrow table
+of the same segment are equally high."
+  (skip-unless (and (executable-find "lualatex") (executable-find "pdftotext")))
+  (let* ((dir (make-temp-file "bcat-size-" t))
+         (file (expand-file-name "size.org" dir))
+         (wide (mapconcat (lambda (i) (format "wort%02dabcdefghijklmnop" i)) (number-sequence 1 12) " | "))
+         (bcat-export-upload nil)
+         (bcat-export-table-width 400)      ; no layout for the page: the wide table overflows
+         (warning-minimum-level :emergency))
+    (unwind-protect
+        (progn
+          (let ((coding-system-for-write 'utf-8-unix))
+            (with-temp-file file
+              (insert "#+TITLE: t\n#+OPTIONS: toc:nil num:nil\n* Text\n⟦1⟧\n\n"
+                      "| breit | " wide " |\n| a | "
+                      (mapconcat (lambda (_) "b") (number-sequence 1 12) " | ") " |\n\n"
+                      "→ t\n\n"
+                      "| schmal |\n|--------|\n| c      |\n")))
+          (let* ((pdf (bcat-export-pdf file))
+                 (heights (with-temp-buffer
+                            (call-process "pdftotext" nil t nil "-tsv" pdf "-")
+                            (let ((out '()))
+                              (dolist (l (split-string (buffer-string) "\n" t))
+                                (let ((f (split-string l "\t")))
+                                  (when (member (nth 11 f) '("breit" "schmal"))
+                                    (push (cons (nth 11 f) (string-to-number (nth 9 f))) out))))
+                              out))))
+            (should (and pdf (file-exists-p pdf)))
+            (should (assoc "breit" heights))
+            (should (assoc "schmal" heights))
+            (should (< (abs (- (cdr (assoc "breit" heights)) (cdr (assoc "schmal" heights)))) 0.05))))
+      (delete-directory dir t))))
 
 (ert-deftest bcat-export-rechunk-header-tables ()
   "The tables of the parts of a word (a header row, its rule, the parts

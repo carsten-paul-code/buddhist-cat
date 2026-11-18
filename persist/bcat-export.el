@@ -273,6 +273,25 @@ vergleich-ta1-1.org, `bcat-analysis--rating-colours')."
    "#+LATEX_HEADER: \\newcommand{\\bcatorig}[1]{\\\\{\\bfseries\\color{bcatorig}#1}}\n"
    "#+LATEX_HEADER: \\newcommand{\\bcattrans}[1]{{\\itshape\\color{bcattrans}#1}}\n"
    "#+LATEX_HEADER: \\newcommand{\\bcatsub}[1]{\\par\\smallskip\\noindent{\\small\\bfseries #1}\\par\\nopagebreak}\n"
+   ;; 18.11. (TĀ 1016): the tables of a segment in ONE size.  Every
+   ;; table is measured (bcattable) and shrunk to the line only when
+   ;; wider; between \\bcatrunbegin and \\bcatrunend
+   ;; (`bcat-export--table-runs') all by the widest of the run — its
+   ;; width goes to the .aux in the first run and is used in the second.
+   "#+LATEX_HEADER: \\makeatletter\n"
+   "#+LATEX_HEADER: \\newcounter{bcatrun}\\newdimen\\bcatrunmax\\newsavebox{\\bcattabbox}\\newif\\ifbcatinrun\n"
+   "#+LATEX_HEADER: \\newcommand{\\bcatrunbegin}{\\stepcounter{bcatrun}\\global\\bcatrunmax=\\z@\\global\\bcatinruntrue}\n"
+   "#+LATEX_HEADER: \\newcommand{\\bcatrunend}{\\ifbcatinrun\\immediate\\write\\@auxout{\\string\\global\\string\\@namedef{bcatrun@\\thebcatrun}{\\the\\bcatrunmax}}\\global\\bcatinrunfalse\\fi}\n"
+   (concat "#+LATEX_HEADER: \\newenvironment{bcattable}{\\begin{lrbox}{\\bcattabbox}}{\\end{lrbox}\\dimen@=\\wd\\bcattabbox"
+           "\\ifbcatinrun\\ifdim\\dimen@>\\bcatrunmax\\global\\bcatrunmax=\\dimen@\\fi"
+           "\\@ifundefined{bcatrun@\\thebcatrun}{}{\\dimen@=\\@nameuse{bcatrun@\\thebcatrun}\\relax}\\fi"
+           ;; flush left like the text (adjustbox did not indent either)
+           "\\ifvmode\\noindent\\fi"
+           "\\ifdim\\dimen@>\\linewidth"
+           ;; the factor first: \\scalebox uses \\dimen@ itself
+           "\\edef\\bcat@s{\\strip@pt\\dimexpr 1pt*\\linewidth/\\dimen@\\relax}\\scalebox{\\bcat@s}{\\usebox{\\bcattabbox}}"
+           "\\else\\usebox{\\bcattabbox}\\fi}\n")
+   "#+LATEX_HEADER: \\makeatother\n"
    (format "#+LATEX_HEADER: \\newfontfamily\\bcattib{%s}[Script=Tibetan,Renderer=HarfBuzz]\n"
            bcat-export-tibetan-font)
    (format "#+LATEX_HEADER: \\newfontfamily\\bcatdeva{%s}[Script=Devanagari,Renderer=HarfBuzz]\n"
@@ -402,17 +421,20 @@ exporting to LaTeX (BACKEND)."
 
 (defun bcat-export--table-filter (text backend _info)
   "`org-export-filter-table-functions' entry: a LaTeX tabular no wider
-than the line — scaled down when wider (adjustbox, max width), else as
-it is.  30.10., TĀ 1001: the metre table (19 syllables and the pause)
-ran off the page."
+than the line — scaled down when wider, else as it is (the environment
+bcattable of `bcat-export--font-lines'; until 18.11. adjustbox, max
+width).  30.10., TĀ 1001: the metre table (19 syllables and the pause)
+ran off the page.  18.11., TĀ 1016: the tables of a segment
+\(`bcat-export--table-runs') all by the widest of them — each shrunk on
+its own, they stood in four sizes."
   (if (and (org-export-derived-backend-p backend 'latex)
            (string-match-p "\\\\begin{tabular}" text))
       ;; The blank line after the table stays (30.10.: cut, the next
       ;; paragraph ran on beside the box — „Translation:“ in the table).
       (let ((end (if (string-match "\n*\\'" text) (match-beginning 0) (length text))))
-        (concat "\\begin{adjustbox}{max width=\\linewidth}\n"
+        (concat "\\begin{bcattable}\n"
                 (bcat-export--detail-rows (bcat-export--table-scripts (substring text 0 end))) "\n"
-                "\\end{adjustbox}"
+                "\\end{bcattable}"
                 (let ((tail (substring text end)))
                   (if (string-empty-p tail) "\n" tail))))
     text))
@@ -582,25 +604,30 @@ export lays the tables out anew (`bcat-export--rechunk-gloss-tables')."
   :type 'integer
   :group 'buddhist-cat)
 
+(defun bcat-export--under-mark-p ()
+  "Non-nil when above the table at point — blank lines skipped — stands
+a ⟦N⟧ mark, alone or as a heading (the file since 9.11.).  Between the
+mark and the table may stand the original (9.11.: a bold line in the
+file, \\bcatorig in the view) and under it „Prüfen:“ (16.11.) — 18.11.,
+TĀ 1016: with the original in between no table was a segment's any
+more, none was laid out for the page."
+  (save-excursion
+    (let ((up (lambda ()
+                (and (zerop (forward-line -1))
+                     (progn (while (and (looking-at "[ \t]*$") (zerop (forward-line -1))))
+                            t)))))
+      (and (funcall up)
+           (progn
+             (when (looking-at "\\*Prüfen:\\* ") (funcall up))
+             (when (looking-at "@@latex:\\\\bcatorig{@@\\|\\*[^* \n][^\n]*\\*[ \t]*$") (funcall up))
+             (looking-at "\\(?:\\*+ \\)?\\(?:<<[^>\n]*>>\\)?⟦[0-9]+⟧[^\n]*$"))))))
+
 (defun bcat-export--gloss-run-start-p ()
-  "Non-nil when the table at point begins the tables of a segment: above
-it — blank lines skipped — stands a ⟦N⟧ mark, alone or as a heading
-\(the file since 9.11.), or its first row is in Tibetan script (files
-without marks).  Between the mark and the table may stand the original
-\(9.11.: a bold line in the file, \\bcatorig in the view) and under it
-„Prüfen:“ (16.11.) — 18.11., TĀ 1016: with the original in between no
-table was a segment's any more, none was laid out for the page."
-  (or (looking-at "|[^-\n].*[ༀ-࿿]")
-      (save-excursion
-        (let ((up (lambda ()
-                    (and (zerop (forward-line -1))
-                         (progn (while (and (looking-at "[ \t]*$") (zerop (forward-line -1))))
-                                t)))))
-          (and (funcall up)
-               (progn
-                 (when (looking-at "\\*Prüfen:\\* ") (funcall up))
-                 (when (looking-at "@@latex:\\\\bcatorig{@@\\|\\*[^* \n][^\n]*\\*[ \t]*$") (funcall up))
-                 (looking-at "\\(?:\\*+ \\)?\\(?:<<[^>\n]*>>\\)?⟦[0-9]+⟧[^\n]*$")))))))
+  "Non-nil when the table at point begins the tables of a segment: it
+stands under a ⟦N⟧ mark (`bcat-export--under-mark-p'), or its first row
+is in Tibetan script (files without marks)."
+  (or (looking-at "|[^-\n].*[\u0F00-\u0FFF]")
+      (bcat-export--under-mark-p)))
 
 (defun bcat-export--rechunk-gloss-tables (&rest _)
   "In the current (export) buffer: the tables of each segment — a run of
@@ -639,6 +666,62 @@ the PDF keeps its width.  For `org-export-before-processing-functions'
               (delete-region start end)
               (goto-char start)
               (insert (bcat-analysis--format-chunks (car best) (cdr best)) "\n"))))))))
+
+(defun bcat-export--table-runs (&rest _)
+  "In the current (export) buffer: the tables of each segment marked as
+one run for LaTeX — „#+LATEX: \\bcatrunbegin“ before the first,
+„#+LATEX: \\bcatrunend“ after the last —, so all of them are set in one
+size, that of the widest (`bcat-export--font-lines').  18.11., TĀ 1016:
+each table wider than the line was shrunk on its own, the tables of one
+segment stood in four sizes.  The run of a segment under a ⟦N⟧ mark
+reaches to the next mark or heading — the overview and, under its
+translation, the parts of its words (the heading Word Formation of the
+file does not end it); without marks (Tibetan, a first row in Uchen) it
+is the tables with only blank lines between.  For
+`org-export-before-processing-functions', after
+`bcat-export--marks-apart' — the file stays as it is."
+  (save-excursion
+    (goto-char (point-min))
+    (while (re-search-forward "^|" nil t)
+      (goto-char (line-beginning-position))
+      (if (or (save-excursion (and (zerop (forward-line -1)) (looking-at "[ \t]*|")))
+              (not (bcat-export--gloss-run-start-p)))
+          (forward-line 1)
+        (let* ((start (point))
+               (marked (bcat-export--under-mark-p))
+               (block (save-excursion
+                        (let ((e nil))
+                          (while (looking-at "|")
+                            (while (looking-at "|") (forward-line 1))
+                            (setq e (point))
+                            (skip-chars-forward "\n"))
+                          e)))
+               (limit (save-excursion
+                        (forward-line 1)
+                        (let ((found nil))
+                          (while (and (not found)
+                                      (re-search-forward
+                                       "^\\(?:\\*+ \\|\\(?:<<[^>\n]*>>\\)?⟦[0-9]+⟧\\)" nil t))
+                            (unless (save-excursion (goto-char (line-beginning-position))
+                                                    (looking-at "\\*+ Word Formation[ \t]*$"))
+                              (setq found (line-beginning-position))))
+                          (or found (point-max)))))
+               (end (if (not marked)
+                        block
+                      (save-excursion
+                        (let ((e block))
+                          (goto-char block)
+                          (while (re-search-forward "^|.*$" limit t)
+                            (setq e (min (point-max) (1+ (point)))))
+                          e)))))
+          (goto-char end)
+          (unless (bolp) (insert "\n"))
+          (insert "#+LATEX: \\bcatrunend\n")
+          (let ((after (point-marker)))
+            (goto-char start)
+            (insert "#+LATEX: \\bcatrunbegin\n")
+            (goto-char after)
+            (set-marker after nil)))))))
 
 (defun bcat-export--rechunk-header-tables (&rest _)
   "In the current (export) buffer: every table of the parts of a word —
@@ -1069,6 +1152,7 @@ LuaLaTeX could not set land in `bcat-export--missing'."
                                            #'bcat-export--rechunk-header-tables
                                            #'bcat-export--wrap-wide-tables
                                            #'bcat-export--marks-apart
+                                           #'bcat-export--table-runs
                                            #'bcat-export--auto-parts
                                            #'bcat-export--parts-pages)
                                      org-export-before-processing-functions)))
