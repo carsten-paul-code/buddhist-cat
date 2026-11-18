@@ -368,6 +368,145 @@ other rows and tables without Uchen get nothing."
     (bcat-faces-mode 1)
     (should (memq 'display font-lock-extra-managed-props))))
 
+(ert-deftest bcat-faces-word-row ()
+  "18.11. (Carsten: „Gibt es eine Möglichkeit die Tabellen im .org besser
+darzustellen? ich komme klar, aber ‚verirre‘ mich dennoch hin und
+wieder. Vielleicht auch die Zeile mit dem Wylie oder IAST in weiß, das
+ich sie schneller finde, wenn wir Teile diskutieren“; of three variants
+shown on TĀ 1012: „B mit Spaltenhervorhebung“).  His theme gives every
+table row one pale blue — words and glosses looked alike.  The row of
+the words in Latin script stands out (`bcat-word-face', bold in the text
+colour): in a Sanskrit table the first row above the rule, in a Tibetan
+one the Wylie under the Uchen, in every band — also where the Uchen row
+is empty (the column of a shad alone) or missing (a commentary of the
+first run).  Not the rows under the rule of a Sanskrit table, not the
+metre table of the Recitation, not a table with a header row (the
+comparison, a table of parts left under Word Formation)."
+  (with-temp-buffer
+    (insert "#+CAT_TEMPLATE: sanskrit\n"
+            "* Recitation\n| yat | rās |\n| –   | –   |\n| na  | ja  |\n| ⏑   | ⏑   |\n\n"
+            "* Text\n** ⟦1⟧\n*a b*\n\n"
+            "| vigatā     | yā    |\n| departed   | which |\n| ppp.       | pron. |\n"
+            "|------------+-------|\n| /vi-/ away |       |\n| /√gam/ go  |       |\n| /-ta/ ppp  |       |\n\n"
+            "| ca   |\n| and  |\n| ind. |\n\n→ t\n\n"
+            "*** Word Formation\n| mahas               |\n|---------------------|\n| /√mah/ (1) be great |\n| /-as/ noun          |\n| x                   |\n\n"
+            "* Sentence\n** Translations compared\n"
+            "| Nr. | Stelle |\n|-----+--------|\n|   1 | /a/    |\n|   2 | /b/    |\n|   3 | /c/    |\n")
+    (org-mode)
+    (should (equal '("| vigatā     | yā    |" "| ca   |")
+                   (bcat-faces-test--matches #'bcat-faces--word-row-matcher 0))))
+  (with-temp-buffer
+    (insert "#+CAT_TEMPLATE: tibetan\n* Text\n⟦7⟧\n"
+            "| དེ   | ལས   |\n| de   | las  |\n| that | from |\n| DEM  | ABL  |\n"
+            "|------+------|\n"
+            "| ཆོས    |      |\n| chos   |      |\n| dharma |      |\n| N      |      |\n\n"
+            "|                   |\n| [[steinert:/][/]] |\n| sentence boundary |\n| PUNCT             |\n\n"
+            "| bden  | pa   |\n| truth | NMLZ |\n| N     | PART |\n")
+    (org-mode)
+    (should (equal '("| de   | las  |" "| chos   |      |" "| [[steinert:/][/]] |" "| bden  | pa   |")
+                   (bcat-faces-test--matches #'bcat-faces--word-row-matcher 0))))
+  (should (assq 'bcat-faces--word-row-matcher bcat-faces--keywords))
+  (should (eq 'bold (face-attribute 'bcat-word-face :weight nil t))))
+
+(ert-deftest bcat-faces-grid ()
+  "18.11. (variant B): the bars and the rules of the tables step back
+\(`bcat-grid-face', grey) so that the words carry — in every table of the
+file, a rule as one piece; a bar in running text (the caesura in the
+verse of the Recitation) is none."
+  (with-temp-buffer
+    (insert "* Recitation\n#+begin_verse\nyatrāsti kiṃcin|na jarā /\n#+end_verse\n\n"
+            "* Text\n| a | b |\n|---+---|\n| c | d |\n")
+    (org-mode)
+    (should (equal '("|" "|" "|" "|---+---|" "|" "|" "|")
+                   (bcat-faces-test--matches #'bcat-faces--grid-matcher 0))))
+  (should (assq 'bcat-faces--grid-matcher bcat-faces--keywords))
+  (should (stringp (face-attribute 'bcat-grid-face :foreground nil t))))
+
+(ert-deftest bcat-faces-column-of-the-word-at-point ()
+  "18.11. („B mit Spaltenhervorhebung“ — „wenn wir Teile diskutieren“):
+with point in a table of words the column of the word there is marked
+\(`bcat-column-face') — in the table of a Sanskrit segment the whole
+column: word, gloss, form, the rule, its parts; in a Tibetan table the
+rows of its band (an old table continues the words in a new band).
+Nothing beside the bars, outside a table, in the metre table, in a
+table with a header row.  The mark follows point (`post-command-hook'
+of `bcat-faces-mode'), is gone with `bcat-faces-highlight-column' nil
+and with the mode."
+  (let ((texts (lambda ()
+                 (mapcar (lambda (c) (buffer-substring-no-properties (car c) (cdr c)))
+                         (bcat-faces--column-cells (point)))))
+        (marks (lambda ()
+                 (length (cl-remove-if-not (lambda (o) (eq 'bcat-column-face (overlay-get o 'face)))
+                                           (overlays-in (point-min) (point-max)))))))
+    (with-temp-buffer
+      (insert "#+CAT_TEMPLATE: sanskrit\n"
+              "* Recitation\n| yat | rās |\n| –   | –   |\n\n"
+              "* Text\n** ⟦1⟧\n"
+              "| vigatā     | yā    |\n| departed   | which |\n| ppp.       | pron. |\n"
+              "|------------+-------|\n| /vi-/ away |       |\n\n"
+              "* Sentence\n| Nr. | Stelle |\n|-----+--------|\n|   1 | /a/    |\n")
+      (org-mode)
+      ;; on the gloss of the second word
+      (goto-char (point-min)) (search-forward "which")
+      (should (equal '(" yā    " " which " " pron. " "-------" "       ") (funcall texts)))
+      ;; on a part of the first
+      (goto-char (point-min)) (search-forward "away")
+      (should (equal '(" vigatā     " " departed   " " ppp.       " "------------" " /vi-/ away ")
+                     (funcall texts)))
+      ;; on the bar between two cells: the cell before it
+      (goto-char (point-min)) (search-forward "| vigatā     ")
+      (should (equal " vigatā     " (car (funcall texts))))
+      ;; before the first bar, after the last
+      (goto-char (point-min)) (search-forward "| vigatā") (goto-char (match-beginning 0))
+      (should-not (funcall texts))
+      (end-of-line)
+      (should-not (funcall texts))
+      ;; outside a table, in the metre table, in the comparison
+      (dolist (at '("⟦1⟧" "rās" "Stelle" "/a/"))
+        (goto-char (point-min)) (search-forward at)
+        (should-not (funcall texts)))
+      ;; the mark follows point
+      (should (eq t (eval (car (get 'bcat-faces-highlight-column 'standard-value)))))
+      (let ((bcat-faces-highlight-column t))
+        (bcat-faces-mode 1)
+        (should (memq #'bcat-faces--column-update post-command-hook))
+        (goto-char (point-min)) (search-forward "which")
+        (bcat-faces--column-update)
+        (should (= 5 (funcall marks)))
+        (search-forward "away")
+        (bcat-faces--column-update)
+        (should (= 5 (funcall marks)))
+        (goto-char (point-min))
+        (bcat-faces--column-update)
+        (should (= 0 (funcall marks)))
+        (search-forward "which")
+        (let ((bcat-faces-highlight-column nil))
+          (bcat-faces--column-update)
+          (should (= 0 (funcall marks))))
+        (bcat-faces--column-update)
+        (should (= 5 (funcall marks)))
+        (bcat-faces-mode -1)
+        (should (= 0 (funcall marks)))
+        (should-not (memq #'bcat-faces--column-update post-command-hook))))
+    ;; Tibetan: the band, not the words of the band after it
+    (with-temp-buffer
+      (insert "#+CAT_TEMPLATE: tibetan\n* Text\n"
+              "| དེ   | ལས   |\n| de   | las  |\n| that | from |\n| D+Q  | ABL  |\n"
+              "|------+------|\n"
+              "| ཆོས    |      |\n| chos   |      |\n| dharma |      |\n| N      |      |\n")
+      (org-mode)
+      ;; a plus in a cell is no end of a column (Kadam 2003: „DEM+QUANT“,
+      ;; „COP + CONV“ — the mark sat on half of the cell before) — only in
+      ;; a rule
+      (goto-char (point-min)) (search-forward "las")
+      (should (equal '(" ལས   " " las  " " from " " ABL  ") (funcall texts)))
+      (goto-char (point-min)) (search-forward "ABL")
+      (should (equal '(" ལས   " " las  " " from " " ABL  ") (funcall texts)))
+      (goto-char (point-min)) (search-forward "D+Q")
+      (should (equal '(" དེ   " " de   " " that " " D+Q  ") (funcall texts)))
+      (goto-char (point-min)) (search-forward "dharma")
+      (should (equal '(" ཆོས    " " chos   " " dharma " " N      ") (funcall texts))))))
+
 (ert-deftest bcat-faces-only-in-sentence-files ()
   "Switched on in a sentence file of a template (sent-…, comm-… with
 #+CAT_TEMPLATE:), not in other org files."

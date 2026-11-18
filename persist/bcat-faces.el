@@ -15,6 +15,16 @@
 ;; schwarz … dann sehe ich gleich was wichtig ist“), not the metre table
 ;; of the Recitation.  `bcat-faces-mode' switches itself on in every
 ;; sentence file of a template (sent-…, comm-… with #+CAT_TEMPLATE:).
+;;
+;; 18.11.2026: „Gibt es eine Möglichkeit die Tabellen im .org besser
+;; darzustellen? ich komme klar, aber ‚verirre‘ mich dennoch hin und
+;; wieder.“  In his theme the words did NOT keep the text colour: every
+;; row of an org table has the face `org-table' (modus-vivendi: a pale
+;; blue), words and glosses looked the same.  Of three variants on TĀ
+;; 1012 he chose „B mit Spaltenhervorhebung“: the row of the words in
+;; Latin script bold in the text colour, the grid grey, the column of
+;; the word at point marked.  The Uchen row stays as it is (its font and
+;; height were tuned on 4.11.).
 
 ;;; Code:
 
@@ -276,6 +286,188 @@ resolution (`bcat-faces--resolution-table-p')."
           (setq found t))))
     found))
 
+;; ----------------------------------------------------------------------------
+;; The tables at a glance (18.11.): the row of the words, the grid, the
+;; column of the word at point
+;; ----------------------------------------------------------------------------
+
+(defface bcat-word-face
+  '((((background dark)) :foreground "#ffffff" :weight bold)
+    (t :foreground "#000000" :weight bold))
+  "The row of the words in Latin script — IAST, Wylie — in the table of a
+segment.  Carsten 18.11.: „verirre mich dennoch hin und wieder.
+Vielleicht auch die Zeile mit dem Wylie oder IAST in weiß, das ich sie
+schneller finde, wenn wir Teile diskutieren“.  A colour of its own, not
+the text colour by default: his theme (modus-vivendi) gives every row of
+a table the pale blue of `org-table' — the words and their glosses
+looked alike.  Bold as the original line above the tables."
+  :group 'buddhist-cat)
+
+(defface bcat-grid-face
+  '((((background dark)) :foreground "#555555")
+    (t :foreground "#b5b5b5"))
+  "The bars and rules of the tables in a sentence file: they step back,
+the words carry (18.11., variant B)."
+  :group 'buddhist-cat)
+
+(defface bcat-column-face
+  '((((background dark)) :background "#2d4466")
+    (t :background "#d8e4f6"))
+  "The column of the word at point in a table of words
+\(`bcat-faces-highlight-column')."
+  :group 'buddhist-cat)
+
+(defcustom bcat-faces-highlight-column t
+  "Non-nil: in a sentence file the column of the word at point is marked
+\(`bcat-column-face') — the word with its gloss, form and parts.
+Carsten 18.11., of three variants on TĀ 1012: „B mit
+Spaltenhervorhebung“ — to find a word again „wenn wir Teile
+diskutieren“.  `bcat-faces-toggle-column' switches it."
+  :type 'boolean
+  :group 'buddhist-cat)
+
+(defun bcat-faces--word-row-p (pos)
+  "Non-nil when the table row at POS shows the words of a segment in
+Latin script: the first row of its band (the rows between rules) — the
+second when the first is their Uchen, or empty (the column of a shad
+alone) —, a band of three rows or more.  None under the rule of a
+Sanskrit segment's table (the parts of the words), of a metre table, of
+a table with a header row (the comparison; a table of parts left under
+Word Formation) or of a compound's resolution."
+  (save-excursion
+    (save-match-data
+      (goto-char pos)
+      (beginning-of-line)
+      (let* ((beg (point))
+             (band (bcat-faces--band beg))
+             (i (cl-position beg band)))
+        (and i (< i 2) (>= (length band) 3)
+             (let ((first (progn (goto-char (car band))
+                                 (buffer-substring-no-properties (point) (line-end-position)))))
+               (= i (if (or (string-match-p "[ༀ-࿿]" first)
+                            (string-match-p "\\`[ \t|]*\\'" first))
+                        1 0)))
+             (not (bcat-faces--sub-row-p beg))
+             (not (bcat-faces--metre-table-p beg))
+             (not (bcat-faces--header-table-p beg))
+             (not (bcat-faces--resolution-table-p beg)))))))
+
+(defun bcat-faces--word-row-matcher (limit)
+  "Font-lock matcher: the next table row before LIMIT with the words of
+a segment in Latin script (`bcat-faces--word-row-p') — group 0 the row."
+  (let ((found nil))
+    (while (and (not found) (re-search-forward "^[ \t]*|[^-\n].*$" limit t))
+      (let ((beg (match-beginning 0)) (end (match-end 0)))
+        (when (bcat-faces--word-row-p beg)
+          (set-match-data (list beg end))
+          (setq found t))))
+    found))
+
+(defun bcat-faces--grid-matcher (limit)
+  "Font-lock matcher: the next piece of a table's grid before LIMIT —
+group 0 a rule from its first bar to its end, or one bar of a row.  A
+bar in a line that is no table row (the caesura in a verse) is none."
+  (let ((found nil))
+    (while (and (not found) (re-search-forward "|" limit t))
+      (let* ((bar (match-beginning 0))
+             (first (save-excursion (beginning-of-line) (skip-chars-forward " \t") (point))))
+        (cond
+         ;; not a table row
+         ((not (eq (char-after first) ?|)))
+         ;; a rule: one piece
+         ((save-excursion (goto-char first) (looking-at "|-[-+|]*"))
+          (set-match-data (list (match-beginning 0) (match-end 0)))
+          (goto-char (match-end 0))
+          (setq found t))
+         (t
+          (set-match-data (list bar (1+ bar)))
+          (setq found t)))))
+    found))
+
+(defun bcat-faces--cell-separator ()
+  "The regexp of what ends a cell in the table line at point: a bar; in
+a rule a bar or a plus — a plus in a cell is text („DEM+QUANT“, „COP +
+CONV“, Kadam 2003)."
+  (save-excursion
+    (beginning-of-line)
+    (if (looking-at "[ \t]*|-") "[|+]" "|")))
+
+(defun bcat-faces--cell-bounds (col)
+  "(BEG . END) of the cell number COL (from 0) of the table line at
+point — between its bars, in a rule between bar and plus —, or nil."
+  (save-excursion
+    (beginning-of-line)
+    (skip-chars-forward " \t")
+    (when (eq (char-after) ?|)
+      (let ((end (line-end-position)) (i 0) (res nil) (start (1+ (point)))
+            (sep (bcat-faces--cell-separator)))
+        (forward-char 1)
+        (while (and (not res) (re-search-forward sep end t))
+          (if (= i col)
+              (setq res (cons start (1- (point))))
+            (setq i (1+ i) start (point))))
+        res))))
+
+(defun bcat-faces--column-cells (pos)
+  "The cells (BEG . END), top to bottom, of the table column at POS that
+belong to the word there, or nil.  In the table of a Sanskrit segment
+the whole column — word, gloss, form, the rule, the parts under it
+\(`bcat-faces--sanskrit-table-p'); in any other table of words the rows
+of the band at POS: an old Tibetan table continues its words in a new
+band.  nil beside the bars, outside a table, in a metre table and in a
+table with a header row (the comparison)."
+  (save-excursion
+    (save-match-data
+      (goto-char pos)
+      (let ((first (save-excursion (beginning-of-line) (skip-chars-forward " \t") (point))))
+        (when (and (eq (char-after first) ?|)
+                   (> pos first)
+                   (not (bcat-faces--metre-table-p pos))
+                   (not (bcat-faces--header-table-p pos)))
+          (let ((col -1) (sep (bcat-faces--cell-separator)))
+            (goto-char first)
+            (while (re-search-forward sep pos t) (setq col (1+ col)))
+            (goto-char pos)
+            (when (and (>= col 0) (bcat-faces--cell-bounds col))
+              (let ((rows (if (bcat-faces--sanskrit-table-p pos)
+                              (let ((end (org-table-end)) (rows '()))
+                                (goto-char (org-table-begin))
+                                (while (< (point) end)
+                                  (push (point) rows)
+                                  (forward-line 1))
+                                (nreverse rows))
+                            (if (save-excursion (goto-char first) (looking-at "|-"))
+                                (list (line-beginning-position))
+                              (bcat-faces--band pos)))))
+                (delq nil (mapcar (lambda (row) (goto-char row) (bcat-faces--cell-bounds col))
+                                  rows))))))))))
+
+(defvar-local bcat-faces--column-overlays nil
+  "The overlays that mark the column of the word at point.")
+
+(defun bcat-faces--column-update ()
+  "`post-command-hook' of `bcat-faces-mode': mark the column of the word
+at point (`bcat-faces--column-cells') in the selected window, or take
+the mark away — with `bcat-faces-highlight-column' nil always."
+  (mapc #'delete-overlay bcat-faces--column-overlays)
+  (setq bcat-faces--column-overlays nil)
+  (when bcat-faces-highlight-column
+    (dolist (cell (ignore-errors (bcat-faces--column-cells (point))))
+      (let ((o (make-overlay (car cell) (cdr cell))))
+        (overlay-put o 'face 'bcat-column-face)
+        ;; below the region and the search matches
+        (overlay-put o 'priority -10)
+        (overlay-put o 'window (selected-window))
+        (push o bcat-faces--column-overlays)))))
+
+(defun bcat-faces-toggle-column ()
+  "Switch the mark on the column of the word at point on or off
+\(`bcat-faces-highlight-column')."
+  (interactive)
+  (setq bcat-faces-highlight-column (not bcat-faces-highlight-column))
+  (bcat-faces--column-update)
+  (message "Spalte des Worts unter dem Cursor: %s" (if bcat-faces-highlight-column "an" "aus")))
+
 (defface bcat-translation-face
   '((((background dark)) :slant italic :foreground "#7FCF9A")
     (t :slant italic :foreground "#1E6B3A"))
@@ -476,6 +668,10 @@ whole, so a later chunk of jit-lock never unfolds a part of it."
     (bcat-faces--parts-line-matcher (1 'bcat-gloss-face prepend))
     (bcat-faces--relation-cell-matcher (1 'bcat-gloss-face prepend))
     (bcat-faces--sub-cell-matcher (0 'bcat-gloss-face prepend))
+    (bcat-faces--word-row-matcher
+     ("[^|\n]+" (progn (goto-char (match-beginning 0)) (match-end 0)) nil
+      (0 'bcat-word-face prepend)))
+    (bcat-faces--grid-matcher (0 'bcat-grid-face prepend))
     (bcat-faces--translation-matcher (0 'bcat-translation-face prepend))
     (bcat-faces--rating-matcher
      (3 'shadow prepend t)
@@ -492,7 +688,10 @@ colour, blue the glosses in the line with the vocabulary and the rows
 that explain the words — formation, parts, form — in the tables
 \(Carsten 31.10.); the ratings of the comparison in green, yellow, red
 \(2.11.); the keyword lines at the top folded behind #+TITLE (4.11.,
-`bcat-faces-toggle-header'); Tibetan in `bcat-tibetan-face' (4.11.)."
+`bcat-faces-toggle-header'); Tibetan in `bcat-tibetan-face' (4.11.);
+the row of the words in IAST or Wylie bold in `bcat-word-face', bars and
+rules grey, the column of the word at point marked (18.11.,
+`bcat-faces-toggle-column')."
   :lighter nil
   (if bcat-faces-mode
       (progn
@@ -501,10 +700,14 @@ that explain the words — formation, parts, form — in the tables
                     (cl-union '(invisible display) font-lock-extra-managed-props))
         (add-to-invisibility-spec '(bcat-header . t))
         (bcat-faces--tibetan-fontset)
-        (bcat-faces--remap-shads t))
+        (bcat-faces--remap-shads t)
+        (add-hook 'post-command-hook #'bcat-faces--column-update nil t))
     (font-lock-remove-keywords nil bcat-faces--keywords)
     (remove-from-invisibility-spec '(bcat-header . t))
-    (bcat-faces--remap-shads nil))
+    (bcat-faces--remap-shads nil)
+    (remove-hook 'post-command-hook #'bcat-faces--column-update t)
+    (mapc #'delete-overlay bcat-faces--column-overlays)
+    (setq bcat-faces--column-overlays nil))
   (when font-lock-mode (font-lock-flush)))
 
 (defun bcat-faces-maybe ()
