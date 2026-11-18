@@ -16,7 +16,9 @@ Tabellen im .org: Wortzeile fett, Gitter grau, Spalte unter dem Cursor;
 SEIT 18.11. NACHMITTAGS DREI OBERABSCHNITTE * Text / * Philology / * Worum es
 geht in den vier Satzdatei-Vorlagen, gelesen über `bcat-relayout--legacy-text';
 die Übersetzung des Satzes schließt * Text; Reihenfolge der Klassen: Tantrāloka →
-Tibetisch V → AS → MSA, Sthiramati/commentary später; offen: Philologie-Teil
+Tibetisch V → AS → MSA, Sthiramati/commentary später; seit 18.11. abends
+Vergleich auf den Punkt: Diskussionspunkte statt Ampel, „Discuss:“ am Segment,
+DharmaMitra keine Referenz, Prompt entsprechend; offen: Philologie-Teil weiter
 gliedern, Worum es geht ausführlicher).
 Before that 2026-10-28 (§5.74: SATZDATEIEN
 NACH VORLAGE — Reading-Klassen, Tibetisch: `#+CAT_TEMPLATE: tibetan' im
@@ -5521,6 +5523,55 @@ Abhidharmasamuccaya (zweisprachig) und letztlich Mahāyānasūtrālaṃkāra
 commentary) „machen wir später“ — nicht anfassen, bis er es sagt.
 Testsatz für das Tantrāloka: 1012.  Generisch bauen (alle vier
 Vorlagen), an der jeweiligen Klasse prüfen.
+
+18.11.2026 abends, VERGLEICH AUF DEN PUNKT (`c151022' Darstellung,
+`8548665' Prompt; Carsten: „der Vergleich sollte dann auf dem Punkt
+sein und wirklich bloß enthalten was diskussionswürdig ist. das
+grün/gelb/rot hilft mir dabei nicht wirklich weiter“; „Dharma Mitra ist
+inzwischen für mich keine Referenz mehr“; Prototyp an TĀ 1012: „passt“;
+Prompt-Änderung: „ja“).
+- ** Translations compared = eigene + Übersetzer im Volltext, *** Discussion
+  points (je Punkt **** <<point-K>>K. Stelle (⟦N⟧): Lesarten ohne
+  Maschine, Urteil/Grund/Besser je Zweifel, „What depends on it“), eine
+  Zeile „Not at issue“, *** Corrections, zuletzt *** DharmaMitra (machine
+  translation, for completeness).  Am Segment nach „→“ die Zeile
+  „*Discuss:* …“ (Feld `discuss') mit Link [[point-K]].  Eine Farbe:
+  `bcat-discuss-face'.
+- Punkt = `bcat-analysis--point-p': nicht grün, impact nicht low, und
+  die Lesart eines Nicht-Maschinen-Übersetzers angezweifelt (ohne Urteil:
+  zwei solche Lesarten weichen ab).  Maschinen:
+  `bcat-analysis-machine-references' (bisher nur „DharmaMitra“).  Sigel
+  in `who' werden ohne die zitierten Wortlaute gelesen
+  (`bcat-analysis--who-sigla').  Segment: Feld `segment' (Prompt seit
+  8548665), sonst Nummer in der Stelle, einziges Segment, Stelle im
+  Text, erstes Wort ohne Auslaut (`bcat-analysis--unit-segment').
+- Der Prompt verlangt nur noch Punkte (impact medium/high, `segment',
+  `minor'; kein rating/core/weight).  Antworten seit 2.11. haben die
+  Bewertung — die Darstellung filtert sie; die alte Form rendert
+  `bcat-analysis-comparison-units-rated' (nur noch zum Wiedererkennen).
+- C-c u L stellt eine Datei mit bewertetem Teil nur dann aus der
+  aufbewahrten Antwort um, wenn der Teil GENAU das ist, was die Antwort
+  ergab (`bcat-relayout--pointed', Vergleich über
+  `bcat-relayout--rated-key', das ältere Renderer-Fassungen gleichsetzt);
+  sonst bleibt er (Handkorrekturen, Antwort fehlt oder gehört zu einem
+  anderen Abruf).  DharmaMitra wandert bei jedem C-c u L ans Ende
+  (`bcat-relayout--machine-last').
+- Stand der echten Ordner: nichts umgestellt.  TĀ 1012 (Testsatz) hat
+  seit d9749b8c (Tantrāloka-Sitzung, Grammatik nach Neuabruf von Hand
+  berichtigt) einen Vergleich, der NICHT aus .answers stammt — bleibt
+  bewertet, bis neu abgerufen wird (Carstens Entscheidung; ein Abruf
+  ersetzt die Handkorrekturen).  Probelauf: 50 von 82 bewerteten
+  Vergleichen würden umgestellt.
+- Lehre: Tabellen, die eine andere Sitzung bewusst NICHT neu ausrichtet
+  („Tabellen nicht neu ausgerichtet“), nicht mit C-c u L überschreiben,
+  ohne es abzusprechen — 1012 wurde zurückgesetzt.
+- PDF: die Diskussionspunkte erscheinen im Teil Discussion; die Zeilen
+  am Segment nicht (Carsten: erst das .org).
+- Testfalle: eine Form, die versehentlich AUSSERHALB von `ert-deftest'
+  landet (Klammer zu früh), läuft beim Laden mit — ihr `should' bricht
+  dann das Laden der Testdatei ab, und `run-all-tests.el' schluckt das.
+  Nach dem Einfügen in Testdateien die Formen zählen (`read' bis
+  end-of-file, Top-Level-Formen ausgeben).
 
 #### Offen
 
