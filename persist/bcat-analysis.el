@@ -109,36 +109,40 @@ last under Translations compared, under a heading that says what it is,
 and its renderings alone make no point for the discussion.")
 
 (defconst bcat-analysis--comparison-schema
-  "\"units\": [{\"passage\": \"…\", \"rating\": \"green|yellow|red\", \"core\": \"…\", \"readings\": [{\"sigla\": \"…\", \"text\": \"…\"}], \"finding\": \"…\", \"weight\": \"…\", \"grammatical\": \"all|one\", \"grammar_note\": \"…\", \"certainty\": \"certain|likely|open\", \"impact\": \"low|medium|high\", \"impact_note\": \"…\", \"doubts\": [{\"who\": \"…\", \"verdict\": \"doubtful|wrong\", \"reason\": \"…\", \"better\": \"…\"}]}], \"proposal\": [{\"label\": \"…\", \"text\": \"…\"}], \"decisions\": \"…\", \"corrections\": [\"…\"]"
+  "\"units\": [{\"passage\": \"…\", \"segment\": 0, \"readings\": [{\"sigla\": \"…\", \"text\": \"…\"}], \"finding\": \"…\", \"grammatical\": \"all|one\", \"grammar_note\": \"…\", \"certainty\": \"certain|likely|open\", \"impact\": \"medium|high\", \"impact_note\": \"…\", \"doubts\": [{\"who\": \"…\", \"verdict\": \"doubtful|wrong\", \"reason\": \"…\", \"better\": \"…\"}]}], \"minor\": \"…\", \"proposal\": [{\"label\": \"…\", \"text\": \"…\"}], \"decisions\": \"…\", \"corrections\": [\"…\"]"
   "The comparison's part of the JSON contract of every sentence analysis
-\(`bcat-analysis--sentence-rules').")
+\(`bcat-analysis--sentence-rules').  18.11.: the points for the
+discussion only — no rating, core or weight any more (2.11.–18.11.).")
 
 (defun bcat-analysis--sentence-rules (lang)
   "The rules for the sentence translation and the comparison of the
 translations (renderings in LANG) — one wording for every analysis.
-Carsten 2.11. (Muster vergleich-ta1-1.org, „das Muster passt“; at
-every C-c u G): instead of a short paragraph, unit by unit — rated
-green/yellow/red, argued from the original, „es gibt da keine
-Autorität, auf die man sich verlassen kann“ —, a proposal that decides
-the red units, the decisions, the errors of the own analysis.  The
-translation in the second language and the readings of the comparison
-in it are an option of the sentence (`bcat-analysis--second-request')."
+Carsten 2.11. (Muster vergleich-ta1-1.org): unit by unit, argued from the
+original — „es gibt da keine Autorität, auf die man sich verlassen
+kann“ —, a proposal, the decisions, the errors of the own analysis.
+18.11.: „auf dem Punkt … wirklich bloß enthalten was diskussionswürdig
+ist“, „das grün/gelb/rot hilft mir dabei nicht wirklich weiter“, „Dharma
+Mitra ist inzwischen für mich keine Referenz mehr“: only the points for
+the discussion, each with its segment (it is marked there), no rating;
+a machine translation no reason for a point; the rest in one sentence
+\(`minor').  The translation in the second language and the readings of
+the comparison in it are an option of the sentence
+\(`bcat-analysis--second-request')."
   (format "- translation (sentence): your translation of the whole sentence (the segment parts joined).
-- units: the translations compared unit by unit. Divide the sentence into its units of meaning — a word, a compound or a phrase; about 4 to 12 for a verse — and set side by side what each given translation makes of each: yours (siglum C) and every reference translation, by the sigla the request gives. One entry per unit in the order of the text, a last one for the sentence as a whole only where it matters (a double sense, śleṣa, that a translation gives only in part); [] when no reference translation is given.
-  - passage: the unit, words of the original in /italic/: \"/vimalakalāśrayā/\", \"/jananī/, /janakaḥ/\".
-  - rating: \"green\": no difference in meaning, only in wording; \"yellow\": a possible other interpretation, both defensible from the text; \"red\": different meanings, not both right at once — red only when the grammar or the lexicon excludes one reading, and red as soon as one reading is wrong (a doubt with the verdict \"wrong\"); when all readings are grammatically possible, yellow at most, however strongly the context favours one.
-  - core: the point of the unit for the overview table, at most 80 characters.
-  - readings: each translation's wording of the unit, verbatim in „…“ (shortened with … where long); translations reading alike in one entry (\"sigla\": \"D, DM, C\"); a second sense after a semicolon; [] for a green unit whose finding names the common reading.
-  - finding: why the readings differ and what the original supports — argued from the original alone: grammar, sandhi, lexicon, the context in the work and its commentary; never from a translator's standing (there is no authority to rely on). An argument from the given lectures is cited with siglum, lecture and time mark: \"(S, I 0:15:24)\". Words of the original in /italic/. For a green unit one sentence.
-  - weight: the reading the finding favours, as a rendering in „…“, with a short note where needed; \"\" for a green unit.
+- units: only the points for the discussion in class — the passages where the given translations differ in meaning, not in wording, and the difference matters for the sentence. Compare yours (siglum C) and every reference translation by the sigla the request gives. A machine translation (DharmaMitra, siglum DM) is no reference: give its reading beside the others where a point is made, but never make a point because of it and never question it. One entry per point in the order of the text — usually none to four for a sentence; [] when nothing is worth discussing or no reference translation other than a machine's is given. A last entry for the sentence as a whole only where it matters (a double sense, śleṣa, that a translation gives only in part).
+  - passage: the point, words of the original in /italic/: \"/vimalakalāśrayā/\", \"/jananī/, /janakaḥ/\".
+  - segment: the number of the segment the passage stands in (the first, when it runs over several); it is marked there.
+  - readings: each translation's wording of the passage, verbatim in „…“ (shortened with … where long); translations reading alike in one entry (\"sigla\": \"D, C\"); a second sense after a semicolon.
+  - finding: why the readings differ and what the original supports, in two or three sentences — argued from the original alone: grammar, sandhi, lexicon, the context in the work and its commentary; never from a translator's standing (there is no authority to rely on). An argument from the given lectures is cited with siglum, lecture and time mark: \"(S, I 0:15:24)\". Words of the original in /italic/.
   - grammatical: \"all\" when every reading is grammatically possible (the choice then rests on context, commentary, doctrine or style), \"one\" when the grammar or the lexicon excludes the others; grammar_note: one sentence why, words of the original in /italic/. Carsten: \"the question is simply whether both readings are grammatically possible\".
-  - certainty: how certain the decision of the proposal for this unit is — \"certain\" (the grammar decides), \"likely\" (context or commentary decides), \"open\" (both remain defensible).
-  - impact: what the choice changes — \"low\" (the same sense or doctrine, only the construction differs), \"medium\", \"high\" (another claim); impact_note: one sentence on the consequence for the meaning of the sentence. For a green unit grammatical, certainty and impact may be left out.
-  - doubts: the conclusion for the class, said aloud as „D renders it so, I am not sure that is right, because …“ — draw the conclusion wherever the text allows one. For every yellow and red unit one entry per rendering the finding questions (translations reading alike in one entry; yours too, when it is questioned); [] for a green unit. who: the sigla with their wording, „D „the hidden (protected) light“, DM „concealed within the five faces““. verdict: \"wrong\": the grammar or the lexicon excludes it; \"doubtful\": grammatically possible, but the context or the commentary speaks against it. reason: why, in one or two sentences, argued from the original as in the finding, a lecture with its time mark — a subordinate clause without the conjunction (\"because\" is set before it; in German verb last: \"gupta (√gup) zuerst ‚bewahrt‘ heißt\"). better: the rendering to prefer in „…“ with the sigla of the translations that have it, \"\" when none is better.
-- proposal: your translation of the sentence weighed by the units — the red units decided, for the yellow ones the chosen reading (the other belongs in a note); where the text has a double sense one entry per sense, each with its label (\"First sense (theological)\"), else one entry with the label \"\"; [] when units is []. Each text a finished translation to be read aloud in class: fluent and idiomatic, every statement once, the word order free; square brackets only for words the original leaves implicit — never to show a construction or to repeat a clause (that belongs in decisions).
-- decisions: the decisions of the proposal, by unit number, in one to three sentences; \"\" when units is [].
+  - certainty: how certain the decision of the proposal for this point is — \"certain\" (the grammar decides), \"likely\" (context or commentary decides), \"open\" (both remain defensible).
+  - impact: \"medium\" or \"high\" (another claim) — a difference of low impact (the same sense or doctrine, only the construction differs) is no point; impact_note: one sentence on what depends on it for the meaning of the sentence.
+  - doubts: the conclusion for the class, said aloud as „D renders it so, I am not sure that is right, because …“ — draw the conclusion wherever the text allows one. One entry per rendering the finding questions (translations reading alike in one entry; yours too, when it is questioned; never the machine translation's); [] when the point stays open and both readings are defensible. who: the sigla with their wording, „D „the hidden (protected) light“, S „the guarded light““. verdict: \"wrong\": the grammar or the lexicon excludes it; \"doubtful\": grammatically possible, but the context or the commentary speaks against it. reason: why, in one or two sentences, argued from the original as in the finding, a lecture with its time mark — a subordinate clause without the conjunction (\"because\" is set before it; in German verb last: \"gupta (√gup) zuerst ‚bewahrt‘ heißt\"). better: the rendering to prefer in „…“ with the sigla of the translations that have it, \"\" when none is better.
+- minor: one sentence on what differs in wording only or matters little (a misprint, a nuance) — worth a glance, not a discussion; nothing of the machine translation's; \"\" when there is nothing.
+- proposal: your translation of the sentence weighed by the comparison — every point decided (the other reading belongs in a note); where the text has a double sense one entry per sense, each with its label (\"First sense (theological)\"), else one entry with the label \"\"; [] when no reference translation other than a machine's is given. Each text a finished translation to be read aloud in class: fluent and idiomatic, every statement once, the word order free; square brackets only for words the original leaves implicit — never to show a construction or to repeat a clause (that belongs in decisions).
+- decisions: the decisions of the proposal, by point number, in one to three sentences; \"\" when units is [].
 - corrections: errors of your own analysis above that the comparison brings to light (a form misidentified, a gloss that does not fit), one sentence each; [] when there are none.
-- Language of the comparison: core, finding, the notes in weight, reason, decisions and corrections in %s, the labels of the proposal, grammar_note and impact_note too; readings verbatim; the renderings in weight and proposal in %s."
+- Language of the comparison: finding, impact_note, minor, reason, decisions and corrections in %s, the labels of the proposal and grammar_note too; readings verbatim; the renderings in better and proposal in %s."
           (if bcat-analysis-comparison-language
               (bcat-analysis--language bcat-analysis-comparison-language)
             lang)
@@ -194,7 +198,11 @@ Carsten 2.11.: Sanderson's lectures „nur beim Vergleich“ (before: never
 in a prompt)."
   (concat
    "\n\nSigla for the comparison: C = your translation"
-   (mapconcat (lambda (s) (format ", %s = %s" (cdr s) (car s)))
+   (mapconcat (lambda (s) (format ", %s = %s%s" (cdr s) (car s)
+                                  ;; 18.11.: no reference, for completeness only
+                                  (if (member (car s) bcat-analysis-machine-references)
+                                      " (a machine translation: no reference, for completeness only)"
+                                    "")))
               (bcat-analysis-sigla (mapcar #'car refs)) "")
    " — only in the units (their readings); everywhere else, references and shift included, the full names."
    (if lectures

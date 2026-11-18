@@ -1447,29 +1447,72 @@ lectures are cited with their time mark.  The short comparison
 paragraph is gone; the reasoning is in German
 \(`bcat-analysis-comparison-language'), the renderings in the target
 language.  Since the same day the reasoning follows the target
-language unless `bcat-analysis-comparison-language' is set (here: de)."
+language unless `bcat-analysis-comparison-language' is set (here: de).
+18.11.: no rating, core and weight any more — the points for the
+discussion only (`bcat-analysis-comparison-points-contract')."
   (dolist (sys (let ((bcat-analysis-comparison-language "de"))
                  (list (bcat-analysis-sanskrit-system-prompt "en")
                        (bcat-analysis-system-prompt "en")
                        (bcat-analysis-tibetan-system-prompt "en"))))
-    (dolist (key '("\"units\"" "\"passage\"" "\"rating\"" "\"core\"" "\"readings\""
-                   "\"sigla\"" "\"finding\"" "\"weight\"" "\"proposal\"" "\"label\""
+    (dolist (key '("\"units\"" "\"passage\"" "\"readings\""
+                   "\"sigla\"" "\"finding\"" "\"proposal\"" "\"label\""
                    "\"decisions\"" "\"corrections\""))
       (should (string-match-p (regexp-quote key) sys)))
     (should-not (string-match-p (regexp-quote "\"comparison\"") sys))
-    (should (string-match-p "\"green\": no difference in meaning" sys))
-    (should (string-match-p "\"yellow\": a possible other interpretation" sys))
-    (should (string-match-p "\"red\": different meanings, not both right at once" sys))
     (should (string-match-p "never from a translator's standing" sys))
     (should (string-match-p (regexp-quote "(S, I 0:15:24)") sys))
     (should (string-match-p "double sense" sys))
-    (should (string-match-p "core, finding, the notes in weight, reason, decisions and corrections in German" sys))
-    (should (string-match-p "renderings in weight and proposal in English" sys)))
+    (should (string-match-p "finding, impact_note, minor, reason, decisions and corrections in German" sys))
+    (should (string-match-p "renderings in better and proposal in English" sys)))
   (let ((bcat-analysis-comparison-language "en"))
     (should (string-match-p "decisions and corrections in English"
                             (bcat-analysis-sanskrit-system-prompt "de")))
-    (should (string-match-p "renderings in weight and proposal in German"
+    (should (string-match-p "renderings in better and proposal in German"
                             (bcat-analysis-sanskrit-system-prompt "de")))))
+
+(ert-deftest bcat-analysis-comparison-points-contract ()
+  "18.11. (Carsten: „der Vergleich sollte dann auf dem Punkt sein und
+wirklich bloß enthalten was diskussionswürdig ist. das grün/gelb/rot
+hilft mir dabei nicht wirklich weiter“ — „Dharma Mitra ist inzwischen
+für mich keine Referenz mehr und sollte nur der Vollständigkeit halber
+mit aufgeführt sein“; „Prompt-Änderung“: „ja“).  Every sentence analysis
+— Sanskrit, Tibetan, the Tibetan request of a pair — asks for the
+points for the discussion only: passages where the translations differ
+in meaning and it matters (impact medium or high), each with the
+segment it stands in; no rating, no core, no weight.  A machine
+translation is no reference: never the reason for a point, never in
+question; what differs only in wording or matters little goes in
+`minor'.  The finding still argues from the original alone, lectures
+with their time mark; doubts, proposal, decisions, corrections stay.
+The user prompt names the machine translation as such."
+  (dolist (sys (list (bcat-analysis-sanskrit-system-prompt "en")
+                     (bcat-analysis-system-prompt "en")
+                     (bcat-analysis-tibetan-system-prompt "en")))
+    (dolist (key '("\"units\"" "\"passage\"" "\"segment\"" "\"readings\"" "\"sigla\"" "\"finding\""
+                   "\"impact\"" "\"impact_note\"" "\"doubts\"" "\"minor\"" "\"proposal\"" "\"decisions\""
+                   "\"corrections\""))
+      (should (string-match-p (regexp-quote key) sys)))
+    (dolist (gone '("\"rating\"" "\"core\"" "\"weight\"" "green|yellow|red" "\"green\":" "\"yellow\":" "\"red\":"))
+      (should-not (string-match-p (regexp-quote gone) sys)))
+    (should (string-match-p "only the points for the discussion" sys))
+    (should (string-match-p "differ in meaning, not in wording" sys))
+    (should (string-match-p "\"medium\" or \"high\"" sys))
+    (should (string-match-p "machine translation (DharmaMitra, siglum DM) is no reference" sys))
+    (should (string-match-p "never make a point because of it" sys))
+    (should (string-match-p "never the machine translation's" sys))
+    (should (string-match-p "never from a translator's standing" sys))
+    (should (string-match-p (regexp-quote "(S, I 0:15:24)") sys))
+    (should (string-match-p "\"wrong\": the grammar or the lexicon excludes it" sys))
+    (should (string-match-p "reason: .*without the conjunction" sys))
+    (should (string-match-p "double sense" sys))
+    (should (string-match-p "- minor: " sys))
+    (should (string-match-p "reason, decisions and corrections in English" sys))
+    (should (string-match-p "renderings in better and proposal in English" sys)))
+  (should (string-match-p
+           (regexp-quote "Sigla for the comparison: C = your translation, D = Dyczkowski 2023, DM = DharmaMitra (a machine translation: no reference, for completeness only)")
+           (bcat-analysis-sanskrit-user-prompt 1007 nil '((685 "atra")) '(("Dyczkowski 2023" . "d") ("DharmaMitra" . "m")))))
+  (should-not (string-match-p "machine translation"
+                              (bcat-analysis-sanskrit-user-prompt 1007 nil '((685 "atra")) '(("Dyczkowski 2023" . "d"))))))
 
 (ert-deftest bcat-analysis-sigla ()
   "The sigla of the comparison from the reference names (Muster: D =
@@ -1636,7 +1679,8 @@ rejected, yet rated yellow)."
       (should (string-match-p (regexp-quote key) sys)))
     (should (string-match-p "\"wrong\": the grammar or the lexicon excludes it" sys))
     (should (string-match-p "\"doubtful\": " sys))
-    (should (string-match-p "red as soon as one reading is wrong" sys))
+    ;; 18.11.: no rating that would follow the verdict
+    (should-not (string-match-p "red as soon as one reading is wrong" sys))
     (should (string-match-p "draw the conclusion wherever the text allows one" sys))
     (should (string-match-p "reason: .*without the conjunction" sys))))
 
@@ -1718,7 +1762,8 @@ class shows every yellow and red unit with them."
                      (bcat-analysis-tibetan-system-prompt "en")))
     (dolist (key '("\"grammatical\"" "\"grammar_note\"" "\"certainty\"" "\"impact\"" "\"impact_note\""))
       (should (string-match-p (regexp-quote key) sys)))
-    (should (string-match-p "red only when the grammar or the lexicon excludes" sys))
+    ;; 18.11.: no rating; the grammar decides the verdict and the certainty
+    (should (string-match-p "\"one\" when the grammar or the lexicon excludes the others" sys))
     (should (string-match-p "\"wrong\": the grammar or the lexicon excludes it" sys)))
   (let* ((parsed (bcat-analysis-parse
                   (concat "{\"segments\": [], \"units\": ["
