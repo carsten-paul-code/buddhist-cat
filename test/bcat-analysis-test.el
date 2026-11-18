@@ -608,27 +608,29 @@ marks; the prose keeps Claude's breath pauses."
   "31.10., TĀ Satz 1008: the parts of „vakṣyamāṇa-ṣaḍardha-śāstra-artha-
 garbhīkāreṇa“ (160 characters) made a one-column table wider than the
 page; split by columns there was nothing to split, and the PDF shrank
-the table to an unreadable size (1f6da5b).  5.11.: the parts have a
-table of their own, a column per member — no line of the overview or
-of the parts table wider than the table width, every part's meaning
-there."
+the table to an unreadable size (1f6da5b).  5.11.: the parts had a
+table of their own, a column per member.  18.11.: they stand under the
+compound in its column, a line per member — no line of the table wider
+than the table width, every part's meaning there."
   (let* ((parts "√vac (2) speak · -ṣyamāṇa fut. pass. part. · ṣaḍ six · ardha half · śāstra treatise · artha meaning · garbhī- womb/containing · √kṛ (8) make · -a action noun")
          (words `(((word . "vakṣyamāṇa-ṣaḍardha-śāstra-artha-garbhīkāreṇa")
                    (formation . "√vac · ṣaḍ-ardha · śāstra · artha · garbhī-√kṛ-a")
                    (parts . ,parts)
                    (gloss . "by incorporating the meaning of the Ṣaḍardhaśāstra to be expounded")
                    (form . "m. inst. sg."))))
-         (out (concat (bcat-analysis-sanskrit-tables words) "\n\n" (bcat-analysis-formation-tables words))))
+         (out (bcat-analysis-sanskrit-tables words))
+         (column (car (bcat-analysis-band-columns out))))
     (dolist (line (split-string out "\n" t))
-      (should (<= (string-width line) bcat-analysis-table-width)))
+      (should (<= (string-width (bcat-analysis--strip-emphasis line)) bcat-analysis-table-width)))
     (should (equal '("vakṣyamāṇa" "ṣaḍardha" "śāstra" "artha" "garbhīkāreṇa")
-                   (car (bcat-analysis-test--rows (bcat-analysis-formation-tables words)))))
+                   (mapcar (lambda (line) (car (split-string line ": "))) (cdr column))))
     (dolist (part (split-string parts " · "))
       (should (string-search (cdr (bcat-analysis--part-item part)) out)))))
 
 (ert-deftest bcat-analysis-sanskrit-tables ()
-  "The overview of a Sanskrit segment (word / gloss / form — 5.11.,
-the formation and parts rows gone) is split into separate tables, none wider than
+  "The tables of a Sanskrit segment (word / gloss / form — 5.11., the
+formation and parts rows gone; 18.11.: the parts under a rule, in the
+column of their word) are split into separate tables, none wider than
 the table width (`bcat-analysis-table-width', 5.11. every language) — a
 shared column grid made the long compound widen every column (29.10.);
 nothing is cut."
@@ -642,14 +644,16 @@ nothing is cut."
     (should (= 2 (length tables)))
     (should (string-prefix-p "| atra | ullaset" (nth 0 tables)))
     (should (string-prefix-p "| api" (nth 1 tables)))
-    ;; 5.11.: the parts are not in the overview — they have their own
-    ;; table (9.11.: of one column, not a line).
-    (should-not (string-match-p "√las" out))
-    (should (equal "| ullaset          |\n|------------------|\n| /ud-/ up         |\n| /√las/ (1) shine |"
-                   (bcat-analysis-formation-tables words)))
+    ;; 18.11.: the parts of ullaset under it, below the rule; a table
+    ;; none of whose words has parts has no rule.
+    (should (equal '(("atra" "ullaset") ("here" "may shine forth") ("ind." "opt. 3 sg. P")
+                     ("" "/ud-/ up") ("" "/√las/ (1) shine"))
+                   (bcat-analysis-test--rows (nth 0 tables))))
+    (should (string-match-p "\n|-[-+]*|\n|[ ]+| /ud-/ up" (nth 0 tables)))
+    (should-not (string-match-p "^|-" (nth 1 tables)))
     (dolist (tb tables)
       (dolist (row (split-string tb "\n"))
-        (should (<= (string-width row) 30))))
+        (should (<= (string-width (bcat-analysis--strip-emphasis row)) 30))))
     (should (equal "" (bcat-analysis-sanskrit-tables nil)))))
 
 (ert-deftest bcat-analysis-sanskrit-table-width-default ()
@@ -1140,16 +1144,18 @@ the sentence."
          (text (substring out (string-match "^\\* Text$" out) (string-match "^\\* Tibetan$" out)))
          (tib (substring out (string-match "^\\* Tibetan$" out) (string-match "^\\* Sentence$" out))))
     (should (string-match-p "\\`\\* Text\n#\\+begin_verse\nकस्मात्" text))
-    ;; 9.11.: the segment a heading, the original in bold under it, the
-    ;; parts under Word Formation — open since 18.11.
+    ;; 9.11.: the segment a heading, the original in bold under it;
+    ;; 18.11.: the parts of the words under them in the table, below a
+    ;; rule — no Word Formation.
     (should (string-match-p
              (concat "^\\*\\* <<skt-23>>⟦23⟧ · \\[\\[tib-78\\]\\[Tib\\. 78\\]\\]\n"
                      "\\*pañca-ākāra-ātma-vastu-udbhāvanatām upādāya\\.\\*\n\n"
                      "| pañca-ākāra-ātma-vastu-udbhāvanatām .*\n\\(?:|.*\n\\)*"
+                     "|-[-+]*|\n| pañca: five .*\n\\(?:|.*\n\\)*"
                      "\n→ On account of their bringing to light .*\n\n"
-                     "\\*\\*\\* Word Formation\n"
-                     "\\(?:\\(?:|.*\n\\)+\n\\)*\\*\\* <<skt-24>>")
+                     "\\*\\* <<skt-24>>")
              text))
+    (should-not (string-match-p "Word Formation" out))
     (should-not (string-match-p "བདག\\|Differences" text))
     (should (string-match-p "\n\\*Translation:\\* Why are there just five aggregates" text))
     (should (string-match-p "\\`\\* Tibetan\n#\\+begin_verse\nཅིའི་ཕྱིར་ཕུང་པོ་རྣམས་ལྔ་ཁོ་ན་ཞེ་ན།\nབདག་གི་གཞི་རྣམ་པ" tib))
@@ -1994,43 +2000,47 @@ the sentence files held before 5.11."
 (ert-deftest bcat-analysis-sanskrit-overview ()
   "Carsten 5.11. (draft B): the overview of a Sanskrit segment has three
 rows — word, gloss, form (cut as before) —; the formation and parts rows
-are gone, the parts have their own tables
-\(`bcat-analysis-formation-tables')."
+are gone.  18.11.: under them, below a rule, what explains each word
+\(`bcat-analysis--sub-cells')."
   (let* ((out (bcat-analysis-sanskrit-tables bcat-analysis-test--ta-1-1-words))
-         (cols (apply #'append (mapcar #'bcat-analysis--table-columns (split-string out "\n\n")))))
+         (cols (bcat-analysis-band-columns out)))
     (should (equal (mapcar (lambda (w) (list (alist-get 'word w) (alist-get 'gloss w)
                                              (car (bcat-analysis--function-split (alist-get 'form w) "sa"))))
                            bcat-analysis-test--ta-1-1-words)
-                   cols))))
+                   (mapcar #'car cols)))
+    (should (equal (mapcar #'bcat-analysis--sub-cells bcat-analysis-test--ta-1-1-words)
+                   (mapcar #'cdr cols)))
+    (should (equal '("vimala: /vi-/ apart · /√mal/ (1) be impure · /-a/ adj" "kalā: part, power"
+                     "āśrayā: /ā-/ unto · /√śri/ (1) resort · /-a/ whose basis")
+                   (cdr (nth 0 cols))))
+    (should (equal '("/√jan/ (1) be born" "/-anī/ f. agent") (cdr (nth 2 cols))))
+    (should-not (cdr (nth 4 cols)))))
 
 (ert-deftest bcat-analysis-sanskrit-context-formation ()
-  "C-c u G: each Sanskrit segment carries its parts tables as
-`formation-tables' beside the overview."
+  "C-c u G: each Sanskrit segment has the parts of its words under them
+in its tables (18.11.) — no `formation-tables' of their own any more
+\(5.11. to 18.11.)."
   (let* ((base '((segments ((num . 1) (samhita . "vimalakalāśrayābhinavasṛṣṭimahā jananī /")))))
          (parsed `((segments ((num . 1) (words . ,(seq-take bcat-analysis-test--ta-1-1-words 3))
                               (translation . "t")))
                    (translation . "t") (grammar . "g")))
          (seg (car (alist-get 'segments (bcat-analysis-sanskrit-context base parsed)))))
-    (should (equal (bcat-analysis-formation-tables (seq-take bcat-analysis-test--ta-1-1-words 3))
-                   (alist-get 'formation-tables seg)))
+    (should-not (alist-get 'formation-tables seg))
     (should (equal (bcat-analysis-sanskrit-tables (seq-take bcat-analysis-test--ta-1-1-words 3))
-                   (alist-get 'gloss-table seg)))))
+                   (alist-get 'gloss-table seg)))
+    (should (string-match-p "| /√jan/ (1) be born" (alist-get 'gloss-table seg)))))
 
 (ert-deftest bcat-analysis-split-word-tables ()
   "C-c u L on a file written before 5.11.: the tables of five rows are
-read back into words and set as overview and parts tables, what a form
-cell left out for Structure; other tables (Tibetan, the overview
-itself) are not touched (nil)."
+read back into words and set anew — since 18.11. with the parts under
+the words in the tables themselves, nothing for Word Formation —, what
+a form cell left out for Structure; other tables (Tibetan, the tables
+of today) are not touched (nil)."
   (let* ((words bcat-analysis-test--ta-1-1-words)
          (old (bcat-analysis-test--old-sanskrit-tables words))
          (split (bcat-analysis-split-word-tables old)))
     (should (equal (bcat-analysis-sanskrit-tables words) (nth 0 split)))
-    (should (equal (bcat-analysis-formation-tables
-                    (mapcar (lambda (w) (cons (cons 'form (car (bcat-analysis--function-split
-                                                                (alist-get 'form w) "sa")))
-                                              w))
-                            words))
-                   (nth 1 split)))
+    (should-not (nth 1 split))
     (should-not (bcat-analysis-split-word-tables (bcat-analysis-sanskrit-tables words)))
     (should-not (bcat-analysis-split-word-tables
                  (bcat-analysis-gloss-table '(((wylie . "chos") (gloss . "dharma") (function . "N"))))))
@@ -2223,6 +2233,252 @@ compound.  Expected text from the agreed sketch."
     (should (string-prefix-p "| para " (nth 0 tables)))
     (should (string-prefix-p "| …-lakṣaṇā " (nth 1 tables)))
     (should (string-prefix-p "| vigatā " (nth 2 tables)))))
+
+(defconst bcat-analysis-test--old-block-1016
+  (concat "| para    | vimarśa               | lakṣaṇā           |\n"
+          "|---------+-----------------------+-------------------|\n"
+          "| supreme | reflective awareness  | mark              |\n"
+          "|         | /vi-√mṛś/ (6) reflect | /√lakṣ/ (10) mark |\n\n"
+          "| …-lakṣaṇā     | [bahuvrīhi, of kalā] | whose mark is                |\n"
+          "| para-vimarśa- | [karmadhāraya]       | supreme reflective awareness |\n\n"
+          "| vigatā        | āśrayaḥ              |\n"
+          "|---------------+----------------------|\n"
+          "| /vi-/ away    | /ā-/ towards         |\n"
+          "| /√gam/ (1) go | /√śri/ (1) resort to |")
+  "A Word Formation block as files held it on 18.11. in the morning:
+the compound with its row of meanings, its resolution, the words of one
+member together.")
+
+(ert-deftest bcat-analysis-sub-cells ()
+  "18.11. (Carsten, TĀ 1016: „dass die Word Formation näher am Text ist,
+also als Subtable im Table“; of two prototypes: „B, bau es so ein“):
+what stands under a word in the table of its segment.  A word of one
+member: its parts, one a cell; a compound: a line per member —
+„member: meaning ← roots and suffixes“ with the meanings of the answer,
+„member: roots and suffixes“ without, a bare stem only its meaning —,
+then the steps of its resolution, „members [relation] words“; nothing
+where the parts only repeat the word."
+  (let ((cells (lambda (&rest fields) (bcat-analysis--sub-cells fields)))
+        (plain (cl-remove-if (lambda (c) (memq (car c) '(members layers)))
+                             bcat-analysis-test--ta-1016-compound)))
+    (should (equal '("/vi-/ away" "/√gam/ (1) go" "/-ta/ ppp")
+                   (funcall cells '(word . "vigatā") '(formation . "vi-√gam-ta")
+                            '(parts . "vi- away · √gam (1) go · -ta ppp"))))
+    (should-not (funcall cells '(word . "yasyāḥ") '(formation . "—") '(parts . "")))
+    (should-not (funcall cells '(word . "kalā") '(formation . "—") '(parts . "kalā part, power")))
+    (should (equal '("mad: my" "vāk: speech")
+                   (funcall cells '(word . "mad-vāk") '(formation . "mad · vāc") '(parts . "my · speech"))))
+    (should (equal '("para: supreme"
+                     "vimarśa: /vi-√mṛś/ (6) reflect · /-a/ action noun"
+                     "eka: sole"
+                     "svabhāva: /sva/ own · /bhāva/ being"
+                     "kartṛtā: /√kṛ/ (8) do · /-tṛ/ agent suffix · /-tā/ abstract suffix"
+                     "lakṣaṇā: /√lakṣ/ (10) mark · /-aṇa/ action noun")
+                   (bcat-analysis--sub-cells plain)))
+    (should (equal '("para: supreme"
+                     "vimarśa: reflective awareness ← /vi-√mṛś/ (6) reflect · /-a/ action noun"
+                     "eka: sole"
+                     "svabhāva: nature ← /sva/ own · /bhāva/ being"
+                     "kartṛtā: agency ← /√kṛ/ (8) do · /-tṛ/ agent suffix · /-tā/ abstract suffix"
+                     "lakṣaṇā: mark ← /√lakṣ/ (10) mark · /-aṇa/ action noun"
+                     "…-lakṣaṇā [bahuvrīhi, of kalā] whose mark is"
+                     "…-kartṛtā- [head] agency,"
+                     "…-eka-svabhāva- [bahuvrīhi, of kartṛtā] the sole nature of which is"
+                     "para-vimarśa- [karmadhāraya] supreme reflective awareness")
+                   (bcat-analysis--sub-cells bcat-analysis-test--ta-1016-compound)))
+    ;; one step is no resolution
+    (should (= 6 (length (bcat-analysis--sub-cells
+                          (cons '(layers . (((part . "a-") (role . "x") (phrase . "y")))) plain)))))))
+
+(ert-deftest bcat-analysis-sanskrit-tables-parts-under-the-words ()
+  "18.11. („Subtable im Table“): the table of a Sanskrit segment has under
+word, gloss and form a rule and below it what is under each word
+\(`bcat-analysis--sub-cells'), in the column of its word — no rule in a
+table none of whose words has parts.  The columns are set for hidden
+emphasis markers (`bcat-analysis-emphasis-hidden': Carsten reads with
+them hidden — the bars stand in line on the screen); without, for the
+raw text."
+  (let ((words '(((word . "vigatā") (formation . "vi-√gam-ta") (parts . "vi- away · √gam (1) go · -ta ppp")
+                  (gloss . "departed") (form . "ppp. f. nom. pl."))
+                 ((word . "yā") (formation . "—") (parts . "") (gloss . "which") (form . "pron. f. nom. sg.")))))
+    (let ((bcat-analysis-emphasis-hidden nil))
+      (should (equal (concat "| vigatā           | yā                |\n"
+                             "| departed         | which             |\n"
+                             "| ppp. f. nom. pl. | pron. f. nom. sg. |\n"
+                             "|------------------+-------------------|\n"
+                             "| /vi-/ away       |                   |\n"
+                             "| /√gam/ (1) go    |                   |\n"
+                             "| /-ta/ ppp        |                   |")
+                     (bcat-analysis-sanskrit-tables words))))
+    (let ((bcat-analysis-emphasis-hidden t))
+      (should (equal (concat "| vigatā           | yā                |\n"
+                             "| departed         | which             |\n"
+                             "| ppp. f. nom. pl. | pron. f. nom. sg. |\n"
+                             "|------------------+-------------------|\n"
+                             "| /vi-/ away         |                   |\n"
+                             "| /√gam/ (1) go      |                   |\n"
+                             "| /-ta/ ppp          |                   |")
+                     (bcat-analysis-sanskrit-tables words))))
+    (should (eq t (eval (car (get 'bcat-analysis-emphasis-hidden 'standard-value)))))
+    ;; no parts, no rule
+    (should (equal (concat "| yā                |\n| which             |\n| pron. f. nom. sg. |")
+                   (bcat-analysis-sanskrit-tables (cdr words)))))
+  ;; A compound: its lines in its column, the others' parts beside them;
+  ;; read back, every column has its three cells and what is under it.
+  (let* ((words (list (nth 0 bcat-analysis-test--ta-1016-simple)
+                      bcat-analysis-test--ta-1016-compound
+                      (nth 3 bcat-analysis-test--ta-1016-simple)))
+         (columns (bcat-analysis-band-columns (bcat-analysis-sanskrit-tables words))))
+    (should (equal '("vigatā" "para-vimarśa-eka-svabhāva-kartṛtā-lakṣaṇā" "yasyāḥ")
+                   (mapcar #'caar columns)))
+    (should (equal '("/vi-/ away" "/√gam/ (1) go" "/-ta/ ppp") (cdr (nth 0 columns))))
+    (should (equal (bcat-analysis--sub-cells bcat-analysis-test--ta-1016-compound) (cdr (nth 1 columns))))
+    (should-not (cdr (nth 2 columns))))
+  ;; The tables are split for the width of the file with the lines under
+  ;; the words counted in; a table whose words have no parts gets no rule.
+  (let* ((bcat-analysis-layout-overrides '(("sa" (table-width . 90))))
+         (tables (split-string (bcat-analysis-sanskrit-tables bcat-analysis-test--ta-1016-simple) "\n\n")))
+    (should (> (length tables) 1))
+    (dolist (tb tables)
+      (dolist (line (split-string tb "\n"))
+        (should (<= (string-width (bcat-analysis--strip-emphasis line)) 90))))
+    (should (equal (mapcar (lambda (w) (alist-get 'word w)) bcat-analysis-test--ta-1016-simple)
+                   (mapcar #'caar (bcat-analysis-band-columns (string-join tables "\n\n")))))))
+
+(ert-deftest bcat-analysis-band-columns ()
+  "The tables of a Sanskrit segment read back (C-c u L): per word its
+three cells of the overview — the lines of a broken cell joined — and
+what stands under the rule in its column, as it stands (a hand
+correction stays; no joining there: a line may end in „;“).  A table of
+five rows (before 5.11.) is no such table: its bands are further words."
+  (should (equal '((("vigatā" "departed" "ppp. f. nom. pl.") "/vi-/ away" "/√gam/ (1) go;" "/-ta/ ppp")
+                   (("yā" "which" "pron. f. nom. sg."))
+                   (("a-b; c-d" "g" "f") "x: y"))
+                 (bcat-analysis-band-columns
+                  (concat "| vigatā           | yā                |\n"
+                          "| departed         | which             |\n"
+                          "| ppp. f. nom. pl. | pron. f. nom. sg. |\n"
+                          "|------------------+-------------------|\n"
+                          "| /vi-/ away       |                   |\n"
+                          "| /√gam/ (1) go;   |                   |\n"
+                          "| /-ta/ ppp        |                   |\n\n"
+                          "| a-b; |\n| c-d  |\n| g    |\n| f    |\n|------|\n| x: y |"))))
+  (should (equal '((("a" "f1" "p1" "g1" "x1")) (("b" "f2" "p2" "g2" "x2")))
+                 (bcat-analysis-band-columns
+                  "| a  |\n| f1 |\n| p1 |\n| g1 |\n| x1 |\n|----|\n| b  |\n| f2 |\n| p2 |\n| g2 |\n| x2 |")))
+  (should-not (bcat-analysis-band-columns ""))
+  (should-not (bcat-analysis-band-columns nil)))
+
+(ert-deftest bcat-analysis-sanskrit-relayout-tables ()
+  "C-c u L on a Sanskrit file written before 18.11. midday: what stood
+under Word Formation goes under its word in the table of the segment —
+the words of one member (their own table, or a column of the common
+one) with their parts, a compound a line per member („member: meaning ←
+parts“ from its row of meanings, „member: parts“ without), then the
+steps of its resolution; the cells as the file has them.  Returns
+\(TABLES LEFTOVER OVERFLOW): a table that belongs to no word stays
+\(LEFTOVER — under Word Formation); a file already in the new form
+comes back as it is."
+  (let* ((overview (concat "| vigatā   | para-vimarśa-lakṣaṇā | āśrayaḥ |\n"
+                           "| departed | whose mark …         | support |\n"
+                           "| ppp.     | adj.                 | m.      |"))
+         (new (bcat-analysis-sanskrit-relayout-tables overview bcat-analysis-test--old-block-1016)))
+    (should (equal '((("vigatā" "departed" "ppp.") "/vi-/ away" "/√gam/ (1) go")
+                     (("para-vimarśa-lakṣaṇā" "whose mark …" "adj.")
+                      "para: supreme"
+                      "vimarśa: reflective awareness ← /vi-√mṛś/ (6) reflect"
+                      "lakṣaṇā: mark ← /√lakṣ/ (10) mark"
+                      "…-lakṣaṇā [bahuvrīhi, of kalā] whose mark is"
+                      "para-vimarśa- [karmadhāraya] supreme reflective awareness")
+                     (("āśrayaḥ" "support" "m.") "/ā-/ towards" "/√śri/ (1) resort to"))
+                   (bcat-analysis-band-columns (nth 0 new))))
+    (should-not (nth 1 new))
+    (should-not (nth 2 new))
+    ;; again, nothing left under Word Formation: the same tables
+    (should (equal (list (nth 0 new) nil nil)
+                   (bcat-analysis-sanskrit-relayout-tables (nth 0 new) nil))))
+  ;; As on 9.11.: a table per word, the compound without meanings, split
+  ;; for the width; a table of no word of the segment stays.
+  (let* ((overview "| x | para-vimarśa-lakṣaṇā | x |\n| g | whose mark …         | g |\n| f | adj.                 | f |")
+         (block (concat "| x        |\n|----------|\n| /√x/ (1) |\n\n"
+                        "| para    | vimarśa               |\n|---------+-----------------------|\n"
+                        "| supreme | /vi-√mṛś/ (6) reflect |\n|         | /-a/ action noun      |\n\n"
+                        "| lakṣaṇā           |\n|-------------------|\n| /√lakṣ/ (10) mark |\n\n"
+                        "| p | q |\n|---+---|\n| r | s |\n\n"
+                        "| x        |\n|----------|\n| /√x/ (2) |"))
+         (new (bcat-analysis-sanskrit-relayout-tables overview block)))
+    (should (equal '((("x" "g" "f") "/√x/ (1)")
+                     (("para-vimarśa-lakṣaṇā" "whose mark …" "adj.")
+                      "para: supreme"
+                      "vimarśa: /vi-√mṛś/ (6) reflect · /-a/ action noun"
+                      "lakṣaṇā: /√lakṣ/ (10) mark")
+                     (("x" "g" "f") "/√x/ (2)"))
+                   (bcat-analysis-band-columns (nth 0 new))))
+    (should (equal "| p | q |\n|---+---|\n| r | s |" (nth 1 new))))
+  ;; What the table already shows under a word wins over the block.
+  (let ((new (bcat-analysis-sanskrit-relayout-tables
+              "| x |\n| g |\n| f |\n|---|\n| mine |" "| x        |\n|----------|\n| /√x/ (1) |")))
+    (should (equal '((("x" "g" "f") "mine")) (bcat-analysis-band-columns (nth 0 new))))
+    (should (equal "| x        |\n|----------|\n| /√x/ (1) |" (nth 1 new))))
+  ;; A long form is cut as in every table, its rest a line for Structure.
+  (let ((new (bcat-analysis-sanskrit-relayout-tables
+              "| x |\n| g |\n| adj. f. nom. sg. (bahuvrīhi, agrees with jananī) |" nil)))
+    (should (nth 2 new))
+    (should (< (string-width (nth 2 (caar (bcat-analysis-band-columns (nth 0 new))))) 40)))
+  (should (equal '(nil nil nil) (bcat-analysis-sanskrit-relayout-tables nil nil))))
+
+(ert-deftest bcat-analysis-block-sub-cells-other-names ()
+  "C-c u L on a file of the first weeks (trial run over the 60 Sanskrit
+sentence files, 18.11.: TĀ 1031, 1035, 1038, 1040 kept a block): a table
+under Word Formation that names its word differently than the overview
+still goes under it — without the hyphens of the padapāṭha
+\(„bharitatanuḥ“), as the stem („mahas“ for „mahaḥ“), in its sandhi, at
+most two letters apart and only when no other word is as near
+\(„tattadbhāva…“ for „tat-tat-bhāva-…“), the members of a compound
+split differently („svabhāva | tvāt“ for „…-svabhāvatvāt“); a table of
+one member of a compound is a line of that compound („ādi: …“).  A
+short name, or one as near to two words, stays under Word Formation."
+  (let* ((table (lambda (head &rest cells)
+                  (concat "| " head " |\n|---|\n" (mapconcat (lambda (c) (concat "| " c " |")) cells "\n"))))
+         (words '("iti-ādi-nītyā" "mahaḥ" "tat-tat-bhāva-saṃcarvaṇena" "bharita-tanuḥ"
+                  "śuddha-bodha-mātra-svabhāvatvāt" "sadā"))
+         (block (string-join
+                 (list (funcall table "ādi" "/ā-/ toward" "/√dā/ (3) take")
+                       (funcall table "nītyā" "/√nī/ (1) lead" "/-ti/ action noun")
+                       (funcall table "mahas" "/√mah/ (1) be great" "/-as/ neuter action noun")
+                       (funcall table "tattadbhāvasaṃcarvaṇena" "/tat/ that" "/bhāva/ state" "/√carv/ (1) chew")
+                       (funcall table "bharitatanuḥ" "/√bhṛ/ (1) bear" "/tanu/ body")
+                       (concat "| śuddha | bodha     | mātra | svabhāva       | tvāt                 |\n"
+                               "|--------+-----------+-------+----------------+----------------------|\n"
+                               "| pure   | awareness | alone | /sva/ own      | /-tva/ abstr. suffix |\n"
+                               "|        |           |       | /bhāva/ nature |                      |")
+                       (funcall table "sat" "/√as/ (2) be"))
+                 "\n\n"))
+         (got (bcat-analysis--block-sub-cells block words)))
+    (should (equal '(("ādi: /ā-/ toward · /√dā/ (3) take" "nītyā: /√nī/ (1) lead · /-ti/ action noun")
+                     ("/√mah/ (1) be great" "/-as/ neuter action noun")
+                     ("/tat/ that" "/bhāva/ state" "/√carv/ (1) chew")
+                     ("/√bhṛ/ (1) bear" "/tanu/ body")
+                     ("śuddha: pure" "bodha: awareness" "mātra: alone"
+                      "svabhāva: /sva/ own · /bhāva/ nature" "tvāt: /-tva/ abstr. suffix")
+                     nil)
+                   (car got)))
+    ;; „sat“ is three letters: not „sadā“ by its nearness
+    (should (equal (list (funcall table "sat" "/√as/ (2) be")) (cdr got))))
+  ;; as near to two words: no one's
+  (let* ((block "| dyotamānāyai |\n|---|\n| /√dyut/ (1) shine |")
+         (got (bcat-analysis--block-sub-cells block '("dyotamānāyām" "dyotamānāyāḥ"))))
+    (should (equal '(nil nil) (car got)))
+    (should (equal (list block) (cdr got))))
+  ;; the same word comes first: the table of „tejas“ is not that of „tejaḥ“
+  ;; when a word „tejas“ stands there too
+  (let ((got (bcat-analysis--block-sub-cells "| tejas |\n|---|\n| /√tij/ (1) be sharp |" '("tejaḥ" "tejas"))))
+    (should (equal '(nil ("/√tij/ (1) be sharp")) (car got))))
+  ;; a member that two compounds have: no one's
+  (let* ((block "| ādi |\n|---|\n| /ā-√dā/ (3) take |")
+         (got (bcat-analysis--block-sub-cells block '("iti-ādi" "ādi-śabdaḥ"))))
+    (should (equal '(nil nil) (car got)))
+    (should (equal (list block) (cdr got)))))
 
 (ert-deftest bcat-analysis-sanskrit-prompt-members-and-layers ()
   "18.11. (Carsten: „Prompt-Änderung ist ok“): the Sanskrit request asks

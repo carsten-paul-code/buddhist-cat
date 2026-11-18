@@ -107,35 +107,41 @@ line, table) read back to the new form."
 
 (ert-deftest bcat-relayout-sanskrit-subtables ()
   "5.11.: C-c u L sets a Sanskrit file written before (tables of five
-rows) with the overview, „→“, and the parts tables; read back, the parts
-tables stay as they are — a second run changes nothing."
+rows) anew; since 18.11. with the parts under their words in the tables
+themselves (no Word Formation); a second run changes nothing."
   (let* ((words bcat-analysis-test--ta-1-1-words)
          (old (concat "* Text\n⟦1⟧\n" (bcat-analysis-test--old-sanskrit-tables words)
                       "\n\n→ t\n\n* Segments\n** Segment 1\n\n*Structure:* s\n"))
          (base '((segments ((num . 1) (samhita . "vimala…"))) (sent-num . "1")))
          (seg (car (alist-get 'segments (bcat-relayout-context base old "sanskrit")))))
     (should (equal (bcat-analysis-sanskrit-tables words) (alist-get 'gloss-table seg)))
-    (should (string-prefix-p "| vimala " (alist-get 'formation-tables seg)))
-    ;; 18.11.: the words of one member together, after the compounds
-    (should (string-suffix-p (concat "| jananī             | janakaḥ          |\n"
-                                     "|--------------------+------------------|\n"
-                                     "| /√jan/ (1) be born | /√jan/ (1) beget |\n"
-                                     "| /-anī/ f. agent    | /-aka/ m. agent  |")
-                             (alist-get 'formation-tables seg)))
+    (should-not (alist-get 'formation-tables seg))
+    (should (equal '("/√jan/ (1) beget" "/-aka/ m. agent")
+                   (cdr (car (last (bcat-analysis-band-columns (alist-get 'gloss-table seg)))))))
     (let* ((once (bcat-relayout-test--render "sanskrit" base old))
            (again (bcat-relayout-test--render "sanskrit" base once)))
-      ;; 18.11.: open (the drawer :VISIBILITY: folded only on request)
-      (should (string-match-p "^→ t\n\n\\*\\*\\* Word Formation\n| vimala " once))
+      (should-not (string-match-p "Word Formation" once))
+      (should (string-match-p "| janakaḥ" once))
       (should (equal once again)))))
 
-(ert-deftest bcat-relayout-keeps-member-row-and-resolution ()
-  "18.11.: C-c u L reads the table of a compound with its row of
-meanings and the table of its resolution back as they stand (a hand
-correction stays) — set anew, the file is the same; the word of one
-member goes behind them."
+(defun bcat-relayout-test--segment-columns (text)
+  "The columns (`bcat-analysis-band-columns') of the tables of the first
+segment under * Text of the sentence file TEXT."
+  (should (string-match "^\\*\\* [^\n]*⟦[0-9]+⟧[^\n]*\n\\*[^\n]*\\*\n\n\\(\\(?:|[^\n]*\n\\|\n\\)+?\\)\n*→ " text))
+  (bcat-analysis-band-columns (string-trim (match-string 1 text))))
+
+(ert-deftest bcat-relayout-block-goes-under-the-words ()
+  "18.11. (Carsten: „dass die Word Formation näher am Text ist, also als
+Subtable im Table“): C-c u L sets a file with a block Word Formation
+\(as written until 18.11.) with the parts under the words in the table
+of the segment — the compound a line per member from its table, the
+steps of its resolution below, a word of one member its parts; the
+cells as the file had them (a hand's wording stays).  The heading Word
+Formation is gone; set anew, the file is the same, and what a hand
+changes under a word stays."
   (let* ((old (concat "* Text\n** ⟦1⟧\n*x para-vimarśa-lakṣaṇā /*\n\n"
                       "| x | para-vimarśa-lakṣaṇā |\n| g | whose mark …         |\n| f | adj.                 |\n\n→ t\n\n"
-                      "*** Word Formation\n"
+                      "*** Word Formation\n:PROPERTIES:\n:VISIBILITY: folded\n:END:\n"
                       "| x        |\n|----------|\n| /√x/ (1) |\n\n"
                       "| para    | vimarśa               | lakṣaṇā           |\n"
                       "|---------+-----------------------+-------------------|\n"
@@ -147,44 +153,46 @@ member goes behind them."
          (base '((segments ((num . 1) (samhita . "x paravimarśalakṣaṇā /"))) (sent-num . "1") (translation . "T")))
          (once (bcat-relayout-test--render "sanskrit" base old))
          (again (bcat-relayout-test--render "sanskrit" base once)))
-    (should (string-match-p
-             (regexp-quote (concat "*** Word Formation\n"
-                                   "| para    | vimarśa               | lakṣaṇā           |\n"
-                                   "|---------+-----------------------+-------------------|\n"
-                                   "| supreme | reflective awareness  | mark              |\n"
-                                   "|         | /vi-√mṛś/ (6) reflect | /√lakṣ/ (10) mark |\n\n"
-                                   "| …-lakṣaṇā     | [bahuvrīhi, of kalā] | whose mark is                |\n"
-                                   "| para-vimarśa- | [my own wording]     | supreme reflective awareness |\n\n"
-                                   "| x        |\n|----------|\n| /√x/ (1) |\n"))
-             once))
-    (should (equal once again))))
+    (should (equal '((("x" "g" "f") "/√x/ (1)")
+                     (("para-vimarśa-lakṣaṇā" "whose mark …" "adj.")
+                      "para: supreme"
+                      "vimarśa: reflective awareness ← /vi-√mṛś/ (6) reflect"
+                      "lakṣaṇā: mark ← /√lakṣ/ (10) mark"
+                      "…-lakṣaṇā [bahuvrīhi, of kalā] whose mark is"
+                      "para-vimarśa- [my own wording] supreme reflective awareness"))
+                   (bcat-relayout-test--segment-columns once)))
+    (should-not (string-match-p "Word Formation\\|VISIBILITY" once))
+    (should (string-match-p "\n→ t\n\n\\*\\* Translation\n\\*Translation:\\* T\n" once))
+    (should (equal once again))
+    (let ((fixed (replace-regexp-in-string "para: supreme " "para: highest " once t t)))
+      (should-not (equal fixed once))
+      (should (equal fixed (bcat-relayout-test--render "sanskrit" base fixed))))))
 
 (ert-deftest bcat-relayout-parts-lines-to-tables ()
   "Carsten 9.11., TĀ 1009 („der Formatwechsel (Tabelle/Fließtext)
-verwirrt mich“): C-c u L sets a file of 5.11. (draft B) with the line
-of a word of one member as its table of one column — the parts as the
-line has them, a hand correction stays; the tables of compounds stay as
-they are.  18.11.: the words of one member stand together in ONE table
-after the compounds (`bcat-analysis-merge-word-tables') — here it is
-one word, its table of one column."
+verwirrt mich“): C-c u L set a file of 5.11. (draft B) with the line of
+a word of one member as its table of one column.  18.11.: the parts as
+the line has them go under the word in the table of the segment, the
+table of a compound a line per member; nothing is left for Word
+Formation."
   (let* ((old (concat "* Text\n⟦1⟧\n| hṛdayam | a-b |\n| heart | g |\n| n. | f |\n\n→ t\n\n"
                       "/hṛdayam/: /hṛd/ heart · /-aya/ my suffix\n\n"
                       "| a  | b  |\n|----+----|\n| x  | y  |\n\n"
                       "* Segments\n** Segment 1\n\n*Structure:* s\n"))
          (base '((segments ((num . 1) (samhita . "hṛdayam ab"))) (sent-num . "1")))
          (seg (car (alist-get 'segments (bcat-relayout-context base old "sanskrit")))))
-    (should (equal (concat "| a  | b  |\n|----+----|\n| x  | y  |\n\n"
-                           "| hṛdayam          |\n|------------------|\n| /hṛd/ heart      |\n"
-                           "| /-aya/ my suffix |")
-                   (alist-get 'formation-tables seg)))))
+    (should (equal '((("hṛdayam" "heart" "n.") "/hṛd/ heart" "/-aya/ my suffix")
+                     (("a-b" "g" "f") "a: x" "b: y"))
+                   (bcat-analysis-band-columns (alist-get 'gloss-table seg))))
+    (should-not (alist-get 'formation-tables seg))))
 
 (ert-deftest bcat-relayout-segment-headings ()
   "9.11. (TĀ 1009): C-c u L sets a file of 5.11. (⟦N⟧ a line, the parts
 right after „→“, the sentence's translation after the last segment) in
 the new structure — ⟦N⟧ a heading, the original in bold under it, the
-parts under a folded Word Formation, the sentence under ** Translation;
-read back, a second run changes nothing, and a hand correction of the
-bold line stays."
+sentence under ** Translation; since 18.11. the parts under their word
+in the table, no Word Formation; read back, a second run changes
+nothing, and a hand correction of the bold line stays."
   (let* ((old (concat "* Text\n⟦1⟧\n| hṛdayam | ab |\n| heart | g |\n| n. | f |\n\n→ t\n\n"
                       "/hṛdayam/: /hṛd/ heart · /-aya/ suffix\n\n"
                       "*Grammar:* g\n\n*Translation:* T\n\n"
@@ -193,8 +201,10 @@ bold line stays."
                  (sent-num . "1")))
          (once (bcat-relayout-test--render "sanskrit" base old))
          (again (bcat-relayout-test--render "sanskrit" base once)))
-    (should (string-match-p (regexp-quote "\n** ⟦1⟧\n*hṛdayam ab /*\n\n| hṛdayam | ab |") once))
-    (should (string-match-p (regexp-quote "→ t\n\n*** Word Formation\n| hṛdayam ") once))
+    (should (string-match-p "\n\\*\\* ⟦1⟧\n\\*hṛdayam ab /\\*\n\n| hṛdayam +| ab |" once))
+    (should (equal '((("hṛdayam" "heart" "n.") "/hṛd/ heart" "/-aya/ suffix") (("ab" "g" "f")))
+                   (bcat-relayout-test--segment-columns once)))
+    (should-not (string-match-p "Word Formation" once))
     (should (string-match-p (regexp-quote "\n** Translation\n*Translation:* T\n\n*Grammar:* g\n") once))
     (should-not (string-match-p "^/hṛdayam/:" once))
     (should (equal once again))

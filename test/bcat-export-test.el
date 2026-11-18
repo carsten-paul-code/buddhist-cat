@@ -601,6 +601,11 @@ each column's widest line plus 6, within `bcat-export-table-width'."
                                         collect (mapcar (lambda (r) (nth j r)) rows))))))
       bcat-export-table-width))
 
+(defun bcat-export-test--without-parts (words)
+  "WORDS without their formation and parts: their table is the overview
+alone, no rule."
+  (mapcar (lambda (w) (cl-remove-if (lambda (c) (memq (car c) '(formation parts members layers))) w)) words))
+
 (ert-deftest bcat-export-rechunk-sanskrit-tables ()
   "5.11. (generic): the tables of a segment fill the Emacs window in the
 file — Sanskrit as well since 5.11. —; the export copy lays them out
@@ -608,8 +613,12 @@ anew for the page, whatever the language: the run of tables under a
 ⟦N⟧ mark, wide cells broken as far as it saves lines.  Nothing lost:
 read back, the columns are those of the file."
   (let* ((file-tables (bcat-analysis-sanskrit-tables ; 5.11.: one table in the file, too wide for the page
-                       (append (seq-take bcat-analysis-test--ta-1-1-words 5)
-                               (last bcat-analysis-test--ta-1-1-words))))
+                       ;; 18.11.: words without parts — with parts under
+                       ;; them the table has a rule and its own layout for
+                       ;; the page (`bcat-export-sanskrit-page-tables')
+                       (bcat-export-test--without-parts
+                        (append (seq-take bcat-analysis-test--ta-1-1-words 5)
+                                (last bcat-analysis-test--ta-1-1-words)))))
          (columns (apply #'append (mapcar #'bcat-analysis--table-columns (split-string file-tables "\n\n")))))
     (should-not (cl-every #'bcat-export-test--fits-page (split-string file-tables "\n\n")))
     (with-temp-buffer
@@ -634,8 +643,9 @@ line on its own (TĀ 1016: four tables in four sizes, 77 % to 100 %).
 The run under the original is laid out anew, in the view and in the
 file; nothing lost."
   (let* ((file-tables (bcat-analysis-sanskrit-tables
-                       (append (seq-take bcat-analysis-test--ta-1-1-words 5)
-                               (last bcat-analysis-test--ta-1-1-words))))
+                       (bcat-export-test--without-parts
+                        (append (seq-take bcat-analysis-test--ta-1-1-words 5)
+                                (last bcat-analysis-test--ta-1-1-words)))))
          (columns (apply #'append (mapcar #'bcat-analysis--table-columns (split-string file-tables "\n\n")))))
     (should-not (cl-every #'bcat-export-test--fits-page (split-string file-tables "\n\n")))
     (dolist (head (list
@@ -856,6 +866,67 @@ relation blue.  With \\hline and with the rules of booktabs."
                            (concat "\\begin{tabular}{ll}\nvimala & kalā\\\\\n\\hline\n"
                                    "\\emph{vi-} apart & part, power\\\\\n\\end{tabular}")))))
 
+(ert-deftest bcat-export-sanskrit-page-tables ()
+  "18.11. (Carsten: the parts of the words under them in the table —
+„Für das PDF ist das 1. Bild ok“): for the PDF the tables of a Sanskrit
+segment are laid out for the page with the parts under the words — a
+rule, then per word its parts in \\bcatg, of a compound a line per
+member: member and meaning black (\\bcatk), roots and suffixes in
+\\bcatg —; the steps of a compound's resolution stay in the file (the
+segment keeps its page).  Italics and LaTeX's special characters are
+set by hand — a cell in an export snippet is not read by org.  Tables
+without parts are left to the layout of every language."
+  (let ((file (concat "| vigatā           | mad-vāk                        |\n"
+                      "| departed         | my speech                      |\n"
+                      "| ppp. f. nom. pl. | f. nom. sg.                    |\n"
+                      "|------------------+--------------------------------|\n"
+                      "| /vi-/ away       | mad: my                        |\n"
+                      "| /√gam/ (1) go    | vāk: speech ← /√vac/ (2) speak |\n"
+                      "| R&D 50 %         | …-vāk [tatpuruṣa] speech       |\n"
+                      "|                  | mad- [genitive] my             |")))
+    (should (equal (concat "| vigatā | mad-vāk |\n"
+                           "| departed | my speech |\n"
+                           "| ppp. f. nom. pl. | f. nom. sg. |\n"
+                           "|-\n"
+                           "| @@latex:\\bcatg{\\emph{vi-} away}@@ | @@latex:\\bcatk{mad: my}@@ |\n"
+                           "| @@latex:\\bcatg{\\emph{√gam} (1) go}@@ | @@latex:\\bcatk{vāk: speech} \\bcatg{← \\emph{√vac} (2) speak}@@ |\n"
+                           "| @@latex:\\bcatg{R\\&D 50 \\%}@@ |  |")
+                   (bcat-export-sanskrit-page-tables file))))
+  ;; a member without its meaning: the member black, its parts blue
+  (should (string-match-p
+           (regexp-quote "@@latex:\\bcatk{vimarśa:} \\bcatg{\\emph{vi-√mṛś} (6) reflect · \\emph{-a} action noun}@@")
+           (bcat-export-sanskrit-page-tables
+            "| a-vimarśa |\n| g |\n| f |\n|---|\n| a: one |\n| vimarśa: /vi-√mṛś/ (6) reflect · /-a/ action noun |")))
+  ;; wider than the page: split, each table with its rule and its rows
+  (let* ((words (seq-take bcat-analysis-test--ta-1-1-words 4))
+         (page (bcat-export-sanskrit-page-tables (bcat-analysis-sanskrit-tables words)))
+         (tables (split-string page "\n\n")))
+    (should (> (length tables) 1))
+    (should (equal (mapcar (lambda (w) (alist-get 'word w)) words)
+                   (mapcar #'caar (bcat-analysis-band-columns page))))
+    (dolist (tb tables)
+      (should (string-match-p "\n|-\n| " tb))))
+  ;; no parts: as it is
+  (let ((plain "| atra |\n| here |\n| ind. |"))
+    (should (equal plain (bcat-export-sanskrit-page-tables plain))))
+  (should (string-match-p (regexp-quote "\\newcommand{\\bcatk}[1]{\\textcolor{black}{#1}}") (bcat-export--font-lines))))
+
+(ert-deftest bcat-export-detail-rows-explicit-colours ()
+  "18.11.: a row whose cells carry their colours (\\bcatg, \\bcatk — the
+parts under the words of a Sanskrit table) is left as it is; the rows
+of the overview above it as before (the form in \\bcatg)."
+  (dolist (rules '(("" "\\hline\n" "") ("\\toprule\n" "\\midrule\n" "\\bottomrule\n")))
+    (let ((tabular (concat "\\begin{tabular}{ll}\n" (nth 0 rules)
+                           "vigatā & mad-vāk\\\\\n"
+                           "departed & my speech\\\\\n"
+                           "ppp. & f.\\\\\n" (nth 1 rules)
+                           "\\bcatg{\\emph{vi-} away} & \\bcatk{mad: my}\\\\\n"
+                           "\\bcatg{\\emph{√gam} (1) go} & \\bcatk{vāk: speech} \\bcatg{← \\emph{√vac}}\\\\\n"
+                           "\\bcatg{\\emph{-ta} ppp} & \\\\\n" (nth 2 rules) "\\end{tabular}")))
+      (should (equal (replace-regexp-in-string (regexp-quote "ppp. & f.\\\\")
+                                               "\\bcatg{ppp.} & \\bcatg{f.}\\\\" tabular t t)
+                     (bcat-export--detail-rows tabular))))))
+
 (ert-deftest bcat-export-comparison-table ()
   "2.11. (Muster vergleich-ta1-1.org): the overview table of the
 comparison — the ratings with \\cellcolor{ok|mid|bad} — needs colortbl
@@ -953,8 +1024,8 @@ ersten).  Ein Dokument mit interner Verknüpfung gibt keine Warnung."
 (ert-deftest bcat-export-view-sanskrit ()
   "Carsten 5.11.: the PDF is one document with jump marks, not the file
 in its order — Reading (the recitation, the translation), Segments (the
-overview of the words, → per segment, since 18.11. the parts of the
-words under it), Grammar (the grammar, per segment sandhi, forms,
+overview of the words — since 18.11. with their parts under them —, →
+per segment), Grammar (the grammar, per segment sandhi, forms,
 compounds, structure — until 18.11. the parts of the words), Concepts,
 Discussion; each part with a CUSTOM_ID (a page of its own, a link in
 the bar).  Rendered from the fields C-c u L reads back; the file stays
@@ -996,14 +1067,17 @@ as it is; no request; no Word Analysis."
         (should (string-match-p "^@@latex:\\\\bcattrans{@@→ Although my speech .*@@latex:}@@$" segments))
         (should-not (string-match-p "^→ " segments))
         ;; 18.11. (Carsten, TĀ 1016: „dann aber auch noch sagen was ich
-        ;; wie übersetze, was z.B. die root ist“): the parts of the
-        ;; words under the translation of their segment, under the
-        ;; small title — in the grammar they were two pages away.
+        ;; wie übersetze, was z.B. die root ist“ — „als Subtable im
+        ;; Table“): the parts of the words under them in the table of
+        ;; their segment, below a rule, with their colours — a compound
+        ;; a line per member, the member black; no Word Formation, in
+        ;; the grammar they were two pages away.
         (should (string-match-p
-                 (concat "^@@latex:\\\\bcattrans{@@→ Although my speech .*@@latex:}@@\n\n"
-                         (regexp-quote "@@latex:\\bcatsub{@@Word Formation@@latex:}@@\n\n| mad"))
+                 (regexp-quote (concat "| ind. | f. nom. sg. | ppp. f. nom. sg. | ind. | pron. n. nom. sg. | n. nom. sg. |\n"
+                                       "|-\n"
+                                       "|  | @@latex:\\bcatk{mad: my}@@ | @@latex:\\bcatg{\\emph{a-} not}@@ |"))
                  segments))
-        (should-not (string-match-p "Word Formation\\|^| mad " grammar))
+        (should-not (string-match-p "Word Formation" view))
         (should-not (string-match-p "^/mad-vāk/\\|\\*Forms:\\*" segments))
         (should (string-match-p "^\\*Grammar:\\* Two clauses\\." grammar))
         (should (string-match-p "^\\*\\* ⟦685⟧\n:PROPERTIES:\n:CUSTOM_ID: grammar-685\n:END:$" grammar))
@@ -1472,11 +1546,12 @@ lualatex is installed), no error in the log."
 
 (ert-deftest bcat-export-file-smoke-resolution ()
   "18.11. (TĀ 1016): the PDF of a Sanskrit sentence file whose compound
-has the row of its members' meanings and the table of its resolution —
-the relation in brackets — under the translation of its segment: a real
-LuaLaTeX run (only where lualatex is installed), no error in the log;
-where pdftotext is installed, the relation and the meanings are on the
-page of the segments."
+has the meanings of its members and the steps of its resolution under
+it in the table of its segment — a real LuaLaTeX run (only where
+lualatex is installed), no error in the log.  The lines of the members
+are in the PDF, with their meanings; the steps of the resolution are
+not („Für das PDF ist das 1. Bild ok“) — checked where pdftotext is
+installed."
   (skip-unless (executable-find "lualatex"))
   (bcat-sentence-test--with-sa-source
     (bcat-sentence-test--create-n src 1007)
@@ -1493,14 +1568,17 @@ page of the segments."
                                 (when fmt (push (apply #'format fmt args) said))
                                 (apply orig fmt args))))
                     (bcat-export-file file))))
-        (should (string-match-p "^| …-vijṛmbhitam +| \\[tatpuruṣa, head\\] +| the unfolding of |$" segments))
+        (should (string-match-p "\\[tatpuruṣa, head\\]" (bcat-sentence-test--text-of file)))
+        (should (string-match-p (regexp-quote "@@latex:\\bcatk{ānanda: bliss} \\bcatg{← \\emph{ā-√nand} (1) rejoice}@@")
+                                segments))
+        (should-not (string-match-p "tatpuruṣa, head" segments))
         (should (and pdf (file-exists-p pdf)))
         (should-not (cl-some (lambda (m) (string-match-p "with errors\\|wasn't produced" m)) said))
         (when (executable-find "pdftotext")
           (let ((text (with-temp-buffer (call-process "pdftotext" nil t nil pdf "-") (buffer-string))))
-            (should (string-match-p "\\[tatpuruṣa, head\\]" text))
-            (should (string-match-p "\\[karmadhāraya\\]" text))
-            (should (string-match-p "the unfolding of" text))))))))
+            (should (string-match-p "ānanda: bliss" text))
+            (should (string-match-p "vijṛmbhitam: unfolding" text))
+            (should-not (string-match-p "\\[karmadhāraya\\]" text))))))))
 
 (ert-deftest bcat-export-file-smoke-padapatha-check ()
   "16.11.: the PDF with „Prüfen:“ under the original — a real LuaLaTeX

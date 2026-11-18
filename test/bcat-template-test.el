@@ -279,9 +279,11 @@ heading (its segments are none)."
   "9.11. (TĀ 1009) as org reads it, in the reviewed samples: in the
 section with the Sanskrit segments (* Text; * Sanskrit in the Tibetan
 file of a pair) each segment is a heading ⟦N⟧ with the original in bold
-right under it; its „→“ translation belongs to that heading, its parts
-to a heading Word Formation under it, folded; the translation of the
-sentence to a heading Translation — not to the last Word Formation."
+right under it; its „→“ translation belongs to that heading; the
+translation of the sentence to a heading Translation.  18.11.: the
+parts of the words stand under them in the table of the segment, below
+a rule — no heading Word Formation in the samples any more (9.11. to
+18.11. the parts had one)."
   (require 'org)
   (dolist (case '(("Sanskrit.org" "Text") ("Bilingual.org" "Text") ("Bilingual-Tibetan.org" "Sanskrit")))
     (with-temp-buffer
@@ -302,11 +304,13 @@ sentence to a heading Translation — not to the last Word Formation."
             (should (= 2 (length path)))
             (should (string-match-p "⟦[0-9]+⟧" (nth 1 path)))))
         (goto-char start)
-        (while (re-search-forward "^\\*\\*\\* Word Formation$" end t)
+        (should-not (re-search-forward "^\\*\\*\\* Word Formation$" end t))
+        ;; 18.11.: the parts under the words — a table with a rule,
+        ;; under the heading of its segment
+        (goto-char start)
+        (while (re-search-forward "^|-" end t)
           (cl-incf formations)
-          ;; 18.11.: open — no drawer in the samples
-          (should-not (org-entry-get nil "VISIBILITY"))
-          (should (string-match-p "⟦[0-9]+⟧" (car (last (org-get-outline-path))))))
+          (should (string-match-p "⟦[0-9]+⟧" (car (last (org-get-outline-path t))))))
         (goto-char start)
         (should (re-search-forward "^\\*Translation:\\* " end t))
         (should (equal (list (nth 1 case) "Translation") (org-get-outline-path t)))

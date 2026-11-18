@@ -31,44 +31,29 @@ tatpārameśvaraṃ śrīman|mahānandavijṛmbhitam // 7
 ** ⟦685⟧
 *atra mad-vāk aśaktā api yat niyantraṇam ullaset /*
 
-| atra | mad-vāk     | aśaktā           | api      | yat               | niyantraṇam | ullaset         |
-| here | my speech   | incapable        | although | whatever          | control     | may shine forth |
-| ind. | f. nom. sg. | ppp. f. nom. sg. | ind.     | pron. n. nom. sg. | n. nom. sg. | opt. 3 sg. P    |
+| atra | mad-vāk     | aśaktā           | api      | yat               | niyantraṇam          | ullaset         |
+| here | my speech   | incapable        | although | whatever          | control              | may shine forth |
+| ind. | f. nom. sg. | ppp. f. nom. sg. | ind.     | pron. n. nom. sg. | n. nom. sg.          | opt. 3 sg. P    |
+|------+-------------+------------------+----------+-------------------+----------------------+-----------------|
+|      | mad: my     | /a-/ not           |          |                   | /ni-/ in               | /ud-/ up          |
+|      | vāk: speech | /√śak/ (5) be able |          |                   | /√yantr/ (10) restrain | /√las/ (1) shine  |
+|      |             | /-ta/ ppp          |          |                   | /-ana/ action          |                 |
 
 → Although my speech (vāc) is incapable (aśakta) here, whatever control (niyantraṇa) may shine forth (ullaset) —
-
-*** Word Formation
-| mad | vāk    |
-|-----+--------|
-| my  | speech |
-
-| aśaktā             | niyantraṇam            | ullaset          |
-|--------------------+------------------------+------------------|
-| /a-/ not           | /ni-/ in               | /ud-/ up         |
-| /√śak/ (5) be able | /√yantr/ (10) restrain | /√las/ (1) shine |
-| /-ta/ ppp          | /-ana/ action          |                  |
 
 ** ⟦686⟧
 *tat pārameśvaram śrīmat-mahā-ānanda-vijṛmbhitam // 7*
 
-| tat               | pārameśvaram       | śrīmat-mahā-ānanda-vijṛmbhitam    |
-| that              | the Supreme Lord's | unfolding of glorious great bliss |
-| pron. n. nom. sg. | adj. n. nom. sg.   | n. nom. sg.                       |
+| tat               | pārameśvaram             | śrīmat-mahā-ānanda-vijṛmbhitam                      |
+| that              | the Supreme Lord's       | unfolding of glorious great bliss                   |
+| pron. n. nom. sg. | adj. n. nom. sg.         | n. nom. sg.                                         |
+|-------------------+--------------------------+-----------------------------------------------------|
+|                   | supreme                  | śrīmat: /śrī/ glory · /-mat/ having                     |
+|                   | lord                     | mahā: great                                         |
+|                   | /vṛddhi/ + -a belonging to | ānanda: /ā-√nand/ (1) rejoice                         |
+|                   |                          | vijṛmbhitam: /vi-/ apart · /√jṛmbh/ (1) open · /-ita/ ppp |
 
 → that belongs to the Supreme Lord (pārameśvara): it is the unfolding (vijṛmbhita) of glorious great bliss (mahānanda).
-
-*** Word Formation
-| śrīmat        | mahā  | ānanda                | vijṛmbhitam       |
-|---------------+-------+-----------------------+-------------------|
-| /śrī/ glory   | great | /ā-√nand/ (1) rejoice | /vi-/ apart       |
-| /-mat/ having |       |                       | /√jṛmbh/ (1) open |
-|               |       |                       | /-ita/ ppp        |
-
-| pārameśvaram               |
-|----------------------------|
-| supreme                    |
-| lord                       |
-| /vṛddhi/ + -a belonging to |
 
 ** Translation
 *Translation:* Although my speech (vāc) is incapable (aśakta) here, whatever control (niyantraṇa) may shine forth (ullaset) — that belongs to the Supreme Lord (pārameśvara): it is the unfolding (vijṛmbhita) of glorious great bliss (mahānanda).

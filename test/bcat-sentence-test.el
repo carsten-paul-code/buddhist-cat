@@ -1816,59 +1816,68 @@ layers of the resolution for the compound of segment 686 (18.11.)."
             (substring answer (+ pos (length at))))))
 
 (ert-deftest bcat-sentence-fetch-members-and-layers ()
-  "18.11. (Carsten, TĀ 1016): C-c u G with an answer that gives the
-meanings of a compound's members and the layers of its resolution writes
-both under Word Formation of the segment — the meanings under the
-members, the resolution after the compound, the words of one member
-last; C-c u L leaves the file as it is."
+  "18.11. (Carsten, TĀ 1016; „B, bau es so ein“): C-c u G with an answer
+that gives the meanings of a compound's members and the layers of its
+resolution writes both under the compound in the table of its segment —
+a line per member, „member: meaning ← parts“, then the steps of the
+resolution —, the parts of the other words under them; no Word
+Formation; C-c u L leaves the file as it is."
   (bcat-sentence-test--with-sa-source
     (bcat-sentence-test--create-n src 1007)
     (let ((file (tibetan-sentence--filepath 1007 folder src)))
       (bcat-sentence-test--with-stubs (bcat-sentence-test--sa-answer-with-layers)
         (bcat-sentence-test--fetch-n src 1007))
-      (let ((text (bcat-sentence-test--text-of file)))
-        (should (string-match-p
-                 (regexp-quote
-                  (concat "*** Word Formation\n"
-                          "| śrīmat        | mahā  | ānanda                | vijṛmbhitam       |\n"
-                          "|---------------+-------+-----------------------+-------------------|\n"
-                          "| glorious      | great | bliss                 | unfolding         |\n"
-                          "| /śrī/ glory   |       | /ā-√nand/ (1) rejoice | /vi-/ apart       |\n"
-                          "| /-mat/ having |       |                       | /√jṛmbh/ (1) open |\n"
-                          "|               |       |                       | /-ita/ ppp        |\n\n"
-                          "| …-vijṛmbhitam  | [tatpuruṣa, head] | the unfolding of |\n"
-                          "| śrīmat-        | [karmadhāraya]    | glorious         |\n"
-                          "| …-mahā-ānanda- | [karmadhāraya]    | great bliss      |\n\n"
-                          "| pārameśvaram "))
-                 text))
+      (let* ((text (bcat-sentence-test--text-of file))
+             (tables (progn (should (string-match "^\\*\\* ⟦686⟧\n\\*[^\n]*\\*\n\n\\(\\(?:|[^\n]*\n\\)+\\)" text))
+                            (match-string 1 text)))
+             (columns (bcat-analysis-band-columns tables)))
+        (should (equal '("tat" "pārameśvaram" "śrīmat-mahā-ānanda-vijṛmbhitam") (mapcar #'caar columns)))
+        (should-not (cdr (nth 0 columns)))
+        (should (equal '("supreme" "lord" "/vṛddhi/ + -a belonging to") (cdr (nth 1 columns))))
+        (should (equal '("śrīmat: glorious ← /śrī/ glory · /-mat/ having"
+                         "mahā: great"
+                         "ānanda: bliss ← /ā-√nand/ (1) rejoice"
+                         "vijṛmbhitam: unfolding ← /vi-/ apart · /√jṛmbh/ (1) open · /-ita/ ppp"
+                         "…-vijṛmbhitam [tatpuruṣa, head] the unfolding of"
+                         "śrīmat- [karmadhāraya] glorious"
+                         "…-mahā-ānanda- [karmadhāraya] great bliss")
+                       (cdr (nth 2 columns))))
+        (should-not (string-match-p "Word Formation" text))
         (bcat-relayout-file file)
         (should (equal text (bcat-sentence-test--text-of file)))))))
 
 (ert-deftest bcat-sentence-word-formation-open-by-default ()
-  "18.11. (Carsten, after the Tantrāloka reading: the parts of the words
-back at the segment — „ich würde es gerne erstmal standardmäßig nicht
-eingeklappt haben wollen“): C-c u G writes Word Formation without the
-drawer :VISIBILITY: folded, and C-c u L takes it out of a file written
-before; with `bcat-sentence-word-formation-folded' on both write it."
+  "18.11. (Carsten: „erstmal standardmäßig nicht eingeklappt“; the same
+day the parts went under the words in the table): C-c u G writes no
+Word Formation; C-c u L takes the block of a file written before into
+the table, its drawer :VISIBILITY: folded with it.  What stood there
+and belongs to no word stays under Word Formation — open; folded only
+with `bcat-sentence-word-formation-folded'."
   (bcat-sentence-test--with-sa-source
     (bcat-sentence-test--create-n src 1007)
-    (let ((file (tibetan-sentence--filepath 1007 folder src)))
+    (let ((file (tibetan-sentence--filepath 1007 folder src))
+          (count (lambda (re text) (with-temp-buffer (insert text) (how-many re (point-min) (point-max))))))
       (bcat-sentence-test--with-stubs (bcat-sentence-test--sa-answer)
         (bcat-sentence-test--fetch-n src 1007))
-      (should (string-match-p "^\\*\\*\\* Word Formation\n| " (bcat-sentence-test--text-of file)))
-      (should-not (string-match-p ":VISIBILITY:" (bcat-sentence-test--text-of file)))
-      ;; a file written before 18.11.
-      (let ((old (replace-regexp-in-string "^\\*\\*\\* Word Formation\n"
-                                           "*** Word Formation\n:PROPERTIES:\n:VISIBILITY: folded\n:END:\n"
-                                           (bcat-sentence-test--text-of file))))
+      (should-not (string-match-p "Word Formation\\|:VISIBILITY:" (bcat-sentence-test--text-of file)))
+      ;; a file written before 18.11.: a block per segment, folded — in
+      ;; the first a table of no word of the segment
+      (let* ((new (bcat-sentence-test--text-of file))
+             (old (replace-regexp-in-string
+                   "^\\(→ Although [^\n]*\n\n\\)"
+                   (concat "\\1*** Word Formation\n:PROPERTIES:\n:VISIBILITY: folded\n:END:\n"
+                           "| q | r |\n|---+---|\n| s | t |\n\n")
+                   new)))
+        (should-not (equal old new))
         (let ((coding-system-for-write 'utf-8-unix)) (with-temp-file file (insert old)))
-        (should (string-match-p ":VISIBILITY: folded" (bcat-sentence-test--text-of file)))
         (bcat-relayout-file file)
-        (should-not (string-match-p ":VISIBILITY:" (bcat-sentence-test--text-of file)))
-        (should (string-match-p "^\\*\\*\\* Word Formation\n| " (bcat-sentence-test--text-of file))))
+        (let ((text (bcat-sentence-test--text-of file)))
+          (should-not (string-match-p ":VISIBILITY:" text))
+          (should (= 1 (funcall count "^\\*\\*\\* Word Formation$" text)))
+          (should (string-match-p "^\\*\\*\\* Word Formation\n| q | r |\n|---\\+---|\n| s | t |$" text))))
       (let ((bcat-sentence-word-formation-folded t))
         (bcat-relayout-file file)
-        (should (string-match-p "^\\*\\*\\* Word Formation\n:PROPERTIES:\n:VISIBILITY: folded\n:END:\n| "
+        (should (string-match-p "^\\*\\*\\* Word Formation\n:PROPERTIES:\n:VISIBILITY: folded\n:END:\n| q | r |"
                                 (bcat-sentence-test--text-of file)))))))
 
 (ert-deftest bcat-sentence-write-folds-word-formation ()

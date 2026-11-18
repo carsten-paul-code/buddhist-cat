@@ -42,129 +42,92 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 ** <<skt-23>>⟦23⟧ · [[tib-78][Tib. 78]]
 *pañca-ākāra-ātma-vastu-udbhāvanatām upādāya.*
 
-| pañca-ākāra-ātma-vastu-udbhāvanatām | upādāya       |
-| showing a fivefold self-basis       | on account of |
-| f. acc. sg.                         | ger.          |
+| pañca-ākāra-ātma-vastu-udbhāvanatām          | upādāya            |
+| showing a fivefold self-basis                | on account of      |
+| f. acc. sg.                                  | ger.               |
+|----------------------------------------------+--------------------|
+| pañca: five                                  | /upa-/ near          |
+| ākāra: form, mode                            | /ā-/ to              |
+| ātma: self                                   | /√dā/ (3) give, take |
+| vastu: thing                                 |                    |
+| udbhāvanatām: bring forth (caus.) + abstract |                    |
 
 → On account of their bringing to light (udbhāvanatā) the basis of self (ātmavastu) in five modes:
-
-*** Word Formation
-| pañca | ākāra      | ātma | vastu | udbhāvanatām                   |
-|-------+------------+------+-------+--------------------------------|
-| five  | form, mode | self | thing | bring forth (caus.) + abstract |
-
-| upādāya              |
-|----------------------|
-| /upa-/ near          |
-| /ā-/ to              |
-| /√dā/ (3) give, take |
 
 ** <<skt-24>>⟦24⟧ · [[tib-79][Tib. 79]]
 *sa-parigraha-deha-ātma-vastu-udbhāvanatām upādāya.*
 
-| sa-parigraha-deha-ātma-vastu-udbhāvanatām | upādāya       |
-| self-basis: body + possessions            | on account of |
-| f. acc. sg.                               | ger.          |
+| sa-parigraha-deha-ātma-vastu-udbhāvanatām | upādāya            |
+| self-basis: body + possessions            | on account of      |
+| f. acc. sg.                               | ger.               |
+|-------------------------------------------+--------------------|
+| sa: with                                  | /upa-/ near          |
+| parigraha: /pari-/ around · /√grah/ (9) seize | /ā-/ to              |
+| deha: body                                | /√dā/ (3) give, take |
+| ātma: self                                |                    |
+| vastu: thing                              |                    |
+| udbhāvanatām: bringing                    |                    |
 
 → the self-basis that is the body together with its possessions (saparigraha-deha),
-
-*** Word Formation
-| sa   | parigraha         | deha | ātma | vastu | udbhāvanatām |
-|------+-------------------+------+------+-------+--------------|
-| with | /pari-/ around    | body | self | thing | bringing     |
-|      | /√grah/ (9) seize |      |      |       |              |
-
-| upādāya              |
-|----------------------|
-| /upa-/ near          |
-| /ā-/ to              |
-| /√dā/ (3) give, take |
 
 ** <<skt-25>>⟦25⟧ · [[tib-80][Tib. 80]]
 *upabhoga-ātma-vastu-udbhāvanatām upādāya.*
 
-| upabhoga-ātma-vastu-udbhāvanatām | upādāya       |
-| self-basis: experience           | on account of |
-| f. acc. sg.                      | ger.          |
+| upabhoga-ātma-vastu-udbhāvanatām      | upādāya            |
+| self-basis: experience                | on account of      |
+| f. acc. sg.                           | ger.               |
+|---------------------------------------+--------------------|
+| upabhoga: /upa-/ near · /√bhuj/ (7) enjoy | /upa-/ near          |
+| ātma: self                            | /ā-/ to              |
+| vastu: thing                          | /√dā/ (3) give, take |
+| udbhāvanatām: bringing                |                    |
 
 → the self-basis that is experience (upabhoga),
-
-*** Word Formation
-| upabhoga          | ātma | vastu | udbhāvanatām |
-|-------------------+------+-------+--------------|
-| /upa-/ near       | self | thing | bringing     |
-| /√bhuj/ (7) enjoy |      |       |              |
-
-| upādāya              |
-|----------------------|
-| /upa-/ near          |
-| /ā-/ to              |
-| /√dā/ (3) give, take |
 
 ** <<skt-26>>⟦26⟧ · [[tib-81][Tib. 81]]
 *vyavahāra-ātma-vastu-udbhāvanatām upādāya.*
 
-| vyavahāra-ātma-vastu-udbhāvanatām | upādāya       |
-| self-basis: expression            | on account of |
-| f. acc. sg.                       | ger.          |
+| vyavahāra-ātma-vastu-udbhāvanatām                | upādāya            |
+| self-basis: expression                           | on account of      |
+| f. acc. sg.                                      | ger.               |
+|--------------------------------------------------+--------------------|
+| vyavahāra: /vi-/ apart · /ava-/ down · /√hṛ/ (1) carry | /upa-/ near          |
+| ātma: self                                       | /ā-/ to              |
+| vastu: thing                                     | /√dā/ (3) give, take |
+| udbhāvanatām: bringing                           |                    |
 
 → the self-basis that is conventional expression (vyavahāra),
-
-*** Word Formation
-| vyavahāra       | ātma | vastu | udbhāvanatām |
-|-----------------+------+-------+--------------|
-| /vi-/ apart     | self | thing | bringing     |
-| /ava-/ down     |      |       |              |
-| /√hṛ/ (1) carry |      |       |              |
-
-| upādāya              |
-|----------------------|
-| /upa-/ near          |
-| /ā-/ to              |
-| /√dā/ (3) give, take |
 
 ** <<skt-27>>⟦27⟧ · [[tib-82][Tib. 82]]
 *dharma-adharma-abhisaṃskāra-ātma-vastu-udbhāvanatām upādāya.*
 
-| dharma-adharma-abhisaṃskāra-ātma-vastu-udbhāvanatām | upādāya       |
-| self-basis: forming (de)merit                       | on account of |
-| f. acc. sg.                                         | ger.          |
+| dharma-adharma-abhisaṃskāra-ātma-vastu-udbhāvanatām       | upādāya            |
+| self-basis: forming (de)merit                             | on account of      |
+| f. acc. sg.                                               | ger.               |
+|-----------------------------------------------------------+--------------------|
+| dharma: merit                                             | /upa-/ near          |
+| adharma: not · merit                                      | /ā-/ to              |
+| abhisaṃskāra: /abhi-/ toward · /sam-/ together · /√kṛ/ (8) make | /√dā/ (3) give, take |
+| ātma: self                                                |                    |
+| vastu: thing                                              |                    |
+| udbhāvanatām: bringing                                    |                    |
 
 → the self-basis that is the forming of merit and demerit (dharmādharmābhisaṃskāra),
-
-*** Word Formation
-| dharma | adharma | abhisaṃskāra    | ātma | vastu | udbhāvanatām |
-|--------+---------+-----------------+------+-------+--------------|
-| merit  | not     | /abhi-/ toward  | self | thing | bringing     |
-|        | merit   | /sam-/ together |      |       |              |
-|        |         | /√kṛ/ (8) make  |      |       |              |
-
-| upādāya              |
-|----------------------|
-| /upa-/ near          |
-| /ā-/ to              |
-| /√dā/ (3) give, take |
 
 ** <<skt-28>>⟦28⟧ · [[tib-83][Tib. 83]]
 *tad-āśraya-ātma-vastu-udbhāvanatām upādāya.*
 
-| tad-āśraya-ātma-vastu-udbhāvanatām | upādāya       |
-| self-basis: their support          | on account of |
-| f. acc. sg.                        | ger.          |
+| tad-āśraya-ātma-vastu-udbhāvanatām | upādāya            |
+| self-basis: their support          | on account of      |
+| f. acc. sg.                        | ger.               |
+|------------------------------------+--------------------|
+| tad: that                          | /upa-/ near          |
+| āśraya: /ā-/ to · /√śri/ (1) lean on   | /ā-/ to              |
+| ātma: self                         | /√dā/ (3) give, take |
+| vastu: thing                       |                    |
+| udbhāvanatām: bringing             |                    |
 
 → and the self-basis that is the support of these (tadāśraya).
-
-*** Word Formation
-| tad  | āśraya             | ātma | vastu | udbhāvanatām |
-|------+--------------------+------+-------+--------------|
-| that | /ā-/ to            | self | thing | bringing     |
-|      | /√śri/ (1) lean on |      |       |              |
-
-| upādāya              |
-|----------------------|
-| /upa-/ near          |
-| /ā-/ to              |
-| /√dā/ (3) give, take |
 
 ** Translation
 *Translation:* Why are there just five aggregates (skandha)? — On account of their bringing to light (udbhāvanatā) the basis of self (ātmavastu) in five modes: the self-basis that is the body together with its possessions (saparigraha-deha), the self-basis that is experience (upabhoga), the self-basis that is conventional expression (vyavahāra), the self-basis that is the forming of merit and demerit (dharmādharmābhisaṃskāra), and the self-basis that is the support of these (tadāśraya).

@@ -31,6 +31,7 @@
 (declare-function bcat-relayout-file-context "bcat-relayout" (file))
 (declare-function bcat-export-info "bcat-export" (file))
 (declare-function bcat-analysis--table-columns "bcat-analysis" (table))
+(declare-function bcat-analysis-band-columns "bcat-analysis" (tables))
 (declare-function bcat-analysis-plain-cell "bcat-analysis" (cell))
 (declare-function bcat-sentence-file-p "bcat-sentence" (file))
 (declare-function bcat-sentence-owner "bcat-sentence" (n source))
@@ -297,15 +298,19 @@ text, so that a column stays one word with its gloss (5.11., TĀ 1.1
         (push line band)))
     (nreverse bands)))
 
-(defun bcat-zettel--passage (table term)
+(defun bcat-zettel--passage (table term &optional sanskrit)
   "(WORD . GLOSS) of the column of TABLE (a segment's overview) whose word
 holds TERM, or nil: the word is the first cell — under a cell in
 Tibetan script the transcription below it —, the gloss the next cell.
 Only the word is searched: a term that turns up in a gloss is no word
-of the text."
+of the text.  SANSKRIT: the table of a Sanskrit segment — under its
+rule stands what explains the words (18.11.,
+`bcat-analysis-band-columns'), no words of the text."
   (let ((key (tibetan-zettel-highlight--norm-key term)))
     (when (and table (>= (length key) 3))
-      (cl-loop for col in (cl-mapcan #'bcat-analysis--table-columns (bcat-zettel--bands table))
+      (cl-loop for col in (if sanskrit
+                              (mapcar #'car (bcat-analysis-band-columns table))
+                            (cl-mapcan #'bcat-analysis--table-columns (bcat-zettel--bands table)))
                for cells = (mapcar #'bcat-analysis-plain-cell col)
                for w = (if (and (cdr cells) (string-match-p "[\u0F00-\u0FFF]" (car cells))) 1 0)
                for words = (cl-subseq cells 0 (1+ w))
@@ -380,12 +385,17 @@ zettels its concept notes link to: per segment and linked term that
 stands in the segment's text the line „- LABEL ⟦N⟧: /word/ — what it
 means there (CAT: link)“.  Returns the zettel files changed."
   (let* ((changed '())
+         ;; 18.11.: the segments of a Sanskrit file — the parts of the
+         ;; words stand under them in the table
+         (sanskrit (and (fboundp 'bcat-sentence-file-p)
+                        (member (bcat-sentence-file-p file) '("sanskrit" "bilingual"))
+                        t))
          (file-mark (format "(CAT: [[file:%s::" (abbreviate-file-name file)))
          (target (format "[[file:%s::*Concepts][%s]]" (abbreviate-file-name file) link-label)))
     (dolist (s (and (bcat-zettel--index-p) (alist-get 'segments context)))
       (dolist (pair (bcat-zettel--terms (or (alist-get 'concepts s) "")))
         (let* ((path (tibetan-zettel-highlight--entry-path (car pair)))
-               (passage (bcat-zettel--passage (alist-get 'gloss-table s) (cdr pair)))
+               (passage (bcat-zettel--passage (alist-get 'gloss-table s) (cdr pair) sanskrit))
                (place (format "%s ⟦%s⟧" label (alist-get 'num s)))
                (line (and passage
                           (format "- %s: /%s/ — %s (CAT: %s)" place (car passage) (cdr passage) target))))

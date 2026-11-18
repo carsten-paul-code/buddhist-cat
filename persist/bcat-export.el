@@ -265,6 +265,8 @@ vergleich-ta1-1.org, `bcat-analysis--rating-colours')."
    "#+LATEX_HEADER: \\definecolor{ok}{RGB}{200,235,200}\\definecolor{mid}{RGB}{250,235,160}\\definecolor{bad}{RGB}{245,190,185}\n"
    (format "#+LATEX_HEADER: \\definecolor{bcatgloss}{HTML}{%s}\n" bcat-export-gloss-color)
    "#+LATEX_HEADER: \\newcommand{\\bcatg}[1]{\\textcolor{bcatgloss}{#1}}\n"
+   ;; 18.11.: black inside a row of parts (member and meaning)
+   "#+LATEX_HEADER: \\newcommand{\\bcatk}[1]{\\textcolor{black}{#1}}\n"
    ;; 9.11. (TĀ 1009): the original under ⟦N⟧ on a line of its own
    ;; (\\\\: the mark before it in the same paragraph), the segment's
    ;; translation, the small title over the parts of the words.
@@ -531,7 +533,10 @@ like \\hline (18.11.)."
                    (let* ((b (nreverse band)) (n (length b))
                           (uchen (and b (string-match-p "[\u0F00-\u0FFF]" (car b)))))
                      (cl-loop for r in b for i from 0
-                              unless (or (= i 0) (and uchen (= i 1)) (= i (- n 2)))
+                              unless (or (= i 0) (and uchen (= i 1)) (= i (- n 2))
+                                         ;; 18.11.: a row that carries its
+                                         ;; colours (the parts under the words)
+                                         (string-match-p "\\\\bcat[gk]{" r))
                               do (push r blue)))
                    (setq band '())))))
         (mapconcat
@@ -943,17 +948,102 @@ first, and from *Decisions:* (*Entscheidungen:*) on what justifies them
     (cons (string-trim (if cut (substring proposal 0 cut) proposal))
           (if cut (string-trim (substring proposal cut)) ""))))
 
-(defun bcat-export--view-context (context)
+(defun bcat-export--tex (s)
+  "S, the text of a table cell, as LaTeX: the special characters escaped
+\(`bcat-export--latex-escape'), /x/ in italics, the bar of a cell
+\(\\vert) a bar — for a cell set in an export snippet, which org does
+not read."
+  (let ((re "\\(\\`\\|[ \t('\"{-]\\)/\\([^/ \t\n]\\(?:[^/\n]*[^/ \t\n]\\)?\\)/\\(\\'\\|[ \t.,:;!?')}\"-]\\)")
+        (plain (lambda (text)
+                 (mapconcat #'bcat-export--latex-escape
+                            (split-string text "\\\\vert\\(?:{}\\)?") "\\textbar{}")))
+        (s (or s "")) (pos 0) (out ""))
+    (while (string-match re s pos)
+      (setq out (concat out
+                        (funcall plain (substring s pos (match-end 1)))
+                        "\\emph{" (funcall plain (match-string 2 s)) "}")
+            pos (match-beginning 3)))
+    (concat out (funcall plain (substring s pos)))))
+
+(defun bcat-export--resolution-line-p (cell)
+  "Non-nil when CELL under a compound is a step of its resolution —
+„MEMBERS [RELATION] WORDS“ (`bcat-analysis--resolution-lines')."
+  (string-match-p "\\`[^ ]+ \\[[^]]*\\] " cell))
+
+(defun bcat-export--sub-cell (cell)
+  "CELL, what stands under a word in the table of a Sanskrit segment, for
+the PDF — an export snippet with its colours: the parts of a word in
+\\bcatg; of a compound's line „MEMBER: MEANING ← PARTS“ member and
+meaning in \\bcatk (black), „← PARTS“ in \\bcatg; „MEMBER: PARTS“ the
+member black, the parts in \\bcatg; „MEMBER: MEANING“ black."
+  (let ((cell (string-trim (or cell ""))))
+    (cond
+     ((string-empty-p cell) "")
+     ((string-match "\\`\\([^ /:|]+:\\) \\(.*\\)\\'" cell)
+      (let ((head (match-string 1 cell)) (rest (match-string 2 cell)))
+        (cond ((string-match "[ \t]*←" rest)
+               (format "@@latex:\\bcatk{%s} \\bcatg{%s}@@"
+                       (bcat-export--tex (concat head " " (substring rest 0 (match-beginning 0))))
+                       (bcat-export--tex (string-trim (substring rest (match-beginning 0))))))
+              ((not (equal rest (bcat-analysis--strip-emphasis rest)))
+               (format "@@latex:\\bcatk{%s} \\bcatg{%s}@@" (bcat-export--tex head) (bcat-export--tex rest)))
+              (t (format "@@latex:\\bcatk{%s}@@" (bcat-export--tex cell))))))
+     (t (format "@@latex:\\bcatg{%s}@@" (bcat-export--tex cell))))))
+
+(defun bcat-export--band-table (chunk cell-width)
+  "CHUNK — columns (OVER . SUB) of a Sanskrit segment — as an org table
+for the export: the overview (a cell wider than CELL-WIDTH broken), a
+rule, the rows under it with their colours (`bcat-export--sub-cell').
+Not aligned — nobody reads the export copy."
+  (let* ((over (bcat-analysis-wrap-rows
+                (cl-loop for r below (apply #'max 0 (mapcar (lambda (c) (length (car c))) chunk))
+                         collect (mapcar (lambda (c) (or (nth r (car c)) "")) chunk))
+                cell-width))
+         (depth (apply #'max 0 (mapcar (lambda (c) (length (cdr c))) chunk)))
+         (sub (cl-loop for r below depth
+                       collect (mapcar (lambda (c) (bcat-export--sub-cell (or (nth r (cdr c)) ""))) chunk)))
+         (line (lambda (row) (concat "| " (string-join row " | ") " |"))))
+    (string-join (append (mapcar line over) (and sub (cons "|-" (mapcar line sub)))) "\n")))
+
+(defun bcat-export-sanskrit-page-tables (tables)
+  "TABLES, the tables of a Sanskrit segment as its file holds them — the
+parts of the words under them (18.11.) —, for the page of the PDF: laid
+out anew for its width (`bcat-export-table-width', 6 per column,
+`bcat-analysis--band-chunks'), the rows under the rule with their
+colours (`bcat-export--band-table'), without the steps of a compound's
+resolution (Carsten 18.11.: „Für das PDF ist das 1. Bild ok“ — they
+made the segment run over its page; the file has them).  Tables without
+anything under their words, or in another form, come back as they are:
+`bcat-export--rechunk-gloss-tables' lays them out."
+  (let ((columns (bcat-analysis-band-columns tables)))
+    (if (or (null columns)
+            (cl-some (lambda (c) (/= 3 (length (car c)))) columns)
+            (cl-notany #'cdr columns))
+        tables
+      (let* ((columns (mapcar (lambda (c)
+                                (cons (car c) (cl-remove-if #'bcat-export--resolution-line-p (cdr c))))
+                              columns))
+             (best (bcat-analysis--band-chunks columns bcat-export-table-width 6 bcat-analysis-cell-width)))
+        (mapconcat (lambda (chunk) (bcat-export--band-table chunk (cdr best))) (car best) "\n\n")))))
+
+(defun bcat-export--view-context (context &optional template)
   "CONTEXT (`bcat-relayout-file-context') with the fields of the PDF view:
 the proposed translation without its decisions — they belong to the
 discussion (`decisions'), the translation is read first —; per segment
 `detail-p' and `grammar-link' (the link from ⟦N⟧ to its grammar, only
 when there is some); whether the parts Grammar, Concepts, Discussion,
 Notes have anything (`grammar-p', `concepts-p', `discussion-p',
-`translations-p', `notes-p')."
+`translations-p', `notes-p').  TEMPLATE, the template of the file:
+the tables of its Sanskrit segments are laid out for the page (18.11.)."
   (let* ((split (bcat-export--split-proposal (or (alist-get 'proposal context) "")))
          (proposal (car split))
          (decisions (cdr split))
+         ;; 18.11.: the tables of a Sanskrit segment for the page — the
+         ;; parts under the words, coloured (`bcat-export-sanskrit-page-tables')
+         (page (lambda (s)
+                 (if (bcat-export--filled-p (alist-get 'gloss-table s))
+                     (cons (cons 'gloss-table (bcat-export-sanskrit-page-tables (alist-get 'gloss-table s))) s)
+                   s)))
          (segments (mapcar (lambda (s)
                              (let ((detail (cl-some (lambda (f) (bcat-export--filled-p (alist-get f s)))
                                                     bcat-export--detail-fields)))
@@ -962,12 +1052,14 @@ Notes have anything (`grammar-p', `concepts-p', `discussion-p',
                                                               (format " · [[#grammar-%s][Grammar]]"
                                                                       (alist-get 'num s))
                                                             "")))
-                                       s)))
+                                       (if (member template '("sanskrit" "bilingual")) (funcall page s) s))))
                            (alist-get 'segments context)))
          (filled (lambda (key) (bcat-export--filled-p (alist-get key context))))
          (any (lambda (key items) (cl-some (lambda (s) (bcat-export--filled-p (alist-get key s))) items))))
     (append
      `((segments . ,segments)
+       ,@(and (equal template "bilingual-tibetan")
+              `((sanskrit-segments . ,(mapcar page (alist-get 'sanskrit-segments context)))))
        (lectures . ,(let ((cited (prin1-to-string (cl-remove 'lectures context :key #'car))))
                       (mapcar (lambda (l)
                                 (cons (cons 'excerpt (bcat-export--lecture-excerpt
@@ -1013,7 +1105,8 @@ comma).  nil without a pdf template."
         (unless (plist-get read :error)
           (let* ((context (bcat-export--view-context
                            ;; 16.11.: „Prüfen:“ in the PDF as in the file
-                           (bcat-analysis-with-padapatha-checks (plist-get read :context))))
+                           (bcat-analysis-with-padapatha-checks (plist-get read :context))
+                           template))
                  (lectures (alist-get 'lectures context)))
             (list :view (bcat-template-render-named name context (plist-get read :source))
                   :lectures (and lectures (bcat-template-find "pdf-lectures" source)

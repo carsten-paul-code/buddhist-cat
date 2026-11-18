@@ -340,17 +340,21 @@ sentence translation.  ASSIGNMENT from the segment headings."
                                   ;; overview and parts tables.
                                   (split (and table (bcat-analysis-split-word-tables table)))
                                   (table (if split (nth 0 split) table))
-                                  ;; 18.11.: the words of one member in ONE table
-                                  (formation (bcat-analysis-merge-word-tables
-                                              (or (alist-get 'formation-tables f) (nth 1 split))
-                                              (bcat-analysis-table-words table))))
+                                  ;; 18.11.: the other language is Sanskrit (this
+                                  ;; file the Tibetan one) — the parts of the
+                                  ;; words under them in the table, also what a
+                                  ;; file written before holds under Word Formation
+                                  (new (and table (not sanskrit-file)
+                                            (bcat-analysis-sanskrit-relayout-tables
+                                             table (alist-get 'formation-tables f))))
+                                  (formation (if new (nth 1 new) (alist-get 'formation-tables f))))
                              (append
                               (and table
                                    ;; 4.11./5.11.: compact, as in the partner file.
-                                   `((gloss-table . ,(car (bcat-analysis-compact-tables
-                                                           (if sanskrit-file
-                                                               (bcat-analysis-uchen-table table (alist-get 'uchen o))
-                                                             table))))))
+                                   `((gloss-table . ,(if new
+                                                         (nth 0 new)
+                                                       (car (bcat-analysis-compact-tables
+                                                             (bcat-analysis-uchen-table table (alist-get 'uchen o))))))))
                               (and formation (not (string-empty-p formation))
                                    `((formation-tables . ,formation)))
                               (and (alist-get 'segment-translation f)
@@ -417,21 +421,28 @@ segments per segment come from there (Carsten 1.11.)."
                                  ;; 4.11.: compact tables — a long function
                                  ;; cut, its rest a line of Structure; 5.11.
                                  ;; every language (Sanskrit: the form, wide
-                                 ;; cells broken at their members).
-                                 (let ((compact (bcat-analysis-compact-tables
-                                                 (alist-get 'gloss-table fields))))
-                                   (setf (alist-get 'gloss-table fields) (car compact))
-                                   (when (cdr compact)
-                                     (setf (alist-get 'structure fields)
-                                           (bcat-analysis--with-overflow (alist-get 'structure fields)
-                                                                         (cdr compact)))))
-                                 ;; 18.11.: the words of one member in ONE
-                                 ;; table, after the compounds.
-                                 (when (alist-get 'formation-tables fields)
-                                   (setf (alist-get 'formation-tables fields)
-                                         (bcat-analysis-merge-word-tables
-                                          (alist-get 'formation-tables fields)
-                                          (bcat-analysis-table-words (alist-get 'gloss-table fields))))))
+                                 ;; cells broken at their members).  18.11.:
+                                 ;; a Sanskrit segment has the parts of its
+                                 ;; words under them in the table — also what
+                                 ;; a file written before holds under Word
+                                 ;; Formation; what belongs to no word stays there.
+                                 (if (member template '("sanskrit" "bilingual"))
+                                     (let ((new (bcat-analysis-sanskrit-relayout-tables
+                                                 (alist-get 'gloss-table fields)
+                                                 (alist-get 'formation-tables fields))))
+                                       (setf (alist-get 'gloss-table fields) (nth 0 new))
+                                       (setf (alist-get 'formation-tables fields) (nth 1 new))
+                                       (when (nth 2 new)
+                                         (setf (alist-get 'structure fields)
+                                               (bcat-analysis--with-overflow (alist-get 'structure fields)
+                                                                             (nth 2 new)))))
+                                   (let ((compact (bcat-analysis-compact-tables
+                                                   (alist-get 'gloss-table fields))))
+                                     (setf (alist-get 'gloss-table fields) (car compact))
+                                     (when (cdr compact)
+                                       (setf (alist-get 'structure fields)
+                                             (bcat-analysis--with-overflow (alist-get 'structure fields)
+                                                                           (cdr compact)))))))
                                (append fields seg)))
                            (alist-get 'segments base)))
          (pair (and other (bcat-relayout--pair-fields template segments assignment

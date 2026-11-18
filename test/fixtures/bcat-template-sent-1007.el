@@ -29,18 +29,13 @@ tatpārameśvaraṃ śrīman|mahānandavijṛmbhitam // 7")
       (padapatha . "atra mad-vāk aśaktā api yat niyantraṇam ullaset /")
       (samhita . "atra madvāgaśaktāpi yanniyantraṇamullaset /")
       (glossed . "atra [here] mad-vāk [my speech] aśaktā [incapable] api [although] yat [whatever] niyantraṇam [control] ullaset [may shine forth] /")
-      (gloss-table . "| atra | mad-vāk     | aśaktā           | api      | yat               | niyantraṇam | ullaset         |
-| here | my speech   | incapable        | although | whatever          | control     | may shine forth |
-| ind. | f. nom. sg. | ppp. f. nom. sg. | ind.     | pron. n. nom. sg. | n. nom. sg. | opt. 3 sg. P    |")
-      (formation-tables . "| mad | vāk    |
-|-----+--------|
-| my  | speech |
-
-| aśaktā             | niyantraṇam            | ullaset          |
-|--------------------+------------------------+------------------|
-| /a-/ not           | /ni-/ in               | /ud-/ up         |
-| /√śak/ (5) be able | /√yantr/ (10) restrain | /√las/ (1) shine |
-| /-ta/ ppp          | /-ana/ action          |                  |")
+      (gloss-table . "| atra | mad-vāk     | aśaktā           | api      | yat               | niyantraṇam          | ullaset         |
+| here | my speech   | incapable        | although | whatever          | control              | may shine forth |
+| ind. | f. nom. sg. | ppp. f. nom. sg. | ind.     | pron. n. nom. sg. | n. nom. sg.          | opt. 3 sg. P    |
+|------+-------------+------------------+----------+-------------------+----------------------+-----------------|
+|      | mad: my     | /a-/ not           |          |                   | /ni-/ in               | /ud-/ up          |
+|      | vāk: speech | /√śak/ (5) be able |          |                   | /√yantr/ (10) restrain | /√las/ (1) shine  |
+|      |             | /-ta/ ppp          |          |                   | /-ana/ action          |                 |")
       (segment-translation . "Although my speech (vāc) is incapable (aśakta) here, whatever control (niyantraṇa) may shine forth (ullaset) —")
       (translations . "⟦685⟧ *Translation:* Although my speech (vāc) is incapable (aśakta) here, whatever control (niyantraṇa) may shine forth (ullaset) — \\\\
 *Dyczkowski 2023:* Although my speech is powerless here (in this task), whatever *restriction* may arise (on one's understanding of the teachings is not my fault, rather) \\\\
@@ -61,20 +56,14 @@ tatpārameśvaraṃ śrīman|mahānandavijṛmbhitam // 7")
       (padapatha . "tat pārameśvaram śrīmat-mahā-ānanda-vijṛmbhitam // 7")
       (samhita . "tatpārameśvaraṃ śrīmanmahānandavijṛmbhitam // 7")
       (glossed . "tat [that] pārameśvaram [the Supreme Lord's] śrīmat-mahā-ānanda-vijṛmbhitam [unfolding of glorious great bliss] //")
-      (gloss-table . "| tat               | pārameśvaram       | śrīmat-mahā-ānanda-vijṛmbhitam    |
-| that              | the Supreme Lord's | unfolding of glorious great bliss |
-| pron. n. nom. sg. | adj. n. nom. sg.   | n. nom. sg.                       |")
-      (formation-tables . "| śrīmat        | mahā  | ānanda                | vijṛmbhitam       |
-|---------------+-------+-----------------------+-------------------|
-| /śrī/ glory   | great | /ā-√nand/ (1) rejoice | /vi-/ apart       |
-| /-mat/ having |       |                       | /√jṛmbh/ (1) open |
-|               |       |                       | /-ita/ ppp        |
-
-| pārameśvaram               |
-|----------------------------|
-| supreme                    |
-| lord                       |
-| /vṛddhi/ + -a belonging to |")
+      (gloss-table . "| tat               | pārameśvaram             | śrīmat-mahā-ānanda-vijṛmbhitam                      |
+| that              | the Supreme Lord's       | unfolding of glorious great bliss                   |
+| pron. n. nom. sg. | adj. n. nom. sg.         | n. nom. sg.                                         |
+|-------------------+--------------------------+-----------------------------------------------------|
+|                   | supreme                  | śrīmat: /śrī/ glory · /-mat/ having                     |
+|                   | lord                     | mahā: great                                         |
+|                   | /vṛddhi/ + -a belonging to | ānanda: /ā-√nand/ (1) rejoice                         |
+|                   |                          | vijṛmbhitam: /vi-/ apart · /√jṛmbh/ (1) open · /-ita/ ppp |")
       (segment-translation . "that belongs to the Supreme Lord (pārameśvara): it is the unfolding (vijṛmbhita) of glorious great bliss (mahānanda).")
       (translations . "⟦686⟧ *Translation:* that belongs to the Supreme Lord (pārameśvara): it is the unfolding (vijṛmbhita) of glorious great bliss (mahānanda). \\\\
 *Dyczkowski 2023:* that is (all) the venerable expansion of the Supreme Lord's great bliss (which both hides and reveals the truth). (7) \\\\
