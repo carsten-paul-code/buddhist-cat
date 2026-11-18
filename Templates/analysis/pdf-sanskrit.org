@@ -80,6 +80,12 @@ die Datei den Abschnitt hat.
 @@latex:\bcattrans{@@→ {{segment-translation}}@@latex:}@@
 
 {{/segment-translation}}
+{{#formation-tables}}
+@@latex:\bcatsub{@@Word Formation@@latex:}@@
+
+{{formation-tables}}
+
+{{/formation-tables}}
 {{/gloss-table}}
 {{/segments}}
 {{> pdf-part-grammar}}

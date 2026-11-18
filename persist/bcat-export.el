@@ -860,8 +860,10 @@ other non-nil value."
   (if (stringp value) (not (string-blank-p value)) (and value t)))
 
 (defconst bcat-export--detail-fields
-  '(formation-tables sandhi forms compounds structure note)
-  "The fields of a segment that go into the part Grammar of the PDF.")
+  '(sandhi forms compounds structure note)
+  "The fields of a segment that go into the part Grammar of the PDF —
+since 18.11. not the parts of its words (`formation-tables'): they
+stand under its translation in the part Segments.")
 
 (defun bcat-export--lecture-paragraphs (body)
   "The paragraphs of the lecture BODY as ((SECONDS . PARAGRAPH) …) — each
@@ -944,8 +946,7 @@ Notes have anything (`grammar-p', `concepts-p', `discussion-p',
        (proposal . ,proposal)
        (decisions . ,decisions)
        (grammar-p . ,(or (funcall filled 'grammar)
-                         (cl-some (lambda (s) (alist-get 'detail-p s)) segments)
-                         (funcall any 'formation-tables (alist-get 'sanskrit-segments context))))
+                         (cl-some (lambda (s) (alist-get 'detail-p s)) segments)))
        (concepts-p . ,(funcall any 'concepts segments))
        (translations-p . ,(funcall any 'translations segments))
        (discussion-p . ,(or (bcat-export--filled-p decisions)

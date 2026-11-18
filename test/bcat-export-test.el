@@ -890,8 +890,9 @@ ersten).  Ein Dokument mit interner Verknüpfung gibt keine Warnung."
 (ert-deftest bcat-export-view-sanskrit ()
   "Carsten 5.11.: the PDF is one document with jump marks, not the file
 in its order — Reading (the recitation, the translation), Segments (the
-overview of the words, → per segment), Grammar (the parts of the words,
-the grammar, per segment sandhi, forms, compounds, structure), Concepts,
+overview of the words, → per segment, since 18.11. the parts of the
+words under it), Grammar (the grammar, per segment sandhi, forms,
+compounds, structure — until 18.11. the parts of the words), Concepts,
 Discussion; each part with a CUSTOM_ID (a page of its own, a link in
 the bar).  Rendered from the fields C-c u L reads back; the file stays
 as it is; no request; no Word Analysis."
@@ -931,10 +932,16 @@ as it is; no request; no Word Analysis."
                  segments))
         (should (string-match-p "^@@latex:\\\\bcattrans{@@→ Although my speech .*@@latex:}@@$" segments))
         (should-not (string-match-p "^→ " segments))
-        (should (string-match-p (regexp-quote (concat ":CUSTOM_ID: grammar-685\n:END:\n"
-                                                      "@@latex:\\bcatsub{@@Word Formation@@latex:}@@\n\n| mad"))
-                                grammar))
-        (should-not (string-match-p "^|-\\|^/mad-vāk/\\|\\*Forms:\\*" segments))
+        ;; 18.11. (Carsten, TĀ 1016: „dann aber auch noch sagen was ich
+        ;; wie übersetze, was z.B. die root ist“): the parts of the
+        ;; words under the translation of their segment, under the
+        ;; small title — in the grammar they were two pages away.
+        (should (string-match-p
+                 (concat "^@@latex:\\\\bcattrans{@@→ Although my speech .*@@latex:}@@\n\n"
+                         (regexp-quote "@@latex:\\bcatsub{@@Word Formation@@latex:}@@\n\n| mad"))
+                 segments))
+        (should-not (string-match-p "Word Formation\\|^| mad " grammar))
+        (should-not (string-match-p "^/mad-vāk/\\|\\*Forms:\\*" segments))
         (should (string-match-p "^\\*Grammar:\\* Two clauses\\." grammar))
         (should (string-match-p "^\\*\\* ⟦685⟧\n:PROPERTIES:\n:CUSTOM_ID: grammar-685\n:END:$" grammar))
         (should (string-match-p "^\\*Forms:\\*\n- /mad-vāk/ — vāc- f\\." grammar))
