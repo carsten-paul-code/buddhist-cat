@@ -36,22 +36,11 @@ tatpārameśvaraṃ śrīman|mahānandavijṛmbhitam // 7")
 |-----+--------|
 | my  | speech |
 
-| aśaktā             |
-|--------------------|
-| /a-/ not           |
-| /√śak/ (5) be able |
-| /-ta/ ppp          |
-
-| niyantraṇam            |
-|------------------------|
-| /ni-/ in               |
-| /√yantr/ (10) restrain |
-| /-ana/ action          |
-
-| ullaset          |
-|------------------|
-| /ud-/ up         |
-| /√las/ (1) shine |")
+| aśaktā             | niyantraṇam            | ullaset          |
+|--------------------+------------------------+------------------|
+| /a-/ not           | /ni-/ in               | /ud-/ up         |
+| /√śak/ (5) be able | /√yantr/ (10) restrain | /√las/ (1) shine |
+| /-ta/ ppp          | /-ana/ action          |                  |")
       (segment-translation . "Although my speech (vāc) is incapable (aśakta) here, whatever control (niyantraṇa) may shine forth (ullaset) —")
       (translations . "⟦685⟧ *Translation:* Although my speech (vāc) is incapable (aśakta) here, whatever control (niyantraṇa) may shine forth (ullaset) — \\\\
 *Dyczkowski 2023:* Although my speech is powerless here (in this task), whatever *restriction* may arise (on one's understanding of the teachings is not my fault, rather) \\\\
@@ -75,17 +64,17 @@ tatpārameśvaraṃ śrīman|mahānandavijṛmbhitam // 7")
       (gloss-table . "| tat               | pārameśvaram       | śrīmat-mahā-ānanda-vijṛmbhitam    |
 | that              | the Supreme Lord's | unfolding of glorious great bliss |
 | pron. n. nom. sg. | adj. n. nom. sg.   | n. nom. sg.                       |")
-      (formation-tables . "| pārameśvaram               |
-|----------------------------|
-| supreme                    |
-| lord                       |
-| /vṛddhi/ + -a belonging to |
-
-| śrīmat        | mahā  | ānanda                | vijṛmbhitam       |
+      (formation-tables . "| śrīmat        | mahā  | ānanda                | vijṛmbhitam       |
 |---------------+-------+-----------------------+-------------------|
 | /śrī/ glory   | great | /ā-√nand/ (1) rejoice | /vi-/ apart       |
 | /-mat/ having |       |                       | /√jṛmbh/ (1) open |
-|               |       |                       | /-ita/ ppp        |")
+|               |       |                       | /-ita/ ppp        |
+
+| pārameśvaram               |
+|----------------------------|
+| supreme                    |
+| lord                       |
+| /vṛddhi/ + -a belonging to |")
       (segment-translation . "that belongs to the Supreme Lord (pārameśvara): it is the unfolding (vijṛmbhita) of glorious great bliss (mahānanda).")
       (translations . "⟦686⟧ *Translation:* that belongs to the Supreme Lord (pārameśvara): it is the unfolding (vijṛmbhita) of glorious great bliss (mahānanda). \\\\
 *Dyczkowski 2023:* that is (all) the venerable expansion of the Supreme Lord's great bliss (which both hides and reveals the truth). (7) \\\\

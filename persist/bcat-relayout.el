@@ -340,7 +340,10 @@ sentence translation.  ASSIGNMENT from the segment headings."
                                   ;; overview and parts tables.
                                   (split (and table (bcat-analysis-split-word-tables table)))
                                   (table (if split (nth 0 split) table))
-                                  (formation (or (alist-get 'formation-tables f) (nth 1 split))))
+                                  ;; 18.11.: the words of one member in ONE table
+                                  (formation (bcat-analysis-merge-word-tables
+                                              (or (alist-get 'formation-tables f) (nth 1 split))
+                                              (bcat-analysis-table-words table))))
                              (append
                               (and table
                                    ;; 4.11./5.11.: compact, as in the partner file.
@@ -421,7 +424,14 @@ segments per segment come from there (Carsten 1.11.)."
                                    (when (cdr compact)
                                      (setf (alist-get 'structure fields)
                                            (bcat-analysis--with-overflow (alist-get 'structure fields)
-                                                                         (cdr compact))))))
+                                                                         (cdr compact)))))
+                                 ;; 18.11.: the words of one member in ONE
+                                 ;; table, after the compounds.
+                                 (when (alist-get 'formation-tables fields)
+                                   (setf (alist-get 'formation-tables fields)
+                                         (bcat-analysis-merge-word-tables
+                                          (alist-get 'formation-tables fields)
+                                          (bcat-analysis-table-words (alist-get 'gloss-table fields))))))
                                (append fields seg)))
                            (alist-get 'segments base)))
          (pair (and other (bcat-relayout--pair-fields template segments assignment

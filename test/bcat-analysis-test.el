@@ -2047,7 +2047,11 @@ twice.  A word of one member is a table of one column — the word, its
 parts below (Carsten 9.11., TĀ 1009: „der Formatwechsel (Tabelle/
 Fließtext) verwirrt mich“; before, a line „/jananī/: …“); a word
 without parts (ca) nothing.  Expected text drawn up apart from the
-code, from the agreed draft."
+code, from the agreed draft.
+18.11. (Carsten, TĀ 1016: the parts back at the segment, „ohne allzu
+viel an kompakter Lesbarkeit zu verlieren“): the compounds first, in
+the order of the words, then the words of one member together in ONE
+table, a word a column — a table for each took a page of the PDF."
   (should (equal "| vimala               | kalā        | āśrayā            |
 |----------------------+-------------+-------------------|
 | /vi-/ apart          | part, power | /ā-/ unto         |
@@ -2059,11 +2063,6 @@ code, from the agreed draft."
 | /abhi-/ toward       | creation (√sṛj) | /mahas/ radiance, glory |
 | /nava/ new, ever-new |                 |                         |
 
-| jananī             |
-|--------------------|
-| /√jan/ (1) be born |
-| /-anī/ f. agent    |
-
 | bharita                  | tanuḥ               |
 |--------------------------+---------------------|
 | /√bhṛ/ (1) bear, be full | /tanu/ body, nature |
@@ -2074,11 +2073,88 @@ code, from the agreed draft."
 | five  | face, power | /√gup/ (1) protect, maintain | /ruci/ light, radiance |
 |       |             | /-ta/ ppp                    |                        |
 
-| janakaḥ          |
-|------------------|
-| /√jan/ (1) beget |
-| /-aka/ m. agent  |"
+| jananī             | janakaḥ          |
+|--------------------+------------------|
+| /√jan/ (1) be born | /√jan/ (1) beget |
+| /-anī/ f. agent    | /-aka/ m. agent  |"
                  (bcat-analysis-formation-tables bcat-analysis-test--ta-1-1-words))))
+
+(defconst bcat-analysis-test--ta-1016-simple
+  '(((word . "vigatā") (formation . "vi-√gam-ta") (parts . "vi- away · √gam (1) go · -ta ppp") (gloss . "departed") (form . "ppp. f. nom. pl."))
+    ((word . "malā") (formation . "√mal-a") (parts . "√mal (1) hold · -a action noun") (gloss . "impurities") (form . "n. nom. pl."))
+    ((word . "avacchedakā") (formation . "ava-√chid-a-ka") (parts . "ava-√chid (7) cut off · -a action noun · -ka adjectival suffix") (gloss . "limiting") (form . "adj. nom. pl."))
+    ((word . "yasyāḥ") (formation . "—") (parts . "") (gloss . "of which") (form . "pron. f. gen. sg."))
+    ((word . "kalā") (formation . "√kal-ā") (parts . "√kal (10) count, impel · -ā action/agent noun") (gloss . "power") (form . "f. nom. sg."))
+    ((word . "śuddha-rūpā") (formation . "√śudh-ta · rūpa") (parts . "√śudh (4) be pure · -dha ppp; rūpa form") (gloss . "whose form is pure") (form . "adj. f. nom. sg."))
+    ((word . "āśrayaḥ") (formation . "ā-√śri-a") (parts . "ā- towards · √śri (1) resort to · -a action noun") (gloss . "foundation") (form . "m. nom. sg."))
+    ((word . "ālambanam") (formation . "ā-√lamb-ana") (parts . "ā- towards · √lamb (1) hang, depend · -ana action noun") (gloss . "support") (form . "n. nom. sg."))
+    ((word . "svarūpam") (formation . "sva-rūpa") (parts . "sva own · rūpa form") (gloss . "essential nature") (form . "n. nom. sg."))
+    ((word . "arthaḥ") (formation . "√arth-a") (parts . "√arth (10) aim at · -a action noun") (gloss . "meaning") (form . "m. nom. sg.")))
+  "Words of TĀ 1016 ⟦704⟧ (Viveka): seven of one member with parts, a
+pronoun without, one compound.")
+
+(ert-deftest bcat-analysis-formation-tables-simple-words-together ()
+  "18.11. (Carsten, TĀ 1016): the parts of the words of one member in ONE
+table under the compounds — a word a column, in the order of the text,
+its parts below, the shorter columns filled up; a word without parts
+\(yasyāḥ) has no column.  Wider than the file, the table is split into
+tables of about as many words each — no word left alone in the last —,
+each with its header and rule."
+  (let* ((out (bcat-analysis-formation-tables (seq-take bcat-analysis-test--ta-1016-simple 7)))
+         (tables (split-string out "\n\n")))
+    ;; the compound first, then the one table of the simple words
+    (should (= 2 (length tables)))
+    (should (equal '("śuddha" "rūpā") (car (bcat-analysis-test--rows (nth 0 tables)))))
+    (should (equal '(("vigatā" "malā" "avacchedakā" "kalā" "āśrayaḥ")
+                     ("/vi-/ away" "/√mal/ (1) hold" "/ava-√chid/ (7) cut off" "/√kal/ (10) count, impel"
+                      "/ā-/ towards")
+                     ("/√gam/ (1) go" "/-a/ action noun" "/-a/ action noun" "/-ā/ action/agent noun"
+                      "/√śri/ (1) resort to")
+                     ("/-ta/ ppp" "" "/-ka/ adjectival suffix" "" "/-a/ action noun"))
+                   (bcat-analysis-test--rows (nth 1 tables))))
+    (should (string-match-p "\\`|[^\n]*\n|-" (nth 1 tables))))
+  ;; Too wide for the file: tables of about as many words, none alone.
+  (let* ((bcat-analysis-layout-overrides '(("sa" (table-width . 130))))
+         (tables (cdr (split-string (bcat-analysis-formation-tables bcat-analysis-test--ta-1016-simple)
+                                    "\n\n"))))
+    (should (equal '(("vigatā" "malā" "avacchedakā" "kalā") ("āśrayaḥ" "ālambanam" "svarūpam" "arthaḥ"))
+                   (mapcar (lambda (tb) (car (bcat-analysis-test--rows tb))) tables)))
+    (dolist (tb tables)
+      (should (string-match-p "\\`|[^\n]*\n|-" tb))
+      (dolist (line (split-string tb "\n"))
+        (should (<= (string-width line) 130)))
+      (dolist (row (cdr (bcat-analysis-test--rows tb)))
+        (should-not (cl-every #'string-empty-p row)))))
+  ;; One word of one member: its table of one column, as before.
+  (should (equal "| mahaḥ            |\n|------------------|\n| /mahas/ radiance |"
+                 (bcat-analysis-formation-tables
+                  '(((word . "mahaḥ") (formation . "—") (parts . "mahas radiance") (gloss . "g") (form . "f")))))))
+
+(ert-deftest bcat-analysis-merge-word-tables ()
+  "C-c u L on a file written before 18.11.: the tables of one column
+\(a word of one member each) become the one table of the simple words,
+after the compounds — the parts as the file has them (a hand correction
+stays).  A table of one column whose head is no word of the segment
+\(a member of a compound split for the width) stays where it is; a file
+already in the new form stays as it is."
+  (let* ((old (concat "| vigatā         |\n|----------------|\n| /vi-/ away     |\n| /√gam/ (1) geh |\n| /-ta/ ppp      |\n\n"
+                      "| para    | vimarśa               |\n|---------+-----------------------|\n| supreme | /vi-√mṛś/ (6) reflect |\n\n"
+                      "| lakṣaṇā           |\n|-------------------|\n| /√lakṣ/ (10) mark |\n\n"
+                      "| āśrayaḥ              |\n|----------------------|\n| /ā-/ towards         |\n| /√śri/ (1) resort to |"))
+         (words '("vigatā" "yā" "para-vimarśa-lakṣaṇā" "āśrayaḥ"))
+         (new (bcat-analysis-merge-word-tables old words)))
+    (should (equal (concat "| para    | vimarśa               |\n|---------+-----------------------|\n| supreme | /vi-√mṛś/ (6) reflect |\n\n"
+                           "| lakṣaṇā           |\n|-------------------|\n| /√lakṣ/ (10) mark |\n\n"
+                           "| vigatā         | āśrayaḥ              |\n"
+                           "|----------------+----------------------|\n"
+                           "| /vi-/ away     | /ā-/ towards         |\n"
+                           "| /√gam/ (1) geh | /√śri/ (1) resort to |\n"
+                           "| /-ta/ ppp      |                      |")
+                   new))
+    ;; again: nothing changes
+    (should (equal new (bcat-analysis-merge-word-tables new words)))
+    (should (equal "" (bcat-analysis-merge-word-tables "" words)))
+    (should-not (bcat-analysis-merge-word-tables nil words))))
 
 (ert-deftest bcat-analysis-formation-tables-members-from-the-word ()
   "Most answers separate every part by „ · “ — the members of a compound
