@@ -1141,13 +1141,13 @@ the sentence."
          (tib (substring out (string-match "^\\* Tibetan$" out) (string-match "^\\* Sentence$" out))))
     (should (string-match-p "\\`\\* Text\n#\\+begin_verse\nकस्मात्" text))
     ;; 9.11.: the segment a heading, the original in bold under it, the
-    ;; parts under a folded Word Formation.
+    ;; parts under Word Formation — open since 18.11.
     (should (string-match-p
              (concat "^\\*\\* <<skt-23>>⟦23⟧ · \\[\\[tib-78\\]\\[Tib\\. 78\\]\\]\n"
                      "\\*pañca-ākāra-ātma-vastu-udbhāvanatām upādāya\\.\\*\n\n"
                      "| pañca-ākāra-ātma-vastu-udbhāvanatām .*\n\\(?:|.*\n\\)*"
                      "\n→ On account of their bringing to light .*\n\n"
-                     "\\*\\*\\* Word Formation\n:PROPERTIES:\n:VISIBILITY: folded\n:END:\n"
+                     "\\*\\*\\* Word Formation\n"
                      "\\(?:\\(?:|.*\n\\)+\n\\)*\\*\\* <<skt-24>>")
              text))
     (should-not (string-match-p "བདག\\|Differences" text))

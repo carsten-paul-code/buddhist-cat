@@ -124,7 +124,8 @@ tables stay as they are — a second run changes nothing."
                              (alist-get 'formation-tables seg)))
     (let* ((once (bcat-relayout-test--render "sanskrit" base old))
            (again (bcat-relayout-test--render "sanskrit" base once)))
-      (should (string-match-p "^→ t\n\n\\*\\*\\* Word Formation\n:PROPERTIES:\n:VISIBILITY: folded\n:END:\n| vimala " once))
+      ;; 18.11.: open (the drawer :VISIBILITY: folded only on request)
+      (should (string-match-p "^→ t\n\n\\*\\*\\* Word Formation\n| vimala " once))
       (should (equal once again)))))
 
 (ert-deftest bcat-relayout-parts-lines-to-tables ()
@@ -162,7 +163,7 @@ bold line stays."
          (once (bcat-relayout-test--render "sanskrit" base old))
          (again (bcat-relayout-test--render "sanskrit" base once)))
     (should (string-match-p (regexp-quote "\n** ⟦1⟧\n*hṛdayam ab /*\n\n| hṛdayam | ab |") once))
-    (should (string-match-p (regexp-quote "→ t\n\n*** Word Formation\n:PROPERTIES:\n:VISIBILITY: folded\n:END:\n| hṛdayam ") once))
+    (should (string-match-p (regexp-quote "→ t\n\n*** Word Formation\n| hṛdayam ") once))
     (should (string-match-p (regexp-quote "\n** Translation\n*Translation:* T\n\n*Grammar:* g\n") once))
     (should-not (string-match-p "^/hṛdayam/:" once))
     (should (equal once again))

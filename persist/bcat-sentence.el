@@ -643,6 +643,15 @@ writes, a placeholder matching anything (`* Sentence {{num}}')."
               out)))
     out))
 
+(defcustom bcat-sentence-word-formation-folded nil
+  "Non-nil: the parts of the words (*** Word Formation) of a Sanskrit
+segment open folded — the heading gets the drawer :VISIBILITY: folded
+\(9.11., TĀ 1009).  nil (18.11., Carsten after the Tantrāloka reading:
+„erstmal standardmäßig nicht eingeklappt“): they stand open under the
+translation of their segment.  C-c u L sets existing files anew."
+  :type 'boolean
+  :group 'buddhist-cat)
+
 (defun bcat-sentence--render (name context source-file)
   "The template NAME rendered with CONTEXT (cascade for SOURCE-FILE),
 followed by the file's own sections (`own-sections' in CONTEXT, from
@@ -650,6 +659,10 @@ followed by the file's own sections (`own-sections' in CONTEXT, from
 section the template writes itself (* Bhāṣya, a commentary's * Sentence
 258) is no own section."
   (let* ((context (bcat-analysis-with-padapatha-checks context))
+         ;; 18.11.: Word Formation open unless the option says folded
+         (context (if bcat-sentence-word-formation-folded
+                      (cons '(formation-folded . "t") context)
+                    context))
          (text (bcat-template-render-named
                 ;; 5.11.: the terms of the concept notes link to their
                 ;; zettels (bcat-zettel.el) — fetch and relayout alike.

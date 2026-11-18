@@ -127,9 +127,6 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 → On account of their bringing to light (udbhāvanatā) the basis of self (ātmavastu) in five modes:
 
 *** Word Formation
-:PROPERTIES:
-:VISIBILITY: folded
-:END:
 | pañca | ākāra      | ātma | vastu | udbhāvanatām                   |
 |-------+------------+------+-------+--------------------------------|
 | five  | form, mode | self | thing | bring forth (caus.) + abstract |
@@ -150,9 +147,6 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 → the self-basis that is the body together with its possessions (saparigraha-deha),
 
 *** Word Formation
-:PROPERTIES:
-:VISIBILITY: folded
-:END:
 | sa   | parigraha         | deha | ātma | vastu | udbhāvanatām |
 |------+-------------------+------+------+-------+--------------|
 | with | /pari-/ around    | body | self | thing | bringing     |
@@ -174,9 +168,6 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 → the self-basis that is experience (upabhoga),
 
 *** Word Formation
-:PROPERTIES:
-:VISIBILITY: folded
-:END:
 | upabhoga          | ātma | vastu | udbhāvanatām |
 |-------------------+------+-------+--------------|
 | /upa-/ near       | self | thing | bringing     |
@@ -198,9 +189,6 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 → the self-basis that is conventional expression (vyavahāra),
 
 *** Word Formation
-:PROPERTIES:
-:VISIBILITY: folded
-:END:
 | vyavahāra       | ātma | vastu | udbhāvanatām |
 |-----------------+------+-------+--------------|
 | /vi-/ apart     | self | thing | bringing     |
@@ -223,9 +211,6 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 → the self-basis that is the forming of merit and demerit (dharmādharmābhisaṃskāra),
 
 *** Word Formation
-:PROPERTIES:
-:VISIBILITY: folded
-:END:
 | dharma | adharma | abhisaṃskāra    | ātma | vastu | udbhāvanatām |
 |--------+---------+-----------------+------+-------+--------------|
 | merit  | not     | /abhi-/ toward  | self | thing | bringing     |
@@ -248,9 +233,6 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 → and the self-basis that is the support of these (tadāśraya).
 
 *** Word Formation
-:PROPERTIES:
-:VISIBILITY: folded
-:END:
 | tad  | āśraya             | ātma | vastu | udbhāvanatām |
 |------+--------------------+------+-------+--------------|
 | that | /ā-/ to            | self | thing | bringing     |

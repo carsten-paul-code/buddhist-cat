@@ -38,9 +38,6 @@ tatpārameśvaraṃ śrīman|mahānandavijṛmbhitam // 7
 → Although my speech (vāc) is incapable (aśakta) here, whatever control (niyantraṇa) may shine forth (ullaset) —
 
 *** Word Formation
-:PROPERTIES:
-:VISIBILITY: folded
-:END:
 | mad | vāk    |
 |-----+--------|
 | my  | speech |
@@ -61,9 +58,6 @@ tatpārameśvaraṃ śrīman|mahānandavijṛmbhitam // 7
 → that belongs to the Supreme Lord (pārameśvara): it is the unfolding (vijṛmbhita) of glorious great bliss (mahānanda).
 
 *** Word Formation
-:PROPERTIES:
-:VISIBILITY: folded
-:END:
 | śrīmat        | mahā  | ānanda                | vijṛmbhitam       |
 |---------------+-------+-----------------------+-------------------|
 | /śrī/ glory   | great | /ā-√nand/ (1) rejoice | /vi-/ apart       |

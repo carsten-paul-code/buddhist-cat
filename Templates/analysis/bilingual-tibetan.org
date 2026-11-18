@@ -15,7 +15,9 @@ hervorgehoben?“) ist jedes Sanskrit-Segment eine Überschrift ** ⟦N⟧,
 direkt darunter fett die Originalzeile in IAST (padapatha: der
 Padapāṭha nach C-c u G, sonst die überlieferte Zeile), dann die
 Übersicht, „→“ und die Teile der Wörter unter *** Word Formation
-(:VISIBILITY: folded — eingeklappt); die Übersetzung des Satzes unter
+(seit 18.11. offen; mit formation-folded — der Option
+bcat-sentence-word-formation-folded — :VISIBILITY: folded, eingeklappt);
+die Übersetzung des Satzes unter
 ** Translation, sonst stünde sie im letzten Word Formation — mit
 Vorschlag unter ** Proposed translation, der Vorschlag direkt darunter
 (Carsten 9.11.: „ich vermisse jetzt die proposed translation“).  Seit
@@ -178,9 +180,11 @@ ersetzt (`bcat-analysis-overview-fields').
 {{/segment-translation}}
 {{#formation-tables}}
 *** Word Formation
+{{#formation-folded}}
 :PROPERTIES:
 :VISIBILITY: folded
 :END:
+{{/formation-folded}}
 {{formation-tables}}
 
 {{/formation-tables}}

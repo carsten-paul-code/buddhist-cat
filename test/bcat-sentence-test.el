@@ -1784,6 +1784,33 @@ Tibetan), not „one each“."
       (should (string-match-p "je zwei DharmaMitra- und zwei Claude-Abrufe (Sanskrit, Tibetisch)"
                               (car questions))))))
 
+(ert-deftest bcat-sentence-word-formation-open-by-default ()
+  "18.11. (Carsten, after the Tantrāloka reading: the parts of the words
+back at the segment — „ich würde es gerne erstmal standardmäßig nicht
+eingeklappt haben wollen“): C-c u G writes Word Formation without the
+drawer :VISIBILITY: folded, and C-c u L takes it out of a file written
+before; with `bcat-sentence-word-formation-folded' on both write it."
+  (bcat-sentence-test--with-sa-source
+    (bcat-sentence-test--create-n src 1007)
+    (let ((file (tibetan-sentence--filepath 1007 folder src)))
+      (bcat-sentence-test--with-stubs (bcat-sentence-test--sa-answer)
+        (bcat-sentence-test--fetch-n src 1007))
+      (should (string-match-p "^\\*\\*\\* Word Formation\n| " (bcat-sentence-test--text-of file)))
+      (should-not (string-match-p ":VISIBILITY:" (bcat-sentence-test--text-of file)))
+      ;; a file written before 18.11.
+      (let ((old (replace-regexp-in-string "^\\*\\*\\* Word Formation\n"
+                                           "*** Word Formation\n:PROPERTIES:\n:VISIBILITY: folded\n:END:\n"
+                                           (bcat-sentence-test--text-of file))))
+        (let ((coding-system-for-write 'utf-8-unix)) (with-temp-file file (insert old)))
+        (should (string-match-p ":VISIBILITY: folded" (bcat-sentence-test--text-of file)))
+        (bcat-relayout-file file)
+        (should-not (string-match-p ":VISIBILITY:" (bcat-sentence-test--text-of file)))
+        (should (string-match-p "^\\*\\*\\* Word Formation\n| " (bcat-sentence-test--text-of file))))
+      (let ((bcat-sentence-word-formation-folded t))
+        (bcat-relayout-file file)
+        (should (string-match-p "^\\*\\*\\* Word Formation\n:PROPERTIES:\n:VISIBILITY: folded\n:END:\n| "
+                                (bcat-sentence-test--text-of file)))))))
+
 (ert-deftest bcat-sentence-write-folds-word-formation ()
   "9.11. (TĀ 1009): Word Formation is folded when the file opens
 \(:VISIBILITY: folded) — and also after C-c u G or C-c u L write into
