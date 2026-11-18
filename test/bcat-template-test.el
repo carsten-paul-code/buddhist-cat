@@ -217,6 +217,9 @@ stand open; with the field `formation-folded' (the option
                         "| b |\n|---|\n| c |\n\n"))
          (folded (concat "⟦1⟧\n*p q //*\n\n| a |\n\n→ t\n\n*** Word Formation\n:PROPERTIES:\n"
                          ":VISIBILITY: folded\n:END:\n| b |\n|---|\n| c |\n\n"))
+         ;; 18.11.: in the Tibetan file of a pair the Sanskrit segments
+         ;; stand under ** Sanskrit — every heading one level down
+         (down (lambda (s) (replace-regexp-in-string (regexp-quote "\n*** Word Formation") "\n**** Word Formation" s t t)))
          (sanskrit (bcat-template-render-named "sanskrit" `((segments ,seg) (translation . "T"))))
          (bilingual (bcat-template-render-named "bilingual" `((segments ,seg) (translation . "T"))))
          (partner (bcat-template-render-named "bilingual-tibetan"
@@ -229,14 +232,15 @@ stand open; with the field `formation-folded' (the option
     (should (string-match-p (concat "^\\*\\* <<skt-1>>" (regexp-quote folded))
                             (bcat-template-render-named
                              "bilingual" `((formation-folded . "t") (segments ,seg) (translation . "T")))))
-    (should (string-match-p (concat "^\\*\\* <<skt-1>>" (regexp-quote folded))
+    (should (string-match-p (concat "^\\*\\* Sanskrit\n\\*\\*\\* <<skt-1>>" (regexp-quote (funcall down folded)))
                             (bcat-template-render-named
                              "bilingual-tibetan" `((formation-folded . "t") (sanskrit-p . t)
                                                    (sanskrit-segments ,seg) (sanskrit-translation . "T")))))
     (should (string-match-p (concat "^\\*\\* <<skt-1>>" (regexp-quote block)) bilingual))
-    (should (string-match-p (concat "^\\*\\* <<skt-1>>" (regexp-quote block)) partner))
-    (dolist (out (list sanskrit bilingual partner))
-      (should (string-match-p "^\\*\\* Translation\n\\(?:.*\n\\)*?\\*Translation:\\* T$" out)))))
+    (should (string-match-p (concat "^\\*\\* Sanskrit\n\\*\\*\\* <<skt-1>>" (regexp-quote (funcall down block))) partner))
+    (dolist (out (list sanskrit bilingual))
+      (should (string-match-p "^\\*\\* Translation\n\\(?:.*\n\\)*?\\*Translation:\\* T$" out)))
+    (should (string-match-p "^\\*\\*\\* Translation\n\\*Translation:\\* T$" partner))))
 
 (ert-deftest bcat-template-proposal-first ()
   "Carsten 9.11. (TĀ 1009: „ich vermisse jetzt die proposed
@@ -258,13 +262,13 @@ heading (its segments are none)."
       (let ((out (bcat-template-render-named template with)))
         (should (string-match-p
                  (regexp-quote (concat "\n** Proposed translation\n" proposal
-                                       "\n\n*Deutsch:* Ü\n\n*Grammar:* G\n\n* Sentence\n"))
+                                       "\n\n*Deutsch:* Ü\n\n*Grammar:* G\n\n** Concepts\n"))
                  out))
         (should-not (string-match-p "^\\*\\* Translation$" out)))
-      (should (string-match-p (regexp-quote "\n** Translation\n*Translation:* T\n\n*Grammar:* G\n\n* Sentence\n")
+      (should (string-match-p (regexp-quote "\n** Translation\n*Translation:* T\n\n*Grammar:* G\n\n** Concepts\n")
                               (bcat-template-render-named template without))))
     (let ((out (bcat-template-render-named "tibetan" with)))
-      (should (string-match-p (regexp-quote (concat "→ t\n\n" proposal "\n\n*Deutsch:* Ü\n\n*Grammar:* G\n\n* Sentence\n"))
+      (should (string-match-p (regexp-quote (concat "→ t\n\n" proposal "\n\n*Deutsch:* Ü\n\n*Grammar:* G\n\n** Concepts\n"))
                               out))
       (should-not (string-match-p "^\\*\\* \\(?:Proposed translation\\|Translation\\)$" out)))))
 
@@ -276,35 +280,40 @@ heading (its segments are none)."
     (buffer-string)))
 
 (ert-deftest bcat-template-reading-structure ()
-  "9.11. (TĀ 1009) as org reads it, in the reviewed samples: in the
-section with the Sanskrit segments (* Text; * Sanskrit in the Tibetan
-file of a pair) each segment is a heading ⟦N⟧ with the original in bold
+  "9.11. (TĀ 1009) as org reads it, in the reviewed samples: where the
+Sanskrit segments stand each is a heading ⟦N⟧ with the original in bold
 right under it; its „→“ translation belongs to that heading; the
 translation of the sentence to a heading Translation.  18.11.: the
 parts of the words stand under them in the table of the segment, below
 a rule — no heading Word Formation in the samples any more (9.11. to
-18.11. the parts had one)."
+18.11. the parts had one).  18.11., three parts: the segments stand
+under * Philology (until then * Text), in the Tibetan file of a pair
+one level down under ** Sanskrit (until then * Sanskrit)."
   (require 'org)
-  (dolist (case '(("Sanskrit.org" "Text") ("Bilingual.org" "Text") ("Bilingual-Tibetan.org" "Sanskrit")))
+  (dolist (case '(("Sanskrit.org" "^\\* Philology$" "^\\*\\* Concepts$" 2 ("Philology" "Translation"))
+                  ("Bilingual.org" "^\\* Philology$" "^\\*\\* Tibetan$" 2 ("Philology" "Translation"))
+                  ("Bilingual-Tibetan.org" "^\\*\\* Sanskrit$" "^\\*\\* Concepts$" 3
+                   ("Philology" "Sanskrit" "Translation"))))
     (with-temp-buffer
       (insert (bcat-template-test--sample (car case)))
       (let ((org-mode-hook nil)) (org-mode))
       (goto-char (point-min))
-      (should (re-search-forward (format "^\\* %s$" (nth 1 case)) nil t))
+      (should (re-search-forward (nth 1 case) nil t))
       (let ((start (point))
-            (end (save-excursion (org-end-of-subtree t) (point)))
+            (end (save-excursion (re-search-forward (nth 2 case)) (match-beginning 0)))
+            (depth (nth 3 case))
             (segments 0) (arrows 0) (formations 0))
-        (while (re-search-forward "^\\*\\* .*⟦[0-9]+⟧" end t)
+        (while (re-search-forward (format "^\\*\\{%d\\} .*⟦[0-9]+⟧" depth) end t)
           (cl-incf segments)
           (should (save-excursion (forward-line 1) (looking-at "\\*[^* \n][^\n]*[^ \n]\\*$"))))
         (goto-char start)
         (while (re-search-forward "^→ " end t)
           (cl-incf arrows)
           (let ((path (org-get-outline-path t)))
-            (should (= 2 (length path)))
-            (should (string-match-p "⟦[0-9]+⟧" (nth 1 path)))))
+            (should (= depth (length path)))
+            (should (string-match-p "⟦[0-9]+⟧" (car (last path))))))
         (goto-char start)
-        (should-not (re-search-forward "^\\*\\*\\* Word Formation$" end t))
+        (should-not (re-search-forward "^\\*+ Word Formation$" end t))
         ;; 18.11.: the parts under the words — a table with a rule,
         ;; under the heading of its segment
         (goto-char start)
@@ -313,16 +322,116 @@ a rule — no heading Word Formation in the samples any more (9.11. to
           (should (string-match-p "⟦[0-9]+⟧" (car (last (org-get-outline-path t))))))
         (goto-char start)
         (should (re-search-forward "^\\*Translation:\\* " end t))
-        (should (equal (list (nth 1 case) "Translation") (org-get-outline-path t)))
+        (should (equal (nth 4 case) (org-get-outline-path t)))
         (should (> segments 0))
         (should (= segments arrows))
         (should (> formations 0))))))
 
+(defun bcat-template-test--outline (text)
+  "The headings of TEXT as strings, stars included."
+  (let ((pos 0) (out '()))
+    (while (string-match "^\\*+ .*$" text pos)
+      (push (match-string 0 text) out)
+      (setq pos (match-end 0)))
+    (nreverse out)))
+
+(ert-deftest bcat-template-three-parts ()
+  "18.11. (Carsten: „Wir sollten umstrukturieren und das für alle
+Templates. Als erstes der Content (Originaltext in Script und Wylie
+bzw. IAST) und optional die Rezitationstabelle, wenn es ein Vers zum
+Rezitieren ist. Als zweites dann die Philologie. Das sind dann auch die
+beiden Teile die ich auf dem Macbook in den Readings nutzen werde. Und
+schließlich als Drittes ‚Worum es geht‘“ — „drei Oberabschnitte
+passen“, as * Text, * Philology, * Worum es geht).  Every sentence file
+has these three at the top level, in this order, then Further Reading
+and the user's slots.  * Text is the original alone: script over
+transliteration, for both languages of a pair, the table of the metre
+only where the answer has one.  * Philology takes what stood under
+* Text (the segments), * Sentence and * Segments, the headings below as
+they were — only the other language of a pair and the commentary go one
+level down under a heading of their own."
+  (let* ((bcat-template-directory
+          (expand-file-name "Templates/analysis" bcat-template-test--root))
+         (l1 (lambda (text)
+               (cl-remove-if-not (lambda (h) (string-match-p "\\`\\* " h))
+                                 (bcat-template-test--outline text))))
+         (tail '("* Worum es geht" "* Further Reading" "* Working Translation" "* My Notes" "* Footnotes"))
+         (common '((overview . "*Erklärt wird:* x") (translation . "T") (comparison . "*Translation:* T")
+                   (lectures-p . t) (lectures ((lecture-name . "L") (lecture-body . "b")))))
+         (sa-seg '((num . "1") (shown . t) (mark . "") (devanagari . "अ") (samhita . "a b")
+                   (padapatha . "a b") (gloss-table . "| a |\n| g |\n| f |") (segment-translation . "t")
+                   (concepts . "c") (translations . "⟦1⟧ *Translation:* t")))
+         (bo-seg '((num . "7") (shown . t) (mark . "") (uchen . "ཆོས།") (wylie . "chos/")
+                   (gloss-table . "| ཆོས |\n| chos |\n| dharma |\n| N |") (segment-translation . "t")
+                   (concepts . "c") (translations . "⟦7⟧ *Translation:* t"))))
+    ;; Sanskrit: the Recitation is * Text, with its table when a verse
+    (let ((out (bcat-template-render-named
+                "sanskrit" `((recitation . "अ\na b") (scansion . "| a |\n| – |")
+                             (segments ,sa-seg) (word-analysis . "*** Segment 1\na b") ,@common))))
+      (should (equal `("* Text" "* Philology" ,@tail) (funcall l1 out)))
+      (should (string-match-p (regexp-quote "* Text\n#+begin_verse\nअ\na b\n#+end_verse\n\n| a |\n| – |\n\n* Philology\n** ⟦1⟧\n*a b*\n")
+                              out))
+      (should (equal '("* Text" "* Philology" "** ⟦1⟧" "** Translation" "** Concepts" "** Translations compared"
+                       "** Segment 1" "** Word Analysis" "*** Segment 1" "* Worum es geht" "* Further Reading" "** L"
+                       "* Working Translation" "* My Notes" "* Footnotes")
+                     (bcat-template-test--outline out)))
+      ;; prose: no table
+      (should (string-match-p (regexp-quote "#+end_verse\n\n* Philology\n")
+                              (bcat-template-render-named
+                               "sanskrit" `((recitation . "अ\na b") (segments ,sa-seg) ,@common)))))
+    ;; Tibetan: Uchen over Wylie for every segment — also once it has its table
+    (let ((out (bcat-template-render-named "tibetan" `((segments ,bo-seg) ,@common))))
+      (should (equal `("* Text" "* Philology" ,@tail) (funcall l1 out)))
+      (should (string-match-p (regexp-quote "* Text\n#+begin_verse\nཆོས།\nchos/\n#+end_verse\n\n* Philology\n⟦7⟧\n| ཆོས |")
+                              out))
+      (should (equal '("* Text" "* Philology" "** Concepts" "** Translations compared" "** Segment 7")
+                     (seq-take (bcat-template-test--outline out) 5))))
+    ;; Sanskrit with the Tibetan: both originals in * Text; the Tibetan
+    ;; segments and the commentary one level down in * Philology
+    (let ((out (bcat-template-render-named
+                "bilingual"
+                `((segments ((parallel . " · Tib. 7") (commentary . "k") ,@sa-seg))
+                  (tibetan-p . t) (tibetan-lines ((line . "ཆོས།") (wylie . "chos/")))
+                  (tibetan-segments ,bo-seg) (tibetan-translation . "TT") (rendering . "r")
+                  (commentary-p . t) (bhasya-p . t) (bhasya-translation . "B") ,@common))))
+      (should (equal `("* Text" "* Philology" ,@tail) (funcall l1 out)))
+      (should (string-match-p (regexp-quote (concat "* Text\n#+begin_verse\nअ\na b\n#+end_verse\n\n"
+                                                    "#+begin_verse\nཆོས།\nchos/\n#+end_verse\n\n* Philology\n"
+                                                    "** <<skt-1>>⟦1⟧\n"))
+                              out))
+      (should (equal '("* Text" "* Philology" "** <<skt-1>>⟦1⟧" "** Translation" "** Tibetan" "** Concepts"
+                       "** Tibetan rendering" "** Translations compared" "** Segment 1 · Tib. 7"
+                       "** Commentary" "*** Bhāṣya" "* Worum es geht")
+                     (seq-take (bcat-template-test--outline out) 12)))
+      (should (string-match-p (regexp-quote "** Tibetan\n<<tib-7>>⟦7⟧\n| ཆོས |") out)))
+    ;; the Tibetan file of the pair: mirrored, the Sanskrit segments
+    ;; headings one level down
+    (let ((out (bcat-template-render-named
+                "bilingual-tibetan"
+                `((segments ((parallel . " · Skt. 1") (commentary . "k") ,@bo-seg))
+                  (sanskrit-p . t) (sanskrit ((devanagari . "अ") (samhita . "a b")))
+                  (sanskrit-segments ((formation-tables . "| x |\n|---|\n| y |") ,@sa-seg))
+                  (sanskrit-translation . "ST")
+                  (commentary-p . t) (bhasya-p . t) (bhasya-translation . "B") ,@common))))
+      (should (equal `("* Text" "* Philology" ,@tail) (funcall l1 out)))
+      (should (string-match-p (regexp-quote (concat "* Text\n#+begin_verse\nཆོས།\nchos/\n#+end_verse\n\n"
+                                                    "#+begin_verse\nअ\na b\n#+end_verse\n\n* Philology\n"
+                                                    "<<tib-7>>⟦7⟧\n"))
+                              out))
+      (should (equal '("* Text" "* Philology" "** Sanskrit" "*** <<skt-1>>⟦1⟧" "**** Word Formation"
+                       "*** Translation" "** Concepts" "** Translations compared" "** Segment 7 · Skt. 1"
+                       "** Commentary" "*** Bhāṣya" "* Worum es geht")
+                     (seq-take (bcat-template-test--outline out) 12))))
+    ;; without an overview: no third part
+    (should (equal '("* Text" "* Philology" "* Working Translation" "* My Notes" "* Footnotes")
+                   (funcall l1 (bcat-template-render-named "tibetan" `((segments ,bo-seg))))))))
+
 (ert-deftest bcat-template-sanskrit-prose ()
-  "Viveka prose (no metre): the Recitation holds only the Devanāgarī
-original (no metre line, no scansion); in the rump * Text is empty — no
-tables before C-c u G, no padapāṭha any more (31.10. abends: „Der Text
-kann ganz weg“), no translation line; * Sentence before * Segments."
+  "Viveka prose (no metre): * Text holds only the Devanāgarī original
+\(no metre line, no scansion); in the rump * Philology has no segments —
+no tables before C-c u G, no padapāṭha any more (31.10. abends: „Der
+Text kann ganz weg“), no translation line —, the Concepts and
+Translations compared before the segments' details."
   (let* ((bcat-template-directory
           (expand-file-name "Templates/analysis" bcat-template-test--root))
          (out (bcat-template-render-named
@@ -331,9 +440,9 @@ kann ganz weg“), no translation line; * Sentence before * Segments."
                  (recitation . "इह खलु शास्त्रादौ …")
                  (segments ((num . "687") (padapatha . "iha khalu śāstrādau …")))))))
     (should (string-match-p
-             (regexp-quote (concat "#+SEGMENTS: 687\n\n* Recitation\n#+begin_verse\nइह खलु शास्त्रादौ …\n"
-                                   "#+end_verse\n\n* Text\n\n* Sentence\n** Concepts\n"
-                                   "** Translations compared\n\n* Segments\n** Segment 687\n\n"))
+             (regexp-quote (concat "#+SEGMENTS: 687\n\n* Text\n#+begin_verse\nइह खलु शास्त्रादौ …\n"
+                                   "#+end_verse\n\n* Philology\n\n** Concepts\n"
+                                   "** Translations compared\n\n** Segment 687\n\n"))
              out))
     (should-not (string-match-p "Translation:" out))))
 

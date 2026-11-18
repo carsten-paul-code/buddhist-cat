@@ -81,6 +81,28 @@ Sonst füllt ihn C-c u G aus dem Feld overview der Antwort; der Drawer
 :GENERATED_HASH: (overview-hash) kennzeichnet den erzeugten Text —
 nur ein unveränderter erzeugter Abschnitt wird beim nächsten Abruf
 ersetzt (`bcat-analysis-overview-fields').
+18.11. (Carsten: „Als erstes der Content (Originaltext in Script und
+Wylie bzw. IAST) und optional die Rezitationstabelle, wenn es ein Vers
+zum Rezitieren ist. Als zweites dann die Philologie. Das sind dann auch
+die beiden Teile die ich auf dem Macbook in den Readings nutzen werde.
+Und schließlich als Drittes ‚Worum es geht‘“): DREI OBERABSCHNITTE, in
+jeder Vorlage gleich —
+* Text: nur das Original, Schrift über Umschrift (bei einem Paar beide
+  Sprachen; Sanskrit mit der Silbentabelle, wo es ein Vers ist);
+* Philology: alles, was vorher unter * Text (die Segmente), * Sentence
+  und * Segments stand, die Überschriften darunter auf ihrer Ebene wie
+  bisher (** ⟦N⟧, ** Concepts, ** Translations compared, ** Segment N,
+  ** Word Analysis) — nur die zweite Sprache eines Paars (** Tibetan,
+  ** Sanskrit) und der Kommentar (** Commentary) stehen unter einer
+  eigenen Überschrift, ihr Inhalt eine Ebene tiefer;
+* Worum es geht: in der Vorbereitung zuerst gelesen, im Reading nicht
+  gebraucht — deshalb hinten.
+Wie der Philologie-Teil in sich gegliedert wird, ist noch offen
+(Carsten: „Das können wir dann aber noch im Detail diskutieren“).
+Dateien der früheren Gliederung liest C-c u L und setzt sie um
+(`bcat-relayout--legacy-text').  Was oben über die Reihenfolge und
+über „* Worum es geht vor allem anderen“ steht, beschreibt die Zeit bis
+zum 18.11.
 #+end_comment
 #+TITLE: Sentence {{sent-num}} Analysis
 #+STARTUP: showall
@@ -96,26 +118,24 @@ ersetzt (`bcat-analysis-overview-fields').
 #+CREATED: {{created}}
 #+LAST_ANALYZED: {{last-analyzed}}
 
-{{#overview}}
-* Worum es geht
-{{#overview-hash}}
-:PROPERTIES:
-:GENERATED_HASH: {{overview-hash}}
-:END:
-{{/overview-hash}}
-{{overview}}
-
-{{/overview}}
 * Text
 #+begin_verse
 {{#segments}}
 {{uchen}}
-{{^gloss-table}}
 {{wylie}}
-{{/gloss-table}}
 {{/segments}}
 #+end_verse
+{{#sanskrit-p}}
 
+#+begin_verse
+{{#sanskrit}}
+{{devanagari}}
+{{samhita}}
+{{/sanskrit}}
+#+end_verse
+{{/sanskrit-p}}
+
+* Philology
 {{#segments}}
 {{#shown}}
 <<tib-{{num}}>>⟦{{num}}⟧{{mark}}
@@ -152,17 +172,10 @@ ersetzt (`bcat-analysis-overview-fields').
 {{/grammar}}
 
 {{#sanskrit-p}}
-* Sanskrit
-#+begin_verse
-{{#sanskrit}}
-{{devanagari}}
-{{samhita}}
-{{/sanskrit}}
-#+end_verse
-
+** Sanskrit
 {{#sanskrit-segments}}
 {{#shown}}
-** <<skt-{{num}}>>⟦{{num}}⟧{{mark}}
+*** <<skt-{{num}}>>⟦{{num}}⟧{{mark}}
 *{{padapatha}}*
 {{#padapatha-check}}
 
@@ -179,7 +192,7 @@ ersetzt (`bcat-analysis-overview-fields').
 
 {{/segment-translation}}
 {{#formation-tables}}
-*** Word Formation
+**** Word Formation
 {{#formation-folded}}
 :PROPERTIES:
 :VISIBILITY: folded
@@ -190,12 +203,11 @@ ersetzt (`bcat-analysis-overview-fields').
 {{/formation-tables}}
 {{/sanskrit-segments}}
 {{#sanskrit-translation}}
-** Translation
+*** Translation
 *Translation:* {{sanskrit-translation}}
 
 {{/sanskrit-translation}}
 {{/sanskrit-p}}
-* Sentence
 ** Concepts
 {{#segments}}
 {{#concepts}}
@@ -211,7 +223,6 @@ ersetzt (`bcat-analysis-overview-fields').
 ** Translations compared
 {{comparison}}
 
-* Segments
 {{#segments}}
 ** Segment {{num}}{{parallel}}
 {{translations}}
@@ -222,7 +233,7 @@ ersetzt (`bcat-analysis-overview-fields').
 
 {{/segments}}
 {{#commentary-p}}
-* Commentary
+** Commentary
 {{#segments}}
 {{#commentary}}
 ⟦{{num}}⟧ {{commentary}}
@@ -230,7 +241,7 @@ ersetzt (`bcat-analysis-overview-fields').
 {{/commentary}}
 {{/segments}}
 {{#bhasya-p}}
-** Bhāṣya
+*** Bhāṣya
 {{#bhasya-tibetan-p}}
 #+begin_verse
 {{#bhasya-tibetan}}
@@ -255,6 +266,16 @@ ersetzt (`bcat-analysis-overview-fields').
 
 {{/bhasya-p}}
 {{/commentary-p}}
+{{#overview}}
+* Worum es geht
+{{#overview-hash}}
+:PROPERTIES:
+:GENERATED_HASH: {{overview-hash}}
+:END:
+{{/overview-hash}}
+{{overview}}
+
+{{/overview}}
 {{#lectures-p}}
 * Further Reading
 {{#lectures}}

@@ -157,37 +157,28 @@ resolution (`bcat-faces--resolution-table-p') under * Text or
               (and (bcat-faces--resolution-table-p (match-beginning 0))
                    (save-excursion
                      (and (re-search-backward "^\\* \\(.*\\)$" nil t)
-                          (member (string-trim (match-string 1)) '("Text" "Sanskrit"))))))
+                          (member (string-trim (match-string 1)) '("Text" "Sanskrit" "Philology"))))))
         (setq found t)))
     found))
 
-(defvar-local bcat-faces--template-cache nil
-  "The #+CAT_TEMPLATE of the buffer (\"\" for none), read once.")
-
-(defun bcat-faces--template ()
-  "The template of the sentence file in the buffer (#+CAT_TEMPLATE), or
-\"\"."
-  (or bcat-faces--template-cache
-      (setq bcat-faces--template-cache
-            (save-excursion
-              (save-match-data
-                (goto-char (point-min))
-                (if (re-search-forward "^#\\+CAT_TEMPLATE:[ \t]*\\(\\S-+\\)" (min (point-max) 4000) t)
-                    (match-string-no-properties 1)
-                  ""))))))
+(defconst bcat-faces--segment-heading "\\*+ \\(?:<<[^>\n]*>>\\)?⟦[0-9]+⟧"
+  "A heading that is a Sanskrit segment (since 9.11.): ⟦N⟧, in a pair
+with the target <<skt-N>> before it — at the second level, in the
+Tibetan file of a pair since 18.11. at the third.")
 
 (defun bcat-faces--sanskrit-table-p (pos)
-  "Non-nil when a table at POS is one of a Sanskrit segment: under
-* Text in a Sanskrit file (templates sanskrit, bilingual), under
-* Sanskrit in the Tibetan file of a pair."
+  "Non-nil when a table at POS is one of a Sanskrit segment: the
+heading it stands under is the segment's, ⟦N⟧
+\(`bcat-faces--segment-heading').  A Tibetan segment is no heading — a
+mark on a line of its own —, so no template and no section has to be
+asked (until 18.11.: under * Text of a Sanskrit file, under * Sanskrit
+of the Tibetan file of a pair; since then all under * Philology)."
   (save-excursion
     (save-match-data
       (goto-char pos)
-      (and (re-search-backward "^\\* \\(.*\\)$" nil t)
-           (let ((section (string-trim (match-string-no-properties 1)))
-                 (template (bcat-faces--template)))
-             (or (and (equal section "Text") (member template '("sanskrit" "bilingual")))
-                 (and (equal section "Sanskrit") (equal template "bilingual-tibetan"))))))))
+      (end-of-line)
+      (and (re-search-backward "^\\*+ " nil t)
+           (looking-at bcat-faces--segment-heading)))))
 
 (defun bcat-faces--sub-row-p (pos)
   "Non-nil when the table row at POS stands under the rule of a Sanskrit
@@ -477,16 +468,35 @@ in colour (as `bcat-export-translation-color' in the PDF).  Draft B
 nicht mal Original und Übersetzung hervorgehoben?“."
   :group 'buddhist-cat)
 
+(defun bcat-faces--translation-line-p (pos)
+  "Non-nil when the „→“ line at POS is a segment's translation.  In a
+file of three parts (18.11.) it stands under * Philology, and the
+heading right above it is * Philology itself or ** Tibetan / ** Sanskrit
+\(a Tibetan segment: a mark on its line) or a Sanskrit segment's
+\(`bcat-faces--segment-heading') — not ** Segment N: there a translator's
+line.  In a file of the earlier form: under * Text, * Tibetan or
+* Sanskrit; the translators stood under * Segments."
+  (save-excursion
+    (save-match-data
+      (goto-char pos)
+      (let ((section (save-excursion
+                       (and (re-search-backward "^\\* \\(.*\\)$" nil t)
+                            (string-trim (match-string-no-properties 1))))))
+        (cond
+         ((member section '("Text" "Tibetan" "Sanskrit")) t)
+         ((equal section "Philology")
+          (and (re-search-backward "^\\*+ " nil t)
+               (or (looking-at "\\* Philology[ \t]*$")
+                   (looking-at "\\*\\* \\(?:Tibetan\\|Sanskrit\\)[ \t]*$")
+                   (looking-at bcat-faces--segment-heading)))))))))
+
 (defun bcat-faces--translation-matcher (limit)
   "Font-lock matcher: the next „→“ line before LIMIT that is a segment's
-translation — under * Text, * Tibetan or * Sanskrit, every language;
-group 0 the line.  A translator's „→“ line under * Segments is none."
+translation (`bcat-faces--translation-line-p'), every language; group 0
+the line."
   (let ((found nil))
     (while (and (not found) (re-search-forward "^→ .*$" limit t))
-      (when (save-excursion
-              (save-match-data
-                (and (re-search-backward "^\\* \\(.*\\)$" nil t)
-                     (member (string-trim (match-string 1)) '("Text" "Tibetan" "Sanskrit")))))
+      (when (bcat-faces--translation-line-p (match-beginning 0))
         (setq found t)))
     found))
 

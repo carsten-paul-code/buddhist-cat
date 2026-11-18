@@ -2805,7 +2805,9 @@ its `mark' — a link to its first Tibetan segment, „ · Tib. 46–63“ —,
 each Tibetan one with its mark back („ · Skt. 19“) and, the last of
 its group, the group's `differences'; the Uchen of the Tibetan one line
 per Sanskrit segment (AS 2: 7 lines, not 41), or — before the
-assignment — one per segment, its Wylie under it when it has no table."
+assignment — one per segment; under each its Wylie (18.11., Carsten:
+„Originaltext in Script und Wylie“; 31.10. to 18.11. only where a
+segment had no table yet)."
   (let* ((tibs-of (lambda (skt) (cl-loop for a in assignment when (eql (cdr a) skt) collect (car a))))
          ;; The mark stands whenever the segment shows something — so
          ;; differences after a segment without a table still have it.
@@ -2815,6 +2817,7 @@ assignment — one per segment, its Wylie under it when it has no table."
                                 '(gloss-table segment-translation differences))
                        t)))
          (uchen-of (lambda (n) (string-trim (or (alist-get 'uchen (cl-find n tibetan :key #'bcat-analysis--num)) ""))))
+         (wylie-of (lambda (n) (string-trim (or (alist-get 'wylie (cl-find n tibetan :key #'bcat-analysis--num)) ""))))
          (s-items (mapcar (lambda (s)
                             (let ((tibs (funcall tibs-of (bcat-analysis--num s))))
                               (append `((mark . ,(if tibs
@@ -2842,13 +2845,15 @@ assignment — one per segment, its Wylie under it when it has no table."
          (lines (if assignment
                     (delq nil (mapcar (lambda (s)
                                         (let ((tibs (funcall tibs-of (bcat-analysis--num s))))
-                                          (and tibs `((line . ,(mapconcat uchen-of tibs " ")) (wylie . "")))))
+                                          ;; 18.11.: the original in script and
+                                          ;; transliteration — the Wylie always
+                                          (and tibs `((line . ,(mapconcat uchen-of tibs " "))
+                                                      (wylie . ,(string-trim
+                                                                 (mapconcat wylie-of tibs " ")))))))
                                       sanskrit))
                   (mapcar (lambda (ts)
                             `((line . ,(funcall uchen-of (bcat-analysis--num ts)))
-                              (wylie . ,(if (string-blank-p (or (alist-get 'gloss-table ts) ""))
-                                            (or (alist-get 'wylie ts) "")
-                                          ""))))
+                              (wylie . ,(funcall wylie-of (bcat-analysis--num ts)))))
                           tibetan))))
     (list s-items t-items lines)))
 

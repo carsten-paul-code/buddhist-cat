@@ -30,6 +30,24 @@ dharmādharmābhisaṃskārātmavastūdbhāvanatām upādāya.
 tadāśrayātmavastūdbhāvanatām upādāya.
 #+end_verse
 
+#+begin_verse
+ཅིའི་ཕྱིར་ཕུང་པོ་རྣམས་ལྔ་ཁོ་ན་ཞེ་ན།
+ci'i phyir phung po rnams lnga kho na zhe na/
+བདག་གི་གཞི་རྣམ་པ་ལྔ་བརྗོད་པའི་ཕྱིར་ཏེ།
+bdag gi gzhi rnam pa lnga brjod pa'i phyir te/
+བདག་གི་གཞི་ལུས་ཡོངས་སུ་གཟུང་བ་དང་བཅས་པ་བརྗོད་པ་དང་།
+bdag gi gzhi lus yongs su gzung ba dang bcas pa brjod pa dang /
+བདག་གི་གཞི་ལོངས་སྤྱོད་བརྗོད་པ་དང་།
+bdag gi gzhi longs spyod brjod pa dang /
+བདག་གི་གཞི་ཐ་སྙད་བརྗོད་པ་དང་།
+bdag gi gzhi tha snyad brjod pa dang /
+བདག་གི་གཞི་ཆོས་དང་ཆོས་མ་ཡིན་པ་མངོན་པར་འདུ་བྱེད་པ་བརྗོད་པ་དང་།
+bdag gi gzhi chos dang chos ma yin pa mngon par 'du byed pa brjod pa dang /
+བདག་གི་གཞི་དེ་དག་གི་གནས་བརྗོད་པའི་ཕྱིར་རོ། །
+bdag gi gzhi de dag gi gnas brjod pa'i phyir ro/ /
+#+end_verse
+
+* Philology
 ** <<skt-22>>⟦22⟧ · [[tib-77][Tib. 77]]
 *kasmāt pañca eva skandhāḥ.*
 
@@ -134,17 +152,7 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 
 *Grammar:* One question and its answer, the catechism form of the AS.  The question (22) is a nominal sentence with an understood copula: kasmāt pañcaiva skandhāḥ.  The answer (23–28) has no finite verb: six accusatives in -udbhāvanatām, each governed by the gerund upādāya used as a postposition („on account of“).  23 states the principle — the self-basis appears in five modes —, 24–28 list the five, each a compound ending in -ātmavastūdbhāvanatām.
 
-* Tibetan
-#+begin_verse
-ཅིའི་ཕྱིར་ཕུང་པོ་རྣམས་ལྔ་ཁོ་ན་ཞེ་ན།
-བདག་གི་གཞི་རྣམ་པ་ལྔ་བརྗོད་པའི་ཕྱིར་ཏེ།
-བདག་གི་གཞི་ལུས་ཡོངས་སུ་གཟུང་བ་དང་བཅས་པ་བརྗོད་པ་དང་།
-བདག་གི་གཞི་ལོངས་སྤྱོད་བརྗོད་པ་དང་།
-བདག་གི་གཞི་ཐ་སྙད་བརྗོད་པ་དང་།
-བདག་གི་གཞི་ཆོས་དང་ཆོས་མ་ཡིན་པ་མངོན་པར་འདུ་བྱེད་པ་བརྗོད་པ་དང་།
-བདག་གི་གཞི་དེ་དག་གི་གནས་བརྗོད་པའི་ཕྱིར་རོ། །
-#+end_verse
-
+** Tibetan
 <<tib-77>>⟦77⟧ · [[skt-22][Skt. 22]]
 | ཅིའི་ཕྱིར           | ཕུང་པོ        | རྣམས    | ལྔ               | ཁོ་ན               | ཞེ་ན                    |
 | [[steinert:ci'i phyir][ci'i phyir]]      | [[steinert:phung po][phung po]]    | [[steinert:rnams][rnams]]  | [[steinert:lnga][lnga]]            | [[steinert:kho na][kho na]]            | [[steinert:zhe na][zhe na]]                 |
@@ -211,7 +219,6 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 
 *Translation:* Why are the aggregates only five? — if one asks: because they state the basis of self in five modes: the basis of self that is the body together with what it has appropriated, the basis of self that is experience, the basis of self that is convention, the basis of self that is the forming of merit and demerit, and the basis of self that is their support.
 
-* Sentence
 ** Concepts
 ⟦23⟧ *ātmavastu* — the „basis of self“: what the notion of a self is projected onto; the AS derives the number of the skandhas from the five ways such a basis appears.
 
@@ -233,7 +240,6 @@ Because they serve to manifest the objective basis of the self (ātmavastu) in f
 
 Rahula/Boin-Webb reduce ātmavastu to „self“ and turn the forming of merit and demerit into „the agent“; DharmaMitra keeps the basis („objective basis“, with an added „objective“) and stays close to udbhāvanatā („manifest“).  Neither reflects the Tibetan's „stating“ (brjod pa).
 
-* Segments
 ** Segment 22 · Tib. 77
 ⟦22⟧ *Translation:* Why are there just five aggregates (skandha)? — \\
 *Rahula/Boin-Webb 2001:* Why are there only five aggregates? \\

@@ -12,11 +12,16 @@
 * Text
 #+begin_verse
 བརྗོད་དུ་མེད་པ་བལྟར་མེད་པ། །
+brjod du med pa bltar med pa/ /
 འགྱུར་བ་མེད་པ་འདུས་མ་བྱས། །
+'gyur ba med pa 'dus ma byas/ /
 རྣལ་འབྱོར་པ་ཡིས་དེ་རྟོགས་ན། །
+rnal 'byor pa yis de rtogs na/ /
 ཉོན་མོངས་ཤེས་བྱའི་སྒྲིབ་པ་སྤངས། །
+nyon mongs shes bya'i sgrib pa spangs/ /
 #+end_verse
 
+* Philology
 ⟦38⟧
 | བརྗོད་དུ་མེད་པ      | བལྟར་མེད་པ        |
 | [[steinert:brjod du med pa][brjod du med pa]] | [[steinert:bltar med pa][bltar med pa]]    |
@@ -53,7 +58,6 @@
 
 *Grammar:* This four-pāda verse (verse 9 in the treatise) consists of two predicate-attribute pādas (38–39) describing an unnamed referent (the paramārtha/dharmatā established in prior verses) followed by a conditional converb clause (40: rtogs + na) and its apodosis (41: spangs). The subject of the conditional (rnal 'byor pa) is marked ergative (yis) as agent of the transitive verb rtogs; the apodosis (spangs) has an implicit agent (the same yogin) and an implicit copula, both licensed by verse-register compression. The demonstrative de in pāda 40 anaphorically picks up the entire description of segments 38–39.
 
-* Sentence
 ** Concepts
 ⟦38⟧ *brjod du med pa / bltar med pa* (Skt. avācya / adraṣṭavya) — standard apophatic epithets of the ultimate truth (paramārtha-satya) in Madhyamaka: beyond conventional expression (brjod pa) and beyond ordinary perception (blta ba), since it transcends the subject–object duality of saṃvṛti cognition; recurrent e.g. in the Laṅkāvatārasūtra.
 
@@ -70,7 +74,6 @@
 
 Both read the realization temporally ("when"). Lindtner makes the yogin the agent of the abandoning and gives the two obstructions as one compound; DharmaMitra and the translation here read two obstructions and a passive result.
 
-* Segments
 ** Segment 38
 ⟦38⟧ *Translation:* Indescribable (brjod du med pa: avācya) and invisible (bltar med pa: adraṣṭavya), \\
 *Lindtner 1981:* [It is also] inexpressible (avācya) and invisible (adraṣṭavya), \\

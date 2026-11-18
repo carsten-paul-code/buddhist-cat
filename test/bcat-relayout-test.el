@@ -77,6 +77,40 @@ the Sanskrit file) after the last Tibetan segment of its group."
                   (bcat-relayout-test--file "test/fixtures/old-layout-Bilingual-Tibetan.org")
                   (bcat-relayout-test--file "test/fixtures/old-layout-Bilingual.org")))))
 
+(ert-deftest bcat-relayout-layout-of-1118-to-three-parts ()
+  "18.11. (Carsten: Content, Philologie, „Worum es geht“ — „drei
+Oberabschnitte passen“): C-c u L sets a file as it stood until then —
+* Recitation / * Text with the segments / * Tibetan or * Sanskrit /
+* Sentence / * Segments, the reviewed samples of that day
+\(test/fixtures/layout-1118-*.org) — in three parts: it IS the new
+sample, for each template; the Tibetan original gets its Wylie.  And
+the other way round nothing is lost: every line of the old file that is
+no heading stands in the new one."
+  (dolist (case `(("sanskrit" "Sanskrit" ,(bcat-analysis-test--base-1007) nil)
+                  ("tibetan" "Tibetan" ,(bcat-analysis-test--base) nil)
+                  ("bilingual" "Bilingual" ,(bcat-analysis-test--base-003) "Bilingual-Tibetan")
+                  ("bilingual-tibetan" "Bilingual-Tibetan" ,(bcat-relayout-test--partner-base) "Bilingual")))
+    (ert-info ((format "Vorlage %s" (car case)))
+      (let* ((old (bcat-relayout-test--file (format "test/fixtures/layout-1118-%s.org" (nth 1 case))))
+             (other (and (nth 3 case)
+                         (bcat-relayout-test--file (format "test/fixtures/layout-1118-%s.org" (nth 3 case)))))
+             (sample (bcat-relayout-test--file (format "Templates/analysis/samples/%s.org" (nth 1 case))))
+             (new (bcat-relayout-test--render (nth 0 case) (nth 2 case) old other))
+             (lines (split-string new "\n")))
+        (should (equal sample new))
+        (should (string-match-p "^\\* \\(?:Sentence\\|Segments\\)$" old))
+        (should-not (string-match-p "^\\* \\(?:Recitation\\|Sentence\\|Segments\\|Tibetan\\|Sanskrit\\|Commentary\\)$" new))
+        (dolist (line (split-string old "\n"))
+          (unless (string-match-p "\\`\\*+ " line)
+            (should (member line lines))))
+        ;; the partner in the new form already: the same
+        (when other
+          (should (equal sample
+                         (bcat-relayout-test--render
+                          (nth 0 case) (nth 2 case) old
+                          (bcat-relayout-test--file
+                           (format "Templates/analysis/samples/%s.org" (nth 3 case)))))))))))
+
 (ert-deftest bcat-relayout-new-order-unchanged ()
   "A file in the new order read back and set anew is the same file —
 for each template."
@@ -253,7 +287,7 @@ second run changes nothing."
              (regexp-quote (concat "→ s\n\n"
                                    "*Übersetzungsvorschlag — Erster Sinn:*\n#+begin_quote\nEins.\n#+end_quote\n\n"
                                    "*Übersetzungsvorschlag:*\n#+begin_quote\nZwei.\n#+end_quote\n\n"
-                                   "*Entscheidungen:* Nr. 1.\n\n*Grammar:* Two pādas.\n\n* Sentence\n"))
+                                   "*Entscheidungen:* Nr. 1.\n\n*Grammar:* Two pādas.\n\n** Concepts\n"))
              once))
     (should-not (string-match-p "^\\*\\*\\* Übersetzungsvorschlag" once))
     (should (string-match-p "^\\*\\*\\* Berichtigungen zur Analyse\n- k\\." once))
@@ -341,19 +375,22 @@ order — My Notes, a section of its own (* Handout), #+CREATED and
       (let ((text (bcat-sentence-test--text-of file)))
         (should-not fired)
         ;; The old table gets its Uchen row (31.10. abends, Tibetisch V).
-        (should (string-match-p "#\\+end_verse\n\n⟦38⟧\n| བརྗོད་དུ་མེད་པ +|\n| \\[\\[steinert:brjod du med pa\\]\\[brjod du med pa\\]\\] |\n| indescribable +|" text))
+        (should (string-match-p "#\\+end_verse\n\n\\* Philology\n⟦38⟧\n| བརྗོད་དུ་མེད་པ +|\n| \\[\\[steinert:brjod du med pa\\]\\[brjod du med pa\\]\\] |\n| indescribable +|" text))
+        ;; 18.11.: the file of the earlier form comes out in three parts
+        (should-not (string-match-p "^\\* \\(?:Sentence\\|Segments\\)$" text))
         (should (string-match-p (regexp-quote "** Concepts\n⟦39⟧ *'dus ma byas* (asaṃskṛta)\n") text))
-        (should (string-match-p (regexp-quote "* Segments\n** Segment 38\n⟦38⟧ *Translation:* Indescribable and invisible,\n\n*Structure:* no finite verb\n") text))
+        (should (string-match-p (regexp-quote "\n\n** Segment 38\n⟦38⟧ *Translation:* Indescribable and invisible,\n\n*Structure:* no finite verb\n") text))
         (should (string-match-p "^#\\+LAST_ANALYZED: 2026-10-20$" text))
         (should (string-match-p "^\\* My Notes\nMeine Notiz\\.$" text))
         (should (string-match-p "^\\* Handout\nH$" text))
         (should (= 1 (with-temp-buffer (insert text) (how-many "^\\* Handout$" (point-min) (point-max)))))
-        ;; Still analysed: the ⟦N⟧ translations under * Segments.
+        ;; Still analysed: the ⟦N⟧ translations under ** Segment N.
         (should-not (eq 'full (bcat-sentence-fetch-state file '(38 39))))))))
 
 (ert-deftest bcat-relayout-file-keeps-overview ()
-  "C-c u L (16.11.): „Worum es geht“ at the head of the file stays there,
-word for word and once — setting anew is no analysis."
+  "C-c u L (16.11.): „Worum es geht“ stays word for word and once —
+setting anew is no analysis.  18.11.: standing at the head of the file
+\(its place until then) it becomes the third part, after * Philology."
   (bcat-sentence-test--with-source
     (bcat-sentence-test--create src)
     (bcat-sentence-test--with-stubs bcat-sentence-test--answer
@@ -363,8 +400,10 @@ word for word and once — setting anew is no analysis."
       (should (bcat-relayout-file file))
       (let ((text (bcat-sentence-test--text-of file)))
         (should (string-match-p
-                 (regexp-quote (concat "\n\n* Worum es geht\n" bcat-sentence-test--overview "\n\n* Text\n"))
+                 (regexp-quote (concat "\n\n* Worum es geht\n" bcat-sentence-test--overview
+                                       "\n\n* Working Translation\n"))
                  text))
+        (should (< (string-match "^\\* Philology$" text) (string-match "^\\* Worum es geht$" text)))
         (should (= 1 (bcat-sentence-test--overview-count text)))))))
 
 (ert-deftest bcat-relayout-file-overview-from-answer ()
@@ -461,7 +500,7 @@ pair; no request."
       ;; A pair written before: no Tibetan part, no answer kept.
       (delete-file (bcat-sentence--answers-file file))
       (with-temp-file file
-        (insert (replace-regexp-in-string "^\\* Tibetan\n\\(?:.\\|\n\\)*?\\(^\\* Sentence$\\)" "\\1"
+        (insert (replace-regexp-in-string "^\\*\\* Tibetan\n\\(?:.\\|\n\\)*?\\(^\\*\\* Concepts$\\)" "\\1"
                                           (bcat-sentence-test--text-of file) t)))
       (should-not (string-match-p "^| ཅིའི་ཕྱིར" (bcat-sentence-test--text-of file)))
       (cl-letf (((symbol-function 'tibetan-discussion--submit)
@@ -470,7 +509,7 @@ pair; no request."
       (should-not fired)
       (should (string-match-p "^\\*\\* <<skt-22>>⟦22⟧ · \\[\\[tib-77\\]\\[Tib\\. 77\\]\\]\n\\*kasmāt pañca eva skandhāḥ\\.\\*\n\n| kasmāt"
                               (bcat-sentence-test--text-of file)))
-      (should (string-match-p "^\\* Tibetan\n\\(?:.\\|\n\\)*\n| ཅིའི་ཕྱིར" (bcat-sentence-test--text-of file))))))
+      (should (string-match-p "^\\*\\* Tibetan\n\\(?:.\\|\n\\)*\n| ཅིའི་ཕྱིར" (bcat-sentence-test--text-of file))))))
 
 (ert-deftest bcat-relayout-file-context ()
   "What C-c u L sets a file anew from, on its own (Carsten 5.11.: the

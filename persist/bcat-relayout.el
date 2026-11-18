@@ -27,6 +27,66 @@
 ;; Reading a sentence file back
 ;; ----------------------------------------------------------------------------
 
+(defconst bcat-relayout--wrappers '("Tibetan" "Sanskrit" "Commentary")
+  "The headings under * Philology whose content stands one level down:
+the other language of a pair and the commentary — before 18.11.
+sections of the first level.")
+
+(defun bcat-relayout--legacy-text (text template)
+  "TEXT of a sentence file of TEMPLATE as the readers of this file know
+it — the sections of the first level as they were until 18.11.:
+* Recitation (Sanskrit), * Text with the segments, * Tibetan or
+* Sanskrit, * Sentence, * Segments, * Commentary.  Since 18.11. a file
+has three parts (Carsten: Content, Philologie, „Worum es geht“): * Text
+is the original alone, * Philology holds the rest with its headings as
+they were, the other language and the commentary under a heading of
+their own, their content one level down.  A file in that form is taken
+apart again: the original becomes * Recitation (the Sanskrit file: its
+lines are read back) or * Original (no reader asks for it), * Philology
+becomes * Text, with * Sentence before its Concepts, * Segments before
+its first Segment N, and each of `bcat-relayout--wrappers' a section of
+the first level, its headings one level up.  TEXT without * Philology
+comes back as it is."
+  (if (not (and text (string-match-p "^\\* Philology[ \t]*$" text)))
+      text
+    (let ((part nil) (wrapper nil) (sentence nil) (segments nil) (out '()))
+      (dolist (line (split-string text "\n"))
+        (cond
+         ;; a section of the first level
+         ((string-match "\\`\\* \\(.*?\\)[ \t]*\\'" line)
+          (let ((title (match-string 1 line)))
+            (setq wrapper nil)
+            (cond ((equal title "Philology")
+                   (setq part 'philology)
+                   (push "* Text" out))
+                  ((and (equal title "Text") (null part))
+                   (push (if (equal template "sanskrit") "* Recitation" "* Original") out))
+                  (t (setq part 'other)
+                     (push line out)))))
+         ((not (eq part 'philology)) (push line out))
+         ;; under * Philology: a heading of the second level
+         ((string-match "\\`\\*\\* \\(.*?\\)[ \t]*\\'" line)
+          (let ((title (match-string 1 line)))
+            (cond ((member title bcat-relayout--wrappers)
+                   (setq wrapper t)
+                   (push (concat "* " title) out))
+                  (t
+                   (setq wrapper nil)
+                   (when (and (not sentence) (not segments)
+                              (member title '("Concepts" "Tibetan rendering" "Translations compared")))
+                     (setq sentence t)
+                     (push "* Sentence" out))
+                   (when (and (not segments)
+                              (string-match-p "\\`\\(?:Segment [0-9]\\|Word Analysis\\'\\)" title))
+                     (setq segments t)
+                     (push "* Segments" out))
+                   (push line out)))))
+         ;; under the other language or the commentary: one level up
+         ((and wrapper (string-match-p "\\`\\*\\*\\*+ " line))
+          (push (substring line 1) out))
+         (t (push line out))))
+      (string-join (nreverse out) "\n"))))
+
 (defun bcat-relayout--section (text level title)
   "The body of the heading of LEVEL titled TITLE (a regexp matching the
 whole title) in TEXT, up to the next heading of that level or higher;
@@ -387,8 +447,14 @@ BASE — its rump, what C-c u A knows — completed from what the file
 holds, read back in the old order or the new one.  Segments by number;
 the assignment of the other language from the segment headings.  For a
 bilingual pair OTHER-TEXT is the partner file: the other language's
-segments per segment come from there (Carsten 1.11.)."
-  (let* ((block-field (if (equal template "bilingual-tibetan") 'sanskrit-block 'tibetan-block))
+segments per segment come from there (Carsten 1.11.).  TEXT and
+OTHER-TEXT in the form of three parts (18.11.) or in an earlier one
+\(`bcat-relayout--legacy-text')."
+  (let* (;; 18.11.: a file of three parts read as before
+         (text (bcat-relayout--legacy-text text template))
+         (other-text (bcat-relayout--legacy-text
+                      other-text (if (equal template "bilingual") "bilingual-tibetan" "bilingual")))
+         (block-field (if (equal template "bilingual-tibetan") 'sanskrit-block 'tibetan-block))
          (read (bcat-relayout--segments text block-field))
          (assignment (bcat-relayout--assignment text))
          (other (and other-text

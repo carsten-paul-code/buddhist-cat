@@ -1140,10 +1140,18 @@ sentence translation.  * Tibetan: the Uchen, one line per Sanskrit
 segment; per Tibetan segment its mark (link back), the tables, „→“;
 after the last of a group the differences; the Tibetan translation of
 the sentence."
+  ;; 18.11., three parts: both originals under * Text (script over
+  ;; transliteration); the Sanskrit segments open * Philology, the
+  ;; Tibetan ones follow under ** Tibetan.
   (let* ((out (bcat-analysis-test--bilingual-003))
-         (text (substring out (string-match "^\\* Text$" out) (string-match "^\\* Tibetan$" out)))
-         (tib (substring out (string-match "^\\* Tibetan$" out) (string-match "^\\* Sentence$" out))))
-    (should (string-match-p "\\`\\* Text\n#\\+begin_verse\nकस्मात्" text))
+         (original (substring out (string-match "^\\* Text$" out) (string-match "^\\* Philology$" out)))
+         (text (substring out (string-match "^\\* Philology$" out) (string-match "^\\*\\* Tibetan$" out)))
+         (tib (substring out (string-match "^\\*\\* Tibetan$" out) (string-match "^\\*\\* Concepts$" out))))
+    (should (string-match-p "\\`\\* Text\n#\\+begin_verse\nकस्मात्" original))
+    (should (string-match-p
+             (concat "#\\+end_verse\n\n#\\+begin_verse\nཅིའི་ཕྱིར་ཕུང་པོ་རྣམས་ལྔ་ཁོ་ན་ཞེ་ན།\n"
+                     "ci'i phyir phung po rnams lnga kho na zhe na/\nབདག་གི་གཞི་རྣམ་པ")
+             original))
     ;; 9.11.: the segment a heading, the original in bold under it;
     ;; 18.11.: the parts of the words under them in the table, below a
     ;; rule — no Word Formation.
@@ -1158,15 +1166,35 @@ the sentence."
     (should-not (string-match-p "Word Formation" out))
     (should-not (string-match-p "བདག\\|Differences" text))
     (should (string-match-p "\n\\*Translation:\\* Why are there just five aggregates" text))
-    (should (string-match-p "\\`\\* Tibetan\n#\\+begin_verse\nཅིའི་ཕྱིར་ཕུང་པོ་རྣམས་ལྔ་ཁོ་ན་ཞེ་ན།\nབདག་གི་གཞི་རྣམ་པ" tib))
+    (should (string-match-p "\\`\\*\\* Tibetan\n<<tib-77>>⟦77⟧ · " tib))
     (should (string-match-p
              (concat "^<<tib-78>>⟦78⟧ · \\[\\[skt-23\\]\\[Skt\\. 23\\]\\]\n| བདག་གི་གཞི .*\n| \\[\\[steinert:bdag gi gzhi\\].*\n\\(?:|.*\n\\)*"
                      "\n→ because they state the basis of self .*\n\n"
                      "\\*Differences:\\* /udbhāvanatā/.*\n\n<<tib-79>>")
              tib))
     (should (string-match-p "\n\\*Translation:\\* Why are the aggregates only five" tib))
-    (should (< (string-match "^\\* Sentence$" out) (string-match "^\\*\\* Tibetan rendering$" out)
-               (string-match "^\\*\\* Translations compared$" out) (string-match "^\\* Segments$" out)))))
+    (should (< (string-match "^\\*\\* Tibetan$" out) (string-match "^\\*\\* Concepts$" out)
+               (string-match "^\\*\\* Tibetan rendering$" out)
+               (string-match "^\\*\\* Translations compared$" out) (string-match "^\\*\\* Segment 22" out)))))
+
+(ert-deftest bcat-analysis-pair-lists-wylie ()
+  "18.11. (Carsten: „Originaltext in Script und Wylie bzw. IAST“): the
+Tibetan lines of the Sanskrit file of a pair carry their Wylie — one
+line per Sanskrit segment, the Wylie of its Tibetan segments joined like
+their Uchen; before the assignment one per Tibetan segment, with a table
+or without.  31.10. to 18.11.: the Wylie only where a segment had no
+table yet."
+  (let* ((sanskrit '(((num . 1) (samhita . "a")) ((num . 2) (samhita . "b"))))
+         (tibetan '(((num . 7) (uchen . "ཀ།") (wylie . "ka/") (gloss-table . "| ཀ |"))
+                    ((num . 8) (uchen . "ཁ།") (wylie . "kha/"))
+                    ((num . 9) (uchen . "ག།") (wylie . "ga/") (gloss-table . "| ག |")))))
+    (should (equal '(((line . "ཀ།") (wylie . "ka/"))
+                     ((line . "ཁ། ག།") (wylie . "kha/ ga/")))
+                   (nth 2 (bcat-analysis-pair-lists sanskrit tibetan '((7 . 1) (8 . 2) (9 . 2)) nil))))
+    (should (equal '(((line . "ཀ།") (wylie . "ka/"))
+                     ((line . "ཁ།") (wylie . "kha/"))
+                     ((line . "ག།") (wylie . "ga/")))
+                   (nth 2 (bcat-analysis-pair-lists sanskrit tibetan nil nil))))))
 
 (ert-deftest bcat-analysis-pair-lists-reordered ()
   "MSA IX.60: the Tibetan reorders the pādas — 459 renders Sanskrit 287,
@@ -1201,17 +1229,22 @@ Devanāgarī over IAST, per segment mark (link to the Tibetan), tables,
                                        bcat-analysis-test--refs-tib-003)
                 tibetan (bcat-analysis-test--sanskrit-003)
                 "Why are there just five aggregates? — On account of …")))
-         (text (substring out (string-match "^\\* Text$" out) (string-match "^\\* Sanskrit$" out)))
-         (skt (substring out (string-match "^\\* Sanskrit$" out) (string-match "^\\* Sentence$" out))))
-    (should (string-match-p "\\`\\* Text\n#\\+begin_verse\nཅིའི་ཕྱིར" text))
+         ;; 18.11., three parts: both originals under * Text; the
+         ;; Tibetan segments open * Philology, the Sanskrit ones follow
+         ;; under ** Sanskrit, their headings one level down
+         (original (substring out (string-match "^\\* Text$" out) (string-match "^\\* Philology$" out)))
+         (text (substring out (string-match "^\\* Philology$" out) (string-match "^\\*\\* Sanskrit$" out)))
+         (skt (substring out (string-match "^\\*\\* Sanskrit$" out) (string-match "^\\*\\* Concepts$" out))))
+    (should (string-match-p "\\`\\* Text\n#\\+begin_verse\nཅིའི་ཕྱིར" original))
+    (should (string-match-p "#\\+end_verse\n\n#\\+begin_verse\nकस्मात्" original))
     (should (string-match-p
              (concat "^<<tib-78>>⟦78⟧ · \\[\\[skt-23\\]\\[Skt\\. 23\\]\\]\n| བདག་གི་གཞི .*\n\\(?:|.*\n\\)*"
                      "\n→ because they state the basis of self .*\n\n"
                      "\\*Differences:\\* /udbhāvanatā/")
              text))
-    (should (string-match-p "\\`\\* Sanskrit\n#\\+begin_verse\nकस्मात्" skt))
+    (should (string-match-p "\\`\\*\\* Sanskrit\n\\*\\*\\* <<skt-22>>⟦22⟧" skt))
     (should (string-match-p
-             (concat "^\\*\\* <<skt-23>>⟦23⟧ · \\[\\[tib-78\\]\\[Tib\\. 78\\]\\]\n"
+             (concat "^\\*\\*\\* <<skt-23>>⟦23⟧ · \\[\\[tib-78\\]\\[Tib\\. 78\\]\\]\n"
                      "\\*pañca-ākāra-ātma-vastu-udbhāvanatām upādāya\\.\\*\n\n"
                      "| pañca-ākāra-ātma-vastu-udbhāvanatām .*\n\\(?:|.*\n\\)*"
                      "\n→ On account of their bringing to light ")
@@ -1718,13 +1751,13 @@ own translation stays under the tables."
          (base (cons '(target-lang . "en") (bcat-analysis-test--base)))
          (out (bcat-template-render-named
                "tibetan" (bcat-analysis-context base (bcat-analysis-parse answer) bcat-analysis-test--refs)))
-         (text (substring out (string-match "^\\* Text$" out) (string-match "^\\* Sentence$" out))))
+         (text (substring out (string-match "^\\* Philology$" out) (string-match "^\\*\\* Concepts$" out))))
     ;; 9.11.: the proposal before the Grammar (Carsten, TĀ 1009).
     (should (string-match-p
              (regexp-quote (concat "*Proposed translation — First sense:*\n#+begin_quote\nProposed one.\n#+end_quote\n\n"
                                    "*Proposed translation — Second sense:*\n#+begin_quote\nProposed two.\n#+end_quote\n\n"
                                    "*Decisions:* Unit 1: kept.\n\n"
-                                   "*Grammar:* Two predicate pādas.\n\n* Sentence\n** Concepts\n"))
+                                   "*Grammar:* Two predicate pādas.\n\n** Concepts\n"))
              out))
     (should-not (string-match-p "^\\*Translation:\\*" text))
     (should-not (string-match-p "^\\*\\* Grammar$" out))

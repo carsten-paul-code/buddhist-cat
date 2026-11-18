@@ -703,6 +703,9 @@ nil when absent or empty."
 
 (defconst bcat-sentence--tool-sections
   '("Recitation" "Text" "Segments" "Sentence"
+    ;; 18.11.: three parts — * Text (the original), * Philology,
+    ;; * Worum es geht (kept as the overview, `bcat-sentence--keep').
+    "Philology"
     ;; Since 31.10. (the order read → translate → grammar → concepts →
     ;; references → the rest → commentary → further reading), and the
     ;; L1 sections they replace — an old file's * Bhāṣya or * Lectures
@@ -918,12 +921,33 @@ it (§5.74) — C-c u H (PDF + reMarkable) hangs here.")
 heading — there stand the ⟦N⟧ translations with the references per
 segment; since 31.10. ⟦N⟧ also labels the tables under * Text, the
 concepts, the other language and the commentary links, and * Sentence
-comes before * Segments.  TEXT itself when it has no such section (a
-commentary document: its segments under `* Sentence N')."
-  (if (string-match "^\\* Segments\n" text)
-      (let ((start (match-end 0)))
-        (substring text start (if (string-match "^\\* " text start) (match-beginning 0) (length text))))
-    text))
+comes before * Segments.  18.11.: in a file of three parts they stand
+under ** Segment N in * Philology — the part from the first of them to
+the end of * Philology, with the headings (\"\" when it has none yet).
+TEXT itself when it has neither section (a commentary document: its
+segments under `* Sentence N')."
+  (cond
+   ((string-match "^\\* Segments\n" text)
+    (let ((start (match-end 0)))
+      (substring text start (if (string-match "^\\* " text start) (match-beginning 0) (length text)))))
+   ((string-match "^\\* Philology[ \t]*\n" text)
+    (let* ((start (match-end 0))
+           (end (if (string-match "^\\* " text start) (match-beginning 0) (length text)))
+           (first (and (string-match "^\\*\\* Segment [0-9]" text start)
+                       (< (match-beginning 0) end)
+                       (match-beginning 0))))
+      (if first (substring text first end) "")))
+   (t text)))
+
+(defun bcat-sentence--goto-segments ()
+  "Move point in the buffer of a sentence file to where the ⟦N⟧
+translations of its segments begin: after the heading * Segments, or
+\(18.11., three parts) to the first ** Segment N under * Philology.
+Returns non-nil when found; point at the start of the buffer before."
+  (goto-char (point-min))
+  (or (re-search-forward "^\\* Segments$" nil t)
+      (and (re-search-forward "^\\* Philology$" nil t)
+           (re-search-forward "^\\*\\* Segment [0-9]" nil t))))
 
 (defun bcat-sentence--unaligned (file)
   "References under Translations compared of FILE that no segment shows
@@ -986,8 +1010,7 @@ Everything else stays as it is."
     (insert text)
     (dolist (seg (alist-get 'segments parsed))
       (let ((num (alist-get 'num seg)))
-        (goto-char (point-min))
-        (when (and (re-search-forward "^\\* Segments$" nil t)
+        (when (and (bcat-sentence--goto-segments)
                    (re-search-forward (format "^⟦%s⟧ " num) nil t))
           (let* ((start (line-beginning-position))
                  (end (if (re-search-forward "\n[ \t]*\n" nil t) (match-beginning 0) (point-max)))

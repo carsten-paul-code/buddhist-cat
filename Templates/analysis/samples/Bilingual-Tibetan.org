@@ -14,14 +14,39 @@
 * Text
 #+begin_verse
 ཅིའི་ཕྱིར་ཕུང་པོ་རྣམས་ལྔ་ཁོ་ན་ཞེ་ན།
+ci'i phyir phung po rnams lnga kho na zhe na/
 བདག་གི་གཞི་རྣམ་པ་ལྔ་བརྗོད་པའི་ཕྱིར་ཏེ།
+bdag gi gzhi rnam pa lnga brjod pa'i phyir te/
 བདག་གི་གཞི་ལུས་ཡོངས་སུ་གཟུང་བ་དང་བཅས་པ་བརྗོད་པ་དང་།
+bdag gi gzhi lus yongs su gzung ba dang bcas pa brjod pa dang /
 བདག་གི་གཞི་ལོངས་སྤྱོད་བརྗོད་པ་དང་།
+bdag gi gzhi longs spyod brjod pa dang /
 བདག་གི་གཞི་ཐ་སྙད་བརྗོད་པ་དང་།
+bdag gi gzhi tha snyad brjod pa dang /
 བདག་གི་གཞི་ཆོས་དང་ཆོས་མ་ཡིན་པ་མངོན་པར་འདུ་བྱེད་པ་བརྗོད་པ་དང་།
+bdag gi gzhi chos dang chos ma yin pa mngon par 'du byed pa brjod pa dang /
 བདག་གི་གཞི་དེ་དག་གི་གནས་བརྗོད་པའི་ཕྱིར་རོ། །
+bdag gi gzhi de dag gi gnas brjod pa'i phyir ro/ /
 #+end_verse
 
+#+begin_verse
+कस्मात् पञ्चैव स्कन्धाः।
+kasmāt pañcaiva skandhāḥ.
+पञ्चाकारात्मवस्तूद्भावनताम् उपादाय।
+pañcākārātmavastūdbhāvanatām upādāya.
+सपरिग्रहदेहात्मवस्तूद्भावनताम् उपादाय।
+saparigrahadehātmavastūdbhāvanatām upādāya.
+उपभोगात्मवस्तूद्भावनताम् उपादाय।
+upabhogātmavastūdbhāvanatām upādāya.
+व्यवहारात्मवस्तूद्भावनताम् उपादाय।
+vyavahārātmavastūdbhāvanatām upādāya.
+धर्माधर्माभिसंस्कारात्मवस्तूद्भावनताम् उपादाय।
+dharmādharmābhisaṃskārātmavastūdbhāvanatām upādāya.
+तदाश्रयात्मवस्तूद्भावनताम् उपादाय।
+tadāśrayātmavastūdbhāvanatām upādāya.
+#+end_verse
+
+* Philology
 <<tib-77>>⟦77⟧ · [[skt-22][Skt. 22]]
 | ཅིའི་ཕྱིར           | ཕུང་པོ        | རྣམས    | ལྔ               | ཁོ་ན               | ཞེ་ན                    |
 | [[steinert:ci'i phyir][ci'i phyir]]      | [[steinert:phung po][phung po]]    | [[steinert:rnams][rnams]]  | [[steinert:lnga][lnga]]            | [[steinert:kho na][kho na]]            | [[steinert:zhe na][zhe na]]                 |
@@ -90,25 +115,8 @@
 
 *Grammar:* A question and its answer.  The question (77) ends in /zhe na/, „if one asks“.  The answer (78–83) is one causal construction: the nominalised verb /brjod pa/ „stating“ with five objects, each /bdag gi gzhi/ with an apposition, joined by /dang/ and framed by /phyir te/ (78) and /phyir ro/ (83).
 
-* Sanskrit
-#+begin_verse
-कस्मात् पञ्चैव स्कन्धाः।
-kasmāt pañcaiva skandhāḥ.
-पञ्चाकारात्मवस्तूद्भावनताम् उपादाय।
-pañcākārātmavastūdbhāvanatām upādāya.
-सपरिग्रहदेहात्मवस्तूद्भावनताम् उपादाय।
-saparigrahadehātmavastūdbhāvanatām upādāya.
-उपभोगात्मवस्तूद्भावनताम् उपादाय।
-upabhogātmavastūdbhāvanatām upādāya.
-व्यवहारात्मवस्तूद्भावनताम् उपादाय।
-vyavahārātmavastūdbhāvanatām upādāya.
-धर्माधर्माभिसंस्कारात्मवस्तूद्भावनताम् उपादाय।
-dharmādharmābhisaṃskārātmavastūdbhāvanatām upādāya.
-तदाश्रयात्मवस्तूद्भावनताम् उपादाय।
-tadāśrayātmavastūdbhāvanatām upādāya.
-#+end_verse
-
-** <<skt-22>>⟦22⟧ · [[tib-77][Tib. 77]]
+** Sanskrit
+*** <<skt-22>>⟦22⟧ · [[tib-77][Tib. 77]]
 *kasmāt pañca eva skandhāḥ.*
 
 | kasmāt                | pañca            | eva  | skandhāḥ    |
@@ -117,7 +125,7 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 
 → Why are there just five aggregates (skandha)? —
 
-** <<skt-23>>⟦23⟧ · [[tib-78][Tib. 78]]
+*** <<skt-23>>⟦23⟧ · [[tib-78][Tib. 78]]
 *pañca-ākāra-ātma-vastu-udbhāvanatām upādāya.*
 
 | pañca-ākāra-ātma-vastu-udbhāvanatām          | upādāya            |
@@ -132,7 +140,7 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 
 → On account of their bringing to light (udbhāvanatā) the basis of self (ātmavastu) in five modes:
 
-** <<skt-24>>⟦24⟧ · [[tib-79][Tib. 79]]
+*** <<skt-24>>⟦24⟧ · [[tib-79][Tib. 79]]
 *sa-parigraha-deha-ātma-vastu-udbhāvanatām upādāya.*
 
 | sa-parigraha-deha-ātma-vastu-udbhāvanatām | upādāya            |
@@ -148,7 +156,7 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 
 → the self-basis that is the body together with its possessions (saparigraha-deha),
 
-** <<skt-25>>⟦25⟧ · [[tib-80][Tib. 80]]
+*** <<skt-25>>⟦25⟧ · [[tib-80][Tib. 80]]
 *upabhoga-ātma-vastu-udbhāvanatām upādāya.*
 
 | upabhoga-ātma-vastu-udbhāvanatām      | upādāya            |
@@ -162,7 +170,7 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 
 → the self-basis that is experience (upabhoga),
 
-** <<skt-26>>⟦26⟧ · [[tib-81][Tib. 81]]
+*** <<skt-26>>⟦26⟧ · [[tib-81][Tib. 81]]
 *vyavahāra-ātma-vastu-udbhāvanatām upādāya.*
 
 | vyavahāra-ātma-vastu-udbhāvanatām                | upādāya            |
@@ -176,7 +184,7 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 
 → the self-basis that is conventional expression (vyavahāra),
 
-** <<skt-27>>⟦27⟧ · [[tib-82][Tib. 82]]
+*** <<skt-27>>⟦27⟧ · [[tib-82][Tib. 82]]
 *dharma-adharma-abhisaṃskāra-ātma-vastu-udbhāvanatām upādāya.*
 
 | dharma-adharma-abhisaṃskāra-ātma-vastu-udbhāvanatām       | upādāya            |
@@ -192,7 +200,7 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 
 → the self-basis that is the forming of merit and demerit (dharmādharmābhisaṃskāra),
 
-** <<skt-28>>⟦28⟧ · [[tib-83][Tib. 83]]
+*** <<skt-28>>⟦28⟧ · [[tib-83][Tib. 83]]
 *tad-āśraya-ātma-vastu-udbhāvanatām upādāya.*
 
 | tad-āśraya-ātma-vastu-udbhāvanatām | upādāya            |
@@ -207,10 +215,9 @@ tadāśrayātmavastūdbhāvanatām upādāya.
 
 → and the self-basis that is the support of these (tadāśraya).
 
-** Translation
+*** Translation
 *Translation:* Why are there just five aggregates (skandha)? — On account of their bringing to light (udbhāvanatā) the basis of self (ātmavastu) in five modes: the self-basis that is the body together with its possessions (saparigraha-deha), the self-basis that is experience (upabhoga), the self-basis that is conventional expression (vyavahāra), the self-basis that is the forming of merit and demerit (dharmādharmābhisaṃskāra), and the self-basis that is the support of these (tadāśraya).
 
-* Sentence
 ** Concepts
 ⟦78⟧ *bdag gi gzhi* (ātmavastu) — the basis on which the idea of a self rests; the aggregates state it in five modes, and their number follows from these.
 
@@ -224,7 +231,6 @@ The Tibetan keeps the structure: /zhe na/ marks the question, /phyir te/ opens a
 
 Rahula/Boin-Webb follow the Sanskrit sense — the self „makes its appearance“ — where the Tibetan says that the aggregates state it (brjod pa).
 
-* Segments
 ** Segment 77 · Skt. 22
 ⟦77⟧ *Translation:* Why are the aggregates (phung po: skandha) only five? — if one asks: \\
 *Rahula/Boin-Webb 2001:* Why are there only five aggregates?

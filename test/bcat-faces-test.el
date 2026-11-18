@@ -507,6 +507,60 @@ and with the mode."
       (goto-char (point-min)) (search-forward "dharma")
       (should (equal '(" ཆོས    " " chos   " " dharma " " N      ") (funcall texts))))))
 
+(ert-deftest bcat-faces-three-parts ()
+  "18.11.: in a file of three parts (* Text, * Philology, * Worum es
+geht) the colours as before.  The „→“ line of a segment under
+* Philology — after the tables of a Sanskrit segment (a heading ⟦N⟧; in
+the Tibetan file of a pair one level down under ** Sanskrit) and of a
+Tibetan one (a mark on its line; in the Sanskrit file under
+** Tibetan) —, not a translator's „→“ under ** Segment N, not one in
+another part.  The rows under the rule explain the words where the
+table is a Sanskrit segment's: a Sanskrit segment is a heading ⟦N⟧, a
+Tibetan one never is — whatever the template and the section."
+  (let ((skt (concat "*a b*\n\n| vigatā     | yā    |\n| departed   | which |\n| ppp.       | pron. |\n"
+                     "|------------+-------|\n| /vi-/ away |       |\n\n→ sanskrit\n\n"))
+        (tib (concat "| དེ     |\n| de     |\n| that   |\n| DEM    |\n|--------|\n"
+                     "| ཆོས    |\n| chos   |\n| dharma |\n| N      |\n\n→ tibetan\n\n"))
+        (rest (concat "** Concepts\n⟦1⟧ c\n\n** Translations compared\n*Translation:* T\n\n"
+                      "** Segment 1\n⟦1⟧ *Translation:* t \\\\\n→ Dyczkowski 2023: d\n\n"
+                      "* Worum es geht\n→ kein Segment\n")))
+    ;; a Sanskrit file
+    (with-temp-buffer
+      (insert "#+CAT_TEMPLATE: sanskrit\n* Text\n#+begin_verse\nअ\na b\n#+end_verse\n\n"
+              "* Philology\n** ⟦1⟧\n" skt "** Translation\n*Translation:* T\n\n" rest)
+      (org-mode)
+      (should (equal '("→ sanskrit") (bcat-faces-test--matches #'bcat-faces--translation-matcher 0)))
+      (should (equal '("/vi-/ away") (bcat-faces-test--matches #'bcat-faces--sub-cell-matcher 0)))
+      (should (equal '("| vigatā     | yā    |") (bcat-faces-test--matches #'bcat-faces--word-row-matcher 0))))
+    ;; the Tibetan file of a pair: its segments first, the Sanskrit ones
+    ;; one level down
+    (with-temp-buffer
+      (insert "#+CAT_TEMPLATE: bilingual-tibetan\n* Text\n#+begin_verse\nདེ།\nde/\n#+end_verse\n\n"
+              "* Philology\n<<tib-7>>⟦7⟧\n" tib "*Translation:* T\n\n"
+              "** Sanskrit\n*** <<skt-1>>⟦1⟧ · [[tib-7][Tib. 7]]\n" skt "*** Translation\n*Translation:* S\n\n" rest)
+      (org-mode)
+      (should (equal '("→ tibetan" "→ sanskrit")
+                     (bcat-faces-test--matches #'bcat-faces--translation-matcher 0)))
+      (should (equal '("/vi-/ away") (bcat-faces-test--matches #'bcat-faces--sub-cell-matcher 0)))
+      ;; the bands of the Tibetan table are words
+      (should (equal '("| de     |" "| chos   |" "| vigatā     | yā    |")
+                     (bcat-faces-test--matches #'bcat-faces--word-row-matcher 0)))
+      (goto-char (point-min)) (search-forward "dharma")
+      (should (= 4 (length (bcat-faces--column-cells (point)))))
+      (goto-char (point-min)) (search-forward "away")
+      (should (= 5 (length (bcat-faces--column-cells (point))))))
+    ;; the Sanskrit file of a pair: the Tibetan segments under ** Tibetan
+    (with-temp-buffer
+      (insert "#+CAT_TEMPLATE: bilingual\n* Text\n#+begin_verse\nअ\na b\n#+end_verse\n\n"
+              "* Philology\n** <<skt-1>>⟦1⟧ · [[tib-7][Tib. 7]]\n" skt "** Translation\n*Translation:* T\n\n"
+              "** Tibetan\n<<tib-7>>⟦7⟧\n" tib "*Translation:* TT\n\n" rest)
+      (org-mode)
+      (should (equal '("→ sanskrit" "→ tibetan")
+                     (bcat-faces-test--matches #'bcat-faces--translation-matcher 0)))
+      (should (equal '("/vi-/ away") (bcat-faces-test--matches #'bcat-faces--sub-cell-matcher 0)))
+      (should (equal '("| vigatā     | yā    |" "| de     |" "| chos   |")
+                     (bcat-faces-test--matches #'bcat-faces--word-row-matcher 0))))))
+
 (ert-deftest bcat-faces-only-in-sentence-files ()
   "Switched on in a sentence file of a template (sent-…, comm-… with
 #+CAT_TEMPLATE:), not in other org files."

@@ -1136,7 +1136,7 @@ template."
       (bcat-sentence-test--with-stubs (bcat-sentence-test--sa-answer)
         (bcat-sentence-test--fetch-n src 1007))
       (should (equal "Reading" (car (bcat-export-test--parts (bcat-export-view file)))))
-      (bcat-sentence-test--put-overview file "* Recitation")
+      (bcat-sentence-test--put-overview file "* Text")
       (let ((view (bcat-export-view file)))
         (should (equal '("Worum es geht" "Reading") (cl-subseq (bcat-export-test--parts view) 0 2)))
         (should (equal (concat "* Worum es geht\n:PROPERTIES:\n:CUSTOM_ID: overview\n:END:\n"
@@ -1611,7 +1611,7 @@ the recitation begins on the second."
     (bcat-sentence-test--create-n src 1007)
     (bcat-sentence-test--with-stubs (bcat-sentence-test--sa-answer)
       (bcat-sentence-test--fetch-n src 1007))
-    (bcat-sentence-test--put-overview (tibetan-sentence--filepath 1007 folder src) "* Recitation")
+    (bcat-sentence-test--put-overview (tibetan-sentence--filepath 1007 folder src) "* Text")
     (let ((bcat-export-upload nil)
           (warning-minimum-level :emergency)
           (said '()))

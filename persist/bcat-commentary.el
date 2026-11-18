@@ -714,9 +714,17 @@ analysed is left alone."
             (replace-match ""))
           (goto-char (point-min))
           (cond
-           ((re-search-forward "^\\* Commentary\n" nil t)
+           ;; 18.11.: in a file of three parts ** Commentary, the last
+           ;; heading of * Philology
+           ((re-search-forward "^\\*\\*? Commentary\n" nil t)
             (insert lines))
-           ((not (string-empty-p lines))
+           ((string-empty-p lines))
+           ((progn (goto-char (point-min)) (re-search-forward "^\\* Philology$" nil t))
+            (if (re-search-forward "^\\* " nil t)
+                (beginning-of-line)
+              (goto-char (point-max)))
+            (insert "** Commentary\n" lines))
+           (t
             (goto-char (point-min))
             (if (re-search-forward "^\\* \\(?:Further Reading\\|Working Translation\\)$" nil t)
                 (beginning-of-line)

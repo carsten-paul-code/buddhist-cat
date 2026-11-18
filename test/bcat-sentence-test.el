@@ -110,10 +110,12 @@ analysis/.  Templates on, the tool templates from the repository."
     (with-temp-buffer (insert-file-contents file) (buffer-string))))
 
 (ert-deftest bcat-sentence-create-glossed-text ()
-  "C-c u A (no AI): under * Text the Uchen, then per segment ⟦N⟧ and
+  "C-c u A (no AI): under * Text the original — Uchen over Wylie
+\(18.11.: „Originaltext in Script und Wylie“; 31.10. to 18.11. no plain
+Wylie once there was a table) —, under * Philology per segment ⟦N⟧ and
 its table from the dictionaries (31.10. abends, TĀ 1006: „Ich lese und
 übersetze dann aus den Segmenttabellen“ — no glossed Wylie line any
-more; with a table no plain Wylie under the Uchen)."
+more)."
   (bcat-sentence-test--with-source
     (cl-letf (((symbol-function 'tibetan-gloss-table--unit-rows)
                (lambda (text &rest _)
@@ -128,36 +130,37 @@ more; with a table no plain Wylie under the Uchen)."
       (let ((text (bcat-sentence-test--create src)))
         (should (string-match-p
                  (regexp-quote (concat "* Text\n#+begin_verse\n"
-                                       "བརྗོད་དུ་མེད་པ་བལྟར་མེད་པ། །\n"
-                                       "འགྱུར་བ་མེད་པ་འདུས་མ་བྱས། །\n"
-                                       "#+end_verse\n\n⟦38⟧\n| བརྗོད་དུ་མེད་པ"))
+                                       "བརྗོད་དུ་མེད་པ་བལྟར་མེད་པ། །\nbrjod du med pa bltar med pa/ /\n"
+                                       "འགྱུར་བ་མེད་པ་འདུས་མ་བྱས། །\n'gyur ba med pa 'dus ma byas/ /\n"
+                                       "#+end_verse\n\n* Philology\n⟦38⟧\n| བརྗོད་དུ་མེད་པ"))
                  text))
         ;; 31.10. abends, Tibetisch V: the Uchen above the Wylie.
         (should (string-match-p "^| བརྗོད་དུ་མེད་པ +| བལྟར་མེད་པ +|\n| \\[\\[steinert:brjod du med pa\\]" text))
         (should (string-match-p (regexp-quote "| inexpressible; ineffable | invisible") text))
         (should (string-match-p (regexp-quote "\n\n⟦39⟧\n| འགྱུར་བ་མེད་པ") text))
         (should-not (string-match-p "\\[inexpressible" text))
-        (should (string-match-p "\n\n\\* Sentence\n" text))))))
+        (should (string-match-p "\n\n\\*\\* Concepts\n" text))))))
 
 (ert-deftest bcat-sentence-create-text-without-glosses ()
-  "No word known to the dictionaries: no table — the Wylie under the
-Uchen instead."
+  "No word known to the dictionaries: no table — * Text as always, the
+Wylie under the Uchen; * Philology begins with the Concepts."
   (bcat-sentence-test--with-source
     (cl-letf (((symbol-function 'tibetan-gloss-table--unit-rows) #'ignore))
       (should (string-match-p
                (regexp-quote (concat "* Text\n#+begin_verse\n"
                                      "བརྗོད་དུ་མེད་པ་བལྟར་མེད་པ། །\nbrjod du med pa bltar med pa/ /\n"
                                      "འགྱུར་བ་མེད་པ་འདུས་མ་བྱས། །\n'gyur ba med pa 'dus ma byas/ /\n"
-                                     "#+end_verse\n\n* Sentence"))
+                                     "#+end_verse\n\n* Philology\n\n** Concepts"))
                (bcat-sentence-test--create src))))))
 
 (ert-deftest bcat-sentence-create-sanskrit ()
   "C-c u A on a Sanskrit source with #+CAT_TEMPLATE: sanskrit (§5.74,
-Carsten 29.10.): the Recitation first — the verse with its pauses, the
-scansion without pāda letters; since 31.10. abends without the
-description of the metre („Bei der Recitation kann die Beschreibung
-weg“) —, * Text empty (the tables come with C-c u G), * Sentence with
-the reference under Translations compared, the segments empty.  No AI."
+Carsten 29.10.): the recitation first — since 18.11. as * Text: the
+verse with its pauses, the scansion without pāda letters; since 31.10.
+abends without the description of the metre („Bei der Recitation kann
+die Beschreibung weg“) —, * Philology without tables (they come with
+C-c u G), the reference under Translations compared, the segments
+empty.  No AI."
   (bcat-sentence-test--with-sa-source
     (let ((fired nil))
       (cl-letf (((symbol-function 'tibetan-sentence-claude--request)
@@ -167,7 +170,7 @@ the reference under Translations compared, the segments empty.  No AI."
           (should (string-match-p "^#\\+SOURCE_LANG: sa$" text))
           (should (string-match-p
                    (regexp-quote
-                    (concat "\n\n* Recitation\n"
+                    (concat "\n\n* Text\n"
                             "#+begin_verse\nअत्र मद्वागशक्तापि | यन्नियन्त्रणमुल्लसेत् ।\n"
                             "atra madvāgaśaktāpi | yanniyantraṇamullaset /\n"
                             "तत्पारमेश्वरं श्रीमन्|महानन्दविजृम्भितम् ॥ ७\n"
@@ -175,11 +178,11 @@ the reference under Translations compared, the segments empty.  No AI."
                             "| at  | ra | mad |"))
                    text))
           (should (string-match-p
-                   (regexp-quote "\n\n* Text\n\n* Sentence\n** Concepts\n")
+                   (regexp-quote "\n\n* Philology\n\n** Concepts\n")
                    text))
           (should-not (string-match-p "Śloka (Anuṣṭubh)" text))
           (should (string-match-p
-                   (regexp-quote "* Segments\n** Segment 685\n\n** Segment 686\n\n* Working Translation\n")
+                   (regexp-quote "\n\n** Segment 685\n\n** Segment 686\n\n* Working Translation\n")
                    text))
           (should (string-match-p
                    (regexp-quote "** Translations compared\n*Dyczkowski 2023:* Although my speech")
@@ -188,16 +191,16 @@ the reference under Translations compared, the segments empty.  No AI."
           (should-not fired))))))
 
 (ert-deftest bcat-sentence-create-sanskrit-prose ()
-  "Viveka prose: the Recitation holds only the Devanāgarī original (no
-metre, no scansion) over the IAST as transmitted; * Text is empty until
-C-c u G brings the tables."
+  "Viveka prose: * Text holds only the Devanāgarī original (no metre, no
+scansion) over the IAST as transmitted; * Philology has no tables until
+C-c u G brings them."
   (bcat-sentence-test--with-sa-source
     (let ((text (bcat-sentence-test--create-n src 1008)))
       (should (string-match-p
-               (regexp-quote (concat "* Recitation\n#+begin_verse\n"
+               (regexp-quote (concat "* Text\n#+begin_verse\n"
                                      "इह खलु शास्त्रादाव् अलौकिकाशीर्वादमुखेन परामृशति\n"
                                      "iha khalu śāstrādāv alaukikāśīrvādamukhena parāmṛśati\n#+end_verse\n\n"
-                                     "* Text\n\n* Sentence"))
+                                     "* Philology\n\n** Concepts"))
                text)))))
 
 (defconst bcat-sentence-test--sa-quote
@@ -219,8 +222,8 @@ from C-c u L."
   (bcat-sentence-test--with-sa-source
     (write-region bcat-sentence-test--sa-quote nil src t)
     (let* ((text (bcat-sentence-test--create-n src 1012))
-           (recitation (substring text (string-match "^\\* Recitation$" text)
-                                  (string-match "^\\* Text$" text))))
+           (recitation (substring text (string-match "^\\* Text$" text)
+                                  (string-match "^\\* Philology$" text))))
       (should (string-match-p (regexp-quote "\nyatrāsti na bhayaṃ kiṃcin|na jarā vyādhayo'pi vā /\n") recitation))
       (should (string-match-p (regexp-quote "\nanuttaraṃ katipayakāladārḍhyakāryamṛtāntaravailakṣaṇyāt utkṛṣṭaṃ ca tat\n") recitation))
       (should (string-match-p "^| yat +| rās +|" recitation))
@@ -280,11 +283,11 @@ piece."
 
 (ert-deftest bcat-sentence-create-from-template ()
   "C-c u A on a Tibetan cascade source writes the template form: marker
-#+CAT_TEMPLATE: tibetan, * Text with the Uchen per segment and a
-dictionary table per segment (31.10. abends: the tables under * Text),
-* Sentence with the reference translation under Translations compared,
-* Segments, the three user slots — and none of the old sections.  No
-AI request is made."
+#+CAT_TEMPLATE: tibetan, * Text with the Uchen over the Wylie per
+segment, * Philology with a dictionary table per segment (31.10.
+abends: the tables first), the reference translation under Translations
+compared and the segments, the three user slots — and none of the old
+sections.  No AI request is made."
   (bcat-sentence-test--with-source
     (let ((fired nil))
       (cl-letf (((symbol-function 'tibetan-sentence-claude--request)
@@ -295,10 +298,12 @@ AI request is made."
           ;; One Uchen line per pāda, then the tables (exact form:
           ;; create-glossed-text).
           (should (string-match-p
-                   "#\\+begin_verse\nབརྗོད་དུ་མེད་པ་བལྟར་མེད་པ། །\nའགྱུར་བ་མེད་པ་འདུས་མ་བྱས། །\n#\\+end_verse\n\n⟦38⟧\n| "
+                   "#\\+begin_verse\nབརྗོད་དུ་མེད་པ་བལྟར་མེད་པ། །\nbrjod du med pa bltar med pa/ /\nའགྱུར་བ་མེད་པ་འདུས་མ་བྱས། །\n'gyur ba med pa 'dus ma byas/ /\n#\\+end_verse\n\n\\* Philology\n⟦38⟧\n| "
                    text))
           (should (string-match-p "^⟦39⟧\n| " text))
-          (should (string-match-p "^\\* Segments\n\\*\\* Segment 38\n\n\\*\\* Segment 39\n" text))
+          (should (string-match-p "\n\n\\*\\* Segment 38\n\n\\*\\* Segment 39\n" text))
+          ;; 18.11.: three parts at the top level
+          (should-not (string-match-p "^\\* \\(?:Sentence\\|Segments\\|Recitation\\)$" text))
           (should (string-match-p "steinert:" text))
           (should (string-match-p
                    (regexp-quote "** Translations compared\n*Lindtner 1981:* [It is also] inexpressible (avācya) and invisible (adraṣṭavya).")
@@ -678,7 +683,7 @@ the YouTube links reduced to their time marks."
                                      "[[https://www.youtube.com/watch?v=hxaz7FbtPFk&t=620s][0:10:20]] It's an immensely tricky verse.\n\n"
                                      "[[https://www.youtube.com/watch?v=hxaz7FbtPFk&t=688s][0:11:28]] And Jayaratha"))
                text))
-      (should (< (string-match "^\\* Sentence$" text) (string-match "^\\* Segments$" text)
+      (should (< (string-match "^\\* Philology$" text) (string-match "^\\*\\* Segment 38$" text)
                  (string-match "^\\* Further Reading$" text)
                  (string-match "^\\* Working Translation$" text))))
     (bcat-sentence-test--with-stubs bcat-sentence-test--answer
@@ -788,18 +793,22 @@ before the L1 heading BEFORE — where the Tantrāloka files have it."
 (ert-deftest bcat-sentence-fetch-keeps-overview-in-front ()
   "16.11. (Tantrāloka 1009–1040): „Worum es geht“, written by hand
 before the first section, must survive C-c u G — and C-u C-c u G —
-word for word and where it stands: in front, not after the Footnotes
-with the file's other own sections."
+word for word, once, and in its place — not after the Footnotes with
+the file's other own sections.  Its place until 18.11.: in front.
+Since then (Carsten: „als Drittes ‚Worum es geht‘“) the third part,
+after * Philology — a text standing in front moves there."
   (bcat-sentence-test--with-source
     (bcat-sentence-test--create src)
     (let ((file (tibetan-sentence--filepath 9 folder src))
-          (front (concat "\n\n* Worum es geht\n" bcat-sentence-test--overview "\n\n* Text\n")))
+          (front (concat "\n\n* Worum es geht\n" bcat-sentence-test--overview "\n\n* Working Translation\n")))
       (bcat-sentence-test--put-overview file "* Text")
       (bcat-sentence-test--with-stubs bcat-sentence-test--answer
         (bcat-sentence-test--fetch src)
         (let ((text (bcat-sentence-test--file-text src)))
           (should (string-match-p "^⟦38⟧ \\*Translation:\\*" text))
           (should (string-match-p (regexp-quote front) text))
+          (should (< (string-match "^\\* Text$" text) (string-match "^\\* Philology$" text)
+                     (string-match "^\\* Worum es geht$" text)))
           (should (= 1 (bcat-sentence-test--overview-count text))))
         (cl-letf (((symbol-function 'y-or-n-p) (lambda (&rest _) t)))
           (tibetan-cascade-fetch (list :source src :sent-nums '(9) :label "Satz 9") t))
@@ -808,19 +817,21 @@ with the file's other own sections."
           (should (= 1 (bcat-sentence-test--overview-count text))))))))
 
 (ert-deftest bcat-sentence-fetch-keeps-overview-sanskrit ()
-  "The same in a Sanskrit file: „Worum es geht“ stays before the
-Recitation (Tantrāloka 1012)."
+  "The same in a Sanskrit file (Tantrāloka 1012): „Worum es geht“,
+written in front, is the third part after C-c u G — after * Text (the
+recitation) and * Philology."
   (bcat-sentence-test--with-sa-source
     (bcat-sentence-test--create-n src 1007)
-    (bcat-sentence-test--put-overview (tibetan-sentence--filepath 1007 folder src) "* Recitation")
+    (bcat-sentence-test--put-overview (tibetan-sentence--filepath 1007 folder src) "* Text")
     (bcat-sentence-test--with-stubs (bcat-sentence-test--sa-answer)
       (bcat-sentence-test--fetch-n src 1007)
       (let ((text (bcat-sentence-test--file-text-n src 1007)))
-        (should (string-match-p (regexp-quote "* Text\n** ⟦685⟧\n") text))
+        (should (string-match-p (regexp-quote "* Philology\n** ⟦685⟧\n") text))
         (should (string-match-p
                  (regexp-quote (concat "\n\n* Worum es geht\n" bcat-sentence-test--overview
-                                       "\n\n* Recitation\n#+begin_verse\n"))
+                                       "\n\n* Working Translation\n"))
                  text))
+        (should (string-match-p "\\`\\(?:#\\+.*\n\\)+\n\\* Text\n#\\+begin_verse\n" text))
         (should (= 1 (bcat-sentence-test--overview-count text)))))))
 
 (defun bcat-sentence-test--with-overview (answer &optional subject)
@@ -848,7 +859,7 @@ L1 heading."
 
 (ert-deftest bcat-sentence-fetch-writes-overview ()
   "16.11.: C-c u G fills „Worum es geht“ from the answer's `overview' —
-in front, marked as generated (:GENERATED_HASH: of its text).  A later
+the third part since 18.11. (until then in front), marked as generated (:GENERATED_HASH: of its text).  A later
 fetch replaces a generated section nobody touched; once it is changed
 by hand it stays, and the mark is gone."
   (bcat-sentence-test--with-source
@@ -866,7 +877,8 @@ by hand it stays, and the mark is gone."
         (should (equal (concat "* Worum es geht\n:PROPERTIES:\n:GENERATED_HASH: "
                                (bcat-analysis-overview-hash generated) "\n:END:\n" generated "\n\n")
                        (bcat-sentence-test--section text)))
-        (should (string-match-p "\n\n\\* Worum es geht\n\\(?:.\\|\n\\)*?\n\n\\* Text\n" text))
+        (should (string-match-p "\n\n\\* Worum es geht\n\\(?:.\\|\n\\)*?\n\n\\* Working Translation\n" text))
+        (should (< (string-match "^\\* Philology$" text) (string-match "^\\* Worum es geht$" text)))
         (should (equal (cons generated (bcat-analysis-overview-hash generated))
                        (bcat-sentence--overview text))))
       ;; untouched: the next answer's
@@ -889,6 +901,27 @@ by hand it stays, and the mark is gone."
                                (bcat-sentence-test--generated "die zweite Fassung, von mir ergänzt.") "\n\n")
                        (bcat-sentence-test--section text)))
         (should-not (string-match-p "GENERATED_HASH\\|dritte Fassung" text))))))
+
+(ert-deftest bcat-sentence-segments-part-three-parts ()
+  "18.11.: in a file of three parts the ⟦N⟧ translations with the
+references per segment stand under ** Segment N in * Philology — the
+part read for them begins at the first ** Segment N and ends with
+* Philology; the marks of the tables and of the concepts before it do
+not count (a file not analysed yet has none of the translations), nor
+does what follows in „Worum es geht“.  A file of the earlier form: its
+* Segments, as before."
+  (let ((new (concat "* Text\n#+begin_verse\nཆོས།\nchos/\n#+end_verse\n\n* Philology\n⟦7⟧\n| a |\n\n"
+                     "** Concepts\n⟦7⟧ c\n\n** Translations compared\n*Translation:* T\n\n"
+                     "** Segment 7\n⟦7⟧ *Translation:* t\n\n** Segment 8\n\n*Structure:* s\n\n"
+                     "* Worum es geht\n⟦7⟧ nicht hier\n\n* Working Translation\n"))
+        (old (concat "* Text\n⟦7⟧\n| a |\n\n* Sentence\n** Concepts\n⟦7⟧ c\n\n"
+                     "* Segments\n** Segment 7\n⟦7⟧ *Translation:* t\n\n* Working Translation\n")))
+    (should (equal "** Segment 7\n⟦7⟧ *Translation:* t\n\n** Segment 8\n\n*Structure:* s\n\n"
+                   (bcat-sentence--segments-part new)))
+    (should (equal "** Segment 7\n⟦7⟧ *Translation:* t\n\n" (bcat-sentence--segments-part old)))
+    ;; a rump of three parts without the segments' details: nothing
+    (should (equal "" (bcat-sentence--segments-part "* Text\nx\n\n* Philology\n⟦7⟧\n| a |\n\n* Working Translation\n")))
+    (should (member "Philology" bcat-sentence--tool-sections))))
 
 (ert-deftest bcat-sentence-overview-mark-in-any-buffer ()
   "18.11. (trial run of C-c u L over the Sanskrit sentence files, from a
@@ -915,11 +948,11 @@ the answer brings an overview of its own, at C-c u G and at C-u C-c u G."
     (bcat-sentence-test--create-n src 1007)
     (let ((file (tibetan-sentence--filepath 1007 folder src))
           (hand (concat "* Worum es geht\n" bcat-sentence-test--overview "\n\n")))
-      (bcat-sentence-test--put-overview file "* Recitation")
+      (bcat-sentence-test--put-overview file "* Text")
       (bcat-sentence-test--with-stubs (bcat-sentence-test--with-overview (bcat-sentence-test--sa-answer)
                                                                          "etwas ganz anderes.")
         (bcat-sentence-test--fetch-n src 1007)
-        (should (string-match-p (regexp-quote "* Text\n** ⟦685⟧\n") (bcat-sentence-test--text-of file)))
+        (should (string-match-p (regexp-quote "* Philology\n** ⟦685⟧\n") (bcat-sentence-test--text-of file)))
         (should (equal hand (bcat-sentence-test--section (bcat-sentence-test--text-of file))))
         (cl-letf (((symbol-function 'y-or-n-p) (lambda (&rest _) t)))
           (tibetan-cascade-fetch (list :source src :sent-nums '(1007) :label "Satz 1007") t))
@@ -958,17 +991,26 @@ block."
 
 (ert-deftest bcat-sentence-templates-overview-first ()
   "Every template of a sentence file and of a commentary document has
-the section: with the field `overview' it is the first L1 section,
-without it there is none."
+the section „Worum es geht“ with the field `overview', none without.
+In a sentence file it is the third part since 18.11., right after
+* Philology (Carsten: read first when preparing, not needed in the
+reading); in a commentary document still the first section."
   (let ((bcat-template-directory
          (expand-file-name "../Templates/analysis"
                            (file-name-directory (locate-library "bcat-sentence-test")))))
     (dolist (name '("tibetan" "sanskrit" "bilingual" "bilingual-tibetan" "commentary"))
-      (let ((with (bcat-template-render-named name '((overview . "Erste Zeile.\n\n- Frage?"))))
-            (without (bcat-template-render-named name '())))
+      (let* ((with (bcat-template-render-named name '((overview . "Erste Zeile.\n\n- Frage?"))))
+             (without (bcat-template-render-named name '()))
+             (l1 (let ((pos 0) (out '()))
+                   (while (string-match "^\\* \\(.*\\)$" with pos)
+                     (push (match-string 1 with) out)
+                     (setq pos (match-end 0)))
+                   (nreverse out))))
         (ert-info ((format "Vorlage %s" name))
-          (should (string-match "^\\* \\(.*\\)$" with))
-          (should (equal "Worum es geht" (match-string 1 with)))
+          (if (equal name "commentary")
+              (should (equal "Worum es geht" (car l1)))
+            (should (equal '("Philology" "Worum es geht" "Working Translation")
+                           (seq-take (member "Philology" l1) 3))))
           (should (string-match-p "\n\n\\* Worum es geht\nErste Zeile\\.\n\n- Frage\\?\n\n\\* " with))
           (should-not (string-match-p "Worum es geht" without)))))))
 
@@ -1002,7 +1044,7 @@ bold marks come from the answer."
                                      "invisible (adraṣṭavya). [fn:l9]\n\n*DharmaMitra:*"))
                text))
       (should (string-match-p
-               (regexp-quote "\n\n[fn:l9] Lindtner 1981, S. 197: Eimer's \"Befleckungen\" is wrong.\n\n* Segments\n")
+               (regexp-quote "\n\n[fn:l9] Lindtner 1981, S. 197: Eimer's \"Befleckungen\" is wrong.\n\n** Segment 38\n")
                text)))))
 
 (ert-deftest bcat-sentence-fetch-unreadable-answer-keeps-file ()
@@ -1088,10 +1130,11 @@ reference was added under Translations compared that no segment shows."
 
 (defun bcat-sentence-test--goto-compared-end ()
   "Point to the end of Translations compared in the current buffer: the
-next L1 heading after it (since 31.10. * Segments or * Tibetan follows)."
+next heading of the first or second level after it (until 18.11.
+* Segments, since then ** Segment N)."
   (goto-char (point-min))
   (re-search-forward "^\\*\\* Translations compared$")
-  (re-search-forward "^\\* ")
+  (re-search-forward "^\\*\\*? ")
   (beginning-of-line))
 
 (defun bcat-sentence-test--add-reference (file name text)
@@ -1101,6 +1144,29 @@ next L1 heading after it (since 31.10. * Segments or * Tibetan follows)."
     (bcat-sentence-test--goto-compared-end)
     (insert (format "*%s:* %s\n\n" name text))
     (write-region (point-min) (point-max) file nil 0)))
+
+(ert-deftest bcat-sentence-align-merge-three-parts ()
+  "18.11.: a reference added by hand gets its segment parts in a file of
+three parts too — the new part goes into the segment's block under
+** Segment N of * Philology, not to the mark of its table or of its
+concept before; the comparison's sentence after the references under
+Translations compared."
+  (let* ((text (concat "* Text\n#+begin_verse\nབརྗོད།\nbrjod/\n#+end_verse\n\n"
+                       "* Philology\n⟦38⟧\n| t |\n\n→ Own one.\n\n*Translation:* Own.\n\n"
+                       "** Concepts\n⟦38⟧ *brjod* — to say\n\n"
+                       "** Translations compared\n*Translation:* Own.\n\n*Ruegg 1981:* Unsayable and unseen, unchanging.\n\n"
+                       "** Segment 38\n⟦38⟧ *Translation:* Own one.\n\n*Structure:* s\n\n"
+                       "** Segment 39\n⟦39⟧ *Translation:* Own two.\n\n"
+                       "* Worum es geht\n⟦38⟧ steht auch hier.\n\n* Working Translation\n"))
+         (out (bcat-sentence--align-merge text (bcat-analysis-parse bcat-sentence-test--align-answer))))
+    (should (string-match-p (regexp-quote "* Philology\n⟦38⟧\n| t |\n\n→ Own one.\n") out))
+    (should (string-match-p (regexp-quote "** Concepts\n⟦38⟧ *brjod* — to say\n\n") out))
+    (should (string-match-p
+             (regexp-quote "** Segment 38\n⟦38⟧ *Translation:* Own one. \\\\\n*Ruegg 1981:* *Unsayable* and unseen,")
+             out))
+    (should (string-match-p (regexp-quote "⟦39⟧ *Translation:* Own two. \\\\\n*Ruegg 1981:* unchanging, unconditioned.\n") out))
+    (should (string-match-p (regexp-quote "Ruegg reads a modal nuance.\n\n** Segment 38\n") out))
+    (should (string-match-p (regexp-quote "* Worum es geht\n⟦38⟧ steht auch hier.\n\n* Working Translation\n") out))))
 
 (ert-deftest bcat-sentence-compared-stops-at-the-units ()
   "The references under Translations compared are the *NAME:* paragraphs
@@ -1337,10 +1403,10 @@ with vocabulary under * Text, tables, Forms per segment — and the hook
       (let ((text (bcat-sentence-test--file-text-n src 1007)))
         ;; 31.10. abends (TĀ 1006): the recitation without the metre's
         ;; description; no padapāṭha under * Text, the tables instead.
-        (should (string-match-p "^\\* Recitation\n#\\+begin_verse\nअत्र" text))
+        (should (string-match-p "^\\* Text\n#\\+begin_verse\nअत्र" text))
         (should-not (string-match-p "Śloka (Anuṣṭubh)\\|atra \\[here\\]" text))
         ;; 9.11.: ⟦N⟧ a heading, the original in bold under it
-        (should (string-match-p (regexp-quote "* Text\n** ⟦685⟧\n*atra mad-vāk aśaktā api yat niyantraṇam ullaset /*\n\n| atra |") text))
+        (should (string-match-p (regexp-quote "* Philology\n** ⟦685⟧\n*atra mad-vāk aśaktā api yat niyantraṇam ullaset /*\n\n| atra |") text))
         (should (string-match-p (regexp-quote "| atra | mad-vāk ") text))
         (should (string-match-p "^\\*Forms:\\*\n- /mad-vāk/ — vāc- f\\." text))
         (should (string-match-p "^⟦685⟧ \\*Translation:\\* Although my speech" text))
@@ -1589,11 +1655,12 @@ differences, the rendering; C-c u H runs once, at the end."
         ;; a group.
         (should (string-match-p "^\\*\\* <<skt-23>>⟦23⟧ · \\[\\[tib-78\\]\\[Tib\\. 78–79\\]\\]\n\\*[^*\n]+\\*\n\n| " text))
         (should (string-match-p (regexp-quote "<<tib-77>>⟦77⟧ · [[skt-22][Skt. 22]]\n| ཅིའི་ཕྱིར") text))
-        (should (< (string-match "^\\* Tibetan$" text) (string-match "^<<tib-77>>" text)))
+        (should (< (string-match "^\\* Philology$" text) (string-match "^\\*\\* <<skt-22>>" text)
+                   (string-match "^\\*\\* Tibetan$" text) (string-match "^<<tib-77>>" text)))
         ;; (78 and 79 have neither words nor translation in this answer;
         ;; 79, the last of the group, still gets its mark for the
         ;; differences.)
-        (should (string-match-p (regexp-quote "<<tib-79>>⟦79⟧ · [[skt-23][Skt. 23]]\n\n*Differences:* /udbhāvanatā/ is rendered /brjod pa/ („stating“).\n\n* Sentence") text))
+        (should (string-match-p (regexp-quote "<<tib-79>>⟦79⟧ · [[skt-23][Skt. 23]]\n\n*Differences:* /udbhāvanatā/ is rendered /brjod pa/ („stating“).\n\n** Concepts") text))
         (should (string-match-p (regexp-quote "** Segment 23 · Tib. 78–79\n⟦23⟧ *Translation:* On account of") text))
         (should (string-match-p "^\\*\\* Tibetan rendering\nThe Tibetan states the self-basis" text))
         (should (string-match-p "^⟦22⟧ \\*Translation:\\* Why are there just five aggregates" text)))
@@ -1704,8 +1771,9 @@ the assignment 77 → 22, 78–79 → 23.")
 Satz im Tibetischen springen“.  In a pair each sentence file links the
 other's sentence file in its header; C-c u A on the Tibetan source
 builds its file from the bilingual-tibetan template — the Sanskrit of
-the sentence as Devanāgarī over IAST under * Sanskrit, after the
-Tibetan part (1.11.)."
+the sentence as Devanāgarī over IAST in * Text, after the Tibetan
+original (1.11.: after the Tibetan part, under * Sanskrit; 18.11.: both
+originals in * Text)."
   (bcat-sentence-test--with-pair
     (let ((text (bcat-sentence-test--create-n src 3)))
       (should (string-match-p (regexp-quote "#+CAT_PARALLEL: [[file:../../Tibetisch/analysis/sent-003-kunbtus.org][sent-003-kunbtus.org]]") text)))
@@ -1714,7 +1782,8 @@ Tibetan part (1.11.)."
       (should (string-match-p (regexp-quote "#+CAT_PARALLEL: [[file:../../Sanskrit/analysis/sent-003-asam.org][sent-003-asam.org]]") text))
       (should (string-match-p "^#\\+CAT_PARALLEL_SEGMENTS: 22, 23$" text))
       ;; 1.11.: the Tibetan part first, then the Sanskrit part.
-      (should (string-match-p (regexp-quote "* Sanskrit\n#+begin_verse\nकस्मात् पञ्चैव स्कन्धाः।\nkasmāt pañcaiva skandhāḥ.\n") text))
+      (should (string-match-p (regexp-quote "#+end_verse\n\n#+begin_verse\nकस्मात् पञ्चैव स्कन्धाः।\nkasmāt pañcaiva skandhāḥ.\n") text))
+      (should (< (string-match "^\\* Text$" text) (string-match "कस्मात्" text) (string-match "^\\* Philology$" text)))
       (should (string-match-p "^\\*\\* Segment 77$" text)))))
 
 (ert-deftest bcat-sentence-fetch-pair ()
