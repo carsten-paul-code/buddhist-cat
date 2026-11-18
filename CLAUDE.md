@@ -7,7 +7,10 @@ work on **Buddhist CAT** (`~/buddhist-cat`, GitHub
 Computer-Assisted Translation (CAT) system for Classical Tibetan and
 Sanskrit. Read it in full before editing. Symbols keep their
 `tibetan-' prefix until their module is rebuilt; new and rebuilt
-modules use `bcat-' (§5.73). Last updated 2026-10-28 (§5.74: SATZDATEIEN
+modules use `bcat-' (§5.73). Last updated 2026-11-18 (§5.74, Nachtrag 18.11.:
+Wortbildung zurück am Segment — gemeinsame Tabelle, Bedeutungen der Glieder,
+Auflösung des Kompositums, im PDF unter dem Segment, offen; drei PDF-Fehler).
+Before that 2026-10-28 (§5.74: SATZDATEIEN
 NACH VORLAGE — Reading-Klassen, Tibetisch: `#+CAT_TEMPLATE: tibetan' im
 Quellkopf, Gliederung * Text / * Segments / * Sentence, C-c u A = Rumpf
 ohne KI, C-c u G = ein JSON-Abruf je Satz (+ DharmaMitra, + kleiner
@@ -5185,6 +5188,72 @@ C-c u L den Abschnitt fallen lassen: die Vorlage schrieb die
 Überschrift schon selbst, der alte Code kannte das Feld noch nicht).
 Noch kein echter Abruf mit dem neuen Feld (Abrufe nur auf Zuruf); die
 Form der erzeugten Texte ist an einer echten Antwort zu prüfen.
+
+18.11.2026, DIE WORTBILDUNG ZURÜCK AM SEGMENT (Carsten nach dem
+Tantrāloka-Reading, TĀ 1016 ⟦704⟧: para-vimarśa-eka-svabhāva-kartṛtā-
+lakṣaṇā — „Die Übersetzung ist für mich auf den ersten Blick nicht
+nachvollziehbar. Wir hatten doch mal noch eine Zeile …, die ist
+irgendwie rausgefallen“; im Reading liest er vor, übersetzt Segment für
+Segment und will dann sagen, „was ich wie übersetze, was z.B. die root
+ist“ — ohne viel kompakte Lesbarkeit zu verlieren; Entwurf am Beispiel,
+„ja, bau es so, Prompt-Änderung ist ok … erstmal standardmäßig nicht
+eingeklappt“).  Je Sanskrit-Segment gilt jetzt die feste Folge Original
+→ Übersicht → „→“ Übersetzung → Word Formation, alles Tabellen:
+- Einfache Wörter zusammen (`90eccdc'): `bcat-analysis-formation-tables'
+  setzt erst die Komposita (Reihenfolge der Wörter), dann die Wörter aus
+  einem Glied in EINE Tabelle, ein Wort je Spalte
+  (`bcat-analysis--word-columns', `--header-tables'; zu breit: Tabellen
+  mit etwa gleich vielen Spalten, `--even-chunks', auch für Komposita).
+  C-c u L führt alte Dateien über (`bcat-analysis-merge-word-tables':
+  Ein-Spalten-Tabelle, deren Kopf ein Wort der Übersicht ist → in die
+  gemeinsame Tabelle; ein Glied eines geteilten Kompositums bleibt).
+- Bedeutungen der Glieder und Auflösung (`ab7d568'): der Sanskrit-Prompt
+  fragt je Kompositum `members' (Bedeutung jedes Glieds, „ · “) und ab
+  drei Gliedern `layers' ([{part, role, phrase}] vom letzten Glied
+  rückwärts; die phrases hintereinander = Übersetzung des Kompositums).
+  Gesetzt: Bedeutungszeile direkt unter den Gliedern (ein Glied, das nur
+  sein Stamm ist, hat darunter nichts), danach die Auflösung als Tabelle
+  ohne Kopf, drei Spalten, die Beziehung in [eckigen Klammern]
+  (`bcat-analysis--resolution-table').  Erkennungsregeln, auf die sich
+  Farben und Rücklesen stützen: „erste Zeile unter den Gliedern ohne
+  kursive Sanskrit-Form“ = Bedeutungen (schwarz); „kein Kopf, drei
+  Zellen, die mittlere in Klammern“ = Auflösung (nur die Klammer blau) —
+  PDF `bcat-export--detail-rows', Emacs `bcat-faces--detail-row-matcher'
+  / `--relation-cell-matcher'.  Alte Antworten ohne die Felder: wie
+  bisher.
+- Im PDF unter dem Segment (`4eeb202'): Word Formation steht im Teil
+  Segments nach der Übersetzung des Segments (\bcatsub), nicht mehr im
+  Teil Grammar (pdf-sanskrit, pdf-bilingual, pdf-bilingual-tibetan unter
+  „Sanskrit“; `formation-tables' ist kein Grammatik-Feld mehr).
+- Offen statt eingeklappt (`aa6ec94'): der Drawer :VISIBILITY: folded nur
+  noch mit `bcat-sentence-word-formation-folded' (Feld
+  `formation-folded' der Vorlagen), Standard nil.
+Dabei drei Fehler im PDF behoben, alle mit Carstens Einstellungen
+gesehen, keiner im Batch-Lauf der Tests:
+- `afda72e': seit 9.11. stand die Originalzeile zwischen ⟦N⟧ und der
+  ersten Tabelle — `bcat-export--gloss-run-start-p' erkannte keine
+  Tabelle mehr als die eines Segments, `--rechunk-gloss-tables' setzte
+  keine für die Seite; das PDF nahm die Breite der Datei, jede Tabelle
+  wurde einzeln geschrumpft (TĀ 1016: 77–100 %).
+- `d8bfa72': die Tabellen eines Segments in EINER Größe — Umgebung
+  bcattable statt adjustbox, Lauf je Segment (`bcat-export--table-runs',
+  \bcatrunbegin/\bcatrunend; die breiteste Tabelle bestimmt, ihr Maß
+  steht nach dem ersten LaTeX-Lauf in der .aux).  Zwei LaTeX-Fallen:
+  \lrbox in einer Umgebung nur als \begin{lrbox}; \scalebox benutzt
+  \dimen@ selbst.
+- `d9c4ddb': `org-latex-tables-booktabs' (Carstens Init) — \toprule,
+  \midrule, \bottomrule zählen wie \hline; vorher waren die
+  Teile-Zeilen blau/schwarz/blau.
+Lehre: PDF-Fehler, die an Carstens Export-Einstellungen hängen
+(booktabs, Schrift), zeigt nur ein Lauf im laufenden Emacs — nach
+Änderungen am Export die Ansicht dort in einen Scratch-Ordner setzen
+(`bcat-export-views' → Datei → `bcat-export-pdf', kein Upload) und die
+Seite ansehen; Schrifthöhen messen mit `pdftotext -tsv'.
+Stand: TĀ 1016 mit C-c u L neu gesetzt (gemeinsame Tabelle, offen);
+Trockenlauf im Speicher über alle 60 Satzdateien mit Word Formation
+(TĀ, MSA, AS): keine Zelle geht verloren, 291 Ein-Spalten-Tabellen → 41.
+Noch kein echter Abruf mit `members'/`layers' (Abrufe nur auf Zuruf);
+die übrigen 59 Dateien sind noch nicht neu gesetzt.  ERT 2933.
 
 #### Offen
 
