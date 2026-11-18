@@ -1958,114 +1958,12 @@ the translation only tables, „der Formatwechsel (Tabelle/Fließtext)
 verwirrt mich“)."
   (bcat-analysis--header-table (cons (list head) (mapcar #'list cells))))
 
-(defun bcat-analysis--even-chunks (columns width charge)
-  "COLUMNS in chunks no wider than WIDTH (`bcat-analysis--chunk-columns',
-CHARGE per column), evened out: as many chunks as the split from left
-to right needs, each with about as many columns — no column left alone
-in the last (18.11.).  That split itself when an even chunk would be
-wider than WIDTH."
-  (let* ((greedy (bcat-analysis--chunk-columns columns width charge width))
-         (k (length greedy)) (n (length columns)))
-    (if (< k 2)
-        greedy
-      (let ((even (cl-loop with rest = columns
-                           for i from 0 below k
-                           for size = (+ (/ n k) (if (< i (% n k)) 1 0))
-                           collect (seq-take rest size)
-                           do (setq rest (seq-drop rest size)))))
-        (if (cl-every (lambda (ch) (null (cdr (bcat-analysis--chunk-columns ch width charge width)))) even)
-            even
-          greedy)))))
-
-(defun bcat-analysis--header-tables (columns)
-  "COLUMNS — each its head and the cells below it — as org tables with
-the heads as header row (`bcat-analysis--header-table'): split for the
-width of the file (`bcat-analysis--layout') into tables of about as many
-columns each (`bcat-analysis--even-chunks'), blank lines between; the
-shorter columns filled up, a row empty in one of the tables left out
-\(it holds cells of columns in another).  nil without columns."
-  (when columns
-    (let* ((depth (apply #'max 1 (mapcar (lambda (col) (length (cdr col))) columns)))
-           (padded (mapcar (lambda (col)
-                             (cons (car col)
-                                   (append (cdr col) (make-list (- depth (length (cdr col))) ""))))
-                           columns)))
-      (mapconcat (lambda (chunk)
-                   (bcat-analysis--header-table
-                    (cl-loop for r below (1+ depth)
-                             for row = (mapcar (lambda (col) (nth r col)) chunk)
-                             unless (and (> r 0) (cl-every #'string-empty-p row))
-                             collect row)))
-                 (bcat-analysis--even-chunks padded (bcat-analysis--layout 'table-width "sa") 3)
-                 "\n\n"))))
-
 (defun bcat-analysis--member-meanings (w heads)
   "The meanings of the members HEADS of the compound W as its answer
 gives them (`members', 18.11.: „ · “ between them) — a list as long as
 HEADS, or nil: no compound, none given, or not one for each member."
   (let ((meanings (split-string (bcat-analysis--field w 'members) "[ \t]*·[ \t]*" t "[ \t]+")))
     (and (cdr heads) (= (length meanings) (length heads)) meanings)))
-
-(defun bcat-analysis--word-columns (w)
-  "What the parts of the Sanskrit word W add to the overview, as the
-columns of a table — each a member above its parts, one a cell (a
-compound: a column per member; a word of one member: the word above
-its parts) —, or nil when the parts only repeat the word.  A member
-that is one bare stem shows only its meaning.  18.11. (TĀ 1016): with
-the meanings of a compound's members (`bcat-analysis--member-meanings')
-each member has its meaning right under it — what the translation makes
-of it —, its roots and suffixes below; a bare stem then has nothing
-below its meaning."
-  (let ((wp (bcat-analysis--word-parts w)))
-    (when wp
-      (let* ((heads (car wp)) (groups (cdr wp))
-             (word (bcat-analysis--field w 'word))
-             (keys (cons (bcat-analysis--field w 'formation) heads))
-             (meanings (bcat-analysis--member-meanings w heads))
-             (cell (lambda (item) (tibetan-gloss-table--cell (bcat-analysis--part-cell item keys)))))
-        (if (= 1 (length heads))
-            (unless (bcat-analysis--bare-part-p (car groups) word keys)
-              (list (cons (tibetan-gloss-table--cell word) (mapcar cell (car groups)))))
-          (let ((columns (cl-mapcar
-                          (lambda (head items meaning)
-                            (cons (tibetan-gloss-table--cell head)
-                                  (cond (meaning
-                                         (cons (tibetan-gloss-table--cell meaning)
-                                               (unless (bcat-analysis--bare-part-p items head keys)
-                                                 (mapcar cell items))))
-                                        ((not (bcat-analysis--bare-part-p items head keys))
-                                         (mapcar cell items))
-                                        ;; the member itself: its meaning
-                                        ((bcat-analysis--part-form-p (caar items) keys)
-                                         (list (tibetan-gloss-table--cell (cdar items))))
-                                        ;; only a meaning (mad-vāk: „my“)
-                                        (t (mapcar cell items)))))
-                          heads groups (or meanings (make-list (length heads) nil)))))
-            (unless (cl-every (lambda (col) (cl-every #'string-empty-p (cdr col))) columns)
-              columns)))))))
-
-(defun bcat-analysis--resolution-table (w)
-  "The table of how the compound W is resolved (`layers' of its answer,
-18.11., TĀ 1016), or nil: a row per step from the last member
-backwards — the members taken, their relation in brackets, their words
-in the translation; the last column read down is the translation of the
-compound.  A step without its members or its words is left out; one
-step alone is no resolution."
-  (let* ((layers (alist-get 'layers w))
-         (rows (delq nil
-                     (mapcar (lambda (l)
-                               (when (consp l)
-                                 (let ((part (bcat-analysis--field l 'part))
-                                       (role (string-trim (bcat-analysis--field l 'role) "\\[" "\\]"))
-                                       (phrase (bcat-analysis--field l 'phrase)))
-                                   (unless (or (string-empty-p part) (string-empty-p phrase))
-                                     (list (tibetan-gloss-table--cell part)
-                                           (tibetan-gloss-table--cell
-                                            (concat "[" (if (string-empty-p role) "—" role) "]"))
-                                           (tibetan-gloss-table--cell phrase))))))
-                             (and (listp layers) layers)))))
-    (when (cdr rows)
-      (string-trim-right (tibetan-gloss-table--format-rows rows)))))
 
 ;; ----------------------------------------------------------------------------
 ;; The parts under the words, in the table of the segment (18.11.)
@@ -2458,78 +2356,15 @@ else.  C-c u L (Carsten 9.11., TĀ 1009)."
       (bcat-analysis--column-table (match-string 1 line)
                                    (split-string (match-string 2 line) " · " t "[ \t]+")))))
 
-(defun bcat-analysis-formation-tables (words)
-  "The parts of a Sanskrit segment's WORDS under its overview, blank
-lines between; \"\" when none adds anything.  First the compounds, in
-the order of the words, each a table — a column per member, its parts
-below (one per row) —, then the words of one member together in ONE
-table, a word a column (`bcat-analysis--word-columns',
-`bcat-analysis--header-tables').  Carsten 5.11., TĀ 1.1: the formation
-and the parts rows of the old table said every part twice and broke a
-compound across lines.  18.11., TĀ 1016: a table for every word of one
-member (9.11.) took a page of the PDF — together they are four lines,
-and the parts stand at the segment again; a compound has the meanings
-of its members under them and, of three members on, the table of its
-resolution after it (`bcat-analysis--resolution-table')."
-  (let ((compounds '()) (simple '()))
-    (dolist (w words)
-      (let ((columns (bcat-analysis--word-columns w)))
-        (cond ((cdr columns)
-               (push (bcat-analysis--header-tables columns) compounds)
-               ;; 18.11.: how the compound is resolved, right under it
-               (let ((resolution (bcat-analysis--resolution-table w)))
-                 (when resolution (push resolution compounds))))
-              (columns (push (car columns) simple)))))
-    (string-join (append (nreverse compounds)
-                         (and simple (list (bcat-analysis--header-tables (nreverse simple)))))
-                 "\n\n")))
-
-(defun bcat-analysis-table-words (tables)
-  "The words of the overview TABLES of a segment (blank lines between):
-the first cell of every column, plain."
-  (mapcar (lambda (col) (bcat-analysis-plain-cell (car col)))
-          (apply #'append (mapcar #'bcat-analysis--table-columns
-                                  (split-string (or tables "") "\n[ \t]*\n" t)))))
-
-(defun bcat-analysis-merge-word-tables (tables words)
-  "TABLES, the tables of the parts of a segment's words as a file holds
-them (blank lines between), with every table of one column whose head
-is one of WORDS (the words of the segment's overview,
-`bcat-analysis-table-words') taken into ONE table of the words of one
-member, after the others (`bcat-analysis-formation-tables', 18.11.) —
-the parts as the file has them (a hand correction stays).  A table of
-one column whose head is no word (a member of a compound split for the
-width) stays where it is.  TABLES itself when there is none to take.
-C-c u L on a file written before 18.11."
-  (when tables
-    (let ((kept '()) (columns '()))
-      (dolist (tb (split-string tables "\n[ \t]*\n" t))
-        (let* ((lines (split-string tb "\n" t))
-               (rule-p (lambda (l) (string-prefix-p "|-" (string-trim-left l))))
-               (rows (and (cddr lines)
-                          (funcall rule-p (nth 1 lines))
-                          (not (cl-some rule-p (cddr lines)))
-                          (mapcar (lambda (l) (mapcar #'string-trim (butlast (cdr (split-string l "|")))))
-                                  (cons (car lines) (cddr lines))))))
-          (if (and rows
-                   (cl-every (lambda (r) (= 1 (length r))) rows)
-                   (member (bcat-analysis-plain-cell (caar rows)) words))
-              (push (mapcar #'car rows) columns)
-            (push tb kept))))
-      (if (null columns)
-          tables
-        (string-join (append (nreverse kept)
-                             (list (bcat-analysis--header-tables (nreverse columns))))
-                     "\n\n")))))
-
 (defun bcat-analysis-split-word-tables (tables)
-  "(OVERVIEW FORMATION OVERFLOW) for TABLES, the tables of a Sanskrit
-segment as files held them before 5.11. — five rows: word, formation,
-parts, gloss, form —: read back into words and set as the overview
-\(`bcat-analysis-sanskrit-tables'), the parts tables
-\(`bcat-analysis-formation-tables') and the lines for Structure of a
-form cell cut (`bcat-analysis--function-overflow').  nil for other
-tables — Tibetan, an overview already.  C-c u L."
+  "(TABLES nil OVERFLOW) for TABLES, the tables of a Sanskrit segment as
+files held them before 5.11. — five rows: word, formation, parts,
+gloss, form —: read back into words and set as the tables of today, the
+parts under the words (`bcat-analysis-sanskrit-tables'; until 18.11.
+tables of their own for Word Formation, the second element), with the
+lines for Structure of a form cell cut
+\(`bcat-analysis--function-overflow').  nil for other tables — Tibetan,
+an overview already.  C-c u L."
   (let ((columns (apply #'append (mapcar #'bcat-analysis--table-columns
                                          (split-string (or tables "") "\n[ \t]*\n" t)))))
     (when (and columns
