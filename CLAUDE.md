@@ -7,7 +7,7 @@ work on **Buddhist CAT** (`~/buddhist-cat`, GitHub
 Computer-Assisted Translation (CAT) system for Classical Tibetan and
 Sanskrit. Read it in full before editing. Symbols keep their
 `tibetan-' prefix until their module is rebuilt; new and rebuilt
-modules use `bcat-' (§5.73). Last updated 2026-11-18 (§5.74, Nachträge 18.11.:
+modules use `bcat-' (§5.73). Last updated 2026-11-19 (§5.74, Nachträge 18.11.:
 Wortbildung zurück am Segment — Bedeutungen der Glieder und Auflösung des
 Kompositums (Prompt-Felder `members'/`layers'), drei PDF-Fehler; nachmittags
 IN DIE TABELLE DES SEGMENTS: die Teile unter den Wörtern, eine Zeile je Glied,
@@ -18,8 +18,10 @@ geht in den vier Satzdatei-Vorlagen, gelesen über `bcat-relayout--legacy-text';
 die Übersetzung des Satzes schließt * Text; Reihenfolge der Klassen: Tantrāloka →
 Tibetisch V → AS → MSA, Sthiramati/commentary später; seit 18.11. abends
 Vergleich auf den Punkt: Diskussionspunkte statt Ampel, „Discuss:“ am Segment,
-DharmaMitra keine Referenz, Prompt entsprechend; offen: Philologie-Teil weiter
-gliedern, Worum es geht ausführlicher).
+DharmaMitra keine Referenz, Prompt entsprechend; seit 19.11. ** Word Analysis
+und ** Segment N eingeklappt, „Worum es geht“ in sieben Teilen (Prompt + Form,
+am echten Abruf noch nicht erprobt); offen: Philologie-Teil weiter gliedern,
+Kompositum-Auflösung straffen).
 Before that 2026-10-28 (§5.74: SATZDATEIEN
 NACH VORLAGE — Reading-Klassen, Tibetisch: `#+CAT_TEMPLATE: tibetan' im
 Quellkopf, Gliederung * Text / * Segments / * Sentence, C-c u A = Rumpf
@@ -5573,6 +5575,42 @@ Prompt-Änderung: „ja“).
   dann das Laden der Testdatei ab, und `run-all-tests.el' schluckt das.
   Nach dem Einfügen in Testdateien die Formen zählen (`read' bis
   end-of-file, Top-Level-Formen ausgeben).
+
+19.11.2026, EINGEKLAPPT + „WORUM ES GEHT“ AUSFÜHRLICH (`f5d98c0',
+`8bc1889', `38474a8').
+- ** Word Analysis und jedes ** Segment N öffnen mit :VISIBILITY: folded
+  (Carsten: Word Analysis beim Lesen „redundant“, fürs Werkzeug nötig —
+  Lemmata der Zettel-Links, padapatha-pdf.py, C-c u L —, „gute Idee“;
+  „die Segment Sections können wir default auch einklappen“).  Offen
+  bleiben ** ⟦N⟧ (Sanskrit), ** Translation, ** Concepts, ** Translations
+  compared.  Die Leser überspringen den Drawer: `bcat-relayout--segments'
+  (Regex nach der Überschrift) und der Abruf der Word Analysis in
+  `bcat-relayout-context'.  FALLE: ein Drawer direkt unter einer
+  Überschrift ist für `bcat-relayout--paragraphs' der Anfang des ersten
+  Absatzes — ohne das Überspringen wurden die ⟦N⟧-Übersetzungen nicht
+  mehr erkannt.  Wer einen weiteren Abschnitt einklappt, prüft seinen
+  Leser (bcat-relayout-new-order-unchanged fängt es).
+- „Worum es geht“ in sieben Teilen, in der Vorbereitung zuerst gelesen
+  (Prototyp TĀ 1012: „passt, super so“): Wo wir sind / Erklärt wird /
+  Der Gedankengang / Begriffe, die man kennen muss / Der Kniff / Beim
+  Lesen beachten / Fragen für die Diskussion.  Prompt-Felder context,
+  subject, steps, terms, move, reading [{segment, text, unit}],
+  questions; etwa 25–35 Zeilen.  `unit' = Nummer der Einheit in units;
+  `bcat-analysis-overview' (PARSED REFS BASE) macht daraus
+  „(→ Diskussionspunkt K)“ mit der Nummer des Punkts — bewusst ohne
+  Link (ein Link ohne Ziel bräche den PDF-Export ab; es gibt kein
+  org-export-with-broken-links im Export).
+- Handtexte bleiben geschützt (Carsten: „ja, passt“): die ausführliche
+  Form kommt nur bei neuen Abrufen und Sätzen ohne Handtext.  Sechs
+  erzeugte Abschnitte (TĀ 001, Kadam 2001–2005) bekommen beim nächsten
+  C-c u L nur die Zeile „*Der Gedankengang:*“.
+- Die Regel gilt auch für den Kommentar-Abruf (eine Regel für alle);
+  `bcat-commentary--merged-overview' führt context/terms/reading mit.
+  Die Vorlage commentary ist weiter unberührt.
+- OFFEN: der neue Überblick ist an keinem echten Abruf erprobt (TĀ 1012
+  hat einen Handtext — dort ändert sich nichts); im PDF läuft der lange
+  Text auf eine zweite Seite über (PDF später); die Straffung der
+  Kompositum-Auflösung (`layers') steht noch aus.
 
 #### Offen
 
