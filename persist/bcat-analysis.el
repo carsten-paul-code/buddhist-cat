@@ -234,6 +234,9 @@ step of the train of thought in two or three sentences with the words
 of the original, the terms one must know (terms), the places where a
 reader of the original stumbles (reading; `unit' ties a place to a
 point of the comparison, `bcat-analysis-overview' names the point).
+The first fetches (TĀ 1001, bden gnyis 28, 19.11.) came out at 66 and
+53 lines of 120 characters, not the 25 to 35 the rule names — Carsten:
+„gefällt mir so“; the wording stays as it is, do not tighten it.
 German whatever the language of the rest; only from the own analysis,
 the context lines and the neighbouring sentences
 \(`bcat-sentence--neighbours-block'); nothing invented, no

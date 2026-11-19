@@ -19,8 +19,9 @@ die Übersetzung des Satzes schließt * Text; Reihenfolge der Klassen: Tantrālo
 Tibetisch V → AS → MSA, Sthiramati/commentary später; seit 18.11. abends
 Vergleich auf den Punkt: Diskussionspunkte statt Ampel, „Discuss:“ am Segment,
 DharmaMitra keine Referenz, Prompt entsprechend; seit 19.11. ** Word Analysis
-und ** Segment N eingeklappt, „Worum es geht“ in sieben Teilen (Prompt + Form,
-am echten Abruf noch nicht erprobt); offen: Philologie-Teil weiter gliedern,
+und ** Segment N eingeklappt, „Worum es geht“ in sieben Teilen (erprobt an TĀ
+1001 und bden gnyis 28, Länge „gefällt mir so“), PDF geteilt: Lese-PDF ab
+Reading + eigenes PDF „Worum es geht“; offen: Philologie-Teil weiter gliedern,
 Kompositum-Auflösung straffen).
 Before that 2026-10-28 (§5.74: SATZDATEIEN
 NACH VORLAGE — Reading-Klassen, Tibetisch: `#+CAT_TEMPLATE: tibetan' im
@@ -5616,10 +5617,25 @@ Prompt-Änderung: „ja“).
   2)“, das Werkzeug hängt denselben Verweis an; (3) Zitate „…" mit
   geradem Schlusszeichen — behoben beim Lesen der Antwort (`9af3b4f',
   `bcat-analysis--close-quotes'; die beiden Dateien samt .answers
-  nachgezogen).  (1) und (2) brauchen eine Nachschärfung des Prompts —
-  Carstens Entscheidung steht aus (vielleicht will er die Länge).
-- OFFEN: im PDF läuft der lange Text auf eine zweite Seite über (PDF
-  später); die Straffung der Kompositum-Auflösung (`layers') steht aus.
+  nachgezogen).  Carstens Entscheidung zu (1) und (2): „gefällt mir so“
+  — die Regel bleibt wörtlich, wie sie ist (NICHT nachschärfen, auch
+  die Zeilenangabe nicht „berichtigen“: ihr jetziger Wortlaut ergibt,
+  was ihm gefällt).
+- PDF GETEILT (`cf9a5b6', Carsten 19.11.: „ein PDF mit dem Philologie
+  Part und eines mit Worum es geht“): das PDF der Satzdatei beginnt mit
+  Reading; „Worum es geht“ ist ein zweites PDF
+  (<Name>-worum-es-geht.pdf, Vorlage pdf-overview, :overview von
+  `bcat-export-views'), auf dem Gerät „<Satz> Worum es geht“.  Es wird
+  nur gesetzt und hochgeladen, wenn das Gerät den Text noch nicht hat:
+  handouts/.bcat-remarkable.eld (PDF-Name . MD5 des Texts), vermerkt
+  erst nach geglücktem Upload.  Reihenfolge der Uploads: PDF →
+  Vortragsdokument (nur neu, wie seit 5.11.) → Worum es geht; ein
+  Fehler beendet die Reihe.  Das Lesedossier (Vers mit mehreren
+  Schichten: AS, MSA) bleibt EIN PDF mit dem Abschnitt vorn
+  (`bcat-export-view-with-overview') — ob es auch geteilt wird, ist
+  offen bis AS/MSA dran sind.  Leiste erst ab zwei Teilen.
+- OFFEN: die Straffung der Kompositum-Auflösung (`layers'); Philologie-
+  Teil weiter gliedern; Dossier-PDF teilen (AS/MSA).
 
 #### Offen
 
