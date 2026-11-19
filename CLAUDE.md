@@ -5607,10 +5607,19 @@ Prompt-Änderung: „ja“).
 - Die Regel gilt auch für den Kommentar-Abruf (eine Regel für alle);
   `bcat-commentary--merged-overview' führt context/terms/reading mit.
   Die Vorlage commentary ist weiter unberührt.
-- OFFEN: der neue Überblick ist an keinem echten Abruf erprobt (TĀ 1012
-  hat einen Handtext — dort ändert sich nichts); im PDF läuft der lange
-  Text auf eine zweite Seite über (PDF später); die Straffung der
-  Kompositum-Auflösung (`layers') steht noch aus.
+- ERPROBT am 19.11. auf Carstens Zuruf an TĀ 1001 und bden gnyis 28
+  (beide neu abgerufen, alte Stände in git): alle sieben Teile kommen,
+  die Verweise auf die Diskussionspunkte stimmen, je drei Punkte mit
+  „Discuss:“-Zeilen.  Befunde: (1) zu lang — 66 bzw. 53 Zeilen (bei 120
+  Zeichen) statt der verlangten 25–35, vor allem Gedankengang und
+  Begriffe; (2) TĀ 1001 schreibt einmal selbst „(s. Diskussionspunkt
+  2)“, das Werkzeug hängt denselben Verweis an; (3) Zitate „…" mit
+  geradem Schlusszeichen — behoben beim Lesen der Antwort (`9af3b4f',
+  `bcat-analysis--close-quotes'; die beiden Dateien samt .answers
+  nachgezogen).  (1) und (2) brauchen eine Nachschärfung des Prompts —
+  Carstens Entscheidung steht aus (vielleicht will er die Länge).
+- OFFEN: im PDF läuft der lange Text auf eine zweite Seite über (PDF
+  später); die Straffung der Kompositum-Auflösung (`layers') steht aus.
 
 #### Offen
 
