@@ -120,6 +120,10 @@ gibt es nicht mehr.
 — D: „…“; here: „…“ (→ point K)“, nur wo der Vergleich der Übersetzungen
 einen Punkt für die Diskussion hat (`bcat-analysis-discuss-lines'); der
 Link führt zum Punkt unter ** Translations compared.
+19.11. (Carsten: „die Segment Sections können wir default auch
+einklappen“): jedes ** Segment N öffnet mit :VISIBILITY: folded — im
+Reading eine Zeile je Segment; C-c u L liest den Abschnitt ohne den
+Drawer zurück.
 #+end_comment
 #+TITLE: Sentence {{sent-num}} Analysis
 #+STARTUP: showall
@@ -247,6 +251,9 @@ Link führt zum Punkt unter ** Translations compared.
 
 {{#segments}}
 ** Segment {{num}}{{parallel}}
+:PROPERTIES:
+:VISIBILITY: folded
+:END:
 {{translations}}
 
 *Structure:* {{structure}}

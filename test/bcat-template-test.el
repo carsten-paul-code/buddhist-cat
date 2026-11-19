@@ -545,6 +545,28 @@ template of a sentence file; a segment without a point has none."
           (should (string-match-p (regexp-quote (concat "\n→ t\n\n" line "\n\n")) out))
           (should (= 1 (with-temp-buffer (insert out) (how-many "^\\*Discuss:\\*" (point-min) (point-max))))))))))
 
+(ert-deftest bcat-template-segment-sections-folded ()
+  "19.11. (Carsten, after the Word Analysis: „die Segment Sections können
+wir default auch einklappen“): every ** Segment N opens folded — the
+drawer :VISIBILITY: folded under its heading, in the four templates of
+a sentence file, the heading of a pair („ · Tib. 3“) included.  What
+the section holds follows the drawer directly."
+  (let ((bcat-template-directory
+         (expand-file-name "Templates/analysis" bcat-template-test--root)))
+    (dolist (case '(("sanskrit" "") ("tibetan" "") ("bilingual" " · Tib. 3") ("bilingual-tibetan" " · Skt. 3")))
+      (ert-info ((format "Vorlage %s" (car case)))
+        (let ((out (bcat-template-render-named
+                    (car case)
+                    `((segments ((num . 7) (parallel . ,(cadr case)) (translations . "⟦7⟧ x"))
+                                ((num . 8) (translations . "⟦8⟧ y")))))))
+          (should (string-match-p
+                   (regexp-quote (format "** Segment 7%s\n:PROPERTIES:\n:VISIBILITY: folded\n:END:\n⟦7⟧ x\n"
+                                         (cadr case)))
+                   out))
+          (should (string-match-p
+                   (regexp-quote "** Segment 8\n:PROPERTIES:\n:VISIBILITY: folded\n:END:\n⟦8⟧ y\n")
+                   out)))))))
+
 (ert-deftest bcat-template-word-analysis-folded ()
   "19.11. (Carsten: the Word Analysis „redundant … keinen Mehrwert“ for
 reading — the padapāṭha is the bold line, the forms are in the table;
@@ -588,7 +610,7 @@ Translations compared before the segments' details."
     (should (string-match-p
              (regexp-quote (concat "#+SEGMENTS: 687\n\n* Text\n#+begin_verse\nइह खलु शास्त्रादौ …\n"
                                    "#+end_verse\n\n* Philology\n** Concepts\n"
-                                   "** Translations compared\n\n** Segment 687\n\n"))
+                                   "** Translations compared\n\n** Segment 687\n:PROPERTIES:\n:VISIBILITY: folded\n:END:\n\n"))
              out))
     (should-not (string-match-p "Translation:" out))))
 

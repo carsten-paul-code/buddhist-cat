@@ -182,7 +182,7 @@ empty.  No AI."
                    text))
           (should-not (string-match-p "Śloka (Anuṣṭubh)" text))
           (should (string-match-p
-                   (regexp-quote "\n\n** Segment 685\n\n** Segment 686\n\n* Working Translation\n")
+                   (regexp-quote "\n\n** Segment 685\n:PROPERTIES:\n:VISIBILITY: folded\n:END:\n\n** Segment 686\n:PROPERTIES:\n:VISIBILITY: folded\n:END:\n\n* Working Translation\n")
                    text))
           (should (string-match-p
                    (regexp-quote "** Translations compared\n*Dyczkowski 2023:* Although my speech")
@@ -301,7 +301,7 @@ sections.  No AI request is made."
                    "#\\+begin_verse\nབརྗོད་དུ་མེད་པ་བལྟར་མེད་པ། །\nbrjod du med pa bltar med pa/ /\nའགྱུར་བ་མེད་པ་འདུས་མ་བྱས། །\n'gyur ba med pa 'dus ma byas/ /\n#\\+end_verse\n\n\\* Philology\n⟦38⟧\n| "
                    text))
           (should (string-match-p "^⟦39⟧\n| " text))
-          (should (string-match-p "\n\n\\*\\* Segment 38\n\n\\*\\* Segment 39\n" text))
+          (should (string-match-p (regexp-quote "\n\n** Segment 38\n:PROPERTIES:\n:VISIBILITY: folded\n:END:\n\n** Segment 39\n:PROPERTIES:\n:VISIBILITY: folded\n:END:\n") text))
           ;; 18.11.: three parts at the top level
           (should-not (string-match-p "^\\* \\(?:Sentence\\|Segments\\|Recitation\\)$" text))
           (should (string-match-p "steinert:" text))
@@ -1707,7 +1707,7 @@ differences, the rendering; C-c u H runs once, at the end."
         ;; 79, the last of the group, still gets its mark for the
         ;; differences.)
         (should (string-match-p (regexp-quote "<<tib-79>>⟦79⟧ · [[skt-23][Skt. 23]]\n\n*Differences:* /udbhāvanatā/ is rendered /brjod pa/ („stating“).\n\n** Concepts") text))
-        (should (string-match-p (regexp-quote "** Segment 23 · Tib. 78–79\n⟦23⟧ *Translation:* On account of") text))
+        (should (string-match-p (regexp-quote "** Segment 23 · Tib. 78–79\n:PROPERTIES:\n:VISIBILITY: folded\n:END:\n⟦23⟧ *Translation:* On account of") text))
         (should (string-match-p "^\\*\\* Tibetan rendering\nThe Tibetan states the self-basis" text))
         (should (string-match-p "^⟦22⟧ \\*Translation:\\* Why are there just five aggregates" text)))
       (should (= 1 (length done)))
@@ -1875,7 +1875,7 @@ The PDF is made of the Sanskrit file only („nur die zweisprachige“)."
                                           "\\(?:\\*[A-Z][a-z]+:\\* [^\n]*\n\n\\)*\\*\\* Sanskrit\n")
                                   text))
           (should (string-match-p "#\\+end_verse\n\n\\*Translation:\\* [^\n]+\n\n\\* Philology\n" text))
-          (should (string-match-p (regexp-quote "** Segment 78 · Skt. 23\n⟦78⟧ *Translation:* because they state") text))
+          (should (string-match-p (regexp-quote "** Segment 78 · Skt. 23\n:PROPERTIES:\n:VISIBILITY: folded\n:END:\n⟦78⟧ *Translation:* because they state") text))
           (should (= 1 (with-temp-buffer (insert text) (how-many "^\\*Differences:\\*" (point-min) (point-max)))))
           (should (string-match-p "^⟦77⟧ \\*Translation:\\* Why are the aggregates only five" text))
           (should (string-match-p "^\\*\\* Tibetan rendering\nThe Tibetan states" text))

@@ -76,6 +76,9 @@ Both read the realization temporally ("when"). Lindtner makes the yogin the agen
 *DharmaMitra:* Inexpressible and invisible, / Unchanging and unconditioned— / *When* a yogi realizes this, / The obscurations of afflictions and the knowable are abandoned.
 
 ** Segment 38
+:PROPERTIES:
+:VISIBILITY: folded
+:END:
 ⟦38⟧ *Translation:* Indescribable (brjod du med pa: avācya) and invisible (bltar med pa: adraṣṭavya), \\
 *Lindtner 1981:* [It is also] inexpressible (avācya) and invisible (adraṣṭavya), \\
 *DharmaMitra:* Inexpressible and invisible,
@@ -85,6 +88,9 @@ Both read the realization temporally ("when"). Lindtner makes the yogin the agen
 *Note:* /brjod du med pa/ = verb stem + terminative /du/ + /med pa/, the negated potential: "there is no expressing [it]"; likewise /blta-r med pa/ "cannot be seen".
 
 ** Segment 39
+:PROPERTIES:
+:VISIBILITY: folded
+:END:
 ⟦39⟧ *Translation:* immutable ('gyur ba med pa: avikāra) and uncompounded ('dus ma byas: asaṃskṛta) \\
 *Lindtner 1981:* unchangeable (avikāra) and uncompounded (asaṃskṛta). \\
 *DharmaMitra:* Unchanging and unconditioned—
@@ -92,6 +98,9 @@ Both read the realization temporally ("when"). Lindtner makes the yogin the agen
 *Structure:* continues the predicate chain; /'dus ma byas/ = /ma/ + past stem /byas/ with /'dus/ as complement (negated past participle).
 
 ** Segment 40
+:PROPERTIES:
+:VISIBILITY: folded
+:END:
 ⟦40⟧ *Translation:* if a yogin (rnal 'byor pa: yogin) realizes that, \\
 *Lindtner 1981:* *When* a yogi understands it \\
 *DharmaMitra:* *When* a yogi realizes this, \\
@@ -102,6 +111,9 @@ Both read the realization temporally ("when"). Lindtner makes the yogin the agen
 *Note:* /na/ = "if" (realization as condition); "when" is grammatically possible as well (both §2.8).
 
 ** Segment 41
+:PROPERTIES:
+:VISIBILITY: folded
+:END:
 ⟦41⟧ *Translation:* the obstructions of affliction (nyon mongs: kleśa) and of the knowable (śes bya'i sgrib pa: jñeyāvaraṇa) are abandoned. \\
 *Lindtner 1981:* *he abandons* the obstructions of defilement and cognizable *(kleśajñeyāvaraṇa)*. \\
 *DharmaMitra:* The obscurations of afflictions and the knowable are abandoned. \\

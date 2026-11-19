@@ -130,6 +130,10 @@ Padapāṭha steht fett unter ⟦N⟧, die Formen in der Tabelle; das Werkzeug
 braucht sie für die Lemmata der Zettel-Links, padapatha-pdf.py und
 C-c u L —, „gute Idee“, sie einzuklappen): ** Word Analysis öffnet mit
 :VISIBILITY: folded.
+19.11. (Carsten: „die Segment Sections können wir default auch
+einklappen“): jedes ** Segment N öffnet mit :VISIBILITY: folded — im
+Reading eine Zeile je Segment; C-c u L liest den Abschnitt ohne den
+Drawer zurück.
 #+end_comment
 #+TITLE: Sentence {{sent-num}} Analysis
 #+STARTUP: showall
@@ -217,6 +221,9 @@ C-c u L —, „gute Idee“, sie einzuklappen): ** Word Analysis öffnet mit
 
 {{#segments}}
 ** Segment {{num}}
+:PROPERTIES:
+:VISIBILITY: folded
+:END:
 {{translations}}
 
 *Sandhi:* {{sandhi}}

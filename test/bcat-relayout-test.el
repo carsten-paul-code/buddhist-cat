@@ -300,7 +300,8 @@ changes under a word stays."
                       "…-lakṣaṇā [bahuvrīhi, of kalā] whose mark is"
                       "para-vimarśa- [my own wording] supreme reflective awareness"))
                    (bcat-relayout-test--segment-columns once)))
-    (should-not (string-match-p "Word Formation\\|VISIBILITY" once))
+    ;; (19.11.: the ** Segment N open folded — not the parts)
+    (should-not (string-match-p "Word Formation" once))
     ;; 18.11.: the translation of the sentence closes * Text
     (should (string-match-p "^\\* Text\n\\*Translation:\\* T\n\n\\* Philology\n" once))
     (should (string-match-p "\n→ t\n\n\\*\\* Translation\n\\*\\* Concepts\n" once))
@@ -492,7 +493,7 @@ order — My Notes, a section of its own (* Handout), #+CREATED and
         ;; 18.11.: the file of the earlier form comes out in three parts
         (should-not (string-match-p "^\\* \\(?:Sentence\\|Segments\\)$" text))
         (should (string-match-p (regexp-quote "** Concepts\n⟦39⟧ *'dus ma byas* (asaṃskṛta)\n") text))
-        (should (string-match-p (regexp-quote "\n\n** Segment 38\n⟦38⟧ *Translation:* Indescribable and invisible,\n\n*Structure:* no finite verb\n") text))
+        (should (string-match-p (regexp-quote "\n\n** Segment 38\n:PROPERTIES:\n:VISIBILITY: folded\n:END:\n⟦38⟧ *Translation:* Indescribable and invisible,\n\n*Structure:* no finite verb\n") text))
         (should (string-match-p "^#\\+LAST_ANALYZED: 2026-10-20$" text))
         (should (string-match-p "^\\* My Notes\nMeine Notiz\\.$" text))
         (should (string-match-p "^\\* Handout\nH$" text))

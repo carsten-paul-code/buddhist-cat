@@ -76,6 +76,9 @@ All three read the concessive clause alike. They part over niyantraṇa: Dyczkow
 *DharmaMitra:* In this matter, whatever *unfettered expression* may emerge, even though my own voice is powerless, that is the unfolding of the glorious Great Bliss of the Supreme Lord.
 
 ** Segment 685
+:PROPERTIES:
+:VISIBILITY: folded
+:END:
 ⟦685⟧ *Translation:* Although my speech (vāc) is incapable (aśakta) here, whatever control (niyantraṇa) may shine forth (ullaset) — \\
 *Dyczkowski 2023:* Although my speech is powerless here (in this task), whatever *restriction* may arise (on one's understanding of the teachings is not my fault, rather) \\
 *DharmaMitra:* In this matter, whatever *unfettered expression* may emerge, even though my own voice is powerless, \\
@@ -98,6 +101,9 @@ All three read the concessive clause alike. They part over niyantraṇa: Dyczkow
 *Note:* madvāgaśaktāpi hides the privative a-: mad-vāk aśaktā api „though my speech is incapable“ — not mat-vāk-śaktā „capable“; the a- disappears in ā + a → ā. The optative in a generalising relative clause: „whatever … may“.
 
 ** Segment 686
+:PROPERTIES:
+:VISIBILITY: folded
+:END:
 ⟦686⟧ *Translation:* that belongs to the Supreme Lord (pārameśvara): it is the unfolding (vijṛmbhita) of glorious great bliss (mahānanda). \\
 *Dyczkowski 2023:* that is (all) the venerable expansion of the Supreme Lord's great bliss (which both hides and reveals the truth). (7) \\
 *DharmaMitra:* that is the unfolding of the glorious Great Bliss of the Supreme Lord.

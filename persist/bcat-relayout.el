@@ -170,7 +170,11 @@ the other language's blocks and differences."
     ;; ** Segment N blocks.
     (when segments
       (let ((pos 0))
-        (while (string-match "^\\*\\* Segment \\([0-9]+\\)\\(.*\\)\n" segments pos)
+        ;; 19.11.: the drawer that folds the section (:VISIBILITY:
+        ;; folded) is the template's — read past it
+        (while (string-match (concat "^\\*\\* Segment \\([0-9]+\\)\\(.*\\)\n"
+                                     "\\(?:[ \t]*:PROPERTIES:[ \t]*\n\\(?:[ \t]*:[^\n]*\n\\)*?[ \t]*:END:[ \t]*\n\\)?")
+                             segments pos)
           (let* ((num (string-to-number (match-string 1 segments)))
                  (parallel (match-string 2 segments))
                  (start (match-end 0))

@@ -232,12 +232,18 @@ The Tibetan keeps the structure: /zhe na/ marks the question, /phyir te/ opens a
 Rahula/Boin-Webb follow the Sanskrit sense — the self „makes its appearance“ — where the Tibetan says that the aggregates state it (brjod pa).
 
 ** Segment 77 · Skt. 22
+:PROPERTIES:
+:VISIBILITY: folded
+:END:
 ⟦77⟧ *Translation:* Why are the aggregates (phung po: skandha) only five? — if one asks: \\
 *Rahula/Boin-Webb 2001:* Why are there only five aggregates?
 
 *Structure:* /ci'i phyir/ [interrogative] · /phung po rnams/ [subject] · /lnga kho na/ [predicate] · /zhe na/ [quotation, conditional] → the question of the catechism
 
 ** Segment 78 · Skt. 23
+:PROPERTIES:
+:VISIBILITY: folded
+:END:
 ⟦78⟧ *Translation:* because they state the basis of self (bdag gi gzhi: ātmavastu) in five modes: \\
 *Rahula/Boin-Webb 2001:* Because of the five methods by means of which [the idea] of self (ātman) *makes its appearance*: \\
 → Rahula/Boin-Webb 2001: „makes its appearance“ follows the Sanskrit (udbhāvanā), not the Tibetan „stating“
@@ -245,24 +251,39 @@ Rahula/Boin-Webb follow the Sanskrit sense — the self „makes its appearance�
 *Structure:* /bdag gi gzhi rnam pa lnga/ [object] · /brjod pa'i/ [V nmlz. + GEN] /phyir/ [cause] ~te~ [explanatory] → the answer, opened by /phyir te/, closed by /phyir ro/ in 83
 
 ** Segment 79 · Skt. 24
+:PROPERTIES:
+:VISIBILITY: folded
+:END:
 ⟦79⟧ *Translation:* the basis of self that is the body together with what it has appropriated (yongs su gzung ba: parigraha) is stated, \\
 *Rahula/Boin-Webb 2001:* self as physical apprehension,
 
 *Structure:* /bdag gi gzhi/ [object] /lus/ [apposition] /yongs su gzung ba dang bcas pa/ [attribute] · /brjod pa/ [V nmlz.] =dang= [coordination]
 
 ** Segment 80 · Skt. 25
+:PROPERTIES:
+:VISIBILITY: folded
+:END:
 ⟦80⟧ *Translation:* the basis of self that is experience (longs spyod: upabhoga), \\
 *Rahula/Boin-Webb 2001:* self as experience,
 
 ** Segment 81 · Skt. 26
+:PROPERTIES:
+:VISIBILITY: folded
+:END:
 ⟦81⟧ *Translation:* the basis of self that is convention (tha snyad: vyavahāra), \\
 *Rahula/Boin-Webb 2001:* self as expression,
 
 ** Segment 82 · Skt. 27
+:PROPERTIES:
+:VISIBILITY: folded
+:END:
 ⟦82⟧ *Translation:* the basis of self that is the forming (mngon par 'du byed pa: abhisaṃskāra) of merit and demerit, \\
 *Rahula/Boin-Webb 2001:* self as the agent of all right and all wrong,
 
 ** Segment 83 · Skt. 28
+:PROPERTIES:
+:VISIBILITY: folded
+:END:
 ⟦83⟧ *Translation:* and the basis of self that is their support (gnas: āśraya) — because these are stated. \\
 *Rahula/Boin-Webb 2001:* and self as the basis of all that.
 
