@@ -167,7 +167,7 @@ Switched off (`bcat-export-auto' nil): nothing."
       (cl-letf (((symbol-function 'bcat-export-pdf)
                  (lambda (file &rest _) (push file exported) "/nonexistent/bcat-test.pdf"))
                 ((symbol-function 'tibetan-discussion-paper--upload)
-                 (lambda (pdf title label &optional _done) (push (list pdf title label) uploaded) t))
+                 (lambda (pdf title label &rest _) (push (list pdf title label) uploaded) t))
                 ;; The fixture lives under the temp directory, which the
                 ;; hook skips (next test) — here it stands for a real source.
                 ((symbol-function 'tibetan-discussion-paper--temp-source-p) #'ignore))
@@ -197,7 +197,7 @@ as placed (or the reason it failed)."
       (bcat-status-begin "C-c u G" "Satz 9" (list (cons file "Satz 9")))
       (cl-letf (((symbol-function 'bcat-export-pdf) (lambda (&rest _) "/nonexistent/bcat-test.pdf"))
                 ((symbol-function 'tibetan-discussion-paper--upload)
-                 (lambda (_pdf _title _label &optional done)
+                 (lambda (_pdf _title _label &optional done &rest _)
                    (funcall done t "/Reading/bDen/Satz 9 2026-10-29 1802") t)))
         (let ((bcat-export-upload t)) (bcat-export-file file)))
       (should (string-match-p
@@ -1230,25 +1230,100 @@ drawer that marks it as generated (19.11.: in its own document)."
   "19.11. (Carsten: one PDF with the philology, one with „Worum es
 geht“): C-c u H writes a second PDF beside the first in handouts/
 \(<name>-worum-es-geht.pdf) and puts it on the reMarkable after the
-first and a new document of the lectures (rmapi one at a time), as
-„<label> Worum es geht“ — only when the device does not have this text
-yet: an export
-with the section unchanged puts the first PDF alone (a hand text does
-not change at a fetch; a copy per export would crowd the device), one
-with a changed section both.  An upload that failed is tried again at
-the next export, and nothing follows a failed one.  A file without the
-section: one PDF."
+first and the lectures (rmapi one at a time), as „<label> Worum es
+geht“.  A file without the section: one PDF."
   (bcat-sentence-test--with-source
     (bcat-sentence-test--create src)
     (let* ((file (tibetan-sentence--filepath 9 folder src))
            (overview (expand-file-name "handouts/bden-9-worum-es-geht.pdf" dir))
-           (text "#+TITLE: Sentence 9 — Worum es geht\n* Worum es geht\nW.\n")
+           (text "* Worum es geht\nW.\n")
+           (uploaded '()))
+      (cl-letf (((symbol-function 'bcat-export-views)
+                 (lambda (_f) (append (list :view "* Reading\nR.\n") (and text (list :overview text)))))
+                ((symbol-function 'bcat-export-pdf)
+                 (lambda (f &rest _)
+                   (let ((pdf (concat (file-name-sans-extension f) ".pdf")))
+                     (with-temp-file pdf (insert "PDF")) pdf)))
+                ((symbol-function 'tibetan-discussion-paper--upload)
+                 (lambda (pdf _title label &optional done &rest _)
+                   (push (cons (file-name-nondirectory pdf) label) uploaded)
+                   (when done (funcall done t label)) t)))
+        (let ((bcat-export-upload t))
+          (bcat-export-file file)
+          (should (file-exists-p overview))
+          (should (equal '(("bden-9.pdf" . "SDA 9") ("bden-9-worum-es-geht.pdf" . "SDA 9 Worum es geht"))
+                         (reverse uploaded)))
+          (should-not (directory-files folder nil "\\.pdf\\'\\|\\`pdfview"))))
+      ;; no section: one PDF
+      (setq uploaded nil text nil)
+      (cl-letf (((symbol-function 'bcat-export-views) (lambda (_f) (list :view "* Reading\nNeu.\n")))
+                ((symbol-function 'bcat-export-pdf)
+                 (lambda (f &rest _)
+                   (let ((pdf (concat (file-name-sans-extension f) ".pdf")))
+                     (with-temp-file pdf (insert "PDF")) pdf)))
+                ((symbol-function 'tibetan-discussion-paper--upload)
+                 (lambda (pdf _title label &optional done &rest _)
+                   (push (cons (file-name-nondirectory pdf) label) uploaded)
+                   (when done (funcall done t label)) t)))
+        (let ((bcat-export-upload t))
+          (bcat-export-file file)
+          (should (equal '(("bden-9.pdf" . "SDA 9")) uploaded)))))))
+
+(ert-deftest bcat-export-device-folder ()
+  "19.11. (Carsten: „Die Ordner Struktur sollte der im Finder
+entsprechen (vor allem die Benamsung macht es im Moment schwer schnell
+das richtige zu finden)“; chosen: Reading/WS26-27/Tantraloka, the
+documents named as before, without a date): the PDFs of a source go on
+the reMarkable into the folder of the source as the Finder has it, from
+the semester folder on — a text with several sources (AS: Sanskrit and
+Tibetisch, each with a „Satz 1002“) keeps them apart as the Finder
+does.  Names as the device takes them.  Without a semester folder above
+the source: nil — the title names the folder, as before."
+  (should (equal "WS26-27/Tantraloka"
+                 (bcat-export--device-folder "/Users/x/buddhist-studies/WS26-27/Tantraloka/tantraloka-1.org")))
+  (should (equal "WS26-27/Tibetisch V/bden-gnyis-cat"
+                 (bcat-export--device-folder
+                  "/Users/x/buddhist-studies/WS26-27/Tibetisch V/bden-gnyis-cat/bden-gnyis-cat.org")))
+  (should (equal "WS26-27/Abhidharmasamuccaya/Sanskrit"
+                 (bcat-export--device-folder "/Users/x/buddhist-studies/WS26-27/Abhidharmasamuccaya/Sanskrit/asam.org")))
+  (should (equal "SS27/Tantraloka 2"
+                 (bcat-export--device-folder "/Users/x/WS26-27/alt/SS27/Tantrāloka (2)/t.org")))
+  (should-not (bcat-export--device-folder "/Users/x/buddhist-studies/Masterarbeit/Textgrundlage/rgyan.org"))
+  (should-not (bcat-export--device-folder nil))
+  ;; part of what the export knows of a file — here a source without a semester
+  (bcat-sentence-test--with-source
+    (bcat-sentence-test--create src)
+    (let ((info (bcat-export-info (tibetan-sentence--filepath 9 folder src))))
+      (should (plist-member info :device-folder))
+      (should-not (plist-get info :device-folder)))))
+
+(ert-deftest bcat-export-file-new-versions ()
+  "19.11. (Carsten: „Sollte eine neue Version dazukommen, dann diese
+bitte ohne Datum Suffix und den Datum Suffix an die Bestehende anheften
+und in ein jeweiliges Archiv verschieben“): C-c u H gives the upload
+the folder of the source as in the Finder and, for a document it has
+put there before, the date of that version — its stamp in the archive
+\(`tibetan-discussion-paper--upload').  A new version is a PDF set
+from another text: what the device has unchanged is not sent again —
+the document there, with the notes on it, stays where it is —, each of
+the three PDFs for itself; an upload that failed is tried again, and
+nothing follows a failed one; without upload nothing is remembered as
+sent.  `bcat-export-force-upload' sends all the same."
+  (bcat-sentence-test--with-source
+    (bcat-sentence-test--create src)
+    (let* ((file (tibetan-sentence--filepath 9 folder src))
+           (main "* Reading\nR.\n")
+           (text "* Worum es geht\nW.\n")
            (lectures nil)
            (fail nil)
            (exported '())
-           (uploaded '()))
-      (cl-letf (((symbol-function 'bcat-export-views)
-                 (lambda (_f) (append (list :view "* Reading\nR.\n")
+           (uploaded '())
+           (args '())
+           (stamp-re "\\`20[0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9]\\{4\\}\\'")
+           (names (lambda () (mapcar #'car (reverse uploaded)))))
+      (cl-letf (((symbol-function 'bcat-export--device-folder) (lambda (_s) "WS26-27/Tibetisch V/bden-gnyis-cat"))
+                ((symbol-function 'bcat-export-views)
+                 (lambda (_f) (append (list :view main)
                                       (and text (list :overview text))
                                       (and lectures (list :lectures "* Sanderson\nS.\n" :lecturer "Sanderson")))))
                 ((symbol-function 'bcat-export-pdf)
@@ -1257,57 +1332,74 @@ section: one PDF."
                      (push (file-name-nondirectory f) exported)
                      (with-temp-file pdf (insert "PDF")) pdf)))
                 ((symbol-function 'tibetan-discussion-paper--upload)
-                 (lambda (pdf _title label &optional done)
+                 (lambda (pdf _title label &optional done folder stamp)
                    (let ((ok (not (member label fail))))
                      (push (cons (file-name-nondirectory pdf) (if ok label (concat "FEHLER " label))) uploaded)
+                     (push (list (file-name-nondirectory pdf) folder stamp) args)
                      (when done (funcall done ok (if ok label "429"))))
                    t)))
         (let ((bcat-export-upload t)
-              (both '(("bden-9.pdf" . "SDA 9") ("bden-9-worum-es-geht.pdf" . "SDA 9 Worum es geht"))))
+              (bcat-status-show nil)
+              (bcat-status--entries (make-hash-table :test 'equal))
+              (status (lambda () (with-current-buffer bcat-status-buffer-name
+                                   (goto-char (point-max))
+                                   (forward-line -1)
+                                   (buffer-substring-no-properties (line-beginning-position) (line-end-position))))))
+          (bcat-status-begin "C-c u H" "Satz 9" (list (cons file "SDA 9")))
+          ;; first time: both, into the folder as in the Finder, nothing to archive
           (bcat-export-file file)
-          (should (file-exists-p overview))
-          (should (equal both (reverse uploaded)))
-          (should (member "pdfview-sent-009-bden-worum-es-geht.org" exported))
-          ;; unchanged: the first PDF alone, the second not even set anew
-          (setq uploaded nil exported nil)
+          (should (equal '("bden-9.pdf" "bden-9-worum-es-geht.pdf") (funcall names)))
+          (should (equal '(("bden-9.pdf" "WS26-27/Tibetisch V/bden-gnyis-cat" nil)
+                           ("bden-9-worum-es-geht.pdf" "WS26-27/Tibetisch V/bden-gnyis-cat" nil))
+                         (reverse args)))
+          (should (string-match-p "reMarkable ✓ SDA 9 · Worum es geht ✓\\'" (funcall status)))
+          ;; unchanged: nothing is sent; the PDF of the file is set all
+          ;; the same, the second not even that
+          (setq uploaded nil args nil exported nil)
           (bcat-export-file file)
-          (should (equal '(("bden-9.pdf" . "SDA 9")) uploaded))
+          (should-not uploaded)
           (should (equal '("pdfview-sent-009-bden.org") exported))
-          ;; changed: both
-          (setq uploaded nil text (concat text "Mehr.\n"))
+          (should (string-match-p "reMarkable: unverändert\\'" (funcall status)))
+          ;; the section changed: it alone, with the date of the version there
+          (setq uploaded nil args nil text (concat text "Mehr.\n"))
           (bcat-export-file file)
-          (should (equal both (reverse uploaded)))
-          ;; nothing follows a failed upload (rmapi after a refusal) —
-          ;; the section, not yet on the device, goes with the next export
+          (should (equal '("bden-9-worum-es-geht.pdf") (funcall names)))
+          (should (string-match-p stamp-re (nth 2 (car args))))
+          (should (string-match-p "reMarkable: unverändert · Worum es geht ✓\\'" (funcall status)))
+          ;; the file changed: its PDF alone, with the date of the version there
+          (setq uploaded nil args nil main (concat main "Neu.\n"))
+          (bcat-export-file file)
+          (should (equal '("bden-9.pdf") (funcall names)))
+          (should (string-match-p stamp-re (nth 2 (car args))))
+          ;; nothing follows a failed upload — what did not get there
+          ;; goes with the next export, the lectures too
           (setq uploaded nil text (concat text "Noch mehr.\n") fail '("SDA 9 Sanderson") lectures t)
           (bcat-export-file file)
-          (should (equal '(("bden-9.pdf" . "SDA 9") ("bden-9-lectures.pdf" . "FEHLER SDA 9 Sanderson"))
-                         (reverse uploaded)))
+          (should (equal '(("bden-9-lectures.pdf" . "FEHLER SDA 9 Sanderson")) (reverse uploaded)))
+          (should (string-match-p "reMarkable: unverändert · Vortrag: Fehler — 429\\'" (funcall status)))
           (setq uploaded nil fail nil)
           (bcat-export-file file)
-          (should (equal both (reverse uploaded)))
-          ;; its own failed upload is tried again
-          (setq uploaded nil text (concat text "Weiter.\n") fail '("SDA 9 Worum es geht"))
+          (should (equal '("bden-9-lectures.pdf" "bden-9-worum-es-geht.pdf") (funcall names)))
+          ;; the first one failing: nothing after it
+          (setq uploaded nil main (concat main "Wieder.\n") text (concat text "Weiter.\n") fail '("SDA 9"))
           (bcat-export-file file)
-          (should (equal '(("bden-9.pdf" . "SDA 9") ("bden-9-worum-es-geht.pdf" . "FEHLER SDA 9 Worum es geht"))
-                         (reverse uploaded)))
+          (should (equal '(("bden-9.pdf" . "FEHLER SDA 9")) uploaded))
+          (should (string-match-p "reMarkable: Fehler — 429\\'" (funcall status)))
           (setq uploaded nil fail nil)
           (bcat-export-file file)
-          (should (equal both (reverse uploaded)))
-          (setq uploaded nil)
-          (bcat-export-file file)
-          (should (equal '(("bden-9.pdf" . "SDA 9")) uploaded))
-          ;; without upload nothing is remembered as put on the device
-          (setq uploaded nil text (concat text "Und noch.\n"))
+          (should (equal '("bden-9.pdf" "bden-9-worum-es-geht.pdf") (funcall names)))
+          ;; without upload nothing is remembered as sent
+          (setq uploaded nil main (concat main "Und noch.\n"))
           (let ((bcat-export-upload nil)) (bcat-export-file file))
           (should-not uploaded)
           (bcat-export-file file)
-          (should (equal both (reverse uploaded)))
-          ;; no section: one PDF
-          (setq uploaded nil text nil)
-          (bcat-export-file file)
-          (should (equal '(("bden-9.pdf" . "SDA 9")) uploaded))
-          (should-not (directory-files folder nil "\\.pdf\\'\\|\\`pdfview")))))))
+          (should (equal '("bden-9.pdf") (funcall names)))
+          ;; on request all the same
+          (setq uploaded nil)
+          (let ((bcat-export-force-upload t)) (bcat-export-file file))
+          (should (equal '("bden-9.pdf" "bden-9-lectures.pdf" "bden-9-worum-es-geht.pdf") (funcall names)))
+          (should-not (directory-files folder nil "\\.pdf\\'\\|\\`pdfview"))
+          (kill-buffer bcat-status-buffer-name))))))
 
 (ert-deftest bcat-export-view-tibetan ()
   "The Tibetan file as one document: Reading with every segment's Uchen
@@ -1528,8 +1620,11 @@ another lecture (II) not.  Mechanical: the transcript goes to no one."
 (ert-deftest bcat-export-file-lecture-document ()
   "C-c u H with a lecture: a second PDF beside the first in handouts/
 \(<name>-lectures.pdf), onto the reMarkable after the first (rmapi one
-at a time) — only when it is new: the transcript does not change, a
-copy per export would crowd the device."
+at a time) — only when the device does not have it: the transcript does
+not change, a copy per export would crowd the device.  (19.11.: by the
+record of what is on the device, `bcat-export--on-device-p' — until
+then by the PDF being new on disk, so that a document lost on the
+device never came back.)"
   (bcat-sentence-test--with-source
     (bcat-sentence-test--create src)
     (let* ((file (tibetan-sentence--filepath 9 folder src))
@@ -1543,7 +1638,7 @@ copy per export would crowd the device."
                    (let ((pdf (concat (file-name-sans-extension f) ".pdf")))
                      (with-temp-file pdf (insert "PDF")) pdf)))
                 ((symbol-function 'tibetan-discussion-paper--upload)
-                 (lambda (pdf _title label &optional done)
+                 (lambda (pdf _title label &optional done &rest _)
                    (push (cons (file-name-nondirectory pdf) label) uploaded)
                    (when done (funcall done t label)) t)))
         (let ((bcat-export-upload t))
@@ -1553,7 +1648,7 @@ copy per export would crowd the device."
                          (reverse uploaded)))
           (setq uploaded nil)
           (bcat-export-file file)
-          (should (equal '(("bden-9.pdf" . "SDA 9")) uploaded))
+          (should-not uploaded)
           (should-not (directory-files folder nil "\\.pdf\\'\\|\\`pdfview")))))))
 
 (ert-deftest bcat-export-auto-parts ()
@@ -1627,7 +1722,7 @@ its title; the file untouched."
                          (let ((pdf (concat (file-name-sans-extension f) ".pdf")))
                            (with-temp-file pdf (insert "PDF")) pdf)))
                       ((symbol-function 'tibetan-discussion-paper--upload)
-                       (lambda (pdf _title label &optional _done) (setq uploaded (cons pdf label)) t)))
+                       (lambda (pdf _title label &rest _) (setq uploaded (cons pdf label)) t)))
               (let ((bcat-export-upload t))
                 (with-current-buffer (find-file-noselect file)
                   (unwind-protect (bcat-export) (kill-buffer)))

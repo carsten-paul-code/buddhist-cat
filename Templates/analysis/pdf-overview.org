@@ -5,7 +5,7 @@ geht“ — er liest den Abschnitt in der Vorbereitung zuerst, im Reading
 das andere PDF): ein eigenes Dokument neben dem der Datei
 (<Name>-worum-es-geht.pdf in handouts/, auf dem reMarkable „<Satz>
 Worum es geht“), mit demselben Kopf.  Es geht nur aufs Gerät, wenn sich
-sein Text geändert hat (`bcat-export--overview-pdf').  Der Teil selbst
+sein Text geändert hat (`bcat-export--second-pdf').  Der Teil selbst
 ist pdf-part-overview — das Lesedossier eines Verses mit mehreren
 Schichten setzt ihn weiter vor Reading (`bcat-export-view-with-overview').
 Ohne den Abschnitt gibt es das Dokument nicht.

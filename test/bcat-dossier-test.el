@@ -291,7 +291,7 @@ verse — no PDF of its own for the commentary document any more."
                    (let ((pdf (concat (file-name-sans-extension f) ".pdf")))
                      (with-temp-file pdf (insert "PDF")) pdf)))
                 ((symbol-function 'tibetan-discussion-paper--upload)
-                 (lambda (pdf _title label &optional done)
+                 (lambda (pdf _title label &optional done &rest _)
                    (push (cons (file-name-nondirectory pdf) label) uploaded)
                    (when done (funcall done t label)) t)))
         (let ((bcat-export-upload t))
