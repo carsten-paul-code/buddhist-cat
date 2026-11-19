@@ -1081,12 +1081,15 @@ of a template — C-c u H then exports the file itself."
 
 (defun bcat-export-views (file)
   "The views of the sentence FILE (`bcat-export-view'): (:view TEXT
-:lectures TEXT :lecturer NAME) — the reading PDF (template
-pdf-<template>) and, when the sentence has lectures (#+CAT_LECTURES),
-the document of the whole lectures (template pdf-lectures, Carsten
-5.11.: „das was einen konkreten Vers betrifft in einem
-Extradokument“), NAME the lecturer (the first lecture's name up to its
-comma).  nil without a pdf template."
+:overview TEXT :lectures TEXT :lecturer NAME) — the reading PDF
+\(template pdf-<template>); when the file has „* Worum es geht“, that
+section as a document of its own (template pdf-overview, Carsten
+19.11.: „ein PDF mit dem Philologie Part und eines mit Worum es
+geht“); and, when the sentence has lectures (#+CAT_LECTURES), the
+document of the whole lectures (template pdf-lectures, Carsten 5.11.:
+„das was einen konkreten Vers betrifft in einem Extradokument“), NAME
+the lecturer (the first lecture's name up to its comma).  nil without
+a pdf template."
   (require 'bcat-relayout)
   (let* ((template (bcat-sentence-file-p file))
          (source (and template (tibetan-sentence--source-file-from-analysis file)))
@@ -1100,11 +1103,27 @@ comma).  nil without a pdf template."
                            template))
                  (lectures (alist-get 'lectures context)))
             (list :view (bcat-template-render-named name context (plist-get read :source))
+                  :overview (and (bcat-export--filled-p (alist-get 'overview context))
+                                 (bcat-template-find "pdf-overview" source)
+                                 (bcat-template-render-named "pdf-overview" context (plist-get read :source)))
                   :lectures (and lectures (bcat-template-find "pdf-lectures" source)
                                  (bcat-template-render-named "pdf-lectures" context (plist-get read :source)))
                   :lecturer (and lectures
                                  (string-trim (car (split-string (alist-get 'lecture-name (car lectures))
                                                                  "[,(]")))))))))))
+
+(defun bcat-export-view-with-overview (views)
+  "The view of VIEWS (`bcat-export-views') with „Worum es geht“ as its
+first part again — the one document of 16.11.–19.11., what the PDF of a
+dossier still is (`bcat-dossier-pdf-text'): the part of :overview set
+before the first part of :view.  Without :overview the view as it is."
+  (let ((view (plist-get views :view))
+        (overview (plist-get views :overview)))
+    (if (and view overview (string-match "^\\* " overview))
+        (let ((part (substring overview (match-beginning 0)))
+              (at (or (string-match "^\\* " view) (length view))))
+          (concat (substring view 0 at) part (substring view at)))
+      view)))
 
 (defcustom bcat-export-bar-width 90
   "Characters the titles of the bar may take together before they are
@@ -1130,8 +1149,9 @@ eight titles over three lines) — for a numbered title its number
 a CUSTOM_ID (the PDF view) — after the first starts a new page, and the
 foot of every page carries a bar of links to the parts (the reMarkable
 follows internal links since 2.6), placed after the running head
-\(whose \\fancyhf{} would clear it).  Without parts nothing changes.
-For `org-export-before-processing-functions'."
+\(whose \\fancyhf{} would clear it).  Without parts, or with one alone
+\(19.11.: „Worum es geht“ as a document of its own — one needs no bar),
+nothing changes.  For `org-export-before-processing-functions'."
   (save-excursion
     (goto-char (point-min))
     (let ((parts '()))
@@ -1145,7 +1165,7 @@ For `org-export-before-processing-functions'."
                          (and end (re-search-forward "^[ \t]*:CUSTOM_ID:[ \t]*\\(\\S-+\\)" end t)
                               (match-string-no-properties 1)))))))
           (when id (push (list id title beg) parts))))
-      (when parts
+      (when (cdr parts)
         (setq parts (nreverse parts))
         (dolist (p (cdr parts))
           ;; a part of a view starts a page; a heading of a document
@@ -1296,6 +1316,93 @@ LuaLaTeX writes no file whose name begins with one (6.11., „I can't
 write on file `.pdfview-….log'“); no „sent-“: no folder scan takes it
 for a sentence file.")
 
+(defconst bcat-export--device-index ".bcat-remarkable.eld"
+  "The file in a folder of PDFs (handouts/) that remembers what C-c u H
+has put on the reMarkable of the documents that go there only when
+they change: ((PDF-NAME . MD5) …), MD5 of the text the PDF was set from
+\(`bcat-export--on-device-p', `bcat-export--note-on-device').")
+
+(defun bcat-export--device-entries (pdf)
+  "The entries of `bcat-export--device-index' in the folder of PDF, or nil."
+  (let ((path (expand-file-name bcat-export--device-index (file-name-directory pdf))))
+    (and (file-readable-p path)
+         (ignore-errors
+           (with-temp-buffer
+             (insert-file-contents path)
+             (goto-char (point-min))
+             (let ((value (read (current-buffer)))) (and (listp value) value)))))))
+
+(defun bcat-export--on-device-p (pdf hash)
+  "Non-nil when the reMarkable has PDF as set from the text with HASH —
+C-c u H put it there (`bcat-export--note-on-device')."
+  (equal hash (cdr (assoc (file-name-nondirectory pdf) (bcat-export--device-entries pdf)))))
+
+(defun bcat-export--note-on-device (pdf hash)
+  "Remember that PDF, set from the text with HASH, is on the reMarkable.
+Never signals: remembering is no reason to spoil an export."
+  (condition-case err
+      (let ((entries (cons (cons (file-name-nondirectory pdf) hash)
+                           (cl-remove (file-name-nondirectory pdf) (bcat-export--device-entries pdf)
+                                      :key #'car :test #'equal)))
+            (coding-system-for-write 'utf-8-unix)
+            (print-length nil) (print-level nil))
+        (with-temp-file (expand-file-name bcat-export--device-index (file-name-directory pdf))
+          (insert ";; -*- mode: lisp-data; coding: utf-8 -*-\n"
+                  ";; Buddhist CAT: was C-c u H aufs reMarkable gelegt hat (PDF . MD5 des Texts).\n")
+          (prin1 (sort entries (lambda (a b) (string< (car a) (car b)))) (current-buffer))
+          (insert "\n")))
+    (error (message "reMarkable-Stand nicht vermerkt (%s): %s"
+                    (file-name-nondirectory pdf) (error-message-string err)))))
+
+(defconst bcat-export--overview-suffix "-worum-es-geht"
+  "What the name of the PDF of „Worum es geht“ adds to that of its file's.")
+
+(defun bcat-export--overview-pdf (file views head target)
+  "The document „Worum es geht“ of the sentence FILE (:overview of VIEWS,
+Carsten 19.11.: „ein PDF mit dem Philologie Part und eines mit Worum es
+geht“) as PDF beside TARGET, the PDF of the file
+\(<name>-worum-es-geht.pdf), or nil.  Returns (PDF . HASH) only when the
+reMarkable does not have this text yet (`bcat-export--on-device-p') —
+then C-c u H puts it there and notes HASH; a section nobody changed (a
+hand text at a new fetch) is neither set anew nor sent again: a copy
+per export would crowd the device."
+  (let ((text (plist-get views :overview)))
+    (when (and text target)
+      (let ((out (concat (file-name-sans-extension target) bcat-export--overview-suffix ".pdf"))
+            (hash (md5 text nil nil 'utf-8)))
+        (unless (and (file-exists-p out) (bcat-export--on-device-p out hash))
+          (let ((src (expand-file-name (concat bcat-export--copy-prefix (file-name-base file)
+                                               bcat-export--overview-suffix ".org")
+                                       (file-name-directory file))))
+            (unwind-protect
+                (let ((pdf (progn (let ((coding-system-for-write 'utf-8-unix))
+                                    (with-temp-file src (insert text)))
+                                  (bcat-export-pdf src head))))
+                  (when (and pdf (file-exists-p pdf)
+                             (file-equal-p (file-name-directory pdf) (file-name-directory file)))
+                    (make-directory (file-name-directory out) t)
+                    (rename-file pdf out t)
+                    (cons out hash)))
+              (when (file-exists-p src) (delete-file src)))))))))
+
+(defun bcat-export--upload-more (status-file title done more)
+  "Put the documents MORE on the reMarkable one after the other — rmapi
+one at a time — after the PDF whose status line is DONE: each (PDF
+LABEL TAG AFTER), LABEL its name in the folder of TITLE, TAG its word
+in the status of STATUS-FILE („ · TAG ✓“), AFTER called without
+arguments when it is there.  A failure ends the row: after a refusal
+nothing follows."
+  (when more
+    (pcase-let ((`(,pdf ,label ,tag ,after) (car more)))
+      (tibetan-discussion-paper--upload
+       pdf title label
+       (lambda (ok what)
+         (let ((done (concat done (if ok (format " · %s ✓" tag) (format " · %s: Fehler — %s" tag what)))))
+           (bcat-status-step status-file :upload done)
+           (when ok
+             (when after (funcall after))
+             (bcat-export--upload-more status-file title done (cdr more)))))))))
+
 (defun bcat-export-file (file)
   "C-c u H for the sentence FILE: PDF with running head, moved into the
 handouts folder under its speaking name (Carsten 30.10.: „Das PDF
@@ -1308,7 +1415,11 @@ export; without a view the file itself.  A file of a verse with more
 than one layer (bhāṣya, commentary — Carsten 5.11.: the reading
 dossier) exports the dossier's PDF instead (`bcat-dossier-pdf-text'),
 under the name and label of the verse — from any of its files, the
-commentary document too.  Returns the PDF path."
+commentary document too.  19.11.: „Worum es geht“ of a sentence file
+is a second PDF beside the first (`bcat-export--overview-pdf'), put on
+the reMarkable after it (and a new document of the lectures) as „<label>
+Worum es geht“ when its text is new there; the dossier keeps the
+section in its one PDF.  Returns the PDF path (the first's)."
   (let* ((status-file file)
          (dossier (and (fboundp 'bcat-dossier-pdf-text)
                        (condition-case err (bcat-dossier-pdf-text file)
@@ -1324,6 +1435,15 @@ commentary document too.  Returns the PDF path."
                                   (file-name-nondirectory file) (error-message-string err))
                          nil)))
          (view (or (plist-get dossier :text) (plist-get views :view)))
+         ;; 19.11.: „Worum es geht“ as a PDF of its own — beside the
+         ;; file's, in handouts/ or (without that folder) beside the file
+         (overview (and view (not dossier)
+                        (bcat-export--overview-pdf
+                         file views head
+                         (or (plist-get info :handout) (concat (file-name-sans-extension file) ".pdf")))))
+         ;; only what that export lacked — without it the variable holds
+         ;; an earlier export's
+         (overview-missing (and overview bcat-export--missing))
          (lectures (bcat-export--lectures-pdf file views head (plist-get info :handout)))
          (view-file (and view (expand-file-name (concat bcat-export--copy-prefix (file-name-nondirectory file))
                                                 (file-name-directory file))))
@@ -1346,6 +1466,10 @@ commentary document too.  Returns the PDF path."
                    (setq pdf target))
           (error (message "PDF nicht nach handouts/ verschoben (%s): %s"
                           (file-name-nondirectory target) (error-message-string err))))))
+    ;; the characters the second PDF lacks are reported with the first's
+    (dolist (m overview-missing)
+      (unless (member m bcat-export--missing)
+        (setq bcat-export--missing (append bcat-export--missing (list m)))))
     (bcat-status-step status-file :pdf (if bcat-export--missing
                                     (concat "PDF ✓ · fehlende Zeichen: "
                                             (bcat-export--missing-text bcat-export--missing))
@@ -1359,14 +1483,21 @@ commentary document too.  Returns the PDF path."
            (lambda (ok what)
              (let ((done (if ok (concat "reMarkable ✓ " what) (concat "reMarkable: Fehler — " what))))
                (bcat-status-step status-file :upload done)
-               ;; The lectures after the PDF — rmapi one at a time.
-               (when (and ok lectures)
-                 (tibetan-discussion-paper--upload
-                  lectures (plist-get info :work)
-                  (format "%s %s" (plist-get info :label) (plist-get views :lecturer))
-                  (lambda (ok2 what2)
-                    (bcat-status-step status-file :upload
-                                      (concat done (if ok2 " · Vortrag ✓" (concat " · Vortrag: Fehler — " what2)))))))))))
+               ;; The lectures (as before) and „Worum es geht“ after
+               ;; the PDF — rmapi one at a time.
+               (when ok
+                 (bcat-export--upload-more
+                  status-file (plist-get info :work) done
+                  (delq nil
+                        (list (and lectures
+                                   (list lectures
+                                         (format "%s %s" (plist-get info :label) (plist-get views :lecturer))
+                                         "Vortrag" nil))
+                              (and overview
+                                   (list (car overview)
+                                         (format "%s Worum es geht" (plist-get info :label))
+                                         "Worum es geht"
+                                         (lambda () (bcat-export--note-on-device (car overview) (cdr overview)))))))))))))
       (message "PDF: %s" pdf))
     pdf))
 

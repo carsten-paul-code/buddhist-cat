@@ -444,10 +444,12 @@ view (`bcat-export-views')."
                          (bcat-dossier--demote
                           (substring text (string-match "^\\* " text)
                                      (string-match (concat "^\\* " bcat-dossier--notes) text))))))
-             (parts (bcat-dossier--split-parts (plist-get (bcat-export-views lead) :view)))
+             ;; 19.11.: the view with „Worum es geht“ in front — the
+             ;; dossier stays one PDF (a sentence file's is two)
+             (parts (bcat-dossier--split-parts (bcat-export-view-with-overview (bcat-export-views lead))))
              (part (lambda (id) (or (nth 2 (assoc id parts)) "")))
              (bh-file (plist-get files :bhasya))
-             (bh (and bh-file (let ((v (plist-get (bcat-export-views bh-file) :view)))
+             (bh (and bh-file (let ((v (bcat-export-view-with-overview (bcat-export-views bh-file))))
                                 (and v (bcat-dossier--nest-view v "Bhāṣya" "bhasya"
                                                                 '("overview" "segments" "grammar" "concepts" "discussion"))))))
              (doc (alist-get 'commentary-doc ctx))
@@ -468,6 +470,7 @@ view (`bcat-export-views')."
 
 (defvar bcat-commentary--runs)
 (declare-function bcat-sentence-fetch-state "bcat-sentence" (file seg-nums))
+(declare-function bcat-export-view-with-overview "bcat-export" (views))
 
 (defvar bcat-dossier--awaiting (make-hash-table :test #'equal)
   "Verse file → the commentary document C-c u G fetches with it.  Set

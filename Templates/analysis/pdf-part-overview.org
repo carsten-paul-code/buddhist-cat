@@ -5,6 +5,8 @@ gut sichtbar abgesetzt“): der Abschnitt „* Worum es geht“ der Datei
 (overview) als erster Teil — eine eigene Seite vor Reading, mit Platz
 für Notizen auf dem reMarkable, und ein eigener Eintrag in der Leiste.
 Ohne Text gibt es den Teil nicht.
+19.11.: der Teil steht im eigenen Dokument pdf-overview, nicht mehr vor
+Reading — nur das Lesedossier setzt ihn dort noch ein.
 #+end_comment
 {{#overview}}
 * Worum es geht

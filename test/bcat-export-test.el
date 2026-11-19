@@ -377,6 +377,44 @@ the status line names the missing characters."
                                   (with-current-buffer bcat-status-buffer-name (buffer-string))))
           (kill-buffer bcat-status-buffer-name))))))
 
+(ert-deftest bcat-export-missing-characters-of-both-pdfs ()
+  "19.11.: C-c u H sets two PDFs when the file has „Worum es geht“ — the
+status names the characters either lacks, the file's first, each once;
+and what an earlier export lacked is not carried into one without the
+second PDF."
+  (bcat-sentence-test--with-source
+    (bcat-sentence-test--create src)
+    (let* ((file (tibetan-sentence--filepath 9 folder src))
+           (overview t))
+      (cl-letf (((symbol-function 'bcat-export-views)
+                 (lambda (_f) (append (list :view "* Reading\nR.\n")
+                                      (and overview (list :overview "* Worum es geht\nW.\n")))))
+                ((symbol-function 'bcat-export-pdf)
+                 (lambda (f &rest _)
+                   (let ((pdf (concat (file-name-sans-extension f) ".pdf")))
+                     (setq bcat-export--missing
+                           (if (string-match-p "worum-es-geht" f)
+                               '(("⏑" . "Times New Roman") ("¦" . "Noto Sans Devanagari"))
+                             '(("¦" . "Noto Sans Devanagari"))))
+                     (with-temp-file pdf (insert "PDF")) pdf))))
+        (let ((bcat-export-upload nil)
+              (bcat-status-show nil)
+              (bcat-status--entries (make-hash-table :test 'equal))
+              (line (lambda () (with-current-buffer bcat-status-buffer-name
+                                 (goto-char (point-max))
+                                 (forward-line -1)
+                                 (buffer-substring-no-properties (line-beginning-position) (line-end-position))))))
+          (bcat-status-begin "C-c u H" "Satz 9" (list (cons file "SDA 9")))
+          (bcat-export-file file)
+          (should (equal "  SDA 9  PDF ✓ · fehlende Zeichen: ¦ (Noto Sans Devanagari), ⏑ (Times New Roman)"
+                         (funcall line)))
+          (setq overview nil)
+          (setq bcat-export--missing '(("x" . "Stale")))
+          (bcat-status-begin "C-c u H" "Satz 9" (list (cons file "SDA 9")))
+          (bcat-export-file file)
+          (should (equal "  SDA 9  PDF ✓ · fehlende Zeichen: ¦ (Noto Sans Devanagari)" (funcall line)))
+          (kill-buffer bcat-status-buffer-name))))))
+
 (ert-deftest bcat-export-colours ()
   "Carsten 31.10.: reading the segment on the reMarkable (Paper Pro,
 colour) „fällt es mir schwer … die einzelnen Wörter im Überblick zu
@@ -1124,46 +1162,152 @@ template, in both views of a pair; none where the padapāṭha is right."
                  (regexp-quote "@@latex:\\bcatorig{@@kasmāt pañca /@@latex:}@@\n\n*Prüfen:* Padapāṭha weicht vom Text ab — CHECK\n")
                  view))))))
 
-(ert-deftest bcat-export-view-overview-first ()
-  "16.11. (Tantrāloka-Session): „Worum es geht“ stands in the PDF in
-front of everything — a part of its own before Reading (so: its own
-page, its link in the bar), the text as in the file; a file without
-the section starts with Reading as before.  The same in every pdf
-template."
+(ert-deftest bcat-export-views-overview-apart ()
+  "19.11. (Carsten: „Zusätzlich können wir das PDF jetzt splitten. ein
+PDF mit dem Philologie Part und eines mit Worum es geht“ — he reads
+„Worum es geht“ first, in the preparation; in class the rest): the
+view of a sentence file starts with Reading, with or without the
+section — „Worum es geht“ is a document of its own (:overview of
+`bcat-export-views', template pdf-overview): its title line, the part
+with the text as in the file.  A file without the section has none.
+The same in every pdf template.  (Until 19.11. the section was the
+first part of the one PDF, 16.11.)"
   (bcat-sentence-test--with-sa-source
     (bcat-sentence-test--create-n src 1007)
     (let ((file (tibetan-sentence--filepath 1007 folder src)))
       (bcat-sentence-test--with-stubs (bcat-sentence-test--sa-answer)
         (bcat-sentence-test--fetch-n src 1007))
       (should (equal "Reading" (car (bcat-export-test--parts (bcat-export-view file)))))
+      (should-not (plist-get (bcat-export-views file) :overview))
       (bcat-sentence-test--put-overview file "* Text")
-      (let ((view (bcat-export-view file)))
-        (should (equal '("Worum es geht" "Reading") (cl-subseq (bcat-export-test--parts view) 0 2)))
+      (let* ((views (bcat-export-views file))
+             (view (plist-get views :view))
+             (overview (plist-get views :overview)))
+        (should (equal "Reading" (car (bcat-export-test--parts view))))
+        (should-not (member "Worum es geht" (bcat-export-test--parts view)))
+        (should-not (string-match-p "Erklärt wird" view))
+        (should (equal '("Worum es geht") (bcat-export-test--parts overview)))
+        (should (string-match-p "\\`#\\+TITLE: Sentence 1007 — Worum es geht\n#\\+OPTIONS: toc:nil num:nil title:nil" overview))
         (should (equal (concat "* Worum es geht\n:PROPERTIES:\n:CUSTOM_ID: overview\n:END:\n"
                                bcat-sentence-test--overview "\n\n")
-                       (bcat-export-test--part view "Worum es geht")))))
+                       (bcat-export-test--part overview "Worum es geht")))
+        ;; the two together are the view of 16.11. — what the dossier of
+        ;; a verse with layers still shows in one PDF
+        (should (equal '("Worum es geht" "Reading")
+                       (cl-subseq (bcat-export-test--parts (bcat-export-view-with-overview views)) 0 2)))
+        (should (string-match-p "\\`#\\+TITLE: Sentence 1007\n" (bcat-export-view-with-overview views)))
+        (should (= 1 (cl-count "Worum es geht" (bcat-export-test--parts (bcat-export-view-with-overview views))
+                               :test #'equal)))))
+    (should (equal "* Reading\nR.\n" (bcat-export-view-with-overview '(:view "* Reading\nR.\n"))))
     (dolist (name '("pdf-tibetan" "pdf-sanskrit" "pdf-bilingual" "pdf-bilingual-tibetan"))
       (ert-info ((format "Vorlage %s" name))
-        (should (equal '("Worum es geht" "Reading")
-                       (cl-subseq (bcat-export-test--parts
-                                   (bcat-template-render-named name '((sent-num . 3) (overview . "Kurz.")) src))
-                                  0 2)))
         (should (equal "Reading"
                        (car (bcat-export-test--parts
-                             (bcat-template-render-named name '((sent-num . 3)) src)))))))))
+                             (bcat-template-render-named name '((sent-num . 3) (overview . "Kurz.")) src)))))
+        (should-not (string-match-p "Kurz\\."
+                                    (bcat-template-render-named name '((sent-num . 3) (overview . "Kurz.")) src)))))
+    (should (equal '("Worum es geht")
+                   (bcat-export-test--parts
+                    (bcat-template-render-named "pdf-overview" '((sent-num . 3) (overview . "Kurz.")) src))))
+    (should-not (bcat-export-test--parts (bcat-template-render-named "pdf-overview" '((sent-num . 3)) src)))))
 
 (ert-deftest bcat-export-view-overview-generated ()
   "16.11.: a generated „Worum es geht“ in the PDF — its text, not the
-drawer that marks it as generated."
+drawer that marks it as generated (19.11.: in its own document)."
   (bcat-sentence-test--with-source
     (bcat-sentence-test--create src)
     (bcat-sentence-test--with-stubs (bcat-sentence-test--with-overview bcat-sentence-test--answer)
       (bcat-sentence-test--fetch src))
-    (let ((view (bcat-export-view (tibetan-sentence--filepath 9 folder src))))
+    (let* ((views (bcat-export-views (tibetan-sentence--filepath 9 folder src)))
+           (overview (plist-get views :overview)))
       (should (equal (concat "* Worum es geht\n:PROPERTIES:\n:CUSTOM_ID: overview\n:END:\n"
                              (bcat-sentence-test--generated) "\n\n")
-                     (bcat-export-test--part view "Worum es geht")))
-      (should-not (string-match-p "GENERATED_HASH" view)))))
+                     (bcat-export-test--part overview "Worum es geht")))
+      (should-not (string-match-p "GENERATED_HASH" overview))
+      (should-not (string-match-p "GENERATED_HASH\\|Worum es geht" (plist-get views :view))))))
+
+(ert-deftest bcat-export-file-overview-document ()
+  "19.11. (Carsten: one PDF with the philology, one with „Worum es
+geht“): C-c u H writes a second PDF beside the first in handouts/
+\(<name>-worum-es-geht.pdf) and puts it on the reMarkable after the
+first and a new document of the lectures (rmapi one at a time), as
+„<label> Worum es geht“ — only when the device does not have this text
+yet: an export
+with the section unchanged puts the first PDF alone (a hand text does
+not change at a fetch; a copy per export would crowd the device), one
+with a changed section both.  An upload that failed is tried again at
+the next export, and nothing follows a failed one.  A file without the
+section: one PDF."
+  (bcat-sentence-test--with-source
+    (bcat-sentence-test--create src)
+    (let* ((file (tibetan-sentence--filepath 9 folder src))
+           (overview (expand-file-name "handouts/bden-9-worum-es-geht.pdf" dir))
+           (text "#+TITLE: Sentence 9 — Worum es geht\n* Worum es geht\nW.\n")
+           (lectures nil)
+           (fail nil)
+           (exported '())
+           (uploaded '()))
+      (cl-letf (((symbol-function 'bcat-export-views)
+                 (lambda (_f) (append (list :view "* Reading\nR.\n")
+                                      (and text (list :overview text))
+                                      (and lectures (list :lectures "* Sanderson\nS.\n" :lecturer "Sanderson")))))
+                ((symbol-function 'bcat-export-pdf)
+                 (lambda (f &rest _)
+                   (let ((pdf (concat (file-name-sans-extension f) ".pdf")))
+                     (push (file-name-nondirectory f) exported)
+                     (with-temp-file pdf (insert "PDF")) pdf)))
+                ((symbol-function 'tibetan-discussion-paper--upload)
+                 (lambda (pdf _title label &optional done)
+                   (let ((ok (not (member label fail))))
+                     (push (cons (file-name-nondirectory pdf) (if ok label (concat "FEHLER " label))) uploaded)
+                     (when done (funcall done ok (if ok label "429"))))
+                   t)))
+        (let ((bcat-export-upload t)
+              (both '(("bden-9.pdf" . "SDA 9") ("bden-9-worum-es-geht.pdf" . "SDA 9 Worum es geht"))))
+          (bcat-export-file file)
+          (should (file-exists-p overview))
+          (should (equal both (reverse uploaded)))
+          (should (member "pdfview-sent-009-bden-worum-es-geht.org" exported))
+          ;; unchanged: the first PDF alone, the second not even set anew
+          (setq uploaded nil exported nil)
+          (bcat-export-file file)
+          (should (equal '(("bden-9.pdf" . "SDA 9")) uploaded))
+          (should (equal '("pdfview-sent-009-bden.org") exported))
+          ;; changed: both
+          (setq uploaded nil text (concat text "Mehr.\n"))
+          (bcat-export-file file)
+          (should (equal both (reverse uploaded)))
+          ;; nothing follows a failed upload (rmapi after a refusal) —
+          ;; the section, not yet on the device, goes with the next export
+          (setq uploaded nil text (concat text "Noch mehr.\n") fail '("SDA 9 Sanderson") lectures t)
+          (bcat-export-file file)
+          (should (equal '(("bden-9.pdf" . "SDA 9") ("bden-9-lectures.pdf" . "FEHLER SDA 9 Sanderson"))
+                         (reverse uploaded)))
+          (setq uploaded nil fail nil)
+          (bcat-export-file file)
+          (should (equal both (reverse uploaded)))
+          ;; its own failed upload is tried again
+          (setq uploaded nil text (concat text "Weiter.\n") fail '("SDA 9 Worum es geht"))
+          (bcat-export-file file)
+          (should (equal '(("bden-9.pdf" . "SDA 9") ("bden-9-worum-es-geht.pdf" . "FEHLER SDA 9 Worum es geht"))
+                         (reverse uploaded)))
+          (setq uploaded nil fail nil)
+          (bcat-export-file file)
+          (should (equal both (reverse uploaded)))
+          (setq uploaded nil)
+          (bcat-export-file file)
+          (should (equal '(("bden-9.pdf" . "SDA 9")) uploaded))
+          ;; without upload nothing is remembered as put on the device
+          (setq uploaded nil text (concat text "Und noch.\n"))
+          (let ((bcat-export-upload nil)) (bcat-export-file file))
+          (should-not uploaded)
+          (bcat-export-file file)
+          (should (equal both (reverse uploaded)))
+          ;; no section: one PDF
+          (setq uploaded nil text nil)
+          (bcat-export-file file)
+          (should (equal '(("bden-9.pdf" . "SDA 9")) uploaded))
+          (should-not (directory-files folder nil "\\.pdf\\'\\|\\`pdfview")))))))
 
 (ert-deftest bcat-export-view-tibetan ()
   "The Tibetan file as one document: Reading with every segment's Uchen
@@ -1296,7 +1440,14 @@ stays as it is."
   (with-temp-buffer
     (insert "* Verse\nV.\n* Commentary\nC.\n")
     (bcat-export--parts-pages)
-    (should (equal "* Verse\nV.\n* Commentary\nC.\n" (buffer-string)))))
+    (should (equal "* Verse\nV.\n* Commentary\nC.\n" (buffer-string))))
+  ;; 19.11.: a document of one part („Worum es geht“ on its own) needs
+  ;; no bar
+  (with-temp-buffer
+    (insert "#+LATEX_HEADER: \\fancyhead[L]{X}\n* Worum es geht\n:PROPERTIES:\n:CUSTOM_ID: overview\n:END:\nW.\n")
+    (let ((before (buffer-string)))
+      (bcat-export--parts-pages)
+      (should (equal before (buffer-string))))))
 
 (ert-deftest bcat-export-page-format ()
   "Carsten 5.11.: reMarkable Paper Pro — the page is its screen (180 ×
@@ -1602,10 +1753,12 @@ run (only where lualatex is installed), no error in the log."
         (should-not (cl-some (lambda (m) (string-match-p "with errors\\|wasn't produced" m)) said))))))
 
 (ert-deftest bcat-export-file-smoke-overview ()
-  "16.11.: the PDF with „Worum es geht“ in front — a real LuaLaTeX run
-\(only where lualatex is installed), no error in the log; the section
-has the first page to itself (checked where pdftotext is installed):
-the recitation begins on the second."
+  "19.11.: two PDFs from a file with „Worum es geht“ — a real LuaLaTeX
+run (only where lualatex is installed), no error in the log: the PDF of
+the file begins with the recitation, without the section; the section
+is the PDF <name>-worum-es-geht.pdf beside it (checked where pdftotext
+is installed).  (16.11.–19.11.: the section the first page of the one
+PDF.)"
   (skip-unless (executable-find "lualatex"))
   (bcat-sentence-test--with-sa-source
     (bcat-sentence-test--create-n src 1007)
@@ -1615,24 +1768,28 @@ the recitation begins on the second."
     (let ((bcat-export-upload nil)
           (warning-minimum-level :emergency)
           (said '()))
-      (let ((pdf (cl-letf* ((orig (symbol-function 'message))
-                            ((symbol-function 'message)
-                             (lambda (fmt &rest args)
-                               (when fmt (push (apply #'format fmt args) said))
-                               (apply orig fmt args))))
-                   (bcat-export-file (tibetan-sentence--filepath 1007 folder src)))))
+      (let* ((pdf (cl-letf* ((orig (symbol-function 'message))
+                             ((symbol-function 'message)
+                              (lambda (fmt &rest args)
+                                (when fmt (push (apply #'format fmt args) said))
+                                (apply orig fmt args))))
+                    (bcat-export-file (tibetan-sentence--filepath 1007 folder src))))
+             (overview (concat (file-name-sans-extension pdf) "-worum-es-geht.pdf")))
         (should (and pdf (file-exists-p pdf)))
+        (should (file-exists-p overview))
         (should-not (cl-some (lambda (m) (string-match-p "with errors\\|wasn't produced" m)) said))
+        (should-not (directory-files folder nil "\\`pdfview"))
         (when (executable-find "pdftotext")
-          (let ((page (lambda (n)
+          (let ((page (lambda (file n)
                         (with-temp-buffer
                           (call-process "pdftotext" nil t nil "-f" (number-to-string n)
-                                        "-l" (number-to-string n) pdf "-")
+                                        "-l" (number-to-string n) file "-")
                           (buffer-string)))))
-            (should (string-match-p "Worum es geht" (funcall page 1)))
-            (should (string-match-p "Fragen für die Diskussion" (funcall page 1)))
-            (should-not (string-match-p "yanniyantraṇam" (funcall page 1)))
-            (should (string-match-p "yanniyantraṇam" (funcall page 2)))))))))
+            (should (string-match-p "yanniyantraṇam" (funcall page pdf 1)))
+            (should-not (string-match-p "Worum es geht\\|Fragen für die Diskussion" (funcall page pdf 1)))
+            (should (string-match-p "Worum es geht" (funcall page overview 1)))
+            (should (string-match-p "Fragen für die Diskussion" (funcall page overview 1)))
+            (should-not (string-match-p "yanniyantraṇam" (funcall page overview 1)))))))))
 
 (ert-deftest bcat-export-pdf-smoke ()
   "Real LuaLaTeX run (only where lualatex is installed): the reviewed

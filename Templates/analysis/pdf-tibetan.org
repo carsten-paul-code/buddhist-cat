@@ -6,11 +6,14 @@ Seite.  Reading: je Segment Uchen über Wylie (die Tabellen stehen im
 Teil Segments, deshalb hier jede Wylie-Zeile), dann die Übersetzung.
 16.11.: vor Reading der Teil „Worum es geht“ (pdf-part-overview), wenn
 die Datei den Abschnitt hat.
+19.11. (Carsten: „Zusätzlich können wir das PDF jetzt splitten. ein
+PDF mit dem Philologie Part und eines mit Worum es geht“): „Worum es
+geht“ ist nicht mehr der erste Teil dieses Dokuments, sondern ein
+eigenes (pdf-overview) — dieses beginnt mit Reading.
 #+end_comment
 #+TITLE: Sentence {{sent-num}}
 #+OPTIONS: toc:nil num:nil title:nil author:nil date:nil
 
-{{> pdf-part-overview}}
 * Reading
 :PROPERTIES:
 :CUSTOM_ID: reading
