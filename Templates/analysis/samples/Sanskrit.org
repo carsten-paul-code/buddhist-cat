@@ -114,6 +114,9 @@ All three read the concessive clause alike. They part over niyantraṇa: Dyczkow
 *Structure:* /tat/ [subject, correlative] · /pārameśvaram/ [predicate] · /śrīmat-mahā-ānanda-vijṛmbhitam/ [second predicate] → main clause; copula (asti) understood
 
 ** Word Analysis
+:PROPERTIES:
+:VISIBILITY: folded
+:END:
 *** Segment 685
 atra mad-vāk aśaktā api yat niyantraṇam ullaset
 

@@ -20,6 +20,8 @@
   (add-to-list 'load-path (expand-file-name "test/fixtures" root)))
 
 (require 'bcat-template)
+(require 'tibetan-sanskrit-reading nil t)
+(require 'tibetan-sentence-persist nil t)
 (require 'bcat-template-sent-009)
 (require 'bcat-template-sent-1007)
 
@@ -542,6 +544,33 @@ template of a sentence file; a segment without a point has none."
                     template `((segments ,(funcall seg "1" line) ,(funcall seg "2")) (recitation . "अ\na")))))
           (should (string-match-p (regexp-quote (concat "\n→ t\n\n" line "\n\n")) out))
           (should (= 1 (with-temp-buffer (insert out) (how-many "^\\*Discuss:\\*" (point-min) (point-max))))))))))
+
+(ert-deftest bcat-template-word-analysis-folded ()
+  "19.11. (Carsten: the Word Analysis „redundant … keinen Mehrwert“ for
+reading — the padapāṭha is the bold line, the forms are in the table;
+the tool needs it, for the lemmata of the zettel links and C-c u L —
+„gute Idee“ to fold it): ** Word Analysis opens folded, a drawer
+:VISIBILITY: folded under its heading, in the Sanskrit file and the
+Sanskrit file of a pair; the readers skip the drawer (the padapāṭha and
+the words of each segment as before), and C-c u L does not double it."
+  (let* ((bcat-template-directory
+          (expand-file-name "Templates/analysis" bcat-template-test--root))
+         (wa "*** Segment 1\na b\n\n- a — a; ind.")
+         (drawer (concat "** Word Analysis\n:PROPERTIES:\n:VISIBILITY: folded\n:END:\n" wa "\n")))
+    (dolist (template '("sanskrit" "bilingual"))
+      (ert-info ((format "Vorlage %s" template))
+        (let ((out (bcat-template-render-named template `((word-analysis . ,wa)))))
+          (should (string-match-p (regexp-quote drawer) out))
+          (should (equal (tibetan-sanskrit-reading-parse-word-analysis wa)
+                         (tibetan-sanskrit-reading-parse-word-analysis
+                          (with-temp-buffer
+                            (insert out)
+                            (let ((file (make-temp-file "bcat-wa-" nil ".org")))
+                              (unwind-protect
+                                  (progn (write-region (point-min) (point-max) file nil 0)
+                                         (tibetan-sentence--read-l2-body file "Word Analysis"))
+                                (delete-file file)))))))
+          (should (equal '("a" "b") (plist-get (cdar (tibetan-sanskrit-reading-parse-word-analysis wa)) :pada))))))))
 
 (ert-deftest bcat-template-sanskrit-prose ()
   "Viveka prose (no metre): * Text holds only the Devanāgarī original

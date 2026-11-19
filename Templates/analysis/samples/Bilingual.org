@@ -345,6 +345,9 @@ Because they serve to manifest the objective basis of the self (ātmavastu) in f
 *Note:* tadāśraya points back to the four preceding bases — the fifth mode is their support (in the AS: vijñāna).
 
 ** Word Analysis
+:PROPERTIES:
+:VISIBILITY: folded
+:END:
 *** Segment 22
 kasmāt pañca eva skandhāḥ
 

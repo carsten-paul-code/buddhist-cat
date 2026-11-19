@@ -1978,7 +1978,9 @@ with `bcat-sentence-word-formation-folded'."
           (count (lambda (re text) (with-temp-buffer (insert text) (how-many re (point-min) (point-max))))))
       (bcat-sentence-test--with-stubs (bcat-sentence-test--sa-answer)
         (bcat-sentence-test--fetch-n src 1007))
-      (should-not (string-match-p "Word Formation\\|:VISIBILITY:" (bcat-sentence-test--text-of file)))
+      (should-not (string-match-p "Word Formation" (bcat-sentence-test--text-of file)))
+        ;; 19.11.: the one drawer that folds is the Word Analysis's
+        (should-not (string-match-p "^\\*\\*\\* Word Formation\n:PROPERTIES:" (bcat-sentence-test--text-of file)))
       ;; a file written before 18.11.: a block per segment, folded — in
       ;; the first a table of no word of the segment
       (let* ((new (bcat-sentence-test--text-of file))
@@ -1991,7 +1993,8 @@ with `bcat-sentence-word-formation-folded'."
         (let ((coding-system-for-write 'utf-8-unix)) (with-temp-file file (insert old)))
         (bcat-relayout-file file)
         (let ((text (bcat-sentence-test--text-of file)))
-          (should-not (string-match-p ":VISIBILITY:" text))
+          ;; (19.11.: the Word Analysis opens folded — not the parts)
+          (should-not (string-match-p "Word Formation\n:PROPERTIES:" text))
           (should (= 1 (funcall count "^\\*\\*\\* Word Formation$" text)))
           (should (string-match-p "^\\*\\*\\* Word Formation\n| q | r |\n|---\\+---|\n| s | t |$" text))))
       (let ((bcat-sentence-word-formation-folded t))

@@ -394,9 +394,13 @@ Claude divided into sense units."
                              (bcat-analysis-footnotes-last (car compared))
                              (or bcat-analysis-comparison-language (alist-get 'target-lang base) "en")))
                    (funcall field 'rendering (or (bcat-relayout--section text 2 "Tibetan rendering")))
+                   ;; 19.11.: without the drawer that folds it — the
+                   ;; template sets it
                    (funcall field 'word-analysis
-                            (bcat-relayout--section (or (bcat-relayout--section text 1 "Segments") "")
-                                                    2 "Word Analysis"))))
+                            (let ((wa (bcat-relayout--section (or (bcat-relayout--section text 1 "Segments") "")
+                                                              2 "Word Analysis")))
+                              (and wa (replace-regexp-in-string
+                                       "\\`[ \t\n]*:PROPERTIES:[ \t]*\n\\(?:.*\n\\)*?[ \t]*:END:[ \t]*\n?" "" wa))))))
        (nreverse out)
        (and own (not (assq 'translation out)) (list (cons 'translation own)))))))
 

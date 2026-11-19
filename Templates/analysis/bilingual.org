@@ -133,6 +133,11 @@ gibt es nicht mehr.
 — D: „…“; here: „…“ (→ point K)“, nur wo der Vergleich der Übersetzungen
 einen Punkt für die Diskussion hat (`bcat-analysis-discuss-lines'); der
 Link führt zum Punkt unter ** Translations compared.
+19.11. (Carsten: die Word Analysis ist beim Lesen redundant — der
+Padapāṭha steht fett unter ⟦N⟧, die Formen in der Tabelle; das Werkzeug
+braucht sie für die Lemmata der Zettel-Links, padapatha-pdf.py und
+C-c u L —, „gute Idee“, sie einzuklappen): ** Word Analysis öffnet mit
+:VISIBILITY: folded.
 #+end_comment
 #+TITLE: Sentence {{sent-num}} Analysis
 #+STARTUP: showall
@@ -281,6 +286,9 @@ Link führt zum Punkt unter ** Translations compared.
 {{/segments}}
 {{#word-analysis}}
 ** Word Analysis
+:PROPERTIES:
+:VISIBILITY: folded
+:END:
 {{word-analysis}}
 
 {{/word-analysis}}
