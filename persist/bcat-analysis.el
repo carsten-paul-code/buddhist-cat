@@ -631,12 +631,36 @@ first (* Text lost the second half, the Word Analysis showed both)."
                (mapconcat #'number-to-string (sort split #'<) ", ")))
     (nreverse out)))
 
+(defun bcat-analysis--close-quotes (value)
+  "VALUE, a part of a decoded answer, with every quotation that „ opens
+and the straight \" closes closed with “ — in each string of VALUE,
+down its lists and alists (changed in place).  19.11. (TĀ 1001, the
+first fetch with the longer „Worum es geht“): the rules show „…“, the
+answer writes „…\" — in JSON the straight quote is the escaped one —,
+22 lines of one file.  Within a line only; a quotation closed already,
+straight quotes of their own and a „ nothing closes stay."
+  (cond
+   ((stringp value)
+    (if (string-search "„" value)
+        (replace-regexp-in-string "„\\([^„“”\"\n]*\\)\"" "„\\1“" value t)
+      value))
+   ((consp value)
+    (let ((tail value))
+      (while (consp tail)
+        (setcar tail (bcat-analysis--close-quotes (car tail)))
+        (when (and (cdr tail) (not (consp (cdr tail))))
+          (setcdr tail (bcat-analysis--close-quotes (cdr tail))))
+        (setq tail (cdr tail))))
+    value)
+   (t value)))
+
 (defun bcat-analysis-read (response)
   "(OBJECT . PROBLEM) for Claude's RESPONSE: the JSON object as an alist
 \(keys as symbols, arrays as lists) and nil, or nil and a short
 description why there is none — an answer cut off at the output limit
 says so.  Tolerates a code fence or prose around the object, and mends
-what `bcat-analysis--repair-json' mends."
+what `bcat-analysis--repair-json' mends; its quotations are closed as
+they were opened (`bcat-analysis--close-quotes')."
   (if (not (and (stringp response) (string-match "{" response)))
       (cons nil "kein JSON-Objekt")
     (let* ((start (match-beginning 0))
@@ -655,7 +679,8 @@ what `bcat-analysis--repair-json' mends."
            ((and (consp obj) (assq 'segments obj))
             (setf (alist-get 'segments obj)
                   (bcat-analysis--join-split-segments (alist-get 'segments obj)))
-            (cons obj nil))
+            ;; 19.11.: „…\" → „…“
+            (cons (bcat-analysis--close-quotes obj) nil))
            ((or obj (null (cdr strict))) (cons nil "JSON ohne segments"))
            ((bcat-analysis--unterminated-p (substring response start))
             (cons nil "abgeschnitten — Grenze `tibetan-claude-max-tokens' erreicht"))

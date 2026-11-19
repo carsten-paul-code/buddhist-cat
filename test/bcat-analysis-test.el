@@ -802,6 +802,29 @@ without a parsable object with segments is nil."
     (should-not (bcat-analysis-parse "{\"segments\": [1, 2"))
     (should-not (bcat-analysis-parse nil))))
 
+(ert-deftest bcat-analysis-parse-closes-german-quotes ()
+  "19.11., first fetch with the longer „Worum es geht“ (TĀ 1001): the
+answer opens a quotation with „ and closes it with the straight \" (in
+JSON \\\") — 22 lines of the file, „aus dem Wille\" beside the hand
+texts' „…“.  Read, every text of the answer closes what „ opened with
+“: in the overview, the readings and findings of the comparison, a
+translation.  What is closed already stays; straight quotes of their
+own stay (an English \"…\"); a „ nothing closes in its line stays."
+  (let* ((parsed (bcat-analysis-parse
+                  (concat "{\"segments\": [{\"num\": 1, \"translation\": \"He said \\\"so\\\" and „thus\\\".\"}],"
+                          " \"units\": [{\"passage\": \"/x/\", \"readings\": [{\"sigla\": \"D\","
+                          " \"text\": \"„the possessor\\\"\"}], \"finding\": \"their „arising\\\" — „a“ and „b\\\"\"}],"
+                          " \"overview\": {\"subject\": \"/anuttara/ „das Höchste\\\": so.\","
+                          " \"steps\": [\"„eins\\\" und „zwei\\\"\", \"offen „ohne Ende\\nneue Zeile \\\"x\\\"\"]}}")))
+         (unit (car (alist-get 'units parsed)))
+         (overview (alist-get 'overview parsed)))
+    (should (equal "He said \"so\" and „thus“." (alist-get 'translation (car (alist-get 'segments parsed)))))
+    (should (equal "„the possessor“" (alist-get 'text (car (alist-get 'readings unit)))))
+    (should (equal "their „arising“ — „a“ and „b“" (alist-get 'finding unit)))
+    (should (equal "/anuttara/ „das Höchste“: so." (alist-get 'subject overview)))
+    (should (equal '("„eins“ und „zwei“" "offen „ohne Ende\nneue Zeile \"x\"") (alist-get 'steps overview)))
+    (should (eql 1 (alist-get 'num (car (alist-get 'segments parsed)))))))
+
 (ert-deftest bcat-analysis-read-reports-truncation ()
   "30.10., AS sentence 2: the answer ended after 41 283 characters in the
 middle of „grammar“ — Claude had reached the output limit.  C-c u G
