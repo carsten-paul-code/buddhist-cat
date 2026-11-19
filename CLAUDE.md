@@ -21,8 +21,9 @@ Vergleich auf den Punkt: Diskussionspunkte statt Ampel, „Discuss:“ am Segmen
 DharmaMitra keine Referenz, Prompt entsprechend; seit 19.11. ** Word Analysis
 und ** Segment N eingeklappt, „Worum es geht“ in sieben Teilen (erprobt an TĀ
 1001 und bden gnyis 28, Länge „gefällt mir so“), PDF geteilt: Lese-PDF ab
-Reading + eigenes PDF „Worum es geht“; offen: Philologie-Teil weiter gliedern,
-Kompositum-Auflösung straffen).
+Reading + eigenes PDF „Worum es geht“; reMarkable: Ordner wie im Finder, neue
+Fassung ohne Datum, alte ins Archiv, /Reading geleert; offen: Philologie-Teil
+weiter gliedern, Kompositum-Auflösung straffen).
 Before that 2026-10-28 (§5.74: SATZDATEIEN
 NACH VORLAGE — Reading-Klassen, Tibetisch: `#+CAT_TEMPLATE: tibetan' im
 Quellkopf, Gliederung * Text / * Segments / * Sentence, C-c u A = Rumpf
@@ -5634,6 +5635,34 @@ Prompt-Änderung: „ja“).
   Schichten: AS, MSA) bleibt EIN PDF mit dem Abschnitt vorn
   (`bcat-export-view-with-overview') — ob es auch geteilt wird, ist
   offen bis AS/MSA dran sind.  Leiste erst ab zwei Teilen.
+- REMARKABLE NEU GEORDNET (`ccadc11' Uploader, `2764b4b' Export; Carsten
+  19.11.: „Die Ordner Struktur sollte der im Finder entsprechen … Sollte
+  eine neue Version dazukommen, dann diese bitte ohne Datum Suffix und
+  den Datum Suffix an die Bestehende anheften und in ein jeweiliges
+  Archiv verschieben“).
+  · Ordner: Reading/<Ordner der QUELLE wie im Finder ab dem
+    Semesterordner> — Reading/WS26-27/Tantraloka,
+    Reading/WS26-27/Tibetisch V/bden-gnyis-cat,
+    Reading/WS26-27/Abhidharmasamuccaya/Sanskrit
+    (`bcat-export--device-folder').  NICHT ein Ordner je Text: AS
+    Sanskrit und Tibetisch haben je einen „Satz 1002“.
+  · Namen: sprechend wie bisher, ohne Datum („Satz 1012“, „Satz 1012
+    Worum es geht“, „SDA 28“, „MSA IX.61“) — Carstens Wahl.
+  · Neue Fassung: die bestehende wandert nach <Ordner>/Archiv als
+    „<Name> <Datum, an dem SIE geschickt wurde>“, die neue liegt unter
+    dem schlichten Namen (zweite rmapi-Sitzung: mkdir Archiv, mv, put).
+    Überschrieben wird nie.
+  · Geschickt wird nur, was das Gerät nicht unverändert hat:
+    handouts/.bcat-remarkable.eld ((PDF MD5 Datum) …) für das PDF der
+    Datei, die Vorträge und „Worum es geht“; C-u C-c u H schickt
+    trotzdem (`bcat-export-force-upload').  Die Datei NICHT löschen —
+    sonst hält das Werkzeug alles für neu und archiviert die
+    Dokumente mit Carstens Notizen.
+  · Stand des Geräts: /Reading ist LEER (19.11.) — die sieben alten
+    Ordner (137 Dokumente) liegen auf Carstens Wort im Papierkorb des
+    Geräts.  Hochgeladen wird erst, wenn er es sagt bzw. mit seinem
+    nächsten C-c u G / C-c u H.  rmapi: `mv <Pfad> /trash' legt in den
+    Papierkorb (wiederherstellbar); `rm' NICHT verwenden.
 - OFFEN: die Straffung der Kompositum-Auflösung (`layers'); Philologie-
   Teil weiter gliedern; Dossier-PDF teilen (AS/MSA).
 
