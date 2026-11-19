@@ -5556,12 +5556,13 @@ Prompt-Änderung: „ja“).
   sonst bleibt er (Handkorrekturen, Antwort fehlt oder gehört zu einem
   anderen Abruf).  DharmaMitra wandert bei jedem C-c u L ans Ende
   (`bcat-relayout--machine-last').
-- Stand der echten Ordner: nichts umgestellt.  TĀ 1012 (Testsatz) hat
-  seit d9749b8c (Tantrāloka-Sitzung, Grammatik nach Neuabruf von Hand
-  berichtigt) einen Vergleich, der NICHT aus .answers stammt — bleibt
-  bewertet, bis neu abgerufen wird (Carstens Entscheidung; ein Abruf
-  ersetzt die Handkorrekturen).  Probelauf: 50 von 82 bewerteten
-  Vergleichen würden umgestellt.
+- Stand der echten Ordner: TĀ 1012 (Testsatz) am 19.11. auf Carstens
+  Wunsch mit dem neuen Prompt neu abgerufen („ja“ — die Handkorrekturen
+  der Tantrāloka-Sitzung aus d9749b8c sind damit ersetzt, der Handtext
+  „Worum es geht“ blieb wortgleich): zwei Diskussionspunkte, beide an
+  ⟦698⟧, „Not at issue“ aus `minor' (Dyczkowskis „nṛta“).  Sonst
+  nichts umgestellt; Probelauf: 50 von 82 bewerteten Vergleichen würden
+  mit C-c u L umgestellt.
 - Lehre: Tabellen, die eine andere Sitzung bewusst NICHT neu ausrichtet
   („Tabellen nicht neu ausgerichtet“), nicht mit C-c u L überschreiben,
   ohne es abzusprechen — 1012 wurde zurückgesetzt.
