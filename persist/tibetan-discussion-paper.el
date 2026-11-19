@@ -450,25 +450,43 @@ rest vanish.  Carsten (20.10.): the folder \"bDen pa gnyis la \\='jug pa
          (s (replace-regexp-in-string " ," "," s)))
     (string-trim s)))
 
-(defun tibetan-discussion-paper--upload-commands (folder-base folder tmp)
-  "The session commands that create FOLDER-BASE and FOLDER and put TMP."
-  (list (list "mkdir" folder-base)
-        (list "mkdir" folder)
-        (list "put" tmp folder)))
+(defconst tibetan-discussion-paper--archive-folder "Archiv"
+  "The folder beside the documents of a text on the reMarkable that
+takes their earlier versions (Carsten 19.11.: „in ein jeweiliges Archiv
+verschieben“).")
 
-(defun tibetan-discussion-paper--upload (pdf title label &optional done)
-  "Upload PDF to the reMarkable with rmapi: into the folder
-`/<tibetan-discussion-paper-remarkable-folder>/<TITLE>' (one folder
-per work, created when missing), as the document LABEL (the
+(defun tibetan-discussion-paper--upload-commands (levels tmp)
+  "The session commands that create LEVELS — the folders from the base
+down to the one of the document, each a full path — and put TMP into
+the last."
+  (append (mapcar (lambda (l) (list "mkdir" l)) levels)
+          (list (list "put" tmp (car (last levels))))))
+
+(defun tibetan-discussion-paper--archive-commands (folder docname stamp tmp)
+  "The session commands that move the document DOCNAME of FOLDER into
+its archive as „DOCNAME STAMP“ and put TMP in its place."
+  (let ((archive (concat folder "/" tibetan-discussion-paper--archive-folder)))
+    (list (list "mkdir" archive)
+          (list "mv" (concat folder "/" docname) (format "%s/%s %s" archive docname stamp))
+          (list "put" tmp folder))))
+
+(defun tibetan-discussion-paper--upload (pdf title label &optional done folder stamp)
+  "Upload PDF to the reMarkable with rmapi, as the document LABEL (the
 sentence or § — \"Satz 28\", \"Saetze 24-28\"; names ASCII-only,
-`--doc-name').  ONE rmapi session does mkdir, mkdir, put.  When a
-document of that name already exists there, a second session puts
-it with a time stamp appended instead, so notes written on the
-earlier one are never overwritten.  Asynchronous; the result is
-reported as a message and to DONE, when given: (t PATH) with the
-document as placed, or (nil REASON) — the status of C-c u G (§5.74).
-Returns non-nil when the upload was started, nil (with a message) when
-rmapi is not installed."
+`--doc-name') — into FOLDER below
+`/<tibetan-discussion-paper-remarkable-folder>' when given (a path as
+in the Finder, „WS26-27/Tantraloka“, Carsten 19.11.), else into the
+folder named after TITLE (one per work, 20.10.); every level is created
+when missing.  ONE rmapi session does the mkdirs and the put.  When a
+document of that name already exists there, a second session moves it
+into the folder's Archiv as „LABEL STAMP“ (STAMP: the date of that
+version, by default now) and puts PDF under the plain name (Carsten
+19.11.: the new version without a date, the date on the one there) —
+notes written on the earlier one stay with it, never overwritten.
+Asynchronous; the result is reported as a message and to DONE, when
+given: (t PATH) with the document as placed, or (nil REASON) — the
+status of C-c u G (§5.74).  Returns non-nil when the upload was
+started, nil (with a message) when rmapi is not installed."
   (if (not (executable-find "rmapi"))
       (progn
         (message "rmapi nicht gefunden — PDF liegt unter %s" pdf)
@@ -476,35 +494,42 @@ rmapi is not installed."
         nil)
     (let* ((base (concat "/" (string-trim tibetan-discussion-paper-remarkable-folder
                                           "/+" "/+")))
-           (folder (concat base "/" (tibetan-discussion-paper--doc-name title)))
+           (levels (let ((path base))
+                     (cons base
+                           (mapcar (lambda (part) (setq path (concat path "/" part)))
+                                   (if folder
+                                       (split-string folder "/" t)
+                                     (list (tibetan-discussion-paper--doc-name title)))))))
+           (target (car (last levels)))
            (name (tibetan-discussion-paper--doc-name label))
+           (stamp (or stamp (format-time-string "%Y-%m-%d %H%M")))
            (dir (make-temp-file "rm-paper-" t))
-           (put (lambda (docname retry)
-                  ;; RETRY: a function of the stamped name for the
-                  ;; first attempt, nil for the last one.
-                  (let ((tmp (expand-file-name (concat docname ".pdf") dir)))
-                    (copy-file pdf tmp t)
-                    (tibetan-discussion-paper--rmapi-session
-                     (tibetan-discussion-paper--upload-commands base folder tmp)
-                     (lambda (_code out)
-                       (pcase (tibetan-discussion-paper--put-result out docname)
-                         ('ok
-                          (ignore-errors (delete-directory dir t))
-                          (message "reMarkable: %s/%s" folder docname)
-                          (when done (funcall done t (format "%s/%s" folder docname))))
-                         ((and 'exists (guard (functionp retry)))
-                          ;; Name taken: once more with a time stamp —
-                          ;; the earlier document stays.
-                          (funcall retry (format "%s %s" docname
-                                                 (format-time-string "%Y-%m-%d %H%M"))))
-                         (_
-                          (ignore-errors (delete-directory dir t))
-                          (let ((reason (string-trim (replace-regexp-in-string
-                                                      "\\[/[^]]*\\]>[ \t]*" "" out))))
-                            (message "reMarkable-Upload fehlgeschlagen (%s): %s — PDF liegt unter %s"
-                                     docname reason pdf)
-                            (when done (funcall done nil reason)))))))))))
-      (funcall put name (lambda (stamped) (funcall put stamped nil)))
+           (tmp (expand-file-name (concat name ".pdf") dir))
+           (finish (lambda (ok what)
+                     (ignore-errors (delete-directory dir t))
+                     (if ok
+                         (message "reMarkable: %s" what)
+                       (message "reMarkable-Upload fehlgeschlagen (%s): %s — PDF liegt unter %s"
+                                name what pdf))
+                     (when done (funcall done ok what))))
+           (reason (lambda (out)
+                     (string-trim (replace-regexp-in-string "\\[/[^]]*\\]>[ \t]*" "" out)))))
+      (copy-file pdf tmp t)
+      (tibetan-discussion-paper--rmapi-session
+       (tibetan-discussion-paper--upload-commands levels tmp)
+       (lambda (_code out)
+         (pcase (tibetan-discussion-paper--put-result out name)
+           ('ok (funcall finish t (format "%s/%s" target name)))
+           ('exists
+            ;; Name taken: the document there goes into the archive
+            ;; under its date, the new one takes its place.
+            (tibetan-discussion-paper--rmapi-session
+             (tibetan-discussion-paper--archive-commands target name stamp tmp)
+             (lambda (_code2 out2)
+               (if (eq (tibetan-discussion-paper--put-result out2 name) 'ok)
+                   (funcall finish t (format "%s/%s" target name))
+                 (funcall finish nil (funcall reason out2))))))
+           (_ (funcall finish nil (funcall reason out))))))
       t)))
 
 (defun tibetan-discussion-paper-upload-many (items)

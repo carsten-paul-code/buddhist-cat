@@ -236,10 +236,17 @@ brackets, umlauts or dashes beyond ASCII."
 (ert-deftest tibetan-discussion-paper-upload ()
   "Upload (Carsten 20.10.: Ordner je Werk, der Satz als Dateiname): ONE
 rmapi session with mkdir base, mkdir `/Reading/<Werk>', put
-`<Satz>.pdf' there; when the name is taken a second session puts a
-time-stamped copy — notes on the earlier document are never
-overwritten; any other failure is reported; without rmapi a message,
-no error, nil."
+`<Satz>.pdf' there.  19.11. (Carsten: „Die Ordner Struktur sollte der
+im Finder entsprechen“; „Sollte eine neue Version dazukommen, dann
+diese bitte ohne Datum Suffix und den Datum Suffix an die Bestehende
+anheften und in ein jeweiliges Archiv verschieben“): with FOLDER the
+document goes below the base into that path, every level made; when
+the name is taken, a second session moves the document that is there
+into <folder>/Archiv under its name with STAMP — the date of that
+version, by default now — and puts the new one under the plain name:
+notes on the earlier document stay with it, never overwritten.  (Until
+19.11. the NEW document got the time stamp.)  Any other failure is
+reported; without rmapi a message, no error, nil."
   (let ((sessions '()) (reply "uploading: [x]...\nOK\n")
         (pdf (make-temp-file "paper-" nil ".pdf")))
     (unwind-protect
@@ -260,13 +267,33 @@ no error, nil."
                               ("mkdir" "/Reading/Klu sgrub dgongs rgyan")
                               ("put" "Satz 654.pdf" "/Reading/Klu sgrub dgongs rgyan")))
                            sessions))
-            ;; Name taken → second session with time stamp.
+            ;; the folder as in the Finder: every level
+            (setq sessions '())
+            (should (tibetan-discussion-paper--upload pdf "bDen pa gnyis la 'jug pa" "SDA 28" nil
+                                                      "WS26-27/Tibetisch V/bden-gnyis-cat"))
+            (should (equal '((("mkdir" "/Reading")
+                              ("mkdir" "/Reading/WS26-27")
+                              ("mkdir" "/Reading/WS26-27/Tibetisch V")
+                              ("mkdir" "/Reading/WS26-27/Tibetisch V/bden-gnyis-cat")
+                              ("put" "SDA 28.pdf" "/Reading/WS26-27/Tibetisch V/bden-gnyis-cat")))
+                           sessions))
+            ;; Name taken → second session: the one there into Archiv
+            ;; with the stamp, the new one under the plain name.
             (setq sessions '() reply "ERROR: entry already exists\n")
-            (should (tibetan-discussion-paper--upload pdf "Rgyan" "Sätze 24–28"))
+            (should (tibetan-discussion-paper--upload pdf "Rgyan" "Sätze 24–28" nil
+                                                      "WS26-27/Tantraloka" "2026-11-19 0632"))
             (should (= 2 (length sessions)))
-            (should (equal "Saetze 24-28.pdf" (cadr (caddr (cadr sessions)))))
-            (should (string-match-p "\\`Saetze 24-28 20[0-9-]\\{8\\} [0-9]\\{4\\}\\.pdf\\'"
-                                    (cadr (caddr (car sessions)))))
+            (should (equal '(("mkdir" "/Reading/WS26-27/Tantraloka/Archiv")
+                             ("mv" "/Reading/WS26-27/Tantraloka/Saetze 24-28"
+                              "/Reading/WS26-27/Tantraloka/Archiv/Saetze 24-28 2026-11-19 0632")
+                             ("put" "Saetze 24-28.pdf" "/Reading/WS26-27/Tantraloka"))
+                           (car sessions)))
+            (should (equal "Saetze 24-28.pdf" (cadr (car (last (cadr sessions))))))
+            ;; without STAMP: now
+            (setq sessions '())
+            (should (tibetan-discussion-paper--upload pdf "Rgyan" "Satz 1"))
+            (should (string-match-p "\\`/Reading/Rgyan/Archiv/Satz 1 20[0-9-]\\{8\\} [0-9]\\{4\\}\\'"
+                                    (caddr (cadr (car sessions)))))
             ;; 429 → reported, no retry loop.
             (setq sessions '() reply "uploading: [x]...ERROR: request failed with status 429\n")
             (should (tibetan-discussion-paper--upload pdf "Rgyan" "Satz 1"))
@@ -277,8 +304,10 @@ no error, nil."
 
 (ert-deftest tibetan-discussion-paper-upload-reports-done ()
   "§5.74, 29.10.: the status of C-c u G shows the upload's outcome —
-the optional DONE gets (t NAME) for the document as placed (stamped
-when the name was taken) or (nil REASON) — 429, no rmapi."
+the optional DONE gets (t NAME) for the document as placed (19.11.:
+always under its plain name — the earlier one went into Archiv) or
+\(nil REASON) — 429, no rmapi, and when the earlier one could not be
+moved away (the name is still taken): no loop, the reason."
   (let ((reply "uploading: [x]...\nOK\n") (results '())
         (pdf (make-temp-file "paper-" nil ".pdf")))
     (unwind-protect
@@ -290,7 +319,7 @@ when the name was taken) or (nil REASON) — 429, no rmapi."
                 (done (lambda (ok what) (push (list ok what) results))))
             (tibetan-discussion-paper--upload pdf "Rgyan" "Satz 1" done)
             (should (equal '((t "/Reading/Rgyan/Satz 1")) results))
-            (setq results '() reply "ERROR: entry already exists\n")
+            (setq results '())
             (cl-letf (((symbol-function 'tibetan-discussion-paper--rmapi-session)
                        (let ((n 0))
                          (lambda (_commands cb)
@@ -298,10 +327,20 @@ when the name was taken) or (nil REASON) — 429, no rmapi."
                            (funcall cb 0 (if (= n 1) "ERROR: entry already exists\n"
                                            "uploading: [x]...\nOK\n"))
                            t))))
-              (tibetan-discussion-paper--upload pdf "Rgyan" "Satz 1" done))
-            (should (car (car results)))
-            (should (string-match-p "\\`/Reading/Rgyan/Satz 1 20[0-9-]\\{8\\} [0-9]\\{4\\}\\'"
-                                    (cadr (car results))))
+              (tibetan-discussion-paper--upload pdf "Rgyan" "Satz 1" done "WS26-27/Tantraloka"))
+            (should (equal '((t "/Reading/WS26-27/Tantraloka/Satz 1")) results))
+            ;; the earlier one could not be moved: reported, two sessions, no third
+            (setq results '())
+            (let ((n 0))
+              (cl-letf (((symbol-function 'tibetan-discussion-paper--rmapi-session)
+                         (lambda (_commands cb)
+                           (cl-incf n)
+                           (funcall cb 0 "ERROR: entry already exists\n")
+                           t)))
+                (tibetan-discussion-paper--upload pdf "Rgyan" "Satz 1" done))
+              (should (= 2 n)))
+            (should (equal nil (car (car results))))
+            (should (string-match-p "already exists" (cadr (car results))))
             (setq results '() reply "uploading: [x]...ERROR: request failed with status 429\n")
             (tibetan-discussion-paper--upload pdf "Rgyan" "Satz 1" done)
             (should (equal nil (car (car results))))
