@@ -568,7 +568,9 @@ verse, `bcat-commentary-fetch'), where its PDF and upload write too."
   "The `overview' of ANSWERS (the parts in order) as one, or nil when
 none has one: a single one as it is; of several the first subject, the
 steps and the questions of all in order, the moves joined (16.11.; MSA
-IX.8 goes in parts)."
+IX.8 goes in parts); 19.11. (the overview in seven parts): the first
+context, the terms of all (one named twice once) and the places to
+watch of all."
   (let ((all (delq nil (mapcar (lambda (a)
                                  (let ((o (alist-get 'overview a)))
                                    (cond ((consp o) o)
@@ -577,14 +579,23 @@ IX.8 goes in parts)."
     (cond
      ((null all) nil)
      ((null (cdr all)) (car all))
-     (t `((subject . ,(or (cl-some (lambda (o) (let ((s (bcat-analysis--field o 'subject)))
-                                                 (and (not (string-empty-p s)) s)))
-                                   all)
-                          ""))
-          (steps . ,(cl-mapcan (lambda (o) (bcat-analysis--overview-list (alist-get 'steps o))) all))
-          (move . ,(string-join (delete "" (mapcar (lambda (o) (bcat-analysis--field o 'move)) all)) " "))
-          (questions . ,(cl-mapcan (lambda (o) (bcat-analysis--overview-list (alist-get 'questions o)))
-                                   all)))))))
+     (t (let ((first (lambda (key)
+                       (or (cl-some (lambda (o) (let ((s (bcat-analysis--field o key)))
+                                                  (and (not (string-empty-p s)) s)))
+                                    all)
+                           ""))))
+          `((context . ,(funcall first 'context))
+            (subject . ,(funcall first 'subject))
+            (steps . ,(cl-mapcan (lambda (o) (bcat-analysis--overview-list (alist-get 'steps o))) all))
+            (terms . ,(delete-dups
+                       (cl-mapcan (lambda (o) (bcat-analysis--overview-list (alist-get 'terms o))) all)))
+            (move . ,(string-join (delete "" (mapcar (lambda (o) (bcat-analysis--field o 'move)) all)) " "))
+            (reading . ,(cl-mapcan (lambda (o)
+                                     (let ((value (alist-get 'reading o)))
+                                       (copy-sequence (if (stringp value) (list value) value))))
+                                   all))
+            (questions . ,(cl-mapcan (lambda (o) (bcat-analysis--overview-list (alist-get 'questions o)))
+                                     all))))))))
 
 (defun bcat-commentary--merged (run)
   "The answers of RUN that have landed as one: their segments and

@@ -239,8 +239,29 @@ per sentence number, in the file of the Sanskrit."
                      (bcat-analysis-sanskrit-system-prompt "en" t t)
                      (bcat-commentary-system-prompt "en")))
     (should (string-match-p
-             (regexp-quote "\"overview\": {\"subject\": \"…\", \"steps\": [\"…\"], \"move\": \"…\", \"questions\": [\"…\"]}}")
+             (regexp-quote (concat "\"overview\": {\"context\": \"…\", \"subject\": \"…\", \"steps\": [\"…\"], "
+                                   "\"terms\": [\"…\"], \"move\": \"…\", "
+                                   "\"reading\": [{\"segment\": 0, \"text\": \"…\", \"unit\": 0}], "
+                                   "\"questions\": [\"…\"]}}"))
              sys))
+    ;; 19.11. (Carsten: „Worum es geht hätte ich gerne ausführlicher. Das
+    ;; würde ich dann in der Vorbereitung als erstes lesen und dann an
+    ;; den Text gehen“; prototype on TĀ 1012: „passt, super so“): read
+    ;; first, half a page; where we are, the terms one must know, what
+    ;; to watch when reading the original
+    (should (string-match-p "reads first when preparing" sys))
+    (should (string-match-p "about 25 to 35 lines" sys))
+    (should-not (string-match-p "8 to 14 lines" sys))
+    (should (string-match-p "context lines of the document" sys))
+    (should (string-match-p "^  - context: " sys))
+    (should (string-match-p "^  - terms: " sys))
+    (should (string-match-p "^  - reading: " sys))
+    (should (string-match-p "two or three sentences" sys))
+    ;; in the order of the section
+    (should (< (string-match "^  - context: " sys) (string-match "^  - subject: " sys)
+               (string-match "^  - steps: " sys) (string-match "^  - terms: " sys)
+               (string-match "^  - move: " sys) (string-match "^  - reading: " sys)
+               (string-match "^  - questions: " sys)))
     (should (string-match-p "^- overview: " sys))
     (should (string-match-p "always in German" sys))
     (should (string-match-p "only on your own analysis" sys))
@@ -267,13 +288,13 @@ numbered, one a paragraph), *Der Kniff:*, the questions as a list.  A
 part left empty is left out; a plain text is taken as it stands;
 nothing → nil."
   (should (equal (concat "*Erklärt wird:* das Kompositum /anuttarāmṛtakulam/ aus Vers 1.1.\n\n"
-                         "1. /anuttara/: das Höchste.\n2. /amṛta/: gelesen als /a-mṛta/.\n\n"
+                         "*Der Gedankengang:*\n1. /anuttara/: das Höchste.\n2. /amṛta/: gelesen als /a-mṛta/.\n\n"
                          "*Der Kniff:* „tot“ bereitet das Wortspiel vor.\n\n"
                          "*Fragen für die Diskussion:*\n"
                          "- Warum „tot“ statt „vergänglich“? DM verliert das Wortspiel.\n- Wessen Körper?")
                  (bcat-analysis-overview `((overview . ,bcat-analysis-test--overview)))))
   (should (equal (concat "*Erklärt wird:* kein Versglied, sondern ein Beleg zu 1012.\n\n"
-                         "Jayaratha schiebt ein Zitat nach. Es schließt mit /iti/.\n\n"
+                         "*Der Gedankengang:* Jayaratha schiebt ein Zitat nach. Es schließt mit /iti/.\n\n"
                          "*Fragen für die Diskussion:*\n- Woher stammt das Zitat?")
                  (bcat-analysis-overview
                   '((overview (subject . " kein Versglied, sondern ein Beleg zu 1012. ")
@@ -281,12 +302,69 @@ nothing → nil."
                               (move . "")
                               (questions "Woher stammt das Zitat?"))))))
   ;; steps as one string, a question that brings its own dash
-  (should (equal "*Erklärt wird:* X.\n\nEin Absatz.\n\n*Fragen für die Diskussion:*\n- Frage?"
+  (should (equal "*Erklärt wird:* X.\n\n*Der Gedankengang:* Ein Absatz.\n\n*Fragen für die Diskussion:*\n- Frage?"
                  (bcat-analysis-overview '((overview (subject . "X.") (steps . "Ein Absatz.")
                                                      (questions "- Frage?"))))))
   (should (equal "Schon fertiger Text." (bcat-analysis-overview '((overview . " Schon fertiger Text.\n")))))
   (should-not (bcat-analysis-overview '((overview (subject . "") (steps) (move . "") (questions)))))
   (should-not (bcat-analysis-overview '((translation . "x")))))
+
+(ert-deftest bcat-analysis-overview-detailed ()
+  "19.11. (Carsten: „Worum es geht“ more detailed, read first in the
+preparation; prototype on TĀ 1012: „passt, super so“): the section in
+seven parts, in this order — *Wo wir sind:* the context, *Erklärt
+wird:*, *Der Gedankengang:* the steps, *Begriffe, die man kennen
+muss:* the terms as a list, *Der Kniff:*, *Beim Lesen beachten:* the
+places of the original by the number of their segment, *Fragen für die
+Diskussion:*.  A place that is one of the points for the discussion
+names it — by the number the point has under Translations compared, not
+the unit's in the answer (the fourth unit is the first point); a unit
+that is no point, or none, gives no reference.  A part left empty is
+left out; a place given as plain text is taken as it stands."
+  (let* ((overview '((context . " Tantrāloka 1.1. In 1011 das vorige Kompositum; 1013 bringt ein Zitat. ")
+                     (subject . "das Kompositum /anuttarāmṛtakulam/.")
+                     (steps "/anuttara/ „das Unübertreffliche“: Jayaratha gibt /utkṛṣṭa/. Der Grund steht im Ablativ."
+                            "/amṛta/ „todlos“: worin es keinen Tod gibt.")
+                     (terms "/anuttara/: im Trika ein Name des Absoluten." "- /kula/: hier „Körper“.")
+                     (move . "„tot“ bereitet das Wortspiel vor.")
+                     (reading ((segment . 1) (text . "das Kompositum von hinten lesen.") (unit . 0))
+                              ((segment . 2) (text . "/amākhyakalāsvarūpam/ ist ein Bahuvrīhi.") (unit . 4))
+                              ((segment . 2) (text . "/mṛtam/ ist Subjekt.") (unit . 3))
+                              ((segment . "") (text . "Der ganze Satz ist ein Nominalsatz."))
+                              "696–697 sind ein Zitat.")
+                     (questions "Wessen Körper?")))
+         (parsed (cons (cons 'overview overview) bcat-analysis-test--discussion-answer))
+         (text (bcat-analysis-overview parsed bcat-analysis-test--discussion-refs
+                                       bcat-analysis-test--discussion-base)))
+    (should (equal (concat "*Wo wir sind:* Tantrāloka 1.1. In 1011 das vorige Kompositum; 1013 bringt ein Zitat.\n\n"
+                           "*Erklärt wird:* das Kompositum /anuttarāmṛtakulam/.\n\n"
+                           "*Der Gedankengang:*\n"
+                           "1. /anuttara/ „das Unübertreffliche“: Jayaratha gibt /utkṛṣṭa/. Der Grund steht im Ablativ.\n"
+                           "2. /amṛta/ „todlos“: worin es keinen Tod gibt.\n\n"
+                           "*Begriffe, die man kennen muss:*\n"
+                           "- /anuttara/: im Trika ein Name des Absoluten.\n- /kula/: hier „Körper“.\n\n"
+                           "*Der Kniff:* „tot“ bereitet das Wortspiel vor.\n\n"
+                           "*Beim Lesen beachten:*\n"
+                           "- 1: das Kompositum von hinten lesen.\n"
+                           "- 2: /amākhyakalāsvarūpam/ ist ein Bahuvrīhi. (→ Diskussionspunkt 1)\n"
+                           "- 2: /mṛtam/ ist Subjekt.\n"
+                           "- Der ganze Satz ist ein Nominalsatz.\n"
+                           "- 696–697 sind ein Zitat.\n\n"
+                           "*Fragen für die Diskussion:*\n- Wessen Körper?")
+                   text))
+    ;; without the references and the rump the points are found all the same
+    (should (string-match-p "Bahuvrīhi\\. (→ Diskussionspunkt 1)$" (bcat-analysis-overview parsed)))
+    ;; no comparison in the answer: no reference, whatever the unit says
+    (should-not (string-match-p "Diskussionspunkt" (bcat-analysis-overview `((overview . ,overview)))))
+    ;; through the fields of a file: the mark is the text's
+    (let ((fields (bcat-analysis-overview-fields '((target-lang . "en")) parsed bcat-analysis-test--discussion-refs)))
+      (should (string-match-p "(→ Diskussionspunkt 1)" (alist-get 'overview fields)))
+      (should (equal (bcat-analysis-overview-hash (alist-get 'overview fields))
+                     (alist-get 'overview-hash fields))))
+    ;; only the new parts
+    (should (equal "*Wo wir sind:* A.\n\n*Begriffe, die man kennen muss:*\n- /x/: y.\n\n*Beim Lesen beachten:*\n- 7: z."
+                   (bcat-analysis-overview '((overview (context . "A.") (terms "/x/: y.")
+                                                       (reading ((segment . 7) (text . "z."))))))))))
 
 (ert-deftest bcat-analysis-overview-fields-protect-hand-text ()
   "16.11.: „Am Inhalt meiner Handtexte bitte nichts ändern“ — a section

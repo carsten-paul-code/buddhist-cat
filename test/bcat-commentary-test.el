@@ -592,17 +592,30 @@ the commentary's part without the mark's drawer."
 (ert-deftest bcat-commentary-merged-overview ()
   "A commentary in parts (MSA IX.8: 72 sentences): the overviews of the
 parts as one — the first subject, the steps and questions of all in the
-order of the parts, the moves joined."
+order of the parts, the moves joined.  19.11.: the first context, the
+terms and the places to watch of all (a term named twice once)."
   (let* ((run (list :answers
                     (list (cons 2 '((segments) (sentences)
-                                    (overview (subject . "zweiter Teil.") (steps "Schritt C.")
-                                              (move . "Zitat als Beleg.") (questions "Frage 2?"))))
+                                    (overview (context . "zweiter Teil des Kommentars.")
+                                              (subject . "zweiter Teil.") (steps "Schritt C.")
+                                              (terms "/kāya/: Körper." "/dharma/: Lehre.")
+                                              (move . "Zitat als Beleg.")
+                                              (reading ((segment . 9) (text . "Zitat bis /zhes/.") (unit . 0)))
+                                              (questions "Frage 2?"))))
                           (cons 1 '((segments) (sentences)
-                                    (overview (subject . "Vers IX.8.") (steps "Schritt A." "Schritt B.")
-                                              (move . "Etymologie.") (questions "Frage 1?")))))))
+                                    (overview (context . "MSA IX.8, Sthiramati.")
+                                              (subject . "Vers IX.8.") (steps "Schritt A." "Schritt B.")
+                                              (terms "/kāya/: Körper.")
+                                              (move . "Etymologie.")
+                                              (reading ((segment . 3) (text . "Lemma zuerst.") (unit . 0)))
+                                              (questions "Frage 1?")))))))
          (merged (bcat-commentary--merged run)))
-    (should (equal (concat "*Erklärt wird:* Vers IX.8.\n\n1. Schritt A.\n2. Schritt B.\n3. Schritt C.\n\n"
+    (should (equal (concat "*Wo wir sind:* MSA IX.8, Sthiramati.\n\n"
+                           "*Erklärt wird:* Vers IX.8.\n\n"
+                           "*Der Gedankengang:*\n1. Schritt A.\n2. Schritt B.\n3. Schritt C.\n\n"
+                           "*Begriffe, die man kennen muss:*\n- /kāya/: Körper.\n- /dharma/: Lehre.\n\n"
                            "*Der Kniff:* Etymologie. Zitat als Beleg.\n\n"
+                           "*Beim Lesen beachten:*\n- 3: Lemma zuerst.\n- 9: Zitat bis /zhes/.\n\n"
                            "*Fragen für die Diskussion:*\n- Frage 1?\n- Frage 2?")
                    (bcat-analysis-overview merged))))
   (should-not (bcat-analysis-overview

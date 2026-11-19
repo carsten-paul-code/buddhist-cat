@@ -213,27 +213,39 @@ in a prompt)."
      "")))
 
 (defconst bcat-analysis--overview-schema
-  "\"overview\": {\"subject\": \"…\", \"steps\": [\"…\"], \"move\": \"…\", \"questions\": [\"…\"]}"
+  "\"overview\": {\"context\": \"…\", \"subject\": \"…\", \"steps\": [\"…\"], \"terms\": [\"…\"], \"move\": \"…\", \"reading\": [{\"segment\": 0, \"text\": \"…\", \"unit\": 0}], \"questions\": [\"…\"]}"
   "The part of the JSON contract for „Worum es geht“
 \(`bcat-analysis--overview-rule') — the last field of an answer: it
 draws on everything before it.")
 
 (defun bcat-analysis--overview-rule ()
-  "The rule for `overview', the section „Worum es geht“ in front of a
-sentence file — one wording for every analysis (Tibetan, Sanskrit,
-commentary).  Carsten 16.11. (über die Tantrāloka-Session, Muster TĀ
-1009–1040 von Hand): he follows the translations but cannot join the
-discussion in class; the concepts give lexicon knowledge, „For the
-class“ only compares translations.  What is missing: what the sentence
-explains, what the commentator does, one or two questions to join in.
-German whatever the language of the rest; only from the own analysis
-and the neighbouring sentences (`bcat-sentence--neighbours-block');
-nothing invented, no doxographical label, the open said to be open.
-The labels are the tool's (`bcat-analysis-overview')."
-  "- overview: a short orientation for a participant who follows the translations but finds it hard to join the discussion in class — always in German, whatever the language of the rest; plain words, short sentences, about 8 to 14 lines in all; words of the original in /italic/, renderings in „…“. Draw only on your own analysis above (the grammar and, where there is one, the comparison of the translations with its decisions) and on the neighbouring sentences where the request gives them (a second round on the same word, a reference back or ahead: „zum zweiten Mal nach 1011“). Invent nothing: no source of a quotation, no parallel, no doctrinal position; assign the text to no school and no doxographical category; where the analysis leaves something open, say that it is open.
+  "The rule for `overview', the section „Worum es geht“ of a sentence
+file — one wording for every analysis (Tibetan, Sanskrit, commentary).
+Carsten 16.11. (über die Tantrāloka-Session, Muster TĀ 1009–1040 von
+Hand): he follows the translations but cannot join the discussion in
+class; the concepts give lexicon knowledge, „For the class“ only
+compares translations.  What is missing: what the sentence explains,
+what the commentator does, one or two questions to join in.
+19.11. (Carsten: „Worum es geht hätte ich gerne ausführlicher. Das
+würde ich dann in der Vorbereitung als erstes lesen und dann an den
+Text gehen“; prototype on TĀ 1012: „passt, super so“): half a page
+instead of 8 to 14 lines — where the sentence stands (context), each
+step of the train of thought in two or three sentences with the words
+of the original, the terms one must know (terms), the places where a
+reader of the original stumbles (reading; `unit' ties a place to a
+point of the comparison, `bcat-analysis-overview' names the point).
+German whatever the language of the rest; only from the own analysis,
+the context lines and the neighbouring sentences
+\(`bcat-sentence--neighbours-block'); nothing invented, no
+doxographical label, the open said to be open.  The labels are the
+tool's (`bcat-analysis-overview')."
+  "- overview: the orientation a participant reads first when preparing the sentence, before going to the text — someone who follows the translations but finds it hard to join the discussion in class. Always in German, whatever the language of the rest; plain words, short sentences, about 25 to 35 lines in all (half a page); words of the original in /italic/, renderings in „…“. Draw only on your own analysis above (the words and their parts, the grammar, the concepts and, where there is one, the comparison of the translations with its decisions), on the context lines of the document and on the neighbouring sentences where the request gives them (a second round on the same word, a reference back or ahead: „zum zweiten Mal nach 1011“). Invent nothing: no source of a quotation, no parallel, no doctrinal position; assign the text to no school and no doxographical category; where the analysis leaves something open, say that it is open.
+  - context: two or three sentences on where we are — the work and the passage as the context lines of the document name them, what the sentence before did, what this one takes up, what the next one brings; only from those lines and the neighbouring sentences, \"\" when the request gives neither.
   - subject: one sentence on what is explained here — in a commentary the word or member of the root text it glosses („das Kompositum /anuttarāmṛtakulam/ aus Vers 1.1“), for a quotation that it is no gloss but a proof, and of what („kein Versglied, sondern ein Beleg zu 1012“); in a root text its topic.
-  - steps: the train of thought in three to five plain sentences — one entry when it reads as a paragraph, one entry per step when the text proceeds member by member, each beginning with the word it explains („/anuttara/: das Höchste, weil …“); no numbers of your own.
+  - steps: the train of thought in the order of the text, three to five steps — one entry per step when the text proceeds member by member, each beginning with the word it explains and its rendering („/anuttara/ „das Unübertreffliche“: …“); one entry when it reads as a paragraph. Each step two or three sentences: what the text says there and why, with the words of the original that carry it in /italic/ beside their rendering. No numbers of your own.
+  - terms: three to five terms a participant must know to follow this sentence — each one line, „/term/: …“, what it means here, taken from your concepts; where your analysis leaves a point open, say so. [] when the sentence needs none.
   - move: one or two sentences on what the author does as a method — an etymology, a wordplay, a quotation as proof, a compound resolved into relative clauses, a second round of glossing, a reference back; \"\" when nothing stands out.
+  - reading: two or three places where a reader of the original stumbles — a long compound and the order in which to resolve it, where a quotation begins and ends, what a pronoun or a relative clause refers to, a sandhi that hides a word. Each with segment, the number of its segment; text, one or two sentences on how to read the place; unit, the number of the entry in units (counted from 1) when the place is one of the points there, else 0. [] when nothing stands in the way.
   - questions: two questions for the discussion, a third only for a real question of text or reading — each about a concrete place in the text, followed by a half sentence on where the answer lies or why it is open (the translations diverge: name them by their sigla; the analysis is uncertain).")
 
 (defun bcat-analysis-system-prompt (target)
@@ -2073,7 +2085,7 @@ named again (`bcat-analysis--full-names')."
                   seg))))
            (alist-get 'segments base))))
     (append
-     (bcat-analysis-overview-fields base parsed)
+     (bcat-analysis-overview-fields base parsed refs)
      (bcat-analysis--second-translation parsed)
      ;; 18.11.: the points for the discussion marked at their segments
      `((segments . ,(bcat-analysis--with-discuss segments parsed refs base))
@@ -2097,37 +2109,87 @@ non-blank strings, trimmed."
   (delq nil (mapcar (lambda (s) (and (stringp s) (not (string-blank-p s)) (string-trim s)))
                     (if (listp value) value (list value)))))
 
-(defun bcat-analysis-overview (parsed)
+(defun bcat-analysis--overview-number (value)
+  "VALUE — a number, or a string of digits — as a positive number, else nil."
+  (let ((n (cond ((integerp value) value)
+                 ((and (stringp value) (string-match-p "\\`[0-9]+\\'" (string-trim value)))
+                  (string-to-number value)))))
+    (and n (> n 0) n)))
+
+(defun bcat-analysis--overview-place (entry points)
+  "One place of „Beim Lesen beachten“ as a line, or nil: ENTRY of the
+overview's `reading' — segment, text, unit — as „N: text“, N the number
+of its segment; when its unit is one of POINTS
+\(`bcat-analysis-discussion-points'), „(→ Diskussionspunkt K)“ after it,
+K the number the point has under Translations compared.  An entry given
+as plain text is taken as it stands."
+  (cond
+   ((stringp entry)
+    (let ((text (replace-regexp-in-string "\\`[-–•][ \t]+" "" (string-trim entry))))
+      (unless (string-empty-p text) text)))
+   ((consp entry)
+    (let* ((text (bcat-analysis--field entry 'text))
+           (segment (bcat-analysis--overview-number (alist-get 'segment entry)))
+           (unit (bcat-analysis--overview-number (alist-get 'unit entry)))
+           (point (and unit (cl-find unit points :key (lambda (p) (plist-get p :n))))))
+      (unless (string-empty-p text)
+        (concat (if segment (format "%d: " segment) "")
+                text
+                (if point (format " (→ Diskussionspunkt %d)" (plist-get point :k)) "")))))))
+
+(defun bcat-analysis--overview-items (items)
+  "ITEMS as the lines of a list, a dash of their own dropped."
+  (mapconcat (lambda (i) (concat "- " (replace-regexp-in-string "\\`[-–•][ \t]+" "" i))) items "\n"))
+
+(defun bcat-analysis-overview (parsed &optional refs base)
   "The text of „Worum es geht“ from the `overview' of the answer PARSED
-\(`bcat-analysis--overview-rule'), in the form of the Tantrāloka files
-of 16.11.: *Erklärt wird:* the subject; the train of thought — several
-steps numbered, one a paragraph; *Der Kniff:* the move; *Fragen für die
-Diskussion:* as a list.  The labels are German like the text, whatever
-the language of the file.  A part left empty is left out; an overview
+\(`bcat-analysis--overview-rule'), since 19.11. in seven parts (Carsten:
+„ausführlicher“, read first in the preparation; prototype on TĀ 1012):
+*Wo wir sind:* the context; *Erklärt wird:* the subject; *Der
+Gedankengang:* the steps — several numbered, one after the label;
+*Begriffe, die man kennen muss:* the terms as a list; *Der Kniff:* the
+move; *Beim Lesen beachten:* the places of the original
+\(`bcat-analysis--overview-place' — REFS, the references sent with the
+request, and BASE, the rump, find the points of the comparison they
+name); *Fragen für die Diskussion:* as a list.  The labels are German
+like the text, whatever the language of the file.  A part left empty
+is left out (an answer of 16.–18.11. has four of them); an overview
 given as plain text is taken as it stands; nil when there is nothing."
   (let ((o (alist-get 'overview parsed)))
     (cond
      ((stringp o) (let ((text (string-trim o))) (unless (string-empty-p text) text)))
      ((consp o)
-      (let* ((subject (bcat-analysis--field o 'subject))
+      (let* ((context (bcat-analysis--field o 'context))
+             (subject (bcat-analysis--field o 'subject))
              (steps (mapcar (lambda (s) (replace-regexp-in-string "\\`[0-9]+[.)][ \t]+" "" s))
                             (bcat-analysis--overview-list (alist-get 'steps o))))
+             (terms (bcat-analysis--overview-list (alist-get 'terms o)))
              (move (bcat-analysis--field o 'move))
+             (reading (let ((value (alist-get 'reading o)))
+                        (and value
+                             (let ((points (bcat-analysis-discussion-points parsed refs base)))
+                               (delq nil (mapcar (lambda (e) (bcat-analysis--overview-place e points))
+                                                 (if (stringp value) (list value) value)))))))
              (questions (bcat-analysis--overview-list (alist-get 'questions o)))
              (parts (delq nil
-                          (list (unless (string-empty-p subject) (concat "*Erklärt wird:* " subject))
+                          (list (unless (string-empty-p context) (concat "*Wo wir sind:* " context))
+                                (unless (string-empty-p subject) (concat "*Erklärt wird:* " subject))
                                 (cond ((cdr steps)
-                                       (string-join (cl-loop for s in steps for i from 1
-                                                             collect (format "%d. %s" i s))
-                                                    "\n"))
-                                      (steps (car steps)))
+                                       (concat "*Der Gedankengang:*\n"
+                                               (string-join (cl-loop for s in steps for i from 1
+                                                                     collect (format "%d. %s" i s))
+                                                            "\n")))
+                                      (steps (concat "*Der Gedankengang:* " (car steps))))
+                                (and terms
+                                     (concat "*Begriffe, die man kennen muss:*\n"
+                                             (bcat-analysis--overview-items terms)))
                                 (unless (string-empty-p move) (concat "*Der Kniff:* " move))
+                                (and reading
+                                     (concat "*Beim Lesen beachten:*\n"
+                                             (bcat-analysis--overview-items reading)))
                                 (and questions
                                      (concat "*Fragen für die Diskussion:*\n"
-                                             (mapconcat (lambda (q)
-                                                          (concat "- " (replace-regexp-in-string
-                                                                        "\\`[-–•][ \t]+" "" q)))
-                                                        questions "\n")))))))
+                                             (bcat-analysis--overview-items questions)))))))
         (and parts (string-join parts "\n\n")))))))
 
 (defun bcat-analysis-overview-hash (text)
@@ -2137,10 +2199,12 @@ its trimmed text — in the file :GENERATED_HASH: under the heading
 hash was changed by hand."
   (md5 (string-trim text) nil nil 'utf-8))
 
-(defun bcat-analysis-overview-fields (base parsed)
+(defun bcat-analysis-overview-fields (base parsed &optional refs)
   "The fields `overview' and `overview-hash' that go before BASE (the
 rump with what the file has: `overview', its text, and `overview-hash',
-its mark) for the answer PARSED — or nil when BASE's stay.  Carsten
+its mark) for the answer PARSED — or nil when BASE's stay; REFS, the
+references sent with the request, for the points of the comparison
+the overview names (`bcat-analysis-overview').  Carsten
 16.11. (über die Tantrāloka-Session, 32 sections written by hand: „Am
 Inhalt meiner Handtexte bitte nichts ändern“): a section written by
 hand (no mark) or changed by hand (the mark no longer fits its text)
@@ -2151,7 +2215,7 @@ with its mark."
                  (and (stringp k) (not (string-blank-p k)) k)))
          (mark (alist-get 'overview-hash base))
          (by-hand (and kept (not (equal mark (bcat-analysis-overview-hash kept)))))
-         (new (bcat-analysis-overview parsed)))
+         (new (bcat-analysis-overview parsed refs base)))
     (cond (by-hand (and mark (list (list 'overview-hash))))
           (new `((overview . ,new) (overview-hash . ,(bcat-analysis-overview-hash new)))))))
 
@@ -3102,7 +3166,7 @@ skipped keeps its rump fields; sigla used as names are named again
                   seg))))
            (alist-get 'segments base))))
     (append
-     (bcat-analysis-overview-fields base parsed)
+     (bcat-analysis-overview-fields base parsed refs)
      (bcat-analysis--prose-recitation base parsed)
      (bcat-analysis--second-translation parsed)
      ;; 18.11.: the points for the discussion marked at their segments

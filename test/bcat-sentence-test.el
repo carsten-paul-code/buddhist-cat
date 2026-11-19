@@ -847,7 +847,7 @@ subject (default: the compound of TĀ 1.1)."
 (defun bcat-sentence-test--generated (&optional subject)
   "The text `bcat-sentence-test--with-overview' gives the section."
   (concat "*Erklärt wird:* " (or subject "das Kompositum /anuttarāmṛtakulam/ aus Vers 1.1.") "\n\n"
-          "1. /anuttara/: das Höchste.\n2. /amṛta/: gelesen als /a-mṛta/.\n\n"
+          "*Der Gedankengang:*\n1. /anuttara/: das Höchste.\n2. /amṛta/: gelesen als /a-mṛta/.\n\n"
           "*Der Kniff:* „tot“ bereitet das Wortspiel vor.\n\n"
           "*Fragen für die Diskussion:*\n- Warum „tot“ statt „vergänglich“?\n- Wessen Körper?"))
 
