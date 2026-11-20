@@ -349,7 +349,7 @@ answer writes nothing."
         (should (equal text (bcat-outline-text src))))
       ;; a draft nobody touched: the next one replaces it
       (setq answer-of (lambda (_k _p) (replace-regexp-in-string "Der Leitsatz\\." "Der Leitsatz des Werks." answer t t)))
-      (bcat-outline-draft-source src)
+      (bcat-outline-draft-source src t)
       (should (string-match-p "Der Leitsatz des Werks\\." (bcat-outline-text src)))
       (should-not (file-exists-p (expand-file-name "Gliederung-bden-cat-Entwurf.org" dir)))
       ;; worked on by hand: it stays, the draft goes beside it
@@ -359,7 +359,7 @@ answer writes nothing."
       (let ((by-hand (bcat-outline-text src)) (written nil))
         (add-hook 'bcat-outline-draft-done-functions (lambda (_s f) (setq written f)))
         (setq answer-of (lambda (_k _p) answer))
-        (bcat-outline-draft-source src)
+        (bcat-outline-draft-source src t)
         (should (equal by-hand (bcat-outline-text src)))
         (should (equal (expand-file-name "Gliederung-bden-cat-Entwurf.org" dir) written))
         (should (string-match-p "Der Leitsatz\\.$"
@@ -367,10 +367,10 @@ answer writes nothing."
         ;; nothing readable, or no answer: nothing written
         (delete-file written)
         (setq answer-of (lambda (_k _p) "Das kann ich nicht."))
-        (bcat-outline-draft-source src)
+        (bcat-outline-draft-source src t)
         (should-not (file-exists-p written))
         (setq answer-of (lambda (_k _p) nil))
-        (bcat-outline-draft-source src)
+        (bcat-outline-draft-source src t)
         (should-not (file-exists-p written))
         (should (equal by-hand (bcat-outline-text src)))
         (should (zerop (hash-table-count bcat-outline-draft--runs)))))))
@@ -413,6 +413,74 @@ that last request."
         (should (string-match-p "^\\*\\*\\* 2\\. Einteilung\nSätze 2–3 " text))
         (should (equal "Lehre › Einteilung" (bcat-outline-place text 3)))
         (should (string-match-p "^\\* bDen gnyis: Gliederung\n\nZwei Teile\\.$" text))))))
+
+(ert-deftest bcat-outline-draft-keeps-the-answers ()
+  "The answers of a draft are kept on disk as they land (beside the
+sentence files' answers: analysis/.answers/<outline>.eld) — a draft of a
+long commentary is many requests, and one that fails must not cost the
+ones before it; a draft is set anew (after a correction of the layout)
+without asking again.  So: a request that fails ends the run, nothing
+is written, the answers so far stay; the next run asks only for what is
+missing; a run with everything at hand asks nothing and sets the
+outline again; FRESH asks for all of it again; a sentence that changed
+in the source has its part and what follows asked again."
+  (bcat-outline-draft-test--with-source
+    (let* ((bcat-outline-part-size 70)
+           (outline (expand-file-name "Gliederung-bden-cat.org" dir))
+           (store (expand-file-name "analysis/.answers/Gliederung-bden-cat.eld" dir))
+           (fail-at nil)
+           (answers
+            (lambda (kind _prompts)
+              (cond
+               ((equal kind fail-at) nil)
+               ((equal kind "bcat-outline-1")
+                "{\"nodes\": [{\"title\": \"1. Grundsatz\", \"short\": \"Grundsatz\", \"from\": 1, \"to\": 1, \"text\": \"a\"}]}")
+               ((equal kind "bcat-outline-2")
+                "{\"nodes\": [{\"title\": \"2. Einteilung\", \"short\": \"Einteilung\", \"from\": 2, \"to\": 3, \"text\": \"b\"}]}")
+               ((equal kind "bcat-outline-frame")
+                (concat "{\"title\": \"bDen gnyis: Gliederung\", \"intro\": \"Zwei Teile.\","
+                        " \"work\": {\"idea\": \"Idee.\", \"groups\": []},"
+                        " \"groups\": [{\"title\": \"I. Die Lehre\", \"short\": \"Lehre\", \"from\": 1, \"to\": 3,"
+                        " \"text\": \"Alles.\", \"transition\": \"\"}]}")))))
+           (kinds (lambda () (reverse (mapcar #'car requests)))))
+      (setq answer-of answers)
+      ;; the second part fails: nothing written, the first answer kept
+      (setq fail-at "bcat-outline-2")
+      (should (= 3 (bcat-outline-draft-pending src)))
+      (bcat-outline-draft-source src)
+      (should (equal '("bcat-outline-1" "bcat-outline-2") (funcall kinds)))
+      (should-not (file-exists-p outline))
+      (should (file-exists-p store))
+      (should (zerop (hash-table-count bcat-outline-draft--runs)))
+      ;; the next run: only what is missing — the second part, told what
+      ;; the first one gave, and the whole
+      (setq fail-at nil requests '())
+      (should (= 2 (bcat-outline-draft-pending src)))
+      (should (= 2 (bcat-outline-draft-source src)))
+      (should (equal '("bcat-outline-2" "bcat-outline-frame") (funcall kinds)))
+      (should (string-match-p "^Outlined so far:\n- 1\\. Grundsatz (1): a$" (cddr (cadr requests))))
+      (let ((text (bcat-outline-text src)))
+        (should (string-match-p "^\\*\\*\\* 1\\. Grundsatz\nSatz 1 · SDA 1 · D72a3$" text))
+        (should (equal "Lehre › Einteilung" (bcat-outline-place text 3)))
+        ;; everything at hand: no request, the outline set again
+        (setq requests '())
+        (delete-file outline)
+        (should (= 0 (bcat-outline-draft-pending src)))
+        (should (= 0 (bcat-outline-draft-source src)))
+        (should-not requests)
+        (should (equal text (bcat-outline-text src))))
+      ;; FRESH: all of it again
+      (should (= 3 (bcat-outline-draft-pending src t)))
+      (should (= 3 (bcat-outline-draft-source src t)))
+      (should (equal '("bcat-outline-1" "bcat-outline-2" "bcat-outline-frame") (funcall kinds)))
+      ;; the source changed in its second section: that part and the
+      ;; whole again, not the first part
+      (setq requests '())
+      (with-temp-file src
+        (insert (replace-regexp-in-string "ཀུན་རྫོབ་རྣམ་པ་གཉིས་སུ་འདོད། །" "ཀུན་རྫོབ་རྣམ་གཉིས་འདོད། །"
+                                          bcat-outline-draft-test--source t t)))
+      (should (= 2 (bcat-outline-draft-source src)))
+      (should (equal '("bcat-outline-2" "bcat-outline-frame") (funcall kinds))))))
 
 (provide 'bcat-outline-draft-test)
 ;;; bcat-outline-draft-test.el ends here

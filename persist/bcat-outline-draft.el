@@ -571,7 +571,8 @@ with FRAME's title, introduction and view of the whole work."
 
 (defvar bcat-outline-draft--runs (make-hash-table :test 'equal)
   "Outline file → the draft under way: (:source :info :items :parts
-:answers :frame).")
+:answers :frame) — :answers a list like :parts, nil where the answer is
+still to come.")
 
 (defvar bcat-outline-draft-done-functions nil
   "Called with (SOURCE FILE) when a draft has been written — FILE the
@@ -592,6 +593,93 @@ outline, or the draft beside an outline someone worked on.")
                                       (bcat-outline-draft--squeeze (bcat-outline-draft--field n 'text)))))
                           (alist-get 'nodes a))))
 
+;; The answers are kept (20.11., before the first draft in parts): a
+;; long commentary is a dozen requests, and one that fails must not cost
+;; the ones before it; and an outline is set anew — after a correction
+;; of its layout — without asking again.
+
+(defun bcat-outline-draft--store (file)
+  "Where the answers of the draft for the outline FILE are kept:
+analysis/.answers/<name>.eld beside it — with the answers of the
+sentence files."
+  (expand-file-name (concat "analysis/.answers/" (file-name-base file) ".eld")
+                    (file-name-directory file)))
+
+(defun bcat-outline-draft--key (part)
+  "What makes PART of a draft the same part again: its sentences, number
+and text.  (Not the translations at hand: they help a draft, and grow
+with the reading.)"
+  (md5 (encode-coding-string
+        (prin1-to-string (mapcar (lambda (i) (list (plist-get i :num) (plist-get i :text))) part))
+        'utf-8)))
+
+(defun bcat-outline-draft--stored (file)
+  "What is kept of the draft for the outline FILE: (:parts ((:nums :key
+:answer) …) :frame OBJ), or nil."
+  (let ((path (bcat-outline-draft--store file)))
+    (when (file-readable-p path)
+      (ignore-errors
+        (with-temp-buffer
+          (insert-file-contents path)
+          (let ((data (read (current-buffer))))
+            (and (listp data) (plist-get data :parts) data)))))))
+
+(defun bcat-outline-draft--keep (file run)
+  "Write what the draft RUN for the outline FILE has so far."
+  (let ((path (bcat-outline-draft--store file))
+        (coding-system-for-write 'utf-8-unix)
+        (print-length nil) (print-level nil))
+    (make-directory (file-name-directory path) t)
+    (with-temp-file path
+      (insert ";; Antworten des Gliederungsentwurfs — C-c u S setzt aus ihnen neu, C-u C-c u S ruft neu ab.\n")
+      (prin1 (list :parts (cl-mapcar (lambda (part answer)
+                                       (list :nums (mapcar (lambda (i) (plist-get i :num)) part)
+                                             :key (bcat-outline-draft--key part)
+                                             :answer answer))
+                                     (plist-get run :parts) (plist-get run :answers))
+                   :frame (plist-get run :frame))
+             (current-buffer))
+      (insert "\n"))))
+
+(defun bcat-outline-draft--plan (source &optional fresh)
+  "The draft of the outline of SOURCE as it stands: (:file :items :parts
+:answers :frame :pending) — its sentences in parts, the answers at hand
+\(a list like :parts, nil where one is to be asked for), the answer for
+the whole, the number of requests still to send.  The parts are those
+of the draft kept, as long as the source has the same sentences in the
+same order — else, and with FRESH, cut anew
+\(`bcat-outline-draft--parts'); a kept answer counts for a part whose
+sentences are unchanged (`bcat-outline-draft--key'), never with FRESH.
+The answer for the whole counts only with every part's."
+  (let* ((file (bcat-outline-file source))
+         (items (bcat-outline-draft--items source))
+         (stored (and (not fresh) (bcat-outline-draft--stored file)))
+         (kept (plist-get stored :parts))
+         (nums (mapcar (lambda (i) (plist-get i :num)) items))
+         (parts (if (and kept (equal nums (apply #'append (mapcar (lambda (p) (plist-get p :nums)) kept))))
+                    ;; the division of the draft kept
+                    (let ((rest items))
+                      (mapcar (lambda (p)
+                                (let ((n (length (plist-get p :nums))))
+                                  (prog1 (cl-subseq rest 0 n) (setq rest (nthcdr n rest)))))
+                              kept))
+                  (bcat-outline-draft--parts items bcat-outline-part-size bcat-outline-part-sentences)))
+         (answers (mapcar (lambda (part)
+                            (let ((key (bcat-outline-draft--key part)))
+                              (plist-get (cl-find key kept :key (lambda (p) (plist-get p :key)) :test #'equal)
+                                         :answer)))
+                          parts))
+         (frame (and (not (memq nil answers)) (plist-get stored :frame))))
+    (list :file file :items items :parts parts :answers answers :frame frame
+          :pending (+ (cl-count nil answers)
+                      (if (and (cdr parts) (not frame)) 1 0)))))
+
+(defun bcat-outline-draft-pending (source &optional fresh)
+  "The requests a draft of the outline of SOURCE still has to send — 0
+when every answer is at hand and the outline is only set anew.  FRESH:
+as if nothing were kept."
+  (plist-get (bcat-outline-draft--plan source fresh) :pending))
+
 (defun bcat-outline-draft--target (file)
   "Where a new draft for the outline FILE is written: FILE itself when
 there is none yet or it is a draft nobody worked on
@@ -608,7 +696,7 @@ an outline written or corrected by hand is never overwritten."
 of it."
   (let* ((run (gethash file bcat-outline-draft--runs))
          (items (plist-get run :items))
-         (answers (reverse (plist-get run :answers)))
+         (answers (plist-get run :answers))
          (frame (or (plist-get run :frame) (car answers)))
          (data (bcat-outline-draft--merge answers frame items))
          (text (bcat-outline-draft-render data (plist-get run :info) items))
@@ -639,104 +727,124 @@ of it."
   "End the draft under way for FILE: REASON."
   (let ((run (gethash file bcat-outline-draft--runs)))
     (remhash file bcat-outline-draft--runs)
-    (message "Gliederung %s: abgebrochen — %s (nichts geschrieben)"
-             (plist-get (plist-get run :info) :title) reason)))
+    (message "Gliederung %s: abgebrochen — %s (nichts geschrieben%s)"
+             (plist-get (plist-get run :info) :title) reason
+             (if (cl-some #'identity (plist-get run :answers))
+                 "; die Antworten bis hierher bleiben, C-c u S setzt fort"
+               ""))))
 
 (defun bcat-outline-draft--next (file)
-  "Send the next request of the draft under way for FILE — the next
-part, then (for a draft in parts) the frame —, or finish."
+  "Send the next request of the draft under way for FILE — the first
+part without an answer, then (for a draft in parts) the whole —, or
+finish.  Every answer is kept as it lands (`bcat-outline-draft--keep')."
   (let* ((run (gethash file bcat-outline-draft--runs))
          (info (plist-get run :info))
          (items (plist-get run :items))
          (parts (plist-get run :parts))
-         (done (length (plist-get run :answers)))
+         (index (cl-position nil (plist-get run :answers)))
          (land (lambda (store)
                  (lambda (_file response)
                    (let ((obj (bcat-outline-draft--read response))
                          (run (gethash file bcat-outline-draft--runs)))
                      (cond ((not run) nil)
                            ((not obj) (bcat-outline-draft--fail file "Antwort nicht lesbar"))
-                           (t (funcall store run obj)
+                           (t (let ((run (funcall store run obj)))
+                                (puthash file run bcat-outline-draft--runs)
+                                (bcat-outline-draft--keep file run))
                               (bcat-outline-draft--next file)))))))
          (fail (lambda (_file reason) (bcat-outline-draft--fail file (or reason "kein Ergebnis")))))
     (require 'tibetan-translation-discussion)
     (cond
-     ((< done (length parts))
-      (message "Gliederung %s: Abruf %d von %d …" (plist-get info :title) (1+ done)
-               (+ (length parts) (if (cdr parts) 1 0)))
+     (index
+      (message "Gliederung %s: Abruf für Teil %d von %d …" (plist-get info :title) (1+ index) (length parts))
       (tibetan-discussion--submit
-       (format "bcat-outline-%d" (1+ done)) file
+       (format "bcat-outline-%d" (1+ index)) file
        (lambda ()
          (cons (bcat-outline-draft-system-prompt)
                (bcat-outline-draft-user-prompt
-                info (nth done parts)
-                (and (cdr parts) (1+ done)) (and (cdr parts) (length parts))
+                info (nth index parts)
+                (and (cdr parts) (1+ index)) (and (cdr parts) (length parts))
                 (and (cdr parts)
-                     (bcat-outline-draft--top-lines (reverse (plist-get (gethash file bcat-outline-draft--runs) :answers))
-                                                    items)))))
+                     (bcat-outline-draft--top-lines
+                      (delq nil (cl-subseq (plist-get (gethash file bcat-outline-draft--runs) :answers) 0 index))
+                      items)))))
+       ;; a part answered anew: the answer for the whole is of the old one
        (funcall land (lambda (run obj)
-                       (puthash file (plist-put run :answers (cons obj (plist-get run :answers)))
-                                bcat-outline-draft--runs)))
+                       (let ((answers (copy-sequence (plist-get run :answers))))
+                         (setf (nth index answers) obj)
+                         (plist-put (plist-put run :answers answers) :frame nil))))
        fail))
      ((and (cdr parts) (not (plist-get run :frame)))
-      (message "Gliederung %s: Abruf %d von %d (das Ganze) …" (plist-get info :title)
-               (1+ (length parts)) (1+ (length parts)))
+      (message "Gliederung %s: Abruf für das Ganze …" (plist-get info :title))
       (tibetan-discussion--submit
        "bcat-outline-frame" file
        (lambda ()
          (cons (bcat-outline-draft-system-prompt)
                (bcat-outline-draft-frame-prompt
-                info (bcat-outline-draft--top-lines (reverse (plist-get run :answers)) items))))
-       (funcall land (lambda (run obj)
-                       (puthash file (plist-put run :frame obj) bcat-outline-draft--runs)))
+                info (bcat-outline-draft--top-lines (plist-get run :answers) items))))
+       (funcall land (lambda (run obj) (plist-put run :frame obj)))
        fail))
      (t (bcat-outline-draft--finish file)))))
 
-(defun bcat-outline-draft-source (source)
+(defun bcat-outline-draft-source (source &optional fresh)
   "Draft the outline of the document SOURCE with Claude: one request for
 a document within `bcat-outline-part-size' and
-`bcat-outline-part-sentences', else one per part and one for the whole; the answers are set as an org file in the form
-bcat-outline.el reads (`bcat-outline-draft-render').  Written is the
-outline of SOURCE (`bcat-outline-file') — or, when that one was worked
-on by hand, <name>-Entwurf.org beside it.  Asynchronous; returns the
-number of requests, nil when a draft for it is under way."
+`bcat-outline-part-sentences', else one per part and one for the whole;
+the answers are set as an org file in the form bcat-outline.el reads
+\(`bcat-outline-draft-render').  Answers kept from a draft before count
+\(`bcat-outline-draft--plan'): only what is missing is asked for, and
+with everything at hand the outline is set anew without a request —
+unless FRESH.  Written is the outline of SOURCE (`bcat-outline-file') —
+or, when that one was worked on by hand, <name>-Entwurf.org beside it.
+Asynchronous; returns the number of requests, nil when a draft for it
+is under way."
   (let ((file (bcat-outline-file source)))
     (if (gethash file bcat-outline-draft--runs)
         (progn (message "Für %s läuft schon ein Entwurf" (file-name-nondirectory file)) nil)
-      (let* ((items (bcat-outline-draft--items source))
-             (parts (bcat-outline-draft--parts items bcat-outline-part-size bcat-outline-part-sentences)))
-        (unless items (user-error "%s hat keine Sätze" (file-name-nondirectory source)))
+      (let ((plan (bcat-outline-draft--plan source fresh)))
+        (unless (plist-get plan :items) (user-error "%s hat keine Sätze" (file-name-nondirectory source)))
         (puthash file (list :source source :info (bcat-outline-draft--info source)
-                            :items items :parts parts :answers nil :frame nil)
+                            :items (plist-get plan :items) :parts (plist-get plan :parts)
+                            :answers (plist-get plan :answers) :frame (plist-get plan :frame))
                  bcat-outline-draft--runs)
         (bcat-outline-draft--next file)
-        (+ (length parts) (if (cdr parts) 1 0))))))
+        (plist-get plan :pending)))))
 
 ;;;###autoload
-(defun bcat-outline-draft ()
+(defun bcat-outline-draft (&optional fresh)
   "C-c u S: draft the outline (Gliederung, sa bcad) of the document at
 hand with Claude — in a cascade source that source, in a sentence file
 its source (Carsten 20.11.: the tool drafts the outline, for a new
 work with its preparation, for the ones in work „reverse“ from what is
-analysed already).  Asks first, naming the requests.  The result is a
-draft to be checked; an outline worked on by hand is not overwritten."
-  (interactive)
+analysed already).  Asks first, naming the requests: only those whose
+answers are not at hand from a draft before — with all of them at hand
+the outline is only set anew, without a request.  With a prefix
+argument (C-u C-c u S, FRESH) everything is asked for again.  The
+result is a draft to be checked; an outline worked on by hand is not
+overwritten."
+  (interactive "P")
   (require 'bcat-sentence)
   (let* ((file (or (buffer-file-name) (user-error "Dieser Puffer hat keine Datei")))
          (source (cond ((ignore-errors (bcat-sentence--sentences file)) file)
                        ((ignore-errors (tibetan-sentence--source-file-from-analysis file)))
                        (t (user-error "Keine Kaskaden-Quelle und keine Satzdatei"))))
-         (items (bcat-outline-draft--items source))
-         (parts (bcat-outline-draft--parts items bcat-outline-part-size bcat-outline-part-sentences))
-         (requests (+ (length parts) (if (cdr parts) 1 0)))
-         (outline (bcat-outline-file source)))
-    (when (y-or-n-p (format "Gliederung für %s entwerfen — %d Sätze, %d Abruf%s%s? "
-                            (file-name-nondirectory source) (length items) requests
-                            (if (= requests 1) "" "e")
-                            (if (equal (bcat-outline-draft--target outline) outline) ""
-                              (format "; %s ist von Hand bearbeitet, der Entwurf kommt daneben"
-                                      (file-name-nondirectory outline)))))
-      (bcat-outline-draft-source source))))
+         (plan (bcat-outline-draft--plan source fresh))
+         (pending (plist-get plan :pending))
+         (all (+ (length (plist-get plan :parts)) (if (cdr (plist-get plan :parts)) 1 0)))
+         (outline (bcat-outline-file source))
+         (beside (if (equal (bcat-outline-draft--target outline) outline) ""
+                   (format "; %s ist von Hand bearbeitet, der Entwurf kommt daneben"
+                           (file-name-nondirectory outline)))))
+    (when (y-or-n-p
+           (if (zerop pending)
+               (format "Gliederung für %s aus den vorliegenden Antworten neu setzen — kein Abruf (C-u C-c u S ruft neu ab)%s? "
+                       (file-name-nondirectory source) beside)
+             (format "Gliederung für %s entwerfen — %d Sätze, %d Abruf%s%s%s? "
+                     (file-name-nondirectory source) (length (plist-get plan :items)) pending
+                     (if (= pending 1) "" "e")
+                     (if (< pending all) (format " (%d von %d Antworten liegen vor)" (- all pending) all) "")
+                     beside)))
+      (bcat-outline-draft-source source fresh))))
 
 (provide 'bcat-outline-draft)
 ;;; bcat-outline-draft.el ends here

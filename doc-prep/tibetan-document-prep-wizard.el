@@ -463,7 +463,7 @@ ready for analysis."
         (tibetan-add-sentence-structure)
         (save-buffer)))))
 
-(declare-function bcat-outline-draft-source "bcat-outline-draft" (source))
+(declare-function bcat-outline-draft-source "bcat-outline-draft" (source &optional fresh))
 (declare-function bcat-sentence--sentences "bcat-sentence" (file))
 
 (defun tibetan-document-prep-wizard--maybe-draft-outline (source-file)
