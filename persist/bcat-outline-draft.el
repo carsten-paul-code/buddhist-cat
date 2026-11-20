@@ -915,7 +915,8 @@ answers are not at hand from a draft before — with all of them at hand
 the outline is only set anew, without a request.  With a prefix
 argument (C-u C-c u S, FRESH) everything is asked for again.  The
 result is a draft to be checked; an outline worked on by hand is not
-overwritten."
+overwritten, and the question says when a draft that is there is
+replaced."
   (interactive "P")
   (require 'bcat-sentence)
   (let* ((file (or (buffer-file-name) (user-error "Dieser Puffer hat keine Datei")))
@@ -926,9 +927,15 @@ overwritten."
          (pending (plist-get plan :pending))
          (all (+ (length (plist-get plan :parts)) (if (cdr (plist-get plan :parts)) 1 0)))
          (outline (bcat-outline-file source))
-         (beside (if (equal (bcat-outline-draft--target outline) outline) ""
-                   (format "; %s ist von Hand bearbeitet, der Entwurf kommt daneben"
-                           (file-name-nondirectory outline)))))
+         ;; what a new draft does to the outline that is there (20.11.,
+         ;; the AS: one outline for two sources — in the second source
+         ;; the question read like that of a document without one)
+         (beside (cond ((not (equal (bcat-outline-draft--target outline) outline))
+                        (format "; %s ist von Hand bearbeitet, der Entwurf kommt daneben"
+                                (file-name-nondirectory outline)))
+                       ((and (file-exists-p outline) (> pending 0))
+                        (format "; ersetzt den vorhandenen Entwurf %s" (file-name-nondirectory outline)))
+                       (t ""))))
     (when (y-or-n-p
            (if (zerop pending)
                (format "Gliederung für %s aus den vorliegenden Antworten neu setzen — kein Abruf (C-u C-c u S ruft neu ab)%s? "

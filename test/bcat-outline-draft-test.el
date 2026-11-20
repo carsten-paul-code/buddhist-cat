@@ -638,5 +638,37 @@ beside the outline."
       ;; and found there again: nothing to ask
       (should (= 0 (bcat-outline-draft-pending src))))))
 
+(ert-deftest bcat-outline-draft-asks-with-what-it-replaces ()
+  "C-c u S asks before it sends anything, and says what a new draft
+does to an outline that is there: an untouched draft is replaced (the
+AS, 20.11.: one outline for two sources — in the Tibetan source the
+question read like that of a document without outline, three requests
+for what was there already); nothing of the kind without an outline;
+with all answers at hand it names no request."
+  (bcat-outline-draft-test--with-source
+    (let ((asked '()))
+      (setq answer-of
+            (lambda (_kind _prompts)
+              "{\"title\": \"T: Gliederung\", \"intro\": \"\", \"nodes\": [{\"title\": \"I. Alles\", \"short\": \"Alles\", \"from\": 1, \"to\": 3, \"text\": \"a\"}]}"))
+      (cl-letf (((symbol-function 'y-or-n-p) (lambda (prompt) (push prompt asked) nil)))
+        (with-current-buffer (find-file-noselect src)
+          (unwind-protect
+              (progn
+                ;; no outline yet
+                (bcat-outline-draft)
+                (should (string-match-p "entwerfen — 3 Sätze, 1 Abruf\\? \\'" (car asked)))
+                (should-not requests)
+                ;; a draft is there, its answers too: only set anew
+                (should (= 1 (bcat-outline-draft-source src)))
+                (bcat-outline-draft)
+                (should (string-match-p "neu setzen — kein Abruf" (car asked)))
+                ;; asked for anew: says what happens to the draft that is there
+                (bcat-outline-draft t)
+                (should (string-match-p
+                         "1 Abruf; ersetzt den vorhandenen Entwurf Gliederung-bden-cat\\.org\\? \\'"
+                         (car asked)))
+                (should (= 1 (length requests))))
+            (kill-buffer)))))))
+
 (provide 'bcat-outline-draft-test)
 ;;; bcat-outline-draft-test.el ends here
