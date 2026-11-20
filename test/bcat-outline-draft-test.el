@@ -160,7 +160,13 @@ it reads: `bcat-outline-place' finds every sentence again."
                                           bcat-outline-draft-test--items)))
     (should (string-match-p "\\`#\\+TITLE: bDen pa gnyis la 'jug pa — Gliederung\n" text))
     (should (string-match-p "^#\\+SUBTITLE: .*Entwurf des Werkzeugs · Stand 2026-11-20$" text))
-    (should (string-match-p "^#\\+OPTIONS: toc:3 num:nil author:nil date:nil \\^:nil H:5$" text))
+    ;; the overview in front (toc:3) lists the nodes only when the
+    ;; headings are numbered ones — unnumbered by secnumdepth, not by
+    ;; num:nil, which leaves the list empty under „Contents“ (the PDF of
+    ;; the first real draft, 20.11.)
+    (should (string-match-p "^#\\+OPTIONS: toc:3 num:t author:nil date:nil \\^:nil H:5$" text))
+    (should (string-match-p (regexp-quote "\\setcounter{secnumdepth}{0}") text))
+    (should (string-match-p (regexp-quote "\\renewcommand{\\contentsname}{Übersicht}") text))
     (should (string-match-p "^#\\+LATEX_COMPILER: lualatex$" text))
     (should (string-match-p "^#\\+LATEX_HEADER: \\\\usepackage{libertinus}$" text))
     (should (string-match-p

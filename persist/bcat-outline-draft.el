@@ -443,10 +443,16 @@ node before it, marked „(nicht eingeordnet)“."
    "#+LATEX_HEADER: \\titlespacing*{\\paragraph}{0pt}{1.2ex}{0.4ex}\n"
    "#+LATEX_HEADER: \\titleformat{\\subparagraph}[hang]{\\small\\itshape}{}{0pt}{}\n"
    "#+LATEX_HEADER: \\titlespacing*{\\subparagraph}{1em}{1ex}{0.3ex}\n"
-   "#+LATEX_HEADER: \\setcounter{tocdepth}{3}\n")
+   "#+LATEX_HEADER: \\setcounter{tocdepth}{3}\n"
+   ;; The overview in front: with num:nil org writes \section*, and the
+   ;; list stays empty under „Contents“ (PDF of the first real draft,
+   ;; 20.11.).  So the headings are numbered ones for LaTeX (num:t in
+   ;; #+OPTIONS) whose numbers are not set — the numbering is the sa
+   ;; bcad's own, in the titles.
+   "#+LATEX_HEADER: \\setcounter{secnumdepth}{0}\\renewcommand{\\contentsname}{Übersicht}\n")
   "The head of an outline for its PDF — that of the Tantrāloka's
 \(lualatex, Libertinus, five levels of headings; the introductions of
-the readings have the same).")
+the readings have the same), and the overview of the nodes in front.")
 
 (defconst bcat-outline-draft--stamp "CAT_OUTLINE_WRITTEN"
   "The keyword of the stamp on a drafted outline: the md5 of its text
@@ -490,7 +496,7 @@ as a draft."
       "#+TITLE: " name " — Gliederung\n"
       "#+SUBTITLE: " name " · Entwurf des Werkzeugs · Stand " (plist-get info :date) "\n"
       "#+LANGUAGE: de\n"
-      "#+OPTIONS: toc:3 num:nil author:nil date:nil ^:nil H:5\n"
+      "#+OPTIONS: toc:3 num:t author:nil date:nil ^:nil H:5\n"
       bcat-outline-draft--latex-head
       "\n"
       "Diese Gliederung ist wie ein /sa bcad/ gebaut. Sie soll beim Vorbereiten zeigen, wo der gerade gelesene Satz im Ganzen steht und was zusammengehört. Jeder Knoten nennt die Sätze, die er umfasst, dazu Verse und Blattangaben, wo die Quelle sie hat. Sie ist ein Entwurf des Werkzeugs aus dem Text und den vorhandenen Übersetzungen: Was mit „wohl“ oder „nicht geprüft“ markiert ist, steht noch nicht fest, und auch das Übrige ist zu prüfen.\n\n"
