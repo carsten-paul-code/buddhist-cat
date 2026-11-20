@@ -273,6 +273,48 @@ in which they begin."
   ;; … and that is what the reader reads
   (should (equal '((2 . 5) (1002 . 1003)) (bcat-outline--ranges "Sätze 2–5, 1002–1003 · AS-Ms 1v1"))))
 
+(ert-deftest bcat-outline-draft-continues-an-open-node ()
+  "A part may begin inside a node the part before left open (the AS,
+20.11.: the first request ended in „II. … › E. Bestimmung des
+rūpaskandha“, the second set its „A. Festlegung des rūpaskandha“ beside
+II. instead of below E.).  So a part is told in which nodes the outline
+so far ends, and may hang a node under one of them (\"under\": its
+title); the outline has it there.  An \"under\" that names no such node
+leaves the node an outermost one."
+  (bcat-outline-draft-test--with-source
+    (let ((bcat-outline-part-size 70))
+      (setq answer-of
+            (lambda (kind _prompts)
+              (cond
+               ((equal kind "bcat-outline-1")
+                (concat "{\"nodes\": [{\"title\": \"I. Die Lehre\", \"short\": \"Lehre\", \"from\": 1, \"to\": 1, \"text\": \"a\","
+                        " \"nodes\": [{\"title\": \"A. Grundsatz\", \"short\": \"Grundsatz\", \"from\": 1, \"to\": 1, \"text\": \"g\"}]}]}"))
+               ((equal kind "bcat-outline-2")
+                (concat "{\"nodes\": [{\"title\": \"B. Einteilung\", \"short\": \"Einteilung\", \"under\": \"I. Die Lehre\","
+                        " \"from\": 2, \"to\": 2, \"text\": \"b\"},"
+                        " {\"title\": \"II. Merkmal\", \"short\": \"Merkmal\", \"under\": \"IX. Gibt es nicht\","
+                        " \"from\": 3, \"to\": 3, \"text\": \"c\"}]}"))
+               ((equal kind "bcat-outline-frame")
+                "{\"title\": \"bDen gnyis: Gliederung\", \"intro\": \"\", \"work\": {\"idea\": \"\", \"groups\": []}, \"groups\": []}"))))
+      (should (= 3 (bcat-outline-draft-source src)))
+      (let ((second (cddr (nth 1 requests)))
+            (frame (cddr (car requests)))
+            (text (bcat-outline-text src)))
+        (should (string-match-p
+                 (concat "^The outline so far ends inside these nodes, outermost first:\n"
+                         "- I\\. Die Lehre\n- A\\. Grundsatz\n")
+                 second))
+        (should (string-match-p "\"under\"" second))
+        ;; the whole sees the node where it hangs
+        (should (string-match-p "^- \\[1–2\\] I\\. Die Lehre — a\n- \\[3\\] II\\. Merkmal — c$" frame))
+        (should (string-match-p "^\\*\\* I\\. Die Lehre\nSätze 1–2 · SDA 1–2 · D72a3–D72a4$" text))
+        (should (string-match-p "^\\*\\*\\* A\\. Grundsatz\nSatz 1 · " text))
+        (should (string-match-p "^\\*\\*\\* B\\. Einteilung\nSatz 2 · " text))
+        (should (string-match-p "^\\*\\* II\\. Merkmal\nSatz 3 · " text))
+        (should (equal "Lehre › Einteilung" (bcat-outline-place text 2)))
+        (should (equal "Merkmal" (bcat-outline-place text 3)))
+        (should-not (string-match-p "under" text))))))
+
 (ert-deftest bcat-outline-draft-merges-parts ()
   "A document drafted in parts: the nodes of the parts one after the
 other, under the groups of the last request (the frame) where it gives

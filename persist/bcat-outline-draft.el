@@ -234,12 +234,14 @@ target language; the outline is German all the same."
               (string-join (plist-get info :context) "\n") "\n")
     ""))
 
-(defun bcat-outline-draft-user-prompt (info items &optional part parts before)
+(defun bcat-outline-draft-user-prompt (info items &optional part parts before open)
   "The user prompt of a draft for the document INFO
 \(`bcat-outline-draft--info') with the sentences ITEMS.  For a document
-drafted in parts: PART of PARTS, BEFORE the titles of the nodes
-outlined so far — such a request leaves the view of the whole to the
-last one (`bcat-outline-draft-frame-prompt')."
+drafted in parts: PART of PARTS, BEFORE the lines of the nodes outlined
+so far, OPEN the titles of the nodes that outline ends in, outermost
+first — a part may begin inside one of them and says so (\"under\",
+`bcat-outline-draft--join').  Such a request leaves the view of the
+whole to the last one (`bcat-outline-draft-frame-prompt')."
   (concat
    "Document: " (plist-get info :title) "\n"
    (bcat-outline-draft--notes info)
@@ -253,6 +255,13 @@ last one (`bcat-outline-draft-frame-prompt')."
                (if before
                    (concat "\nOutlined so far:\n" (mapconcat (lambda (b) (concat "- " b)) before "\n")
                            "\nContinue its numbering and its depth. (In brackets the sentences of a node — a title has no numbers of sentences.)")
+                 "")
+               (if open
+                   (concat "\nThe outline so far ends inside these nodes, outermost first:\n"
+                           (mapconcat (lambda (o) (concat "- " o)) open "\n")
+                           "\nWhere the sentences given here go on inside one of them, hang your node below it: "
+                           "give it the additional field \"under\" with that node's title exactly as written here, "
+                           "and number it as the next node there. A node without \"under\" is a new outermost part of the text.")
                  "")
                "\nLeave \"work\", \"title\" and \"intro\" empty — they follow when all parts are outlined.\n")
      "")
@@ -566,13 +575,51 @@ as a draft."
       (string-join (bcat-outline-draft--places data items) "\n")
       "\n"))))
 
+(defun bcat-outline-draft--open-path (tops)
+  "The nodes in which the outline TOPS (outermost nodes in order) ends,
+outermost first: its last node, that one's last node, and so on."
+  (let ((path '()) (node (car (last tops))))
+    (while node
+      (push node path)
+      (setq node (car (last (alist-get 'nodes node)))))
+    (nreverse path)))
+
+(defun bcat-outline-draft--join (answers items)
+  "The nodes of ANSWERS (the parts of a draft in order) as one list of
+outermost nodes.  A part may begin inside a node the part before left
+open (the AS, 20.11.: the first request ended in „II. … › E. Bestimmung
+des rūpaskandha“, the second set its first node beside II.): an
+outermost node of an answer whose field `under' is the title of a node
+the outline so far ends in (`bcat-outline-draft--open-path') hangs
+below that one; without it, or when it names no such node, the node is
+an outermost one.  The answers are not changed."
+  (let ((tops '()))
+    (dolist (answer answers)
+      (dolist (given (alist-get 'nodes answer))
+        (let* ((under (bcat-outline-draft--squeeze (bcat-outline-draft--field given 'under)))
+               (node (cl-remove 'under (copy-tree given) :key #'car-safe))
+               (parent (and (not (string-empty-p under))
+                            (cl-find-if (lambda (n)
+                                          (or (string= under (bcat-outline-draft--title n items))
+                                              (string= under (bcat-outline-draft--squeeze
+                                                              (bcat-outline-draft--field n 'title)))))
+                                        (bcat-outline-draft--open-path tops)))))
+          (if parent
+              (let ((cell (assq 'nodes parent)))
+                (if cell
+                    (setcdr cell (append (cdr cell) (list node)))
+                  (nconc parent (list (cons 'nodes (list node))))))
+            (setq tops (append tops (list node)))))))
+    tops))
+
 (defun bcat-outline-draft--merge (answers frame items)
   "The answers of a draft as one: the nodes of ANSWERS (the parts in
-order) one after the other — under the groups of FRAME (the last
+order) one after the other (`bcat-outline-draft--join') — under the
+groups of FRAME (the last
 request of a draft in parts; for one part its answer itself) where it
 gives some: a node goes under the group that has its first sentence —,
 with FRAME's title, introduction and view of the whole work."
-  (let* ((nodes (apply #'append (mapcar (lambda (a) (copy-sequence (alist-get 'nodes a))) answers)))
+  (let* ((nodes (bcat-outline-draft--join answers items))
          (groups (alist-get 'groups frame))
          (tops
           (if (not groups)
@@ -614,21 +661,21 @@ still to come.")
 outline, or the draft beside an outline someone worked on.")
 
 (defun bcat-outline-draft--top-lines (answers items)
-  "The outermost nodes of ANSWERS as lines „[sentences] title — text“.
-The sentences stand in front, in brackets: behind the title in
-parentheses the next part took them for the form of a title."
-  (cl-loop for a in answers
-           append (mapcar (lambda (n)
-                            (let ((span (bcat-outline-draft--span n items)))
-                              (format "[%s] %s — %s"
-                                      (if span
-                                          (bcat-outline-draft--runs
-                                           (mapcar (lambda (i) (plist-get i :num))
-                                                   (cl-subseq items (car span) (1+ (cdr span)))))
-                                        "?")
-                                      (bcat-outline-draft--title n items)
-                                      (bcat-outline-draft--squeeze (bcat-outline-draft--field n 'text)))))
-                          (alist-get 'nodes a))))
+  "The outermost nodes of ANSWERS (`bcat-outline-draft--join') as lines
+„[sentences] title — text“.  The sentences stand in front, in brackets:
+behind the title in parentheses the next part took them for the form of
+a title."
+  (mapcar (lambda (n)
+            (let ((span (bcat-outline-draft--span n items)))
+              (format "[%s] %s — %s"
+                      (if span
+                          (bcat-outline-draft--runs
+                           (mapcar (lambda (i) (plist-get i :num))
+                                   (cl-subseq items (car span) (1+ (cdr span)))))
+                        "?")
+                      (bcat-outline-draft--title n items)
+                      (bcat-outline-draft--squeeze (bcat-outline-draft--field n 'text)))))
+          (bcat-outline-draft--join answers items)))
 
 ;; The answers are kept (20.11., before the first draft in parts): a
 ;; long commentary is a dozen requests, and one that fails must not cost
@@ -805,7 +852,13 @@ finish.  Every answer is kept as it lands (`bcat-outline-draft--keep')."
                 (and (cdr parts)
                      (bcat-outline-draft--top-lines
                       (delq nil (cl-subseq (plist-get (gethash file bcat-outline-draft--runs) :answers) 0 index))
-                      items)))))
+                      items))
+                (and (cdr parts)
+                     (mapcar (lambda (n) (bcat-outline-draft--title n items))
+                             (bcat-outline-draft--open-path
+                              (bcat-outline-draft--join
+                               (delq nil (cl-subseq (plist-get (gethash file bcat-outline-draft--runs) :answers) 0 index))
+                               items)))))))
        ;; a part answered anew: the answer for the whole is of the old one
        (funcall land (lambda (run obj)
                        (let ((answers (copy-sequence (plist-get run :answers))))
