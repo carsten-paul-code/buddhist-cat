@@ -252,7 +252,7 @@ last one (`bcat-outline-draft-frame-prompt')."
        (concat (format "\nThis is part %d of %d of the document; outline only the sentences given here." part parts)
                (if before
                    (concat "\nOutlined so far:\n" (mapconcat (lambda (b) (concat "- " b)) before "\n")
-                           "\nContinue its numbering and its depth.")
+                           "\nContinue its numbering and its depth. (In brackets the sentences of a node — a title has no numbers of sentences.)")
                  "")
                "\nLeave \"work\", \"title\" and \"intro\" empty — they follow when all parts are outlined.\n")
      "")
@@ -263,12 +263,12 @@ last one (`bcat-outline-draft-frame-prompt')."
 (defun bcat-outline-draft-frame-prompt (info tops)
   "The user prompt of the last request of a document drafted in parts:
 INFO the document, TOPS the outermost nodes of all parts as lines
-„title (from–to): text“.  It asks for the frame — title, intro, the
+„[sentences] title — text“.  It asks for the frame — title, intro, the
 work as a whole, and the large parts („groups“) the nodes fall into."
   (concat
    "Document: " (plist-get info :title) "\n"
    (bcat-outline-draft--notes info)
-   "\nAll parts of the document are outlined. Their outermost nodes, in order:\n"
+   "\nAll parts of the document are outlined. Their outermost nodes, in order (in brackets the sentences of each):\n"
    (mapconcat (lambda (top) (concat "- " top)) tops "\n")
    "\n\nReturn ONE JSON object: {\"title\": \"…\", \"intro\": \"…\", \"work\": {\"idea\": \"…\", \"groups\": [{\"title\": \"…\", \"text\": \"…\"}]}, \"groups\": [{\"title\": \"…\", \"short\": \"…\", \"from\": 0, \"to\": 0, \"text\": \"…\", \"transition\": \"…\"}]} — title, intro and work as in the rules; groups (of the object): the large parts of the text that the nodes above fall into, each with the numbers of its first and its last sentence, covering the nodes without gap in their order; [] when the nodes above are the large parts already."))
 
@@ -368,13 +368,36 @@ said twice when the text begins with it."
                        ((string-match-p (concat "\\`" (regexp-quote role) "\\(?:[.:]\\|\\_>\\)") text) text)
                        (t (concat role ". " text)))))))
 
+(defun bcat-outline-draft--title (node items)
+  "The title of NODE of an answer on one line — without the numbers of
+its sentences in parentheses or brackets at its end („VI. Kommentar zu
+Vers 3 (3, 2055–2075)“: the second part of the Kadam commentary,
+20.11.).  Taken off only when they are the node's own: the first is its
+first sentence or the last its last.  What else stands there stays
+\(„(V. 2–3)“, „(arthakriyā)“, a count)."
+  (let ((title (bcat-outline-draft--squeeze (bcat-outline-draft--field node 'title)))
+        (span (bcat-outline-draft--span node items))
+        (run "[0-9]+\\(?:[ \t]*[–-][ \t]*[0-9]+\\)?"))
+    (if (and span
+             (string-match (concat "[ \t]*[([][ \t]*\\(" run "\\(?:[ \t]*,[ \t]*" run "\\)*\\)[ \t]*[])][ \t]*\\'")
+                           title))
+        (let* ((start (match-beginning 0))
+               (numbers (mapcar #'string-to-number
+                                (split-string (match-string 1 title) "[^0-9]+" t)))
+               (first (plist-get (nth (car span) items) :num))
+               (last (plist-get (nth (cdr span) items) :num)))
+          (if (or (eql (car numbers) first) (eql (car (last numbers)) last))
+              (string-trim (substring title 0 start))
+            title))
+      title)))
+
 (defun bcat-outline-draft--node-text (node items depth)
   "NODE of an answer as org text at DEPTH (1: a heading of level 2):
 heading, the line of what it covers, transition, what it says, the
 lines of its sentences, the nodes below.  Below the fifth level a node
 is a bold line."
   (let* ((span (bcat-outline-draft--span node items))
-         (title (bcat-outline-draft--squeeze (bcat-outline-draft--field node 'title)))
+         (title (bcat-outline-draft--title node items))
          (transition (bcat-outline-draft--squeeze (bcat-outline-draft--field node 'transition)))
          (text (bcat-outline-draft--squeeze (bcat-outline-draft--field node 'text)))
          (entries (delq nil (mapcar #'bcat-outline-draft--entry-line (alist-get 'sentences node))))
@@ -404,9 +427,7 @@ it."
                               level))
       (when found
         (let ((short (bcat-outline-draft--squeeze (bcat-outline-draft--field found 'short))))
-          (push (if (string-empty-p short)
-                    (bcat-outline-draft--squeeze (bcat-outline-draft--field found 'title))
-                  short)
+          (push (if (string-empty-p short) (bcat-outline-draft--title found items) short)
                 path))
         (let ((entry (cl-find num (alist-get 'sentences found)
                               :key (lambda (e) (bcat-outline-draft--number (alist-get 'num e))))))
@@ -588,17 +609,19 @@ still to come.")
 outline, or the draft beside an outline someone worked on.")
 
 (defun bcat-outline-draft--top-lines (answers items)
-  "The outermost nodes of ANSWERS as lines „title (sentences): text“."
+  "The outermost nodes of ANSWERS as lines „[sentences] title — text“.
+The sentences stand in front, in brackets: behind the title in
+parentheses the next part took them for the form of a title."
   (cl-loop for a in answers
            append (mapcar (lambda (n)
                             (let ((span (bcat-outline-draft--span n items)))
-                              (format "%s (%s): %s"
-                                      (bcat-outline-draft--field n 'title)
+                              (format "[%s] %s — %s"
                                       (if span
                                           (bcat-outline-draft--runs
                                            (mapcar (lambda (i) (plist-get i :num))
                                                    (cl-subseq items (car span) (1+ (cdr span)))))
                                         "?")
+                                      (bcat-outline-draft--title n items)
                                       (bcat-outline-draft--squeeze (bcat-outline-draft--field n 'text)))))
                           (alist-get 'nodes a))))
 

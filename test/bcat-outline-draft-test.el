@@ -239,6 +239,25 @@ what lies between there (the title 1001 before verse 1)."
     (should (equal '(2) (bcat-outline-draft--uncovered answer bcat-outline-draft-test--items)))
     (should-not (bcat-outline-draft--uncovered bcat-outline-draft-test--answer bcat-outline-draft-test--items))))
 
+(ert-deftest bcat-outline-draft-titles-without-sentence-numbers ()
+  "A title that ends in the numbers of its sentences — „VI. Kommentar zu
+Vers 3 (3, 2055–2075)“, as the second part of the Kadam commentary gave
+them (20.11.) — is set without them: the line under the heading says
+what the node covers.  What else stands in parentheses stays („(V.
+2–3)“, a term)."
+  (let* ((answer '((title . "T: Gliederung") (intro . "")
+                   (nodes ((title . "I. Kommentar zu Vers 1 (1001, 1)") (short . "Vers 1") (from . 1001) (to . 1) (text . "x"))
+                          ((title . "II. Die verhüllende Wahrheit (V. 2–3)") (short . "Verhüllend") (from . 2) (to . 3) (text . "y")
+                           (nodes ((title . "A. Einteilung (2)") (short . "Einteilung") (from . 2) (to . 2) (text . "z"))
+                                  ((title . "B. Merkmal (arthakriyā) (3–3)") (short . "Merkmal") (from . 3) (to . 3) (text . "z"))))
+                          ((title . "III. Kolophon [1002]") (short . "Kolophon") (from . 1002) (to . 1002) (text . "k")))))
+         (text (bcat-outline-draft-render answer '(:title "T" :date "2026-11-20") bcat-outline-draft-test--items)))
+    (should (string-match-p "^\\*\\* I\\. Kommentar zu Vers 1\nSätze 1001, 1 · " text))
+    (should (string-match-p "^\\*\\* II\\. Die verhüllende Wahrheit (V\\. 2–3)\nSätze 2–3 · " text))
+    (should (string-match-p "^\\*\\*\\* A\\. Einteilung\nSatz 2 · " text))
+    (should (string-match-p "^\\*\\*\\* B\\. Merkmal (arthakriyā)\nSatz 3 · " text))
+    (should (string-match-p "^\\*\\* III\\. Kolophon\nSatz 1002 · " text))))
+
 (ert-deftest bcat-outline-draft-merges-parts ()
   "A document drafted in parts: the nodes of the parts one after the
 other, under the groups of the last request (the frame) where it gives
@@ -431,10 +450,13 @@ that last request."
             (frame (cddr (car requests)))
             (text (bcat-outline-text src)))
         (should (string-match-p "^This is part 2 of 2 of the document" second))
-        (should (string-match-p "^Outlined so far:\n- 1\\. Grundsatz (1): a$" second))
+        ;; the sentences of a node not in parentheses behind its title: the
+        ;; next part took that for the form of a title („VI. Kommentar zu
+        ;; Vers 3 (3, 2055–2075)“ — Kadam-Kommentar, 20.11.)
+        (should (string-match-p "^Outlined so far:\n- \\[1\\] 1\\. Grundsatz — a$" second))
         (should (string-match-p "^\\[2\\] verse SDA 2" second))
         (should-not (string-match-p "^\\[1\\] " second))
-        (should (string-match-p "^- 1\\. Grundsatz (1): a\n- 2\\. Einteilung (2–3): b$" frame))
+        (should (string-match-p "^- \\[1\\] 1\\. Grundsatz — a\n- \\[2–3\\] 2\\. Einteilung — b$" frame))
         (should (string-match-p "^\\*\\* I\\. Die Lehre\nSätze 1–3 · SDA 1–3 · D72a3–D72a5$" text))
         (should (string-match-p "^\\*\\*\\* 1\\. Grundsatz\nSatz 1 · SDA 1 · D72a3$" text))
         (should (string-match-p "^\\*\\*\\* 2\\. Einteilung\nSätze 2–3 " text))
@@ -485,7 +507,7 @@ in the source has its part and what follows asked again."
       (should (= 2 (bcat-outline-draft-pending src)))
       (should (= 2 (bcat-outline-draft-source src)))
       (should (equal '("bcat-outline-2" "bcat-outline-frame") (funcall kinds)))
-      (should (string-match-p "^Outlined so far:\n- 1\\. Grundsatz (1): a$" (cddr (cadr requests))))
+      (should (string-match-p "^Outlined so far:\n- \\[1\\] 1\\. Grundsatz — a$" (cddr (cadr requests))))
       (let ((text (bcat-outline-text src)))
         (should (string-match-p "^\\*\\*\\* 1\\. Grundsatz\nSatz 1 · SDA 1 · D72a3$" text))
         (should (equal "Lehre › Einteilung" (bcat-outline-place text 3)))
