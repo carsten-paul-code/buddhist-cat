@@ -279,7 +279,7 @@ work as a whole, and the large parts („groups“) the nodes fall into."
    (bcat-outline-draft--notes info)
    "\nAll parts of the document are outlined. Their outermost nodes, in order (in brackets the sentences of each):\n"
    (mapconcat (lambda (top) (concat "- " top)) tops "\n")
-   "\n\nReturn ONE JSON object: {\"title\": \"…\", \"intro\": \"…\", \"work\": {\"idea\": \"…\", \"groups\": [{\"title\": \"…\", \"text\": \"…\"}]}, \"groups\": [{\"title\": \"…\", \"short\": \"…\", \"from\": 0, \"to\": 0, \"text\": \"…\", \"transition\": \"…\"}]} — title, intro and work as in the rules; groups (of the object): the large parts of the text that the nodes above fall into, each with the numbers of its first and its last sentence, covering the nodes without gap in their order; [] when the nodes above are the large parts already."))
+   "\n\nReturn ONE JSON object: {\"title\": \"…\", \"intro\": \"…\", \"work\": {\"idea\": \"…\", \"groups\": [{\"title\": \"…\", \"text\": \"…\"}]}, \"groups\": [{\"title\": \"…\", \"short\": \"…\", \"from\": 0, \"to\": 0, \"text\": \"…\", \"transition\": \"…\"}]} — title, intro and work as in the rules; groups (of the object): the large parts of the text that the nodes above fall into, each with the numbers of its first and its last sentence, covering the nodes without gap in their order; the title of a group says what it is about and has no number or letter of its own (the nodes above are numbered through already and keep their numbers below it); [] when the nodes above are the large parts already."))
 
 ;; ----------------------------------------------------------------------------
 ;; From the answers to the outline

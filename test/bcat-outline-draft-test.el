@@ -329,6 +329,16 @@ Einleitung“ over „I. Einleitung: Lehrlinie“ — the Kadam commentary,
     (should (equal "Einleitung › Verneigung: Gruß" (bcat-outline-place text 1001)))
     (should (equal "Einleitung" (bcat-outline-place text 1)))))
 
+(ert-deftest bcat-outline-draft-groups-of-the-whole-unnumbered ()
+  "The last request of a draft in parts sets large parts over the nodes
+of the parts.  Those nodes are numbered through already (I. … XXVI.);
+the groups over them get no number or letter of their own — the Kadam
+commentary, 20.11., had „A. Einleitung“ … „E. …“ over „I.“ … „XXVI.“,
+letters over Roman numerals."
+  (let ((prompt (bcat-outline-draft-frame-prompt '(:title "T") '("[1] I. Grundsatz — a" "[2–3] II. Einteilung — b"))))
+    (should (string-match-p "^- \\[1\\] I\\. Grundsatz — a\n- \\[2–3\\] II\\. Einteilung — b$" prompt))
+    (should (string-match-p "no number or letter of its own" prompt))))
+
 (ert-deftest bcat-outline-draft-merges-parts ()
   "A document drafted in parts: the nodes of the parts one after the
 other, under the groups of the last request (the frame) where it gives
