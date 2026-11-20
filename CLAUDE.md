@@ -7,7 +7,7 @@ work on **Buddhist CAT** (`~/buddhist-cat`, GitHub
 Computer-Assisted Translation (CAT) system for Classical Tibetan and
 Sanskrit. Read it in full before editing. Symbols keep their
 `tibetan-' prefix until their module is rebuilt; new and rebuilt
-modules use `bcat-' (§5.73). Last updated 2026-11-19 (§5.74, Nachträge 18.11.:
+modules use `bcat-' (§5.73). Last updated 2026-11-20 (§5.74, Nachträge 18.11.:
 Wortbildung zurück am Segment — Bedeutungen der Glieder und Auflösung des
 Kompositums (Prompt-Felder `members'/`layers'), drei PDF-Fehler; nachmittags
 IN DIE TABELLE DES SEGMENTS: die Teile unter den Wörtern, eine Zeile je Glied,
@@ -22,8 +22,11 @@ DharmaMitra keine Referenz, Prompt entsprechend; seit 19.11. ** Word Analysis
 und ** Segment N eingeklappt, „Worum es geht“ in sieben Teilen (erprobt an TĀ
 1001 und bden gnyis 28, Länge „gefällt mir so“), PDF geteilt: Lese-PDF ab
 Reading + eigenes PDF „Worum es geht“; reMarkable: Ordner wie im Finder, neue
-Fassung ohne Datum, alte ins Archiv, /Reading geleert; offen: Philologie-Teil
-weiter gliedern, Kompositum-Auflösung straffen).
+Fassung ohne Datum, alte ins Archiv, /Reading geleert; seit 20.11. Prüfliste
+(23 Regeln) in jedem Sanskrit-Abruf, geprüfte Satzdateien geschützt
+(#+CAT_REVIEWED / #+CAT_WRITTEN, Referenz im Abruf, Kopie in .reviewed/, C-c u d),
+Zeichenprüfung; als Nächstes: Gliederung (sa bcad) als Pattern; offen:
+Philologie-Teil weiter gliedern, Kompositum-Auflösung straffen).
 Before that 2026-10-28 (§5.74: SATZDATEIEN
 NACH VORLAGE — Reading-Klassen, Tibetisch: `#+CAT_TEMPLATE: tibetan' im
 Quellkopf, Gliederung * Text / * Segments / * Sentence, C-c u A = Rumpf
@@ -5665,6 +5668,57 @@ Prompt-Änderung: „ja“).
     Papierkorb (wiederherstellbar); `rm' NICHT verwenden.
 - OFFEN: die Straffung der Kompositum-Auflösung (`layers'); Philologie-
   Teil weiter gliedern; Dossier-PDF teilen (AS/MSA).
+
+20.11.2026, PRÜFLISTE + SCHUTZ GEPRÜFTER DATEIEN (`f23ff0c', `8b6c62f',
+`adaef41'; Carsten über die Tantrāloka-Sitzung: „ja, beides so machen“).
+- PRÜFLISTE: Templates/analysis/checklist-sanskrit.org — 23 Regeln, je
+  ein Fehler, den der Abruf bei TĀ 1.1 mit Viveka mehrfach machte und
+  der von Hand berichtigt wurde.  Geht in den System-Prompt JEDES
+  Sanskrit-Abrufs (`bcat-analysis--checklist-block', nach den Regeln des
+  Vertrags).  Gefunden über die Kaskade der Vorlagen
+  (`bcat-sentence--sanskrit-checklist'): eine eigene Liste im Kursordner
+  ERSETZT die des Werkzeugs.  Ergänzen nur auf Carstens Wort; die Datei
+  hier ist maßgeblich (die Kursdatei
+  WS26-27/Tantraloka/pruefliste-sanskrit-analyse.org verweist hierher).
+  Am echten Abruf noch nicht erprobt.
+- GEPRÜFT: eine Satzdatei ist geprüft, wenn sie „#+CAT_REVIEWED: <Datum>“
+  trägt ODER ihr erzeugter Teil (* Text + * Philology) nicht mehr den
+  Stempel „#+CAT_WRITTEN: <md5>“ hat, den `bcat-sentence--write' bei
+  jedem Schreiben setzt (`bcat-sentence-reviewed').  C-c u L einer von
+  Hand geänderten Datei trägt den Vermerk ein („<heute> (von Hand
+  geändert)“), sonst ginge der Befund mit dem neuen Stempel verloren.
+  Dateien von vor dem 20.11. haben keinen Stempel: dort gilt nur der
+  Vermerk (die Tantrāloka-Sitzung trägt ihn in 001, 1001, 1009–1040 ein).
+- ABRUF EINER GEPRÜFTEN DATEI (auch C-u C-c u G): die geprüfte Analyse
+  geht mit der Anfrage („The decisions in this reviewed analysis stand.
+  Depart from one only if you state explicitly why it is wrong“,
+  `bcat-sentence--reviewed-block'); die Datei wird nach
+  analysis/.reviewed/<Datum Zeit> <Name>.org kopiert; die neue Datei ist
+  nicht geprüft und nennt die Kopie (#+CAT_REVIEWED_BEFORE); Status
+  „geprüfte Fassung: N Zeilen anders — C-c u d“; C-c u d =
+  `bcat-sentence-show-departures'.  Bis die neue Analyse geprüft ist,
+  bleibt die Kopie die Referenz weiterer Abrufe.  Vermerk von Hand:
+  M-x bcat-sentence-mark-reviewed (C-u: weg, neuer Stempel).
+- WARUM KEIN VERGLEICH MIT .answers/: gemessen (72 Dateien mit Antwort) —
+  Datei gegen neu gerenderte Antwort weicht bei 43 ab, auch bei nie
+  berührten (ältere Renderer setzten die Funktionszeile der Tabellen
+  anders, Zettel-Links).  Eine alte ungeprüfte Analyse als „geprüft“
+  mitzugeben schriebe ihre Fehler fest.  Nicht wieder versuchen.
+- ZEICHENPRÜFUNG: der Status nennt Wörter, die Latein mit kyrillischen
+  oder griechischen Buchstaben mischen („Zeichen prüfen: kalayет“,
+  `bcat-analysis-mixed-script-words'); geändert wird nichts.
+- GRENZE: im Paar (AS, MSA) geht die geprüfte Fassung der TIBETISCHEN
+  Datei noch nicht mit der tibetischen Anfrage (aufbewahrt und gemeldet
+  wird sie).  Beim Umbau von AS/MSA nachziehen.
+- NÄCHSTES (Auftrag Punkt 3, Carsten 20.11.): GLIEDERUNG (sa bcad) als
+  Pattern — für jedes Dokument eine Gliederung nach dem Muster
+  WS26-27/Tantraloka/Gliederung-TA1.org (Werk im Ganzen; Kapitel
+  verschachtelt mit Kopfzeile Verse · Seiten; Kommentar an seiner
+  Stelle, eine Zeile je Satz; Anhang „Ort im Ganzen“, #+NAME:
+  ort-im-ganzen), neu erzeugt bei neuen Dokumenten, für bestehende
+  „reverse“; je Satzdatei eine Zeile „Ort im Ganzen“; Vorschlag der
+  Tantrāloka-Sitzung: die Gliederung geht als Kontext in den Abruf,
+  Widersprüche danach melden.  Umfang mit Carsten klären (Masterarbeit?).
 
 #### Offen
 
