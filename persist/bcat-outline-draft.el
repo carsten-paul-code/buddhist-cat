@@ -404,15 +404,20 @@ covers — to be said, never dropped in silence."
 (defun bcat-outline-draft--places (data items)
   "The list „Ort im Ganzen“ for the answer DATA: a line for every
 sentence of ITEMS — the way down the short titles, „: Rolle“ when the
-sentence has a line of its own; a sentence no node covers stands under
-the node before it, marked „(nicht eingeordnet)“."
+sentence has a line of its own (not when the node it stands in is
+called just that: „Kolophon“, not „Kolophon: Kolophon“ — the first real
+draft, bDen gnyis, 20.11.); a sentence no node covers stands under the
+node before it, marked „(nicht eingeordnet)“."
   (let ((nodes (alist-get 'nodes data)) (last nil))
     (cl-loop for item in items for position from 0
              collect (let ((place (bcat-outline-draft--place-of nodes items position)))
                        (format "- %d: %s" (plist-get item :num)
                                (cond (place
                                       (setq last (car place))
-                                      (if (and (cdr place) (not (string-empty-p (cdr place))))
+                                      (if (and (cdr place) (not (string-empty-p (cdr place)))
+                                               (not (string-equal-ignore-case
+                                                     (cdr place)
+                                                     (car (last (split-string (car place) " › "))))))
                                           (concat (car place) ": " (cdr place))
                                         (car place)))
                                      (last (concat last " (nicht eingeordnet)"))

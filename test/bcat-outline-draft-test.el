@@ -188,11 +188,11 @@ it reads: `bcat-outline-place' finds every sentence again."
              text))
     (should (string-match-p
              (regexp-quote (concat "#+NAME: ort-im-ganzen\n"
-                                   "- 1001: Titel: Titel\n"
+                                   "- 1001: Titel\n"
                                    "- 1: Zwei Wahrheiten › Grundsatz: These\n"
                                    "- 2: Zwei Wahrheiten › Verhüllende Wahrheit\n"
                                    "- 3: Zwei Wahrheiten › Verhüllende Wahrheit\n"
-                                   "- 1002: Kolophon: Kolophon\n"))
+                                   "- 1002: Kolophon\n"))
              text))
     ;; what it writes it reads
     (should (equal '(1001 1 2 3 1002) (mapcar #'car (bcat-outline-places text))))
