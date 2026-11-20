@@ -5719,7 +5719,8 @@ Prompt-Änderung: „ja“).
 20.11.2026, GLIEDERUNG (sa bcad) (`44367d0' lesen + Ort + Abrufkontext,
 `38ec006' Entwurf, `ac78ee5', `e648268' im Workflow; nach den ersten
 echten Entwürfen `5c8fb53', `a8e59b8', `1aeacf3', `c3d6aca', `403a11e',
-`993d686', `38e3589', `54f5c9a', `38566e7', `040ae75', `ac50542';
+`993d686', `38e3589', `54f5c9a', `38566e7', `040ae75', `ac50542',
+`5a56d1e';
 Carsten 20.11.: „selbst
 entwerfen und ggf. die Tantraloka Gliederung überarbeiten.  Es soll
 generisch und Teil des Workflows sein.  Wenn künftig ein neues Werk
@@ -5812,7 +5813,12 @@ Reihenfolge Tibetisch V → AS → MSA).
   · SCHUTZ: der Entwurf trägt „#+CAT_OUTLINE_WRITTEN: <md5>“.  Stimmt
     der Stempel nicht mehr (von Hand bearbeitet) oder fehlt er (TĀ),
     wird die Datei NIE überschrieben: der neue Entwurf landet als
-    <Name>-Entwurf.org daneben.  Sätze, die die Antwort auslässt,
+    <Name>-Entwurf.org daneben.  Ein unberührter Entwurf wird vom
+    nächsten ersetzt — die Rückfrage von C-c u S sagt es („ersetzt den
+    vorhandenen Entwurf …“; bei einer geteilten Gliederung liegen die
+    Antworten nur bei der Quelle, aus der entworfen wurde: AS = Sanskrit,
+    in der tibetischen Quelle hieße C-c u S neu abrufen).  Sätze, die die
+    Antwort auslässt,
     stehen in der Liste als „(nicht eingeordnet)“ und in der Meldung.
 - PDF: C-c u H in der Gliederungsdatei (`bcat-export-reading-document',
   A4).  Die Übersicht der Knoten vorn füllt sich nur mit num:t +
@@ -5862,7 +5868,7 @@ Reihenfolge Tibetisch V → AS → MSA).
     Überschriften); „⑴“ fehlt in Libertinus fett/kursiv (AS-Titel).
   · Der Entwurfs-Prompt ist nicht abgenommen; Abruf mit Gliederungs-
     kontext (outline_note) am echten Satz nicht erprobt.
-  ERT 2998 / 2996 erwartet / 0 unerwartet / 2 übersprungen, BDD 251,
+  ERT 2999 / 2997 erwartet / 0 unerwartet / 2 übersprungen, BDD 251,
   compile sauber.
 
 #### Offen

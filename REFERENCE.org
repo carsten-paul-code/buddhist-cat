@@ -1,6 +1,6 @@
 #+TITLE: Function Reference — buddhist-cat
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-11-20T11:20:03
+#+DATE: 2026-11-20T11:22:08
 #+OPTIONS: toc:2 num:nil
 
 Source tree: ~/Users/cp/buddhist-cat~  ·  99 modules  ·  2580 forms
@@ -18478,7 +18478,8 @@ answers are not at hand from a draft before — with all of them at hand
 the outline is only set anew, without a request.  With a prefix
 argument (C-u C-c u S, FRESH) everything is asked for again.  The
 result is a draft to be checked; an outline worked on by hand is not
-overwritten.
+overwritten, and the question says when a draft that is there is
+replaced.
 
 ** ~bcat-outline-part-size~  /customize variable/
 :PROPERTIES:
