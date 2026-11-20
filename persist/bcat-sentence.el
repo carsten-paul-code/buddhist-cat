@@ -2016,10 +2016,14 @@ from the same requests.  Returns (:sentences N :fired N :complete N
                   (bcat-commentary-fetch sec commentary (funcall file-of (car c))))))))
         (if (null todo)
             (message "%s: vollständig — nichts abgerufen (neu abrufen: C-u C-c u G)" label)
-          (message "%s: %d Satz/Sätze — %d abgerufen (davon %d Zuordnung neuer Vergleichsübersetzungen), %d vollständig%s"
+          (message "%s: %d Satz/Sätze — %d abgerufen (davon %d Zuordnung neuer Vergleichsübersetzungen), %d vollständig%s%s"
                    label (length sentences) fired (if go align 0)
                    (cl-count-if-not #'cdr states)
-                   (if (and todo (not go)) " (Abruf abgelehnt)" "")))
+                   (if (and todo (not go)) " (Abruf abgelehnt)" "")
+                   ;; 20.11.: the outline is part of the workflow — a
+                   ;; document without one says so
+                   (if (bcat-outline-text src) ""
+                     " — noch keine Gliederung des Dokuments: C-c u S entwirft sie")))
         (list :sentences (length sentences) :fired fired
               :complete (cl-count-if-not #'cdr states) :align align)))))
 

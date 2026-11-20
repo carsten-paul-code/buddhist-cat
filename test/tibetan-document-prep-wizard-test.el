@@ -397,5 +397,38 @@ author, context count, class mode, and the apply-Claude command."
     (should (memq 'existing keys))
     (should (memq 'ocr keys))))
 
+(ert-deftest tibetan-document-prep-wizard-offers-the-outline ()
+  "20.11.2026 (Carsten: „Wenn künftig ein neues Werk hinzu kommt soll in
+der Vorbereitung für's CAT (Segmentierung etc.) auch gleich mit die
+Gliederung“): after the sentence structure the wizard offers to draft
+the outline of the new document (C-c u S, `bcat-outline-draft-source')
+— for a source that has sentences; a „no“ or a source without
+sentences drafts nothing."
+  (let* ((dir (make-temp-file "wizard-outline-" t))
+         (src (expand-file-name "neu.org" dir))
+         (drafted '()) (asked '()) (answer t))
+    (unwind-protect
+        (cl-letf (((symbol-function 'bcat-outline-draft-source)
+                   (lambda (source) (push source drafted) 1))
+                  ((symbol-function 'y-or-n-p)
+                   (lambda (q) (push q asked) answer)))
+          (with-temp-file src
+            (insert "#+TITLE: Neu\n#+TIBETAN_LAYOUT: cascade\n\n* Tibetan Text\n** Section 1\n"
+                    "*** Sentence 1\n**** Segment 1\nསངས་རྒྱས། །\n\n"))
+          (should (eql 1 (tibetan-document-prep-wizard--maybe-draft-outline src)))
+          (should (equal (list src) drafted))
+          (should (string-match-p "Gliederung" (car asked)))
+          ;; declined
+          (setq drafted '() answer nil)
+          (should-not (tibetan-document-prep-wizard--maybe-draft-outline src))
+          (should-not drafted)
+          ;; no sentences: not even asked
+          (setq asked '() answer t)
+          (with-temp-file src (insert "#+TITLE: Neu\n\n* Tibetan Text\nསངས་རྒྱས། །\n"))
+          (should-not (tibetan-document-prep-wizard--maybe-draft-outline src))
+          (should-not asked)
+          (should-not drafted))
+      (delete-directory dir t))))
+
 (provide 'tibetan-document-prep-wizard-test)
 ;;; tibetan-document-prep-wizard-test.el ends here

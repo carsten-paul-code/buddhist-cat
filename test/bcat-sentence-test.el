@@ -904,6 +904,30 @@ stays as it is.  Without an outline the request is as before."
           ;; the outline is not touched
           (should (equal bcat-sentence-test--outline (bcat-sentence-test--text-of outline))))))))
 
+(ert-deftest bcat-sentence-fetch-hints-at-the-outline ()
+  "20.11. (Carsten: the outline is „Teil des Workflows“ — a new work
+gets it with its preparation): C-c u G for a document that has no
+outline yet says so in its message and names the command that drafts
+one, C-c u S; with an outline it says nothing of it."
+  (bcat-sentence-test--with-source
+    (bcat-sentence-test--create src)
+    (let* ((said '())
+           (fetch (lambda ()
+                    (setq said '())
+                    (cl-letf* ((orig (symbol-function 'message))
+                               ((symbol-function 'message)
+                                (lambda (fmt &rest args)
+                                  (when fmt (push (apply #'format fmt args) said))
+                                  (apply orig fmt args)))
+                               ((symbol-function 'y-or-n-p) (lambda (_q) t)))
+                      (bcat-sentence-test--with-stubs bcat-sentence-test--answer
+                        (tibetan-cascade-fetch (list :source src :sent-nums '(9) :label "Satz 9") t)))
+                    (cl-find-if (lambda (m) (string-match-p "abgerufen" m)) said))))
+      (should (string-match-p "abgerufen.* — noch keine Gliederung des Dokuments: C-c u S entwirft sie\\'"
+                              (funcall fetch)))
+      (with-temp-file (expand-file-name "Gliederung-bden-cat.org" dir) (insert bcat-sentence-test--outline))
+      (should-not (string-match-p "Gliederung" (funcall fetch))))))
+
 (ert-deftest bcat-sentence-reviewed-by-stamp ()
   "20.11. (Carsten über die Tantrāloka-Sitzung: fetches reset its
 corrections three times — „ja, beides so machen“): a sentence file

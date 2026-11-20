@@ -463,6 +463,21 @@ ready for analysis."
         (tibetan-add-sentence-structure)
         (save-buffer)))))
 
+(declare-function bcat-outline-draft-source "bcat-outline-draft" (source))
+(declare-function bcat-sentence--sentences "bcat-sentence" (file))
+
+(defun tibetan-document-prep-wizard--maybe-draft-outline (source-file)
+  "Offer to draft the outline (Gliederung, sa bcad) of SOURCE-FILE with
+Claude (`bcat-outline-draft-source', C-c u S) — Carsten 20.11.2026: a
+new work gets its outline with its preparation.  Only for a source
+that has sentences by now (Section → Sentence → Segment); returns the
+number of requests sent, nil when declined or not possible."
+  (when (and (fboundp 'bcat-outline-draft-source)
+             (fboundp 'bcat-sentence--sentences)
+             (ignore-errors (bcat-sentence--sentences source-file))
+             (y-or-n-p "Gliederung (sa bcad) des Dokuments per Abruf entwerfen (C-c u S)? "))
+    (bcat-outline-draft-source source-file)))
+
 (defun tibetan-document-prep-wizard--maybe-run-auto-analyze (source-file
                                                             class-mode)
   "Offer to run `tibetan-auto-analyze-document' on SOURCE-FILE.
@@ -633,6 +648,10 @@ suggestions not yet incorporated."
     ;; Step 10 — sentence-structure demotion.
     (when (y-or-n-p "Run `tibetan-add-sentence-structure' to wrap segments? ")
       (tibetan-document-prep-wizard--run-sentence-structure source-file))
+    ;; Step 10b — the outline of the document (20.11.2026): with the
+    ;; sentences in place it can be drafted.
+    (setq state (plist-put state :outline-requests
+                           (tibetan-document-prep-wizard--maybe-draft-outline source-file)))
     ;; Step 11 — analysis kickoff (optional).
     (tibetan-document-prep-wizard--maybe-run-auto-analyze
      source-file (plist-get state :class-mode))
