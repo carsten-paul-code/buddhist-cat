@@ -1228,6 +1228,17 @@ them."
                     (bcat-zettel-prompt-block (mapcar #'cdr segs) source-file))))
     (append (or lines (plist-get meta :claude-context)) (and block (list block)))))
 
+(defun bcat-sentence--sanskrit-checklist (source-file)
+  "The checklist for the Sanskrit analysis that a fetch for SOURCE-FILE
+sends in its system prompt (Carsten 20.11.: „ja, beides so machen“ —
+23 rules from the mistakes of TĀ 1.1 with the Viveka), or nil: the text
+of checklist-sanskrit.org without its comment, found like a template —
+in the folder of SOURCE-FILE first (a list of its own replaces the
+tool's), then the tool's Templates/analysis/."
+  (when (bcat-template-find "checklist-sanskrit" source-file)
+    (let ((text (string-trim (bcat-template-read "checklist-sanskrit" source-file))))
+      (unless (string-empty-p text) text))))
+
 (defun bcat-sentence--prompts (sentence source-file refs)
   "(SYSTEM . USER) for SENTENCE of SOURCE-FILE with the references REFS —
 the Sanskrit prompts for a Sanskrit source, the Tibetan ones else; the
@@ -1245,7 +1256,8 @@ translations — Carsten 2.11.: „Ja, nur beim Vergleich“."
     (if (bcat-sentence--sanskrit-p source-file)
         (let ((verse-mode (bcat-sentence--verse-mode-p source-file)))
           (cons (bcat-analysis-sanskrit-system-prompt
-                 target verse-mode (equal (bcat-sentence-template-name source-file) "sanskrit"))
+                 target verse-mode (equal (bcat-sentence-template-name source-file) "sanskrit")
+                 (bcat-sentence--sanskrit-checklist source-file))
                 (bcat-analysis-sanskrit-user-prompt
                  (plist-get sentence :sent-num) (plist-get sentence :verse)
                  (mapcar (lambda (s) (list (car s) (cdr s))) segs)

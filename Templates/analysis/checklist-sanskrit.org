@@ -1,0 +1,107 @@
+#+begin_comment
+PRÜFLISTE für die Sanskrit-Analyse (Buddhist CAT, §5.74) — Baustein des
+Prompts jedes Sanskrit-Abrufs (C-c u G), seit 20.11.2026.
+
+Woher: Carsten über die Tantrāloka-Sitzung, 20.11. („ja, beides so
+machen“).  Jede Regel steht für einen Fehler, den der Abruf bei TĀ 1.1
+mit Viveka 1001–1040 mehrfach gemacht hat und der von Hand berichtigt
+werden musste (Padapāṭha in Pausaform, erfundene Sandhi, √jan Kausativ,
+Pseudowurzeln, Vṛddhi-Abstrakta, Partizipien, Kongruenz, pratīka + iti,
+der Vigraha des Kommentators, -in ist kein Bahuvrīhi, Bezug von
+tat/asau).  Zusammengestellt in
+WS26-27/Tantraloka/pruefliste-sanskrit-analyse.org; MASSGEBLICH ist
+diese Datei hier.
+
+Wie sie in den Prompt kommt: der Text unter diesem Kommentar, wörtlich —
+Überschriften als Zeilen mit Doppelpunkt —, nach den Regeln des
+Vertrags (`bcat-analysis-sanskrit-system-prompt',
+`bcat-sentence--sanskrit-checklist').  Gesucht wie jede Vorlage
+(Kaskade): <Ordner der Quelle>/Templates/analysis/,
+<Ordner der Quelle>/Resources/Templates/analysis/, dann diese Datei im
+Werkzeug.  Eine eigene Liste für einen Kurs ERSETZT diese (nicht:
+ergänzt) — dann diese dorthin kopieren und ändern.
+
+Ergänzen: eine neue Regel unter ihre Gruppe, fortlaufend nummeriert,
+englisch, mit dem Fehler als Beispiel.  ÄNDERUNGEN NUR AUF CARSTENS
+WORT — jede ändert den Prompt aller Sanskrit-Abrufe (ein Abruf je
+Dokument ohne Cache-Treffer).  Die Regeln 16, 21 und 23 nennen
+Jayaratha und die KSTS beim Namen; sie gelten sinngemäß für jeden
+Kommentar und jede Edition.
+#+end_comment
+* Padapāṭha and sandhi
+1. The padapāṭha gives every word in its pausa form: /vigatāḥ malāḥ/,
+   not /vigatā malā/; /kalayet/, not /kalayec/. The sandhi form belongs
+   only in the recitation line.
+2. Describe only junctions that actually occur in the transmitted text.
+   Never invent a contraction the text does not have (e.g. /malāvacchedakā/,
+   /tāsāmeva/). Never claim "no sandhi change" where the text shows one
+   (/ityakāla°/ = /iti a°/; /yāsāv/ = /yā asau/; /yadvakṣyati/ = /yat
+   vakṣyati/).
+3. Standard rules to apply correctly: final /-aḥ/ before a voiced sound
+   → /-o/; /-āḥ/ before a voiced sound → /-ā/; /-t/ before a voiced sound
+   → /-d/; /-t/ + /c/ → /-c c/; /i/ + a dissimilar vowel → /y/; /au/ + a
+   vowel → /āv/. Where the text keeps a hiatus (e.g. a quoted lemma before
+   /iti/), say "left without sandhi". Do not treat it as a contraction.
+4. Do not justify sandhi with Pāṇini sūtras unless the sūtra is the right
+   one. A plain description is better than a wrong citation.
+
+* Roots, stems, derivation
+5. /jananī/, /janaka/: √jan causative ("beget, generate"). Not √jan (1)
+   "be born".
+6. Do not derive nouns from pseudo-roots. /mala/ is a noun ("impurity"),
+   not √mal; /saṃskāra/ and /nyakkāra/ come from √kṛ (8), not √skār or
+   √kār; /hṛdaya/ is the stem "heart", not /hṛd/ + /-aya/; /rūpiṇī/ is
+   /rūpa/ + /-in/, not √rūp.
+7. Abstracts in /-ya/ take vṛddhi of the base: /svātantrya/ ← /svatantra/,
+   /vailakṣaṇya/ ← /vilakṣaṇa/, /prādhānya/ ← /pradhāna/, /āñjasa/ ←
+   /añjas/. Do not split them into roots and invented suffixes (/-trya/,
+   /-ṇya/, /-nya/).
+8. Write suffixes in their base form: /-ana/, not /-aṇa/ (the ṇ comes from
+   retroflexion after r/ṣ); ppp. /-ta/, not /-dha/; future /-sya-/, not
+   /-ṣyati/.
+9. Give the verb class correctly and consistently. /vidyamāna/ is the
+   present participle of √vid (4) "exist". It is not a ppp.
+10. Distinguish the participles and verbal adjectives: ppp. (/-ta/, /-na/),
+    present participle (/-at/, /-māna/, /-āna/), gerundive (/-ya/, /-tavya/,
+    /-anīya/). /vācya/ is a gerundive. It is not a ppp.
+
+* Forms and agreement
+11. Check gender and number by agreement. An adjective takes the gender of
+    its noun (/mala/ is m., so /vigatāḥ … avacchedakāḥ/ are m. nom. pl.). An
+    attribute of /svātantrya/ is n. Do not assign a neuter where the n.
+    pl. would be /-āni/.
+12. A bahuvrīhi in /-āśrayā/ etc. agreeing with a feminine noun is f. nom.
+    sg. Do not call a nominative an "instrumental for metrical reasons".
+13. A word quoted from the root text (pratīka) before /iti/ is given in the
+    form in which it is quoted (often the stem). It is the subject of
+    /uktam/, /ucyate/ etc. These passives are not "impersonal".
+14. /yat/ introducing a clause is normally the relative pronoun (n. nom./acc.
+    sg.) with a function in its clause, e.g. object of /vakṣyati/. Do not
+    call it an "adverbial quasi-conjunction" without reason.
+15. Locative + /api/ without a participle is concessive ("even if there is
+    …"). It is not a locative absolute.
+
+* Compounds
+16. Before resolving a compound of the root text, look for the commentator's
+    own vigraha in the same or the following sentences, and follow it.
+    Examples: /tac ca ubhayam/ is a karmadhāraya (not "tayoḥ ubhayam");
+    /kulaṃ śarīraṃ yasya tat/ is a bahuvrīhi; /tataḥ sphuritabhāvaḥ/ is a
+    pañcamī tatpuruṣa.
+17. A possessive in /-in/ (/rūpiṇī/, /apekṣin/) is a taddhita formation, not
+    a bahuvrīhi. /ananyāpekṣin/ is a nañ-tatpuruṣa of an /-in/ formation.
+18. A compound "X-ādi" means "X etc." (bahuvrīhi on /ādi/, m. i-stem). Keep
+    the junction visible: /avidyā-vāsanā-ādi/, not /°vāsanā-dīnām/.
+19. Do not resolve a compound by repeating a member of it ("advayanayasya
+    nayaḥ"). Do not label one compound with two alternative types ("ṣaṣṭhī
+    or karmadhāraya") without saying which one the analysis follows.
+20. Spelling: bahuvrīhi, not bahuvīhi.
+
+* Reading the commentary
+21. In Jayaratha's viveka, a demonstrative (/tat/, /asau/) refers to what
+    the commentary is explaining at that point. Determine the referent from
+    the preceding gloss and say what it is in brackets: "[the pair]", "[the
+    Heart]". Do not refer it to the whole compound of the verse by default.
+22. If the commentary breaks off a quotation, say where it breaks off. Do
+    not fill in the rest without marking it.
+23. Do not correct the transmitted text silently. A reading different from
+    KSTS goes into the notes with its source.

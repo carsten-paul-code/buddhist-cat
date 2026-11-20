@@ -325,7 +325,18 @@ comparison in the second language too."
      "")
    "\n\nReturn the JSON object now."))
 
-(defun bcat-analysis-sanskrit-system-prompt (target &optional bhasya recitation)
+(defun bcat-analysis--checklist-block (checklist)
+  "CHECKLIST — the text of a checklist as its file has it (org: a
+heading per group, numbered rules) — as the block of a system prompt,
+or \"\" when there is none: a sentence that says what it is, the
+headings as lines with a colon, the rules word for word (20.11.)."
+  (if (or (null checklist) (string-blank-p checklist))
+      ""
+    (concat "Checklist — each rule stands for a mistake made in earlier analyses of this kind and corrected by hand. Check your answer against every one of them before you give it:\n"
+            (string-trim (replace-regexp-in-string "^\\*+[ \t]+\\(.*?\\)[ \t]*$" "\\1:" checklist))
+            "\n")))
+
+(defun bcat-analysis-sanskrit-system-prompt (target &optional bhasya recitation checklist)
   "The system prompt of the Sanskrit sentence analysis (§5.74, Carsten
 29.10.: his Sanskrit is rudimentary, the class has Sanskrit
 professionals and goes deep into the grammar — roots, gaṇa, stems;
@@ -334,7 +345,13 @@ TARGET — constant per document, so the prompt cache stays warm.
 BHASYA: the document is read verse by verse with the bhāṣya below the
 verse (MSA, 30.10.) — the answer has `bhasya_hint' too.  RECITATION:
 the file has a Recitation (the Sanskrit template) — for prose the
-answer gives `recitation', the text in sense units (31.10., TĀ 1008)."
+answer gives `recitation', the text in sense units (31.10., TĀ 1008).
+CHECKLIST (20.11., Carsten über die Tantrāloka-Sitzung): the text of
+the checklist for the Sanskrit analysis
+\(Templates/analysis/checklist-sanskrit.org, `bcat-sentence--sanskrit-checklist')
+— the mistakes the fetch made more than once and that were corrected by
+hand; after the rules, before the closing lines
+\(`bcat-analysis--checklist-block')."
   (let ((lang (bcat-analysis--language target)))
     (format "You are a Sanskritist preparing one sentence or verse of a Sanskrit text for a university reading class of experienced Sanskritists; one participant reads Sanskrit only haltingly, so every form is spelled out. Work segment by segment, then on the whole sentence. Use the grammatical terminology of Goldman & Sutherland Goldman, Devavāṇīpraveśikā: Sanskrit terms, with the English equivalent where it helps. Answer with ONE JSON object and nothing else (no prose, no code fence):
 
@@ -379,7 +396,9 @@ Rules:
                  "- recitation: for prose only (for a verse []): the transmitted text of the whole sentence exactly as given — same spelling and sandhi, nothing added or left out —, divided for reading aloud into lines, one array entry per line, each a sense unit of a few words ending at a clause or phrase boundary (break only where the text has a space); inside a line mark a short breath pause with ¦.\n"
                "")
              ;; 16.11.: „Worum es geht“, after all it draws on
-             (bcat-analysis--overview-rule) "\n")
+             (bcat-analysis--overview-rule) "\n"
+             ;; 20.11.: the checklist of mistakes made before
+             (bcat-analysis--checklist-block checklist))
             lang)))
 
 (defun bcat-analysis-sanskrit-user-prompt (sent-num verse segs refs &optional context bhasya second lectures metre)

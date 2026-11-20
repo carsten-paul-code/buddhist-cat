@@ -281,6 +281,38 @@ per sentence number, in the file of the Sanskrit."
                (string-match "^- JSON escaping\\|^- Write glosses" sys))))
   (should-not (string-match-p "\"overview\":\\|^- overview: " (bcat-analysis-tibetan-system-prompt "en"))))
 
+(ert-deftest bcat-analysis-sanskrit-checklist ()
+  "20.11. (Carsten über die Tantrāloka-Sitzung: „ja, beides so machen“):
+the checklist for the Sanskrit analysis — 23 rules, each for a mistake
+the fetch made more than once in TĀ 1.1 with the Viveka and that was
+corrected by hand — goes into the system prompt of every Sanskrit
+fetch: after the rules of the contract (the overview last of them),
+before the two closing lines, under a sentence that says what it is;
+the headings of its groups as lines, the rules word for word.  Without
+a checklist the prompt is as before; the Tibetan prompts have none."
+  (let* ((list "* Padapāṭha and sandhi\n1. The padapāṭha gives every word in its pausa form: /vigatāḥ malāḥ/,\n   not /vigatā malā/.\n\n* Compounds\n20. Spelling: bahuvrīhi, not bahuvīhi.\n")
+         (with (bcat-analysis-sanskrit-system-prompt "en" nil t list))
+         (without (bcat-analysis-sanskrit-system-prompt "en" nil t)))
+    (should (string-match-p
+             (regexp-quote (concat "\nChecklist — each rule stands for a mistake made in earlier analyses of this kind"
+                                   " and corrected by hand. Check your answer against every one of them before you give it:\n"
+                                   "Padapāṭha and sandhi:\n"
+                                   "1. The padapāṭha gives every word in its pausa form: /vigatāḥ malāḥ/,\n"
+                                   "   not /vigatā malā/.\n\n"
+                                   "Compounds:\n"
+                                   "20. Spelling: bahuvrīhi, not bahuvīhi.\n"
+                                   "- JSON escaping: "))
+             with))
+    (should (< (string-match "^  - questions: " with) (string-match "^Checklist — " with)))
+    (should (string-match-p "the overview in German\\. Never mention yourself\\.\\'" with))
+    (should-not (string-match-p "Checklist" without))
+    (should (equal without (bcat-analysis-sanskrit-system-prompt "en" nil t "")))
+    (should (equal without (bcat-analysis-sanskrit-system-prompt "en" nil t " \n")))
+    ;; nothing else changes
+    (should (equal without
+                   (replace-regexp-in-string "^Checklist — \\(?:.*\n\\)*?\\(- JSON escaping\\)" "\\1" with)))
+    (should-not (string-match-p "Checklist" (bcat-analysis-system-prompt "en")))))
+
 (ert-deftest bcat-analysis-overview-rendered ()
   "The answer's `overview' as the section's text, in the form of the
 Tantrāloka files: *Erklärt wird:*, the train of thought (several steps

@@ -790,6 +790,36 @@ before the L1 heading BEFORE — where the Tantrāloka files have it."
 (defun bcat-sentence-test--overview-count (text)
   (cl-count "* Worum es geht" (split-string text "\n") :test #'equal))
 
+(ert-deftest bcat-sentence-sanskrit-checklist ()
+  "20.11.: a Sanskrit fetch sends the tool's checklist
+\(Templates/analysis/checklist-sanskrit.org — 23 rules, its comment
+left out) in its system prompt; a list of its own in the folder of the
+source replaces it (the cascade of the templates); a Tibetan source
+gets none."
+  (bcat-sentence-test--with-sa-source
+    (let* ((sentence (bcat-sentence--sentence 1007 src))
+           (sys (car (bcat-sentence--prompts sentence src nil)))
+           (list (bcat-sentence--sanskrit-checklist src)))
+      (should (= 23 (with-temp-buffer (insert list) (how-many "^[0-9]+\\. " (point-min) (point-max)))))
+      (should-not (string-match-p "begin_comment\\|MASSGEBLICH" list))
+      (should (string-match-p "^\\* Padapāṭha and sandhi$" list))
+      (should (string-match-p "^Checklist — " sys))
+      (should (string-match-p "^Padapāṭha and sandhi:$" sys))
+      (should (string-match-p "^1\\. The padapāṭha gives every word in its pausa form" sys))
+      (should (string-match-p "^5\\. /jananī/, /janaka/: √jan causative" sys))
+      (should (string-match-p "^20\\. Spelling: bahuvrīhi, not bahuvīhi\\.$" sys))
+      (should (string-match-p "^23\\. Do not correct the transmitted text silently" sys))
+      ;; a list of the course's own replaces the tool's
+      (let ((own (expand-file-name "Templates/analysis/checklist-sanskrit.org" (file-name-directory src))))
+        (make-directory (file-name-directory own) t)
+        (with-temp-file own (insert "#+begin_comment\nx\n#+end_comment\n* Own\n1. Only this rule.\n"))
+        (let ((sys (car (bcat-sentence--prompts sentence src nil))))
+          (should (string-match-p "^Own:\n1\\. Only this rule\\.$" sys))
+          (should-not (string-match-p "√jan causative\\|bahuvīhi" sys))))))
+  (bcat-sentence-test--with-source
+    (should-not (string-match-p "Checklist"
+                                (car (bcat-sentence--prompts (bcat-sentence--sentence 9 src) src nil))))))
+
 (ert-deftest bcat-sentence-fetch-keeps-overview-in-front ()
   "16.11. (Tantrāloka 1009–1040): „Worum es geht“, written by hand
 before the first section, must survive C-c u G — and C-u C-c u G —
