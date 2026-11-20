@@ -52,6 +52,14 @@ request; a larger one in parts, cut where the source begins a section."
   :type 'integer
   :group 'bcat-outline)
 
+(defcustom bcat-outline-part-sentences 80
+  "Sentences one request of a draft takes at most.  Every sentence of a
+commentary gets a line of its own in the answer, and the answer has a
+limit (`tibetan-claude-max-tokens'): by its characters alone a part of
+short sentences would be too many of them."
+  :type 'integer
+  :group 'bcat-outline)
+
 ;; ----------------------------------------------------------------------------
 ;; What goes into a draft
 ;; ----------------------------------------------------------------------------
@@ -112,37 +120,41 @@ the labels of its sections in order."
   "The characters ITEM brings into a request."
   (+ (length (plist-get item :text)) (length (or (plist-get item :translation) ""))))
 
-(defun bcat-outline-draft--parts (items size)
+(defun bcat-outline-draft--parts (items size &optional count)
   "ITEMS (`bcat-outline-draft--items') as the parts of a draft: lists of
-consecutive items, each up to SIZE characters of text and translation —
-cut where the source begins a section; a section larger than SIZE is
-cut between its sentences.  nil without ITEMS."
-  (let ((sections '()) (parts '()) (current '()) (used 0))
+consecutive items, each up to SIZE characters of text and translation
+and, with COUNT, up to COUNT sentences — cut where the source begins a
+section; a section larger than that is cut between its sentences.  nil
+without ITEMS."
+  (let ((sections '()) (parts '()) (current '()) (used 0) (held 0))
     ;; the runs of sentences of one section
     (dolist (item items)
       (if (and sections (equal (plist-get item :section) (plist-get (car (car sections)) :section)))
           (push item (car sections))
         (push (list item) sections)))
     (setq sections (nreverse (mapcar #'nreverse sections)))
-    (cl-flet ((flush () (when current (push (nreverse current) parts) (setq current '() used 0))))
+    (cl-flet ((flush () (when current (push (nreverse current) parts) (setq current '() used 0 held 0)))
+              (fits (weight n) (and (<= (+ used weight) size)
+                                    (or (not count) (<= (+ held n) count)))))
       (dolist (section sections)
-        (let ((weight (apply #'+ (mapcar #'bcat-outline-draft--size section))))
+        (let ((weight (apply #'+ (mapcar #'bcat-outline-draft--size section)))
+              (n (length section)))
           (cond
            ;; fits with what is there
-           ((<= (+ used weight) size)
-            (setq current (append (reverse section) current) used (+ used weight)))
+           ((fits weight n)
+            (setq current (append (reverse section) current) used (+ used weight) held (+ held n)))
            ;; fits on its own
-           ((<= weight size)
+           ((and (<= weight size) (or (not count) (<= n count)))
             (flush)
-            (setq current (reverse section) used weight))
+            (setq current (reverse section) used weight held n))
            ;; larger than a part: between its sentences
            (t
             (flush)
             (dolist (item section)
               (let ((w (bcat-outline-draft--size item)))
-                (when (and current (> (+ used w) size)) (flush))
+                (when (and current (not (fits w 1))) (flush))
                 (push item current)
-                (setq used (+ used w))))
+                (setq used (+ used w) held (1+ held))))
             (flush)))))
       (flush))
     (nreverse parts)))
@@ -682,8 +694,8 @@ part, then (for a draft in parts) the frame —, or finish."
 
 (defun bcat-outline-draft-source (source)
   "Draft the outline of the document SOURCE with Claude: one request for
-a document within `bcat-outline-part-size', else one per part and one
-for the whole; the answers are set as an org file in the form
+a document within `bcat-outline-part-size' and
+`bcat-outline-part-sentences', else one per part and one for the whole; the answers are set as an org file in the form
 bcat-outline.el reads (`bcat-outline-draft-render').  Written is the
 outline of SOURCE (`bcat-outline-file') — or, when that one was worked
 on by hand, <name>-Entwurf.org beside it.  Asynchronous; returns the
@@ -692,7 +704,7 @@ number of requests, nil when a draft for it is under way."
     (if (gethash file bcat-outline-draft--runs)
         (progn (message "Für %s läuft schon ein Entwurf" (file-name-nondirectory file)) nil)
       (let* ((items (bcat-outline-draft--items source))
-             (parts (bcat-outline-draft--parts items bcat-outline-part-size)))
+             (parts (bcat-outline-draft--parts items bcat-outline-part-size bcat-outline-part-sentences)))
         (unless items (user-error "%s hat keine Sätze" (file-name-nondirectory source)))
         (puthash file (list :source source :info (bcat-outline-draft--info source)
                             :items items :parts parts :answers nil :frame nil)
@@ -715,7 +727,7 @@ draft to be checked; an outline worked on by hand is not overwritten."
                        ((ignore-errors (tibetan-sentence--source-file-from-analysis file)))
                        (t (user-error "Keine Kaskaden-Quelle und keine Satzdatei"))))
          (items (bcat-outline-draft--items source))
-         (parts (bcat-outline-draft--parts items bcat-outline-part-size))
+         (parts (bcat-outline-draft--parts items bcat-outline-part-size bcat-outline-part-sentences))
          (requests (+ (length parts) (if (cdr parts) 1 0)))
          (outline (bcat-outline-file source)))
     (when (y-or-n-p (format "Gliederung für %s entwerfen — %d Sätze, %d Abruf%s%s? "

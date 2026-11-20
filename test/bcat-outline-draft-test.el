@@ -84,7 +84,18 @@ part."
     (should (equal '((1001) (1) (2) (3) (1002))
                    (mapcar (lambda (p) (mapcar (lambda (i) (plist-get i :num)) p))
                            (bcat-outline-draft--parts items 10))))
-    (should-not (bcat-outline-draft--parts nil 100))))
+    (should-not (bcat-outline-draft--parts nil 100))
+    ;; … and up to so many sentences: every sentence of a commentary gets
+    ;; a line of its own in the answer, and the answer has a limit (a
+    ;; part of 170 short sentences would not fit) — cut at the sections
+    ;; where they fit, else between the sentences
+    (should (equal '((1001 1) (2 3) (1002))
+                   (mapcar (lambda (p) (mapcar (lambda (i) (plist-get i :num)) p))
+                           (bcat-outline-draft--parts items 100000 2))))
+    (should (equal '((1001) (1) (2) (3) (1002))
+                   (mapcar (lambda (p) (mapcar (lambda (i) (plist-get i :num)) p))
+                           (bcat-outline-draft--parts items 100000 1))))
+    (should (equal (list items) (bcat-outline-draft--parts items 100000 5)))))
 
 (ert-deftest bcat-outline-draft-prompts ()
   "What a draft asks of Claude (Carsten 20.11.: the tool drafts the
