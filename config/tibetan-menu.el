@@ -114,6 +114,12 @@
      ["Neu setzen ohne Abruf (C-c u L)" bcat-relayout
       :help "Die Satzdatei an Punkt bzw. die Sätze unter der Überschrift aus ihrer Vorlage neu setzen — ohne Abruf, nach einer Änderung der Vorlage"
       :active (fboundp 'bcat-relayout)]
+     ["Abweichungen von der geprüften Fassung (C-c u d)" bcat-sentence-show-departures
+      :help "Die geprüfte Fassung, die ein Abruf ersetzt hat, gegen die Satzdatei"
+      :active (fboundp 'bcat-sentence-show-departures)]
+     ["Als geprüft vermerken" bcat-sentence-mark-reviewed
+      :help "#+CAT_REVIEWED: ein neuer Abruf gibt die Analyse dann als Referenz mit und bewahrt die Datei auf"
+      :active (fboundp 'bcat-sentence-mark-reviewed)]
      ["Nächster Satz (C-c u n)" tibetan-analysis-next-sentence
       :help "Analysedatei des nächsten Satzes öffnen"
       :active (fboundp 'tibetan-analysis-next-sentence)]

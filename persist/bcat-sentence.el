@@ -880,12 +880,246 @@ a machine name (Translation, DharmaMitra) — marks stripped."
                         (cons (car r) (bcat-analysis-strip-marks (cdr r)))))
                     refs)))
 
+;; ----------------------------------------------------------------------------
+;; Reviewed files (20.11.2026)
+;; ----------------------------------------------------------------------------
+;; Carsten über die Tantrāloka-Sitzung, 20.11. („ja, beides so machen“):
+;; until 19.11. new fetches reset the corrections of the Tantrāloka files
+;; three times, in silence.  A sentence file now knows whether its
+;; analysis was checked by hand:
+;;   #+CAT_WRITTEN: <md5>      the tool's stamp on the generated part as
+;;                             it wrote it — another text there was typed
+;;                             by hand since;
+;;   #+CAT_REVIEWED: <date>    said outright (by hand, with
+;;                             `bcat-sentence-mark-reviewed', or by C-c u L
+;;                             for a file it finds edited);
+;;   #+CAT_REVIEWED_BEFORE: …  the reviewed version a fetch replaced, kept
+;;                             in analysis/.reviewed/.
+;; A fetch of a reviewed file sends that analysis with the request, keeps
+;; the file, and says how far the new one departs (C-c u d).
+
+(defconst bcat-sentence--reviewed-folder ".reviewed"
+  "The folder beside the sentence files that keeps the reviewed versions
+new fetches replaced („<date> <time> <name>.org“ — no name beginning
+with „sent-“: no folder scan takes one for a sentence file).")
+
+(defvar bcat-sentence--raw-write nil
+  "Non-nil: `bcat-sentence--write' writes its text as given, without the
+lines of `bcat-sentence--stamped' (`bcat-sentence-mark-reviewed').")
+
+(defvar bcat-sentence--fresh nil
+  "Non-nil while a fetch writes a sentence file — what is written is a
+new analysis, not the one the file had: t, or the path (relative to the
+file's folder) of the reviewed version it replaces
+\(`bcat-sentence--keep-reviewed').")
+
+(defun bcat-sentence--generated-body (text)
+  "The part of the sentence file TEXT the tool generates and a reviewer
+corrects: from its first heading of level 1 up to „* Worum es geht“,
+„* Further Reading“ or „* Working Translation“, whichever comes first
+— * Text and * Philology —, without the blanks at the ends of lines.
+Not the header, the notes, the sections of the file's own."
+  (let* ((start (string-match "^\\* " text))
+         (end (and start
+                   (string-match "^\\* \\(?:Worum es geht\\|Further Reading\\|Working Translation\\)[ \t]*$"
+                                 text start))))
+    (if start
+        (replace-regexp-in-string "[ \t]+$" "" (substring text start (or end (length text))))
+      "")))
+
+(defun bcat-sentence--body-hash (text)
+  "The stamp of the sentence file TEXT: the md5 of its generated part
+\(`bcat-sentence--generated-body')."
+  (md5 (bcat-sentence--generated-body text) nil nil 'utf-8))
+
+(defun bcat-sentence--text-header (text key)
+  "The value of #+KEY: in the header of the file TEXT (before its first
+heading), or nil."
+  (let ((head (substring text 0 (or (string-match "^\\* " text) (length text)))))
+    (and (string-match (format "^#\\+%s:[ \t]*\\(.*?\\)[ \t]*$" (regexp-quote key)) head)
+         (let ((value (match-string 1 head)))
+           (and (not (string-empty-p value)) value)))))
+
+(defun bcat-sentence--text-reviewed (text)
+  "Non-nil when the analysis in the sentence file TEXT was checked by
+hand: its #+CAT_REVIEWED, or — its generated part no longer has the
+stamp the tool gave it (#+CAT_WRITTEN) — today's date with „(von Hand
+geändert)“.  nil for a file as the tool wrote it, and for one from
+before the stamp that does not say it is reviewed."
+  (or (bcat-sentence--text-header text "CAT_REVIEWED")
+      (let ((stamp (bcat-sentence--text-header text "CAT_WRITTEN")))
+        (and stamp
+             (not (equal stamp (bcat-sentence--body-hash text)))
+             (concat (format-time-string "%Y-%m-%d") " (von Hand geändert)")))))
+
+(defun bcat-sentence-reviewed (file)
+  "Non-nil when the analysis in the sentence FILE was checked by hand
+\(`bcat-sentence--text-reviewed') — a new fetch then sends it with the
+request and keeps the file (`bcat-sentence--keep-reviewed')."
+  (and file (file-readable-p file)
+       (bcat-sentence--text-reviewed (bcat-sentence--text file))))
+
+(defun bcat-sentence--stamped (text old)
+  "TEXT of a sentence file as the tool is about to write it, with the
+lines that say whether its analysis is reviewed, after #+CAT_TEMPLATE:
+OLD is the text the file has now (nil: none).  Setting a file anew
+\(C-c u L, a reference added) keeps what OLD says — its #+CAT_REVIEWED,
+or today's when OLD was edited by hand since the tool wrote it, and its
+#+CAT_REVIEWED_BEFORE; a fetch (`bcat-sentence--fresh') writes a new
+analysis: not reviewed, #+CAT_REVIEWED_BEFORE the version it replaces.
+#+CAT_WRITTEN is the stamp of what is written
+\(`bcat-sentence--body-hash').  A text without #+CAT_TEMPLATE stays."
+  (let ((clean (replace-regexp-in-string
+                "^#\\+CAT_\\(?:REVIEWED\\|REVIEWED_BEFORE\\|WRITTEN\\):.*\n" "" text)))
+    (if (not (string-match "^#\\+CAT_TEMPLATE:.*\n" clean))
+        text
+      (let ((at (match-end 0))
+            (reviewed (and (not bcat-sentence--fresh) old (bcat-sentence--text-reviewed old)))
+            (before (cond ((stringp bcat-sentence--fresh) bcat-sentence--fresh)
+                          (bcat-sentence--fresh nil)
+                          (old (bcat-sentence--text-header old "CAT_REVIEWED_BEFORE")))))
+        (concat (substring clean 0 at)
+                (if reviewed (format "#+CAT_REVIEWED: %s\n" reviewed) "")
+                (if before (format "#+CAT_REVIEWED_BEFORE: %s\n" before) "")
+                (format "#+CAT_WRITTEN: %s\n" (bcat-sentence--body-hash clean))
+                (substring clean at))))))
+
+(defun bcat-sentence--keep-reviewed (file)
+  "Before a fetch overwrites the sentence FILE: the reviewed version the
+new analysis replaces, as a path relative to FILE's folder, or nil.  A
+reviewed FILE (`bcat-sentence--text-reviewed') is copied word for word
+into `bcat-sentence--reviewed-folder'; a file that is not, but names a
+reviewed version it replaced earlier (#+CAT_REVIEWED_BEFORE, the copy
+still there), keeps that one — until someone reviews the new analysis,
+the last reviewed version is the reference."
+  (when (and file (file-readable-p file))
+    (let ((text (bcat-sentence--text file))
+          (dir (file-name-directory file)))
+      (if (bcat-sentence--text-reviewed text)
+          (let* ((rel (format "%s/%s %s.org" bcat-sentence--reviewed-folder
+                              (format-time-string "%Y-%m-%d %H%M") (file-name-base file)))
+                 (path (expand-file-name rel dir)))
+            (make-directory (file-name-directory path) t)
+            (copy-file file path t)
+            rel)
+        (let ((before (bcat-sentence--text-header text "CAT_REVIEWED_BEFORE")))
+          (and before (file-readable-p (expand-file-name before dir)) before))))))
+
+(defun bcat-sentence--reviewed-text (file)
+  "The text of the reviewed version of the sentence FILE that a fetch
+has to respect, or nil: FILE's own when it is reviewed, else that of
+the version it names (#+CAT_REVIEWED_BEFORE)."
+  (when (and file (file-readable-p file))
+    (let ((text (bcat-sentence--text file)))
+      (if (bcat-sentence--text-reviewed text)
+          text
+        (let* ((before (bcat-sentence--text-header text "CAT_REVIEWED_BEFORE"))
+               (path (and before (expand-file-name before (file-name-directory file)))))
+          (and path (file-readable-p path) (bcat-sentence--text path)))))))
+
+(defun bcat-sentence--plain-lines (text)
+  "The generated part of the sentence file TEXT as lines to compare or
+to send: no drawers, no blank lines, links as their text, blanks
+squeezed."
+  (let ((body (replace-regexp-in-string
+               "^[ \t]*:PROPERTIES:[ \t]*\n\\(?:[ \t]*:[^\n]*\n\\)*?[ \t]*:END:[ \t]*\n" ""
+               (bcat-sentence--generated-body text))))
+    (delete ""
+            (mapcar (lambda (line)
+                      (string-trim
+                       (replace-regexp-in-string
+                        "[ \t]+" " "
+                        (replace-regexp-in-string "\\[\\[[^]\n]+\\]\\[\\([^]\n]+\\)\\]\\]" "\\1" line))))
+                    (split-string body "\n")))))
+
+(defun bcat-sentence--reviewed-block (file)
+  "The block of a request's context with the reviewed analysis of the
+sentence FILE (`bcat-sentence--reviewed-text'), or nil (Carsten 20.11.:
+the reviewed version goes with the request — its decisions stand)."
+  (let ((text (bcat-sentence--reviewed-text file)))
+    (and text
+         (concat "Reviewed analysis of this sentence — checked and corrected by hand. "
+                 "The decisions in this reviewed analysis stand. Depart from one only if you state "
+                 "explicitly why it is wrong — in the note of the segment concerned.\n"
+                 "<reviewed>\n"
+                 (string-join (bcat-sentence--plain-lines text) "\n")
+                 "\n</reviewed>"))))
+
+(defun bcat-sentence--departures (file)
+  "How many lines of the reviewed version the sentence FILE names
+\(#+CAT_REVIEWED_BEFORE) its generated part no longer has — links and
+spacing aside —, or nil when it names none."
+  (let* ((text (bcat-sentence--text file))
+         (before (bcat-sentence--text-header text "CAT_REVIEWED_BEFORE"))
+         (path (and before (expand-file-name before (file-name-directory file)))))
+    (when (and path (file-readable-p path))
+      (let ((now (bcat-sentence--plain-lines text)))
+        (cl-count-if-not (lambda (line) (member line now))
+                         (bcat-sentence--plain-lines (bcat-sentence--text path)))))))
+
+(defun bcat-sentence--report-departures (file)
+  "After a fetch wrote the sentence FILE: say in its status and as a
+message how far the new analysis departs from the reviewed version it
+replaced — nothing is overwritten in silence (Carsten 20.11.)."
+  (let ((n (bcat-sentence--departures file)))
+    (when n
+      (let ((text (if (zerop n)
+                      "geprüfte Fassung: nichts anders"
+                    (format "geprüfte Fassung: %d Zeile%s anders — C-c u d" n (if (= n 1) "" "n")))))
+        (bcat-status-step file :review text)
+        (message "%s — %s (aufbewahrt: %s)" (file-name-nondirectory file) text
+                 (bcat-sentence--text-header (bcat-sentence--text file) "CAT_REVIEWED_BEFORE"))))))
+
+;;;###autoload
+(defun bcat-sentence-show-departures ()
+  "C-c u d in a sentence file: the reviewed version a fetch replaced
+\(#+CAT_REVIEWED_BEFORE, kept in analysis/.reviewed/) against the file
+as it is now — where the new analysis departs from what was checked by
+hand (Carsten 20.11.: „danach anzeigen, wo die neue Fassung abweicht“)."
+  (interactive)
+  (let* ((file (buffer-file-name))
+         (before (and file (bcat-sentence--text-header (buffer-string) "CAT_REVIEWED_BEFORE")))
+         (path (and before (expand-file-name before (file-name-directory file)))))
+    (cond ((not before) (message "Diese Datei nennt keine geprüfte Fassung, die ein Abruf ersetzt hätte"))
+          ((not (file-readable-p path)) (message "Die geprüfte Fassung fehlt: %s" path))
+          (t (when (buffer-modified-p) (save-buffer))
+             (diff path file)))))
+
+;;;###autoload
+(defun bcat-sentence-mark-reviewed (&optional remove)
+  "Mark the analysis in the sentence file of this buffer as checked by
+hand: #+CAT_REVIEWED: <today> — a new fetch then sends it with the
+request and keeps the file (Carsten 20.11.).  With a prefix argument
+REMOVE the mark goes, and the file as it stands counts as the tool's
+\(a new stamp): the next fetch replaces it like any unreviewed one."
+  (interactive "P")
+  (let ((file (buffer-file-name)))
+    (unless (and file (bcat-sentence-file-p file))
+      (user-error "Keine Satzdatei einer Vorlage"))
+    (when (buffer-modified-p) (save-buffer))
+    (let* ((text (bcat-sentence--text file))
+           (clean (replace-regexp-in-string "^#\\+CAT_\\(?:REVIEWED\\|WRITTEN\\):.*\n" "" text))
+           (at (and (string-match "^#\\+CAT_TEMPLATE:.*\n" clean) (match-end 0)))
+           (new (concat (substring clean 0 at)
+                        (if remove
+                            (format "#+CAT_WRITTEN: %s\n" (bcat-sentence--body-hash clean))
+                          (format "#+CAT_REVIEWED: %s\n" (format-time-string "%Y-%m-%d")))
+                        (substring clean at))))
+      (let ((bcat-sentence--raw-write t))
+        (bcat-sentence--write file new))
+      (message (if remove "%s: nicht mehr als geprüft geführt" "%s: als geprüft vermerkt")
+               (file-name-nondirectory file)))))
+
 (defun bcat-sentence--write (file text)
   "Write TEXT to FILE — through a visiting buffer when there is one, so
 buffer and file stay in step (its unsaved edits are saved first and
-were read by the caller)."
+were read by the caller).  20.11.: with the lines that say whether the
+analysis is reviewed and the tool's stamp (`bcat-sentence--stamped')."
   (make-directory (file-name-directory file) t)
-  (let ((buf (get-file-buffer file)))
+  (let ((buf (get-file-buffer file))
+        (text (if bcat-sentence--raw-write
+                  text
+                (bcat-sentence--stamped text (and (file-readable-p file) (bcat-sentence--text file))))))
     (if (not buf)
         (let ((make-backup-files nil))
           (with-temp-file file (insert text)))
@@ -1239,11 +1473,13 @@ tool's), then the tool's Templates/analysis/."
     (let ((text (string-trim (bcat-template-read "checklist-sanskrit" source-file))))
       (unless (string-empty-p text) text))))
 
-(defun bcat-sentence--prompts (sentence source-file refs)
+(defun bcat-sentence--prompts (sentence source-file refs &optional file)
   "(SYSTEM . USER) for SENTENCE of SOURCE-FILE with the references REFS —
 the Sanskrit prompts for a Sanskrit source, the Tibetan ones else; the
 lectures on the sentence (#+CAT_LECTURES) for the comparison of the
-translations — Carsten 2.11.: „Ja, nur beim Vergleich“."
+translations — Carsten 2.11.: „Ja, nur beim Vergleich“.  FILE, the
+sentence file the answer goes into: when its analysis is reviewed, it
+goes with the request (20.11., `bcat-sentence--reviewed-block')."
   (let* ((meta (ignore-errors (tibetan-analysis--read-source-metadata source-file)))
          (target (or (plist-get meta :target-lang) "en"))
          (second (bcat-sentence--second-language sentence source-file))
@@ -1252,6 +1488,9 @@ translations — Carsten 2.11.: „Ja, nur beim Vergleich“."
          ;; 16.11.: the sentences before and after, for „Worum es geht“
          (context (append (bcat-sentence--context-with-zettels meta segs source-file)
                           (let ((block (bcat-sentence--neighbours-block sentence source-file)))
+                            (and block (list block)))
+                          ;; 20.11.: the reviewed analysis, whose decisions stand
+                          (let ((block (and file (bcat-sentence--reviewed-block file))))
                             (and block (list block))))))
     (if (bcat-sentence--sanskrit-p source-file)
         (let ((verse-mode (bcat-sentence--verse-mode-p source-file)))
@@ -1285,8 +1524,12 @@ during a request survives); LAST_ANALYZED is today."
                                            (bcat-sentence--keep file)))
          (context (funcall build (cons (cons 'last-analyzed (format-time-string "%Y-%m-%d"))
                                        base))))
-    (bcat-sentence--write
-     file (bcat-sentence--render (bcat-sentence-template-name source-file) context source-file))
+    ;; 20.11.: a reviewed file is kept before the new analysis takes
+    ;; its place, and the status says how far the new one departs
+    (let ((bcat-sentence--fresh (or (bcat-sentence--keep-reviewed file) t)))
+      (bcat-sentence--write
+       file (bcat-sentence--render (bcat-sentence-template-name source-file) context source-file)))
+    (bcat-sentence--report-departures file)
     context))
 
 (defun bcat-sentence--fetched-context (base sentence source-file refs parsed &optional tibetan)
@@ -1594,7 +1837,7 @@ request through the queue."
          (require 'tibetan-translation-discussion)
          (tibetan-discussion--submit
           "bcat-analysis" file
-          (lambda () (bcat-sentence--prompts sentence source-file refs))
+          (lambda () (bcat-sentence--prompts sentence source-file refs file))
           (lambda (f response)
             (bcat-sentence--land f sentence source-file refs response))))))
     'fired))

@@ -374,8 +374,12 @@ Templates/analysis/ shapes the new file instead of the tool's."
     (make-directory (expand-file-name "Templates/analysis" dir) t)
     (with-temp-file (expand-file-name "Templates/analysis/tibetan.org" dir)
       (insert "#+CAT_TEMPLATE: tibetan\n* Nur Wylie\n{{#segments}}\n{{wylie}}\n{{/segments}}\n"))
-    (should (equal "#+CAT_TEMPLATE: tibetan\n* Nur Wylie\nbrjod du med pa bltar med pa/ /\n'gyur ba med pa 'dus ma byas/ /\n"
-                   (bcat-sentence-test--create src)))))
+    ;; (20.11.: with the tool's stamp after #+CAT_TEMPLATE)
+    (should (string-match-p
+             (concat "\\`#\\+CAT_TEMPLATE: tibetan\n#\\+CAT_WRITTEN: [0-9a-f]\\{32\\}\n"
+                     (regexp-quote "* Nur Wylie\nbrjod du med pa bltar med pa/ /\n'gyur ba med pa 'dus ma byas/ /\n")
+                     "\\'")
+             (bcat-sentence-test--create src)))))
 
 ;; ----------------------------------------------------------------------------
 ;; Step 3b — C-c u G on template files
@@ -789,6 +793,159 @@ before the L1 heading BEFORE — where the Tantrāloka files have it."
 
 (defun bcat-sentence-test--overview-count (text)
   (cl-count "* Worum es geht" (split-string text "\n") :test #'equal))
+
+(ert-deftest bcat-sentence-reviewed-by-stamp ()
+  "20.11. (Carsten über die Tantrāloka-Sitzung: fetches reset its
+corrections three times — „ja, beides so machen“): a sentence file
+knows whether its analysis was checked by hand.  The tool stamps what
+it writes (#+CAT_WRITTEN: the md5 of the generated part — * Text and
+* Philology, not the notes, not „Worum es geht“); a file whose
+generated part no longer has that stamp was edited by hand and counts
+as reviewed, as does one that says so (#+CAT_REVIEWED: date — set by
+hand or with `bcat-sentence-mark-reviewed').  C-c u L keeps what it
+finds: an edited file is marked reviewed and stamped anew, twice the
+same; a mark stays.  A file from before the stamp (no #+CAT_WRITTEN)
+is reviewed only when it says so."
+  (bcat-sentence-test--with-source
+    (bcat-sentence-test--create src)
+    (bcat-sentence-test--with-stubs bcat-sentence-test--answer
+      (bcat-sentence-test--fetch src))
+    (let* ((file (tibetan-sentence--filepath 9 folder src))
+           (edit (lambda (from to)
+                   (let ((text (bcat-sentence-test--text-of file)))
+                     (should (string-match-p (regexp-quote from) text))
+                     (with-temp-file file
+                       (insert (replace-regexp-in-string (regexp-quote from) to text t t))))))
+           (today (format-time-string "%Y-%m-%d")))
+      ;; written by the tool: stamped, not reviewed
+      (should (string-match-p "^#\\+CAT_TEMPLATE: tibetan\n#\\+CAT_WRITTEN: [0-9a-f]\\{32\\}$"
+                              (bcat-sentence-test--text-of file)))
+      (should-not (string-match-p "^#\\+CAT_REVIEWED" (bcat-sentence-test--text-of file)))
+      (should-not (bcat-sentence-reviewed file))
+      ;; C-c u L of an untouched file: the same file
+      (let ((before (bcat-sentence-test--text-of file)))
+        (should (bcat-relayout-file file))
+        (should (equal before (bcat-sentence-test--text-of file))))
+      ;; a note typed: not reviewed
+      (funcall edit "* My Notes\n" "* My Notes\nEine Notiz.\n")
+      (should-not (bcat-sentence-reviewed file))
+      ;; a correction in the analysis: reviewed
+      (funcall edit "*Structure:* no finite verb" "*Structure:* nominal predicate, no finite verb")
+      (should (bcat-sentence-reviewed file))
+      ;; C-c u L keeps it: marked, stamped anew, the correction there
+      (should (bcat-relayout-file file))
+      (let ((new (bcat-sentence-test--text-of file)))
+        (should (string-match-p (concat "^#\\+CAT_TEMPLATE: tibetan\n#\\+CAT_REVIEWED: " today
+                                        " (von Hand geändert)\n#\\+CAT_WRITTEN: [0-9a-f]\\{32\\}$")
+                                new))
+        (should (string-match-p "nominal predicate, no finite verb" new))
+        (should (bcat-sentence-reviewed file))
+        (should (bcat-relayout-file file))
+        (should (equal new (bcat-sentence-test--text-of file))))
+      ;; the mark by hand, on a file from before the stamp
+      (with-temp-file file
+        (insert (replace-regexp-in-string "^#\\+CAT_\\(?:REVIEWED\\|WRITTEN\\):.*\n" ""
+                                          (bcat-sentence-test--text-of file))))
+      (should-not (bcat-sentence-reviewed file))
+      (funcall edit "#+CAT_TEMPLATE: tibetan\n" "#+CAT_TEMPLATE: tibetan\n#+CAT_REVIEWED: 2026-11-16\n")
+      (should (equal "2026-11-16" (bcat-sentence-reviewed file)))
+      (should (bcat-relayout-file file))
+      (should (string-match-p "^#\\+CAT_REVIEWED: 2026-11-16\n#\\+CAT_WRITTEN: [0-9a-f]\\{32\\}$"
+                              (bcat-sentence-test--text-of file)))
+      ;; the command: sets the mark (today), with a prefix argument takes it away
+      (with-temp-file file
+        (insert (replace-regexp-in-string "^#\\+CAT_REVIEWED:.*\n" "" (bcat-sentence-test--text-of file))))
+      (should-not (bcat-sentence-reviewed file))
+      (with-current-buffer (find-file-noselect file)
+        (unwind-protect
+            (progn
+              (revert-buffer t t t)
+              (bcat-sentence-mark-reviewed)
+              (should (equal today (bcat-sentence-reviewed file)))
+              (let ((current-prefix-arg '(4))) (bcat-sentence-mark-reviewed t))
+              (should-not (bcat-sentence-reviewed file)))
+          (set-buffer-modified-p nil)
+          (kill-buffer))))))
+
+(ert-deftest bcat-sentence-fetch-protects-reviewed ()
+  "20.11. (Carsten über die Tantrāloka-Sitzung: „ja, beides so machen“):
+a new fetch of a reviewed sentence file (C-u C-c u G) no longer resets
+the corrections in silence.  It sends the reviewed analysis with the
+request — „The decisions in this reviewed analysis stand. Depart from
+one only if you state explicitly why it is wrong.“ —, keeps the
+reviewed file (analysis/.reviewed/<date> <name>.org, word for word),
+names it in the new file (#+CAT_REVIEWED_BEFORE:; the new analysis is
+not reviewed) and says in the status how many lines of the reviewed
+version no longer stand (C-c u d shows them).  Until the new file is
+reviewed itself the kept version stays the reference: the next fetch
+sends it again and keeps no second copy.  A file nobody reviewed is
+fetched as before."
+  (bcat-sentence-test--with-source
+    (bcat-sentence-test--create src)
+    ;; the status of this test alone
+    (when (get-buffer bcat-status-buffer-name) (kill-buffer bcat-status-buffer-name))
+    (bcat-sentence-test--with-stubs bcat-sentence-test--answer
+      (bcat-sentence-test--fetch src)
+      (let* ((file (tibetan-sentence--filepath 9 folder src))
+             (kept-dir (expand-file-name ".reviewed" (file-name-directory file)))
+             (refetch (lambda ()
+                        (setq prompts nil)
+                        (cl-letf (((symbol-function 'y-or-n-p) (lambda (_q) t)))
+                          (tibetan-cascade-fetch (list :source src :sent-nums '(9) :label "Satz 9") t))
+                        (cdr (car prompts))))
+             (status (lambda () (with-current-buffer bcat-status-buffer-name (buffer-string)))))
+        ;; nobody reviewed it: as before
+        (let ((user (funcall refetch)))
+          (should-not (string-match-p "reviewed analysis" user))
+          (should-not (file-exists-p kept-dir))
+          (should-not (string-match-p "CAT_REVIEWED" (bcat-sentence-test--text-of file)))
+          (should-not (string-match-p "geprüfte Fassung" (funcall status))))
+        ;; a correction by hand
+        (with-temp-file file
+          (insert (replace-regexp-in-string (regexp-quote "*Structure:* no finite verb")
+                                            "*Structure:* nominal predicate, no finite verb"
+                                            (bcat-sentence-test--text-of file) t t)))
+        (should (bcat-sentence-reviewed file))
+        (let* ((reviewed (bcat-sentence-test--text-of file))
+               (user (funcall refetch))
+               (copies (directory-files kept-dir nil "\\.org\\'"))
+               (new (bcat-sentence-test--text-of file)))
+          ;; sent with the request
+          (should (string-match-p
+                   (regexp-quote (concat "The decisions in this reviewed analysis stand. "
+                                         "Depart from one only if you state explicitly why it is wrong"))
+                   user))
+          (should (string-match-p "nominal predicate, no finite verb" user))
+          (should (< (string-match "The decisions in this reviewed analysis stand" user)
+                     (string-match "Sentence 9" user)))
+          ;; kept, word for word
+          (should (= 1 (length copies)))
+          (should (string-match-p "\\`20[0-9-]\\{8\\} [0-9]\\{4\\} sent-009-bden\\.org\\'" (car copies)))
+          (should (equal reviewed (bcat-sentence-test--text-of (expand-file-name (car copies) kept-dir))))
+          ;; the new file: the answer's, not reviewed, naming the version before
+          (should-not (string-match-p "nominal predicate" new))
+          (should-not (string-match-p "^#\\+CAT_REVIEWED:" new))
+          (should (string-match-p (concat "^#\\+CAT_REVIEWED_BEFORE: " (regexp-quote (concat ".reviewed/" (car copies))) "$")
+                                  new))
+          (should-not (bcat-sentence-reviewed file))
+          (should (string-match-p "geprüfte Fassung: 1 Zeile anders — C-c u d" (funcall status)))
+          ;; C-c u d: the kept version against the file
+          (let ((shown nil))
+            (cl-letf (((symbol-function 'diff) (lambda (old new &rest _) (setq shown (list old new)) nil)))
+              (with-current-buffer (find-file-noselect file)
+                (unwind-protect (bcat-sentence-show-departures)
+                  (set-buffer-modified-p nil) (kill-buffer))))
+            (should (equal (list (expand-file-name (car copies) kept-dir) file) shown)))
+          ;; C-c u L keeps the pointer
+          (should (bcat-relayout-file file))
+          (should (string-match-p "^#\\+CAT_REVIEWED_BEFORE: \\.reviewed/20[0-9-]+ [0-9]+ sent-009-bden\\.org$" (bcat-sentence-test--text-of file)))
+          ;; the next fetch: the kept version again, no second copy
+          (let ((user (funcall refetch)))
+            (should (string-match-p "The decisions in this reviewed analysis stand" user))
+            (should (string-match-p "nominal predicate, no finite verb" user))
+            (should (equal copies (directory-files kept-dir nil "\\.org\\'")))
+            (should (string-match-p (concat "^#\\+CAT_REVIEWED_BEFORE: " (regexp-quote (concat ".reviewed/" (car copies))) "$")
+                                    (bcat-sentence-test--text-of file)))))))))
 
 (ert-deftest bcat-sentence-fetch-reports-foreign-letters ()
   "20.11. (Tantrāloka-Sitzung: after a fetch TĀ 1012 read „kalayет“ —

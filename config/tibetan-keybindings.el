@@ -113,6 +113,11 @@
   ;; zum ersten Vers); in einer Quelle zur anderen Quelle.
 
 (global-set-key (kbd "C-c u L") 'bcat-relayout)
+;; C-c u d (Carsten über die Tantrāloka-Sitzung, 20.11.2026): in einer
+;; Satzdatei, deren geprüfte Fassung ein Abruf ersetzt hat — die
+;; aufbewahrte Fassung gegen die Datei („danach anzeigen, wo die neue
+;; Fassung abweicht“).  Als geprüft vermerken: M-x bcat-sentence-mark-reviewed.
+(global-set-key (kbd "C-c u d") 'bcat-sentence-show-departures)
 ;; C-c u V (Carsten 5.11.2026): the reading dossier of the verse — text,
 ;; bhāṣya, commentary one under the other (bcat-dossier.el).
 (global-set-key (kbd "C-c u V") 'bcat-dossier)
