@@ -315,6 +315,20 @@ leaves the node an outermost one."
         (should (equal "Merkmal" (bcat-outline-place text 3)))
         (should-not (string-match-p "under" text))))))
 
+(ert-deftest bcat-outline-draft-place-without-repetition ()
+  "The way to a sentence does not say a name twice in a row: a group of
+the whole and the first node below it are often called alike („A.
+Einleitung“ over „I. Einleitung: Lehrlinie“ — the Kadam commentary,
+20.11.: „Einleitung › Einleitung › Verneigung“)."
+  (let* ((answer '((title . "T: Gliederung") (intro . "")
+                   (nodes ((title . "Einleitung: Titel und Verneigung") (short . "Einleitung") (from . 1001) (to . 1) (text . "x")
+                           (nodes ((title . "I. Einleitung: Lehrlinie") (short . "einleitung") (from . 1001) (to . 1) (text . "y")
+                                   (nodes ((title . "A. Verneigung") (short . "Verneigung") (from . 1001) (to . 1001) (text . "z")
+                                           (sentences ((num . 1001) (role . "Gruß") (text . "Grüßt.")))))))))))
+         (text (bcat-outline-draft-render answer '(:title "T" :date "2026-11-20") bcat-outline-draft-test--items)))
+    (should (equal "Einleitung › Verneigung: Gruß" (bcat-outline-place text 1001)))
+    (should (equal "Einleitung" (bcat-outline-place text 1)))))
+
 (ert-deftest bcat-outline-draft-merges-parts ()
   "A document drafted in parts: the nodes of the parts one after the
 other, under the groups of the last request (the frame) where it gives

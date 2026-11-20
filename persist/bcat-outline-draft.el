@@ -441,8 +441,11 @@ it."
                               level))
       (when found
         (let ((short (bcat-outline-draft--squeeze (bcat-outline-draft--field found 'short))))
-          (push (if (string-empty-p short) (bcat-outline-draft--title found items) short)
-                path))
+          ;; not the same name twice in a row („Einleitung › Einleitung“:
+          ;; a group of the whole over a node called alike)
+          (let ((name (if (string-empty-p short) (bcat-outline-draft--title found items) short)))
+            (unless (and path (string-equal-ignore-case name (car path)))
+              (push name path))))
         (let ((entry (cl-find num (alist-get 'sentences found)
                               :key (lambda (e) (bcat-outline-draft--number (alist-get 'num e))))))
           (when entry (setq role (bcat-outline-draft--role entry))))
