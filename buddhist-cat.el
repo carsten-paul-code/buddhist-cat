@@ -540,6 +540,7 @@ in the appropriate instance."
 (require 'bcat-export)
 (require 'bcat-faces)
 (require 'bcat-relayout)
+(require 'bcat-outline-draft)
 (require 'bcat-zettel)
 (require 'bcat-dossier)
 

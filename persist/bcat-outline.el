@@ -16,9 +16,10 @@
 ;;   * <Werk> im Ganzen           the idea of the work, its parts in groups
 ;;   * <Abschnitt>: Gliederung    the part that is read, nested —
 ;;   ** I. …                        a node: heading, then ONE line with what
-;;   Sätze 1009–1025 · KSTS S. 4–7  it covers („Satz N“, „Sätze A–B“, or
-;;                                  „V. A–B“ where a verse's number is its
-;;   Two to four sentences.         sentence's), then what it says;
+;;   Sätze 1009–1025 · KSTS S. 4–7  it covers („Satz N“, „Sätze A–B“ —
+;;                                  several runs with commas —, or „V. A–B“
+;;   Two to four sentences.         where a verse's number is its
+;;                                  sentence's), then what it says;
 ;;   - *1009*: …                    one line per sentence of a commentary:
 ;;                                  what it does, what it explains, how it
 ;;                                  hangs together with its neighbours
@@ -67,25 +68,37 @@ it has none yet."
     (and file (file-readable-p file)
          (with-temp-buffer (insert-file-contents file) (buffer-string)))))
 
-(defun bcat-outline--range (line)
-  "(FROM . TO) of the sentences the line LINE under a heading names, or
-nil when it is no such line: „Satz N“ or „Sätze A–B“; without these „V.
-N“ or „V. A–B“ (a verse's number is its sentence's — the Tantrāloka's
-outline).  The line is one of items separated by „ · “."
+(defun bcat-outline--ranges (line)
+  "((FROM . TO) …) of the sentences the line LINE under a heading names,
+or nil when it is no such line: „Satz N“ or „Sätze A–B“ — also several
+runs, „Sätze 1001, 1–28, 1002“ (a title before verse 1, a colophon
+after the last); without these „V. N“ or „V. A–B“ (a verse's number is
+its sentence's — the Tantrāloka's outline).  The line is one of items
+separated by „ · “."
   (let ((case-fold-search nil)
-        (number "\\([0-9]+\\)\\(?:[ \t]*[–-][ \t]*\\([0-9]+\\)\\)?"))
+        (run "[0-9]+\\(?:[ \t]*[–-][ \t]*[0-9]+\\)?"))
     (when (and (not (string-match-p "\\`[ \t]*\\(?:[-*|#]\\|$\\)" line))
-               (or (string-match (concat "\\(?:\\`\\| · \\)[ \t]*S\\(?:atz\\|ätze\\)[ \t]+" number) line)
-                   (string-match (concat "\\`[ \t]*V\\.[ \t]*" number) line)))
-      (let ((from (string-to-number (match-string 1 line))))
-        (cons from (if (match-string 2 line) (string-to-number (match-string 2 line)) from))))))
+               (or (string-match (concat "\\(?:\\`\\| · \\)[ \t]*S\\(?:atz\\|ätze\\)[ \t]+\\("
+                                         run "\\(?:,[ \t]*" run "\\)*\\)")
+                                 line)
+                   (string-match (concat "\\`[ \t]*V\\.[ \t]*\\(" run "\\(?:,[ \t]*" run "\\)*\\)") line)))
+      (mapcar (lambda (r)
+                (string-match "\\([0-9]+\\)\\(?:[ \t]*[–-][ \t]*\\([0-9]+\\)\\)?" r)
+                (let ((from (string-to-number (match-string 1 r))))
+                  (cons from (if (match-string 2 r) (string-to-number (match-string 2 r)) from))))
+              (split-string (match-string 1 line) "," t "[ \t]+")))))
+
+(defun bcat-outline--covers-p (node num)
+  "Non-nil when NODE (of `bcat-outline-nodes') has sentence NUM."
+  (cl-some (lambda (r) (<= (car r) num (cdr r))) (plist-get node :ranges)))
 
 (defun bcat-outline-nodes (text)
-  "The nodes of the outline TEXT in order: plists (:level :title :from
-:to :text) — a heading that has, as its next line, the sentences it
-covers (`bcat-outline--range'); :text what it says, its paragraphs
-joined (not its table, not the lines of its sentences).  A heading
-without such a line is no node."
+  "The nodes of the outline TEXT in order: plists (:level :title :ranges
+:from :to :text) — a heading that has, as its next line, the sentences
+it covers (`bcat-outline--ranges': :ranges every run, :from the first
+number, :to the last); :text what it says, its paragraphs joined (not
+its table, not the lines of its sentences).  A heading without such a
+line is no node."
   (let ((lines (split-string (or text "") "\n"))
         (nodes '()))
     (while lines
@@ -93,8 +106,8 @@ without such a line is no node."
         (when (string-match "\\`\\(\\*+\\) \\(.*?\\)[ \t]*\\'" line)
           (let* ((level (length (match-string 1 line)))
                  (title (match-string 2 line))
-                 (range (and lines (bcat-outline--range (car lines)))))
-            (when range
+                 (ranges (and lines (bcat-outline--ranges (car lines)))))
+            (when ranges
               (pop lines)
               (let ((said '()) (rest lines))
                 ;; its paragraphs, up to the next heading
@@ -110,7 +123,8 @@ without such a line is no node."
                         (setq rest (cdr rest))))
                      (t (unless (string-blank-p l) (push (string-trim l) said))
                         (setq rest (cdr rest))))))
-                (push (list :level level :title title :from (car range) :to (cdr range)
+                (push (list :level level :title title :ranges ranges
+                            :from (car (car ranges)) :to (cdr (car (last ranges)))
                             :text (string-join (nreverse said) " "))
                       nodes)))))))
     (nreverse nodes)))
@@ -154,7 +168,7 @@ sentences numbered apart („I. Einleitung (V. 1–21)“ over the Viveka's
     (dolist (node (bcat-outline-nodes text))
       ;; a node ends the ones of its level and deeper
       (setq above (cl-remove-if (lambda (p) (>= (plist-get p :level) (plist-get node :level))) above))
-      (when (and (<= (plist-get node :from) num (plist-get node :to))
+      (when (and (bcat-outline--covers-p node num)
                  (> (1+ (length above)) (length best)))
         (setq best (append above (list node))))
       (setq above (append above (list node))))

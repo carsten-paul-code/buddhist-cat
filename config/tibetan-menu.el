@@ -117,6 +117,9 @@
      ["Abweichungen von der geprüften Fassung (C-c u d)" bcat-sentence-show-departures
       :help "Die geprüfte Fassung, die ein Abruf ersetzt hat, gegen die Satzdatei"
       :active (fboundp 'bcat-sentence-show-departures)]
+     ["Gliederung entwerfen (C-c u S)" bcat-outline-draft
+      :help "Die Gliederung (sa bcad) des Dokuments per Abruf entwerfen — Werk im Ganzen, Knoten, eine Zeile je Kommentarsatz, Ort im Ganzen"
+      :active (fboundp 'bcat-outline-draft)]
      ["Als geprüft vermerken" bcat-sentence-mark-reviewed
       :help "#+CAT_REVIEWED: ein neuer Abruf gibt die Analyse dann als Referenz mit und bewahrt die Datei auf"
       :active (fboundp 'bcat-sentence-mark-reviewed)]

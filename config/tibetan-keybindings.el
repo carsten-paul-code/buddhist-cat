@@ -118,6 +118,12 @@
 ;; aufbewahrte Fassung gegen die Datei („danach anzeigen, wo die neue
 ;; Fassung abweicht“).  Als geprüft vermerken: M-x bcat-sentence-mark-reviewed.
 (global-set-key (kbd "C-c u d") 'bcat-sentence-show-departures)
+;; C-c u S (Carsten 20.11.2026: das Werkzeug entwirft die Gliederung
+;; selbst, „generisch und Teil des Workflows“): die Gliederung (sa bcad)
+;; des Dokuments an Punkt per Abruf entwerfen — in der Quelle oder einer
+;; ihrer Satzdateien.  Eine von Hand bearbeitete Gliederung bleibt, der
+;; Entwurf kommt daneben.
+(global-set-key (kbd "C-c u S") 'bcat-outline-draft)
 ;; C-c u V (Carsten 5.11.2026): the reading dossier of the verse — text,
 ;; bhāṣya, commentary one under the other (bcat-dossier.el).
 (global-set-key (kbd "C-c u V") 'bcat-dossier)
