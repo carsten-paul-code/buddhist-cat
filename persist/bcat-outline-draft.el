@@ -607,12 +607,13 @@ outline, or the draft beside an outline someone worked on.")
 ;; the ones before it; and an outline is set anew — after a correction
 ;; of its layout — without asking again.
 
-(defun bcat-outline-draft--store (file)
-  "Where the answers of the draft for the outline FILE are kept:
-analysis/.answers/<name>.eld beside it — with the answers of the
-sentence files."
+(defun bcat-outline-draft--store (source file)
+  "Where the answers of the draft of the outline FILE from SOURCE are
+kept: analysis/.answers/<name of FILE>.eld beside SOURCE — with the
+answers of its sentence files, also when the outline lies elsewhere
+\(one for a pair of sources, beside the other documents of the course)."
   (expand-file-name (concat "analysis/.answers/" (file-name-base file) ".eld")
-                    (file-name-directory file)))
+                    (file-name-directory source)))
 
 (defun bcat-outline-draft--key (part)
   "What makes PART of a draft the same part again: its sentences, number
@@ -622,10 +623,10 @@ with the reading.)"
         (prin1-to-string (mapcar (lambda (i) (list (plist-get i :num) (plist-get i :text))) part))
         'utf-8)))
 
-(defun bcat-outline-draft--stored (file)
-  "What is kept of the draft for the outline FILE: (:parts ((:nums :key
-:answer) …) :frame OBJ), or nil."
-  (let ((path (bcat-outline-draft--store file)))
+(defun bcat-outline-draft--stored (source file)
+  "What is kept of the draft of the outline FILE from SOURCE: (:parts
+((:nums :key :answer) …) :frame OBJ), or nil."
+  (let ((path (bcat-outline-draft--store source file)))
     (when (file-readable-p path)
       (ignore-errors
         (with-temp-buffer
@@ -635,7 +636,7 @@ with the reading.)"
 
 (defun bcat-outline-draft--keep (file run)
   "Write what the draft RUN for the outline FILE has so far."
-  (let ((path (bcat-outline-draft--store file))
+  (let ((path (bcat-outline-draft--store (plist-get run :source) file))
         (coding-system-for-write 'utf-8-unix)
         (print-length nil) (print-level nil))
     (make-directory (file-name-directory path) t)
@@ -662,7 +663,7 @@ sentences are unchanged (`bcat-outline-draft--key'), never with FRESH.
 The answer for the whole counts only with every part's."
   (let* ((file (bcat-outline-file source))
          (items (bcat-outline-draft--items source))
-         (stored (and (not fresh) (bcat-outline-draft--stored file)))
+         (stored (and (not fresh) (bcat-outline-draft--stored source file)))
          (kept (plist-get stored :parts))
          (nums (mapcar (lambda (i) (plist-get i :num)) items))
          (parts (if (and kept (equal nums (apply #'append (mapcar (lambda (p) (plist-get p :nums)) kept))))

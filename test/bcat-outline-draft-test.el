@@ -509,5 +509,31 @@ in the source has its part and what follows asked again."
       (should (= 2 (bcat-outline-draft-source src)))
       (should (equal '("bcat-outline-2" "bcat-outline-frame") (funcall kinds))))))
 
+(ert-deftest bcat-outline-draft-keeps-the-answers-with-the-source ()
+  "An outline may lie apart from its source — one for a pair of sources
+with the same numbers, beside the other documents of the course
+\(#+CAT_OUTLINE: ../Gliederung-ASam-1.org).  The answers of its draft
+are kept with the answers of the source it was drafted from
+\(analysis/.answers/ of that source), not in a new analysis/ folder
+beside the outline."
+  (bcat-outline-draft-test--with-source
+    (let* ((sub (expand-file-name "Sanskrit" dir))
+           (src (expand-file-name "bden-cat.org" sub))
+           (outline (expand-file-name "Gliederung-Kurs.org" dir)))
+      (make-directory sub t)
+      (with-temp-file src
+        (insert (replace-regexp-in-string "\\`" "#+CAT_OUTLINE: ../Gliederung-Kurs.org\n"
+                                          bcat-outline-draft-test--source)))
+      (should (equal outline (bcat-outline-file src)))
+      (setq answer-of
+            (lambda (_kind _prompts)
+              "{\"title\": \"T: Gliederung\", \"intro\": \"\", \"nodes\": [{\"title\": \"I. Alles\", \"short\": \"Alles\", \"from\": 1, \"to\": 3, \"text\": \"a\"}]}"))
+      (should (= 1 (bcat-outline-draft-source src)))
+      (should (file-exists-p outline))
+      (should (file-exists-p (expand-file-name "analysis/.answers/Gliederung-Kurs.eld" sub)))
+      (should-not (file-exists-p (expand-file-name "analysis" dir)))
+      ;; and found there again: nothing to ask
+      (should (= 0 (bcat-outline-draft-pending src))))))
+
 (provide 'bcat-outline-draft-test)
 ;;; bcat-outline-draft-test.el ends here
