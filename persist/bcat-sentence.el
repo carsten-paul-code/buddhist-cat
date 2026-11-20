@@ -26,6 +26,7 @@
 (require 'bcat-analysis)
 (require 'tibetan-sanskrit-script)
 (require 'bcat-status)
+(require 'bcat-outline)
 (require 'bcat-zettel nil t)
 
 (declare-function org-cycle-set-visibility-according-to-property "org-cycle" ())
@@ -603,6 +604,10 @@ existing file (user slots, `created')."
                  parallel))
        (bcat-sentence--bhasya-fields sent-num source-file)
        (bcat-sentence--lecture-fields sent-num source-file)
+       ;; 20.11.: where the sentence stands in the whole, from the
+       ;; outline of the source — the tool's line, set at every write
+       (let ((place (bcat-outline-place (bcat-outline-text source-file) sent-num)))
+         (and place `((place . ,place))))
        `((sent-num . ,sent-num)
          ;; The comparison is rendered in it (2.11.: „im Handout auch
          ;; immer alles in der Zielsprache“).
@@ -1473,6 +1478,44 @@ tool's), then the tool's Templates/analysis/."
     (let ((text (string-trim (bcat-template-read "checklist-sanskrit" source-file))))
       (unless (string-empty-p text) text))))
 
+(defun bcat-sentence--outline-block (sentence source-file)
+  "What the request for SENTENCE of SOURCE-FILE is told of the outline
+of the document (`bcat-outline-request-block'), or nil when it has none
+or the outline does not know the sentence — the sentences before and
+after it are those of the source, whatever their numbers (the Viveka's
+1009 follows verse 1)."
+  (let ((text (bcat-outline-text source-file)))
+    (when text
+      (let* ((all (bcat-sentence--sentences source-file))
+             (num (plist-get sentence :sent-num))
+             (pos (cl-position num all :key (lambda (s) (plist-get s :sent-num)))))
+        (bcat-outline-request-block
+         text num
+         (and pos (> pos 0) (plist-get (nth (1- pos) all) :sent-num))
+         (and pos (plist-get (nth (1+ pos) all) :sent-num)))))))
+
+(defun bcat-sentence--outline-report (file sentence source-file parsed)
+  "After the answer PARSED for SENTENCE of SOURCE-FILE was written into
+FILE: say in the status and as a message what touches the outline — the
+answer's `outline_note' (its analysis contradicts the outline's line),
+and a line of the outline for this sentence still marked „wohl“ or
+„nicht geprüft“: with the analysis at hand it can be checked.  The
+outline is not changed (Tantrāloka-Sitzung 20.11.: „Die Gliederung
+ändert es nicht still“)."
+  (let ((text (bcat-outline-text source-file)))
+    (when text
+      (let* ((num (plist-get sentence :sent-num))
+             (note (bcat-analysis--field parsed 'outline_note))
+             (entry (cdr (assq num (bcat-outline-entries text))))
+             (parts (delq nil
+                          (list (unless (string-empty-p note) (concat "Gliederung prüfen: " note))
+                                (and entry (string-match-p "\\_<wohl\\_>\\|nicht geprüft" entry)
+                                     "Zeile der Gliederung noch vorläufig („wohl“) — jetzt prüfen")))))
+        (when parts
+          (let ((said (string-join parts " · ")))
+            (message "Satz %s: %s" num said)
+            (bcat-status-step file :outline said)))))))
+
 (defun bcat-sentence--prompts (sentence source-file refs &optional file)
   "(SYSTEM . USER) for SENTENCE of SOURCE-FILE with the references REFS —
 the Sanskrit prompts for a Sanskrit source, the Tibetan ones else; the
@@ -1488,6 +1531,9 @@ goes with the request (20.11., `bcat-sentence--reviewed-block')."
          ;; 16.11.: the sentences before and after, for „Worum es geht“
          (context (append (bcat-sentence--context-with-zettels meta segs source-file)
                           (let ((block (bcat-sentence--neighbours-block sentence source-file)))
+                            (and block (list block)))
+                          ;; 20.11.: where the sentence stands in the outline
+                          (let ((block (bcat-sentence--outline-block sentence source-file)))
                             (and block (list block)))
                           ;; 20.11.: the reviewed analysis, whose decisions stand
                           (let ((block (and file (bcat-sentence--reviewed-block file))))
@@ -1599,7 +1645,9 @@ compared are REFS as sent, marked from the answer's segment parts."
       (when mixed
         (message "Satz %s: Wörter mit fremden Schriftzeichen — %s"
                  (plist-get sentence :sent-num) (string-join mixed ", "))
-        (bcat-status-step file :script (concat "Zeichen prüfen: " (string-join mixed ", ")))))))
+        (bcat-status-step file :script (concat "Zeichen prüfen: " (string-join mixed ", ")))))
+    ;; 20.11.: what the answer says against the outline
+    (bcat-sentence--outline-report file sentence source-file parsed)))
 
 (defun bcat-sentence--write-partner (sentence source-file tibetan trefs sanskrit &optional hint assignment sanskrit-translation bhasya-translation)
   "Write the Tibetan file of the bilingual SENTENCE of the paired

@@ -113,6 +113,11 @@ Link führt zum Punkt unter ** Translations compared.
 einklappen“): jedes ** Segment N öffnet mit :VISIBILITY: folded — im
 Reading eine Zeile je Segment; C-c u L liest den Abschnitt ohne den
 Drawer zurück.
+20.11. (Carsten über die Tantrāloka-Sitzung: jede Satzdatei bekommt
+aus der Gliederung ihres Dokuments die Zeile „Ort im Ganzen“): place —
+als erste Zeile unter * Text, „*Ort im Ganzen:* …“
+(`bcat-outline-place').  Die Zeile gehört dem Werkzeug: C-c u L setzt
+sie aus der Gliederung neu; ohne Gliederung gibt es sie nicht.
 #+end_comment
 #+TITLE: Sentence {{sent-num}} Analysis
 #+STARTUP: showall
@@ -126,6 +131,10 @@ Drawer zurück.
 #+LAST_ANALYZED: {{last-analyzed}}
 
 * Text
+{{#place}}
+*Ort im Ganzen:* {{place}}
+
+{{/place}}
 #+begin_verse
 {{#segments}}
 {{uchen}}

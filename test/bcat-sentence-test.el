@@ -794,6 +794,116 @@ before the L1 heading BEFORE — where the Tantrāloka files have it."
 (defun bcat-sentence-test--overview-count (text)
   (cl-count "* Worum es geht" (split-string text "\n") :test #'equal))
 
+(defconst bcat-sentence-test--outline
+  (concat "#+TITLE: bDen gnyis — Gliederung\n\n"
+          "* bDen gnyis: Gliederung\n\n"
+          "** I. Die letzte Wahrheit\nSätze 8–10 · D 72a1–72a3\n\n"
+          "Was die letzte Wahrheit ist: nichts, was sich sagen oder sehen ließe.\n\n"
+          "- *8*: Nennt das Thema.\n"
+          "- *9*: Vier Bestimmungen der letzten Wahrheit, alle verneinend\n  (wohl nach Nāgārjuna; nicht geprüft).\n"
+          "- *10*: Folgerung.\n\n"
+          "* Anhang: Ort im Ganzen je Satz\n\n"
+          "#+NAME: ort-im-ganzen\n"
+          "- 9: I. Letzte Wahrheit › vier Bestimmungen\n")
+  "An outline for the source of `bcat-sentence-test--with-source'.")
+
+(ert-deftest bcat-sentence-place-in-the-whole ()
+  "20.11. (Carsten über die Tantrāloka-Sitzung: „Aus dem Anhang soll
+jede Satzdatei eine Zeile ‚Ort im Ganzen‘ bekommen“ — where, „das
+entscheidest du“): a sentence file shows where its sentence stands in
+the whole — „*Ort im Ganzen:* …“ as the first line under * Text, from
+the outline of its source (`bcat-outline-place'), in the rump and after
+a fetch.  The line is the tool's: C-c u L sets it anew from the
+outline (a changed outline shows at once, the file does not count as
+edited by hand), twice the same; without an outline there is none."
+  (bcat-sentence-test--with-source
+    (let ((line "^\\* Text\n\\*Ort im Ganzen:\\* I\\. Letzte Wahrheit › vier Bestimmungen\n\n")
+          (outline (expand-file-name "Gliederung-bden-cat.org" dir)))
+      ;; no outline: no line
+      (should-not (string-match-p "Ort im Ganzen" (bcat-sentence-test--create src)))
+      (with-temp-file outline (insert bcat-sentence-test--outline))
+      (bcat-sentence-test--with-stubs bcat-sentence-test--answer
+        (bcat-sentence-test--fetch src))
+      (let* ((file (tibetan-sentence--filepath 9 folder src))
+             (text (bcat-sentence-test--text-of file)))
+        (should (string-match-p line text))
+        (should (= 1 (with-temp-buffer (insert text) (how-many "Ort im Ganzen" (point-min) (point-max)))))
+        ;; C-c u L: the same file
+        (should (bcat-relayout-file file))
+        (should (equal text (bcat-sentence-test--text-of file)))
+        ;; the outline changed: the line follows, the file is not „edited by hand“
+        (with-temp-file outline
+          (insert (replace-regexp-in-string "› vier Bestimmungen" "› vier Verneinungen"
+                                            bcat-sentence-test--outline t t)))
+        (should (bcat-relayout-file file))
+        (let ((new (bcat-sentence-test--text-of file)))
+          (should (string-match-p "^\\* Text\n\\*Ort im Ganzen:\\* I\\. Letzte Wahrheit › vier Verneinungen\n\n" new))
+          (should (= 1 (with-temp-buffer (insert new) (how-many "Ort im Ganzen" (point-min) (point-max)))))
+          (should-not (bcat-sentence-reviewed file))
+          (should-not (string-match-p "CAT_REVIEWED" new)))
+        ;; the outline gone: the line goes
+        (delete-file outline)
+        (should (bcat-relayout-file file))
+        (should-not (string-match-p "Ort im Ganzen" (bcat-sentence-test--text-of file))))))
+  ;; the Sanskrit file: the line before the recitation, read back as it stands
+  (bcat-sentence-test--with-sa-source
+    (with-temp-file (expand-file-name (concat "Gliederung-" (file-name-base src) ".org") (file-name-directory src))
+      (insert "* Gliederung\n** I. Einleitung\nSatz 1007 · KSTS S. 3\n\nJayarathas Schlussvers der Einleitung.\n"))
+    (bcat-sentence-test--create-n src 1007)
+    (bcat-sentence-test--with-stubs (bcat-sentence-test--sa-answer)
+      (bcat-sentence-test--fetch-n src 1007))
+    (let* ((file (tibetan-sentence--filepath 1007 folder src))
+           (text (bcat-sentence-test--text-of file)))
+      (should (string-match-p "^\\* Text\n\\*Ort im Ganzen:\\* I\\. Einleitung\n\n#\\+begin_verse\n" text))
+      (should (bcat-relayout-file file))
+      (should (equal text (bcat-sentence-test--text-of file))))))
+
+(ert-deftest bcat-sentence-fetch-with-outline ()
+  "20.11. (Tantrāloka-Sitzung, auf Carstens Frage, ob die Gliederung
+nach einem Neuabruf angepasst werden muss: „Die Gliederung geht beim
+Abruf als Kontext mit … Widerspricht die neue Analyse dem Satzeintrag
+der Gliederung …, meldet es das. Die Gliederung ändert es nicht
+still“): a fetch for a source with an outline tells Claude where the
+sentence stands — place, node, the outline's lines for the sentence and
+its neighbours in the source — and asks for `outline_note'; what comes
+back there stands in the status („Gliederung prüfen: …“), as does a
+line of the outline that is still marked „wohl“ or „nicht geprüft“ —
+the first analysis is the moment to check it.  The outline itself
+stays as it is.  Without an outline the request is as before."
+  (bcat-sentence-test--with-source
+    (bcat-sentence-test--create src)
+    (when (get-buffer bcat-status-buffer-name) (kill-buffer bcat-status-buffer-name))
+    ;; no outline: nothing of it in the request or the status
+    (bcat-sentence-test--with-stubs bcat-sentence-test--answer
+      (bcat-sentence-test--fetch src)
+      (should-not (string-match-p "Outline of the text\\|outline_note" (cdr (car prompts))))
+      (should-not (string-match-p "Gliederung" (with-current-buffer bcat-status-buffer-name (buffer-string)))))
+    (let ((outline (expand-file-name "Gliederung-bden-cat.org" dir)))
+      (with-temp-file outline (insert bcat-sentence-test--outline))
+      (bcat-sentence-test--with-stubs
+          (replace-regexp-in-string
+           "\\`{" "{\"outline_note\": \"Der Satz nennt drei Bestimmungen, nicht vier.\", "
+           bcat-sentence-test--answer t t)
+        (cl-letf (((symbol-function 'y-or-n-p) (lambda (_q) t)))
+          (tibetan-cascade-fetch (list :source src :sent-nums '(9) :label "Satz 9") t))
+        (let ((user (cdr (car prompts)))
+              (status (with-current-buffer bcat-status-buffer-name
+                        (goto-char (point-max))
+                        (buffer-substring (line-beginning-position 0) (point-max)))))
+          (should (string-match-p "^Outline of the text (Gliederung, sa bcad) — where this sentence stands:$" user))
+          (should (string-match-p "^Place: I\\. Letzte Wahrheit › vier Bestimmungen$" user))
+          (should (string-match-p "^Section: I\\. Die letzte Wahrheit — Was die letzte Wahrheit ist" user))
+          (should (string-match-p "^This sentence (9): Vier Bestimmungen der letzten Wahrheit" user))
+          ;; the source has this one sentence: no neighbours (the lines of 8
+          ;; and 10 are the outline's own; bcat-outline-request-block)
+          (should-not (string-match-p "^Before\\|^After" user))
+          (should (string-match-p "\"outline_note\"" user))
+          (should (< (string-match "^Outline of the text" user) (string-match "^Sentence 9" user)))
+          (should (string-match-p "Gliederung prüfen: Der Satz nennt drei Bestimmungen, nicht vier\\." status))
+          (should (string-match-p "Zeile der Gliederung noch vorläufig („wohl“)" status))
+          ;; the outline is not touched
+          (should (equal bcat-sentence-test--outline (bcat-sentence-test--text-of outline))))))))
+
 (ert-deftest bcat-sentence-reviewed-by-stamp ()
   "20.11. (Carsten über die Tantrāloka-Sitzung: fetches reset its
 corrections three times — „ja, beides so machen“): a sentence file

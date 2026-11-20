@@ -532,6 +532,7 @@ in the appropriate instance."
 
 ;; §5.74: analysis files from templates (Templates/analysis/, cascade).
 (require 'bcat-template)
+(require 'bcat-outline)
 (require 'bcat-sentence)
 (require 'bcat-analysis)
 (require 'bcat-parallel)
