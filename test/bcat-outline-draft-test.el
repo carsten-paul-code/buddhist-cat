@@ -112,7 +112,13 @@ verse, folio, text and the translation it has."
                     "in German" "no school" "Invent nothing"))
       (should (string-match-p rule sys)))
     (should (string-match-p "\\`Document: bDen pa gnyis la 'jug pa\n" user))
-    (should (string-match-p "^Atiśa, Satyadvayāvatāra (Toh 3902)\\.$" user))
+    ;; the notes on the document are those of the sentence analysis — they
+    ;; may name another target language; the outline is German all the same
+    (should (string-match-p
+             (concat "^Notes on the document (written for the analysis of its sentences; "
+                     "the outline is in German whatever they say of a target language):\n"
+                     "Atiśa, Satyadvayāvatāra (Toh 3902)\\.$")
+             user))
     (should (string-match-p "^The source's own sections, in order:\n- Section Titel\n- Section 1\\. Die zwei Wahrheiten (V\\. 1)$" user))
     ;; a section of the source is marked where it begins; a sentence
     ;; without a translation has none
@@ -311,7 +317,7 @@ answer writes nothing."
       (should (= 1 (bcat-outline-draft-source src)))
       (should (= 1 (length requests)))
       (let ((user (cddr (car requests))))
-        (should (string-match-p "\\`Document: bDen pa gnyis la 'jug pa\nAtiśa, Satyadvayāvatāra (Toh 3902)\\.$" user))
+        (should (string-match-p "\\`Document: bDen pa gnyis la 'jug pa\nNotes on the document .*:\nAtiśa, Satyadvayāvatāra (Toh 3902)\\.$" user))
         (should (string-match-p "^\\[1\\] verse SDA 1 · D72a3: སངས་རྒྱས་རྣམས་ཀྱིས་ཆོས་བསྟན་པ། །$" user))
         (should (string-match-p "^\\[2\\] verse SDA 2 · D72a4: .*\n  = The concealing is held to be twofold\\.$" user))
         (should-not (string-match-p "This is part" user)))

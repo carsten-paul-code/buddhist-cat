@@ -202,6 +202,17 @@ of a section of the source its label between dashes."
         (push (concat "  = " (plist-get item :translation)) lines)))
     (string-join (nreverse lines) "\n")))
 
+(defun bcat-outline-draft--notes (info)
+  "The notes on the document INFO for a request, or \"\": its
+#+TIBETAN_CLAUDE_CONTEXT lines under a line that says what they are —
+they were written for the analysis of the sentences and may name a
+target language; the outline is German all the same."
+  (if (plist-get info :context)
+      (concat "Notes on the document (written for the analysis of its sentences; "
+              "the outline is in German whatever they say of a target language):\n"
+              (string-join (plist-get info :context) "\n") "\n")
+    ""))
+
 (defun bcat-outline-draft-user-prompt (info items &optional part parts before)
   "The user prompt of a draft for the document INFO
 \(`bcat-outline-draft--info') with the sentences ITEMS.  For a document
@@ -210,9 +221,7 @@ outlined so far — such a request leaves the view of the whole to the
 last one (`bcat-outline-draft-frame-prompt')."
   (concat
    "Document: " (plist-get info :title) "\n"
-   (if (plist-get info :context)
-       (concat (string-join (plist-get info :context) "\n") "\n")
-     "")
+   (bcat-outline-draft--notes info)
    (if (plist-get info :sections)
        (concat "\nThe source's own sections, in order:\n"
                (mapconcat (lambda (s) (concat "- " s)) (plist-get info :sections) "\n")
@@ -237,9 +246,7 @@ INFO the document, TOPS the outermost nodes of all parts as lines
 work as a whole, and the large parts („groups“) the nodes fall into."
   (concat
    "Document: " (plist-get info :title) "\n"
-   (if (plist-get info :context)
-       (concat (string-join (plist-get info :context) "\n") "\n")
-     "")
+   (bcat-outline-draft--notes info)
    "\nAll parts of the document are outlined. Their outermost nodes, in order:\n"
    (mapconcat (lambda (top) (concat "- " top)) tops "\n")
    "\n\nReturn ONE JSON object: {\"title\": \"…\", \"intro\": \"…\", \"work\": {\"idea\": \"…\", \"groups\": [{\"title\": \"…\", \"text\": \"…\"}]}, \"groups\": [{\"title\": \"…\", \"short\": \"…\", \"from\": 0, \"to\": 0, \"text\": \"…\", \"transition\": \"…\"}]} — title, intro and work as in the rules; groups (of the object): the large parts of the text that the nodes above fall into, each with the numbers of its first and its last sentence, covering the nodes without gap in their order; [] when the nodes above are the large parts already."))
