@@ -258,6 +258,21 @@ what the node covers.  What else stands in parentheses stays („(V.
     (should (string-match-p "^\\*\\*\\* B\\. Merkmal (arthakriyā)\nSatz 3 · " text))
     (should (string-match-p "^\\*\\* III\\. Kolophon\nSatz 1002 · " text))))
 
+(ert-deftest bcat-outline-draft-runs-of-two-layers ()
+  "The sentences of a node in which root text and commentary alternate
+\(AS with Bhāṣya: 2, 3, 1002, 4, 1003, 5 …) are named as the two runs
+they are — „Sätze 2–5, 1002–1003“, not „2–3, 1002, 4, 1003, 5“ (the
+first draft for the AS, 20.11.: a line of thirty items).  A number goes
+on the run it continues, wherever that stands; the runs keep the order
+in which they begin."
+  (should (equal "2–5, 1002–1003" (bcat-outline-draft--runs '(2 3 1002 4 1003 5))))
+  (should (equal "1001, 1–3" (bcat-outline-draft--runs '(1001 1 2 3))))
+  (should (equal "3, 1002" (bcat-outline-draft--runs '(3 1002))))
+  (should (equal "3–5, 2055–2081" (bcat-outline-draft--runs (append '(3) (number-sequence 2055 2075) '(4 2076 2077 5)
+                                                                      (number-sequence 2078 2081)))))
+  ;; … and that is what the reader reads
+  (should (equal '((2 . 5) (1002 . 1003)) (bcat-outline--ranges "Sätze 2–5, 1002–1003 · AS-Ms 1v1"))))
+
 (ert-deftest bcat-outline-draft-merges-parts ()
   "A document drafted in parts: the nodes of the parts one after the
 other, under the groups of the last request (the frame) where it gives

@@ -311,14 +311,19 @@ of ITEMS."
     (and points (cons (apply #'min points) (apply #'max points)))))
 
 (defun bcat-outline-draft--runs (numbers)
-  "NUMBERS in the order of the source as runs: „1001, 1–3“."
+  "NUMBERS in the order of the source as runs: „1001, 1–3“.  A number
+goes on the run it continues, wherever that stands — where root text
+and commentary alternate (AS with Bhāṣya: 2, 3, 1002, 4, 1003, 5) the
+node has the two runs they are, „2–5, 1002–1003“; the runs keep the
+order in which they begin."
   (let ((runs '()))
     (dolist (n numbers)
-      (if (and runs (= n (1+ (cdr (car runs)))))
-          (setcdr (car runs) n)
-        (push (cons n n) runs)))
+      (let ((run (cl-find (1- n) runs :key #'cdr)))
+        (if run
+            (setcdr run n)
+          (setq runs (append runs (list (cons n n)))))))
     (mapconcat (lambda (r) (if (= (car r) (cdr r)) (number-to-string (car r)) (format "%d–%d" (car r) (cdr r))))
-               (nreverse runs) ", ")))
+               runs ", ")))
 
 (defun bcat-outline-draft--verses (labels)
   "The verse LABELS of a node as one item of its line: „SDA 1–3“ when
