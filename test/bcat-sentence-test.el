@@ -790,6 +790,29 @@ before the L1 heading BEFORE — where the Tantrāloka files have it."
 (defun bcat-sentence-test--overview-count (text)
   (cl-count "* Worum es geht" (split-string text "\n") :test #'equal))
 
+(ert-deftest bcat-sentence-fetch-reports-foreign-letters ()
+  "20.11. (Tantrāloka-Sitzung: after a fetch TĀ 1012 read „kalayет“ —
+Cyrillic е and т in a Sanskrit word; „Eine Prüfung auf fremde
+Schriftzeichen nach dem Abruf wäre billig“): the status of the fetch
+names the words of the answer that mix Latin with look-alike letters of
+another script; nothing is changed in silence."
+  (bcat-sentence-test--with-source
+    (bcat-sentence-test--create src)
+    (bcat-sentence-test--with-stubs
+        (replace-regexp-in-string "\"gloss\": \"invisible\"" "\"gloss\": \"invisibле\""
+                                  bcat-sentence-test--answer t t)
+      (bcat-sentence-test--fetch src)
+      (let ((status (with-current-buffer bcat-status-buffer-name (buffer-string))))
+        (should (string-match-p "Zeichen prüfen: invisibле" status))
+        (should (string-match-p "invisibле" (bcat-sentence-test--file-text src)))))
+    (bcat-sentence-test--with-stubs bcat-sentence-test--answer
+      (cl-letf (((symbol-function 'y-or-n-p) (lambda (_q) t)))
+        (tibetan-cascade-fetch (list :source src :sent-nums '(9) :label "Satz 9") t))
+      (should-not (string-match-p "Zeichen prüfen"
+                                  (with-current-buffer bcat-status-buffer-name
+                                    (goto-char (point-max))
+                                    (buffer-substring (line-beginning-position 0) (point-max))))))))
+
 (ert-deftest bcat-sentence-sanskrit-checklist ()
   "20.11.: a Sanskrit fetch sends the tool's checklist
 \(Templates/analysis/checklist-sanskrit.org — 23 rules, its comment

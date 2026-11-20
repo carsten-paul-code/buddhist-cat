@@ -676,6 +676,36 @@ straight quotes of their own and a „ nothing closes stay."
     value)
    (t value)))
 
+(defun bcat-analysis-mixed-script-words (parsed)
+  "The words in the texts of the answer PARSED that mix Latin letters
+with letters of a look-alike script, Cyrillic or Greek — each once, in
+the order found.  20.11. (Tantrāloka-Sitzung): TĀ 1012 came back with
+„kalayет“, Cyrillic е and т in kalayet; nothing shows it on the page.
+A word wholly in another script (a Russian title, Greek, Japanese,
+Devanāgarī, Tibetan) is none."
+  (let ((found '())
+        (case-fold-search nil))
+    (cl-labels ((walk (value)
+                  (cond
+                   ((stringp value)
+                    (let ((pos 0))
+                      (while (string-match "[[:alpha:]\u0300-\u036f]+" value pos)
+                        (let ((word (match-string 0 value)))
+                          (setq pos (match-end 0))
+                          (when (and (string-match-p "[a-zA-Z\u00c0-\u024f\u1e00-\u1eff]" word)
+                                     (string-match-p "[\u0370-\u03ff\u0400-\u052f]" word)
+                                     (not (member word found)))
+                            (push word found))))))
+                   ((consp value)
+                    (let ((tail value))
+                      (while (consp tail)
+                        (walk (car tail))
+                        (when (and (cdr tail) (not (consp (cdr tail))))
+                          (walk (cdr tail)))
+                        (setq tail (cdr tail))))))))
+      (walk parsed))
+    (nreverse found)))
+
 (defun bcat-analysis-read (response)
   "(OBJECT . PROBLEM) for Claude's RESPONSE: the JSON object as an alist
 \(keys as symbols, arrays as lists) and nil, or nil and a short

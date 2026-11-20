@@ -1345,10 +1345,18 @@ or nil."
 — and for a bilingual sentence from TIBETAN, the answer of the Tibetan
 request — and return its fields.  The references under Translations
 compared are REFS as sent, marked from the answer's segment parts."
-  (bcat-sentence--write-analysed
-   file (plist-get sentence :sent-num) (plist-get sentence :segs) source-file
-   (lambda (base)
-     (bcat-sentence--fetched-context base sentence source-file refs parsed tibetan))))
+  (prog1 (bcat-sentence--write-analysed
+          file (plist-get sentence :sent-num) (plist-get sentence :segs) source-file
+          (lambda (base)
+            (bcat-sentence--fetched-context base sentence source-file refs parsed tibetan)))
+    ;; 20.11. (TĀ 1012: „kalayет“): letters of another script in a word
+    ;; are named, not changed
+    (let ((mixed (delete-dups (append (bcat-analysis-mixed-script-words parsed)
+                                      (bcat-analysis-mixed-script-words tibetan)))))
+      (when mixed
+        (message "Satz %s: Wörter mit fremden Schriftzeichen — %s"
+                 (plist-get sentence :sent-num) (string-join mixed ", "))
+        (bcat-status-step file :script (concat "Zeichen prüfen: " (string-join mixed ", ")))))))
 
 (defun bcat-sentence--write-partner (sentence source-file tibetan trefs sanskrit &optional hint assignment sanskrit-translation bhasya-translation)
   "Write the Tibetan file of the bilingual SENTENCE of the paired

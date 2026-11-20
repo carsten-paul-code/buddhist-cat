@@ -281,6 +281,22 @@ per sentence number, in the file of the Sanskrit."
                (string-match "^- JSON escaping\\|^- Write glosses" sys))))
   (should-not (string-match-p "\"overview\":\\|^- overview: " (bcat-analysis-tibetan-system-prompt "en"))))
 
+(ert-deftest bcat-analysis-mixed-script-words ()
+  "20.11.: the words of an answer that mix Latin letters with letters
+of a look-alike script (Cyrillic, Greek) — „kalayет“ for kalayet, TĀ
+1012 —, each once, anywhere in the answer.  Not: a word wholly in
+another script (a Russian title, Japanese, Devanāgarī, Tibetan), Latin
+with diacritics, the root sign."
+  (should (equal '("kalayет" "αnanda")
+                 (bcat-analysis-mixed-script-words
+                  '((segments ((num . 697)
+                               (words ((word . "kalayет") (gloss . "would measure") (formation . "√kal-aya-"))
+                                      ((word . "ānanda-cit") (gloss . "bliss")))
+                               (note . "Compare kalayет and αnanda; Введение is a title; 日本語; अनुत्तर; བདེན་པ།")))
+                    (grammar . "√kal (10), ānanda — „so“.")))))
+  (should-not (bcat-analysis-mixed-script-words '((grammar . "śrīmat-mahā-ānanda, λόγος, Введение"))))
+  (should-not (bcat-analysis-mixed-script-words nil)))
+
 (ert-deftest bcat-analysis-sanskrit-checklist ()
   "20.11. (Carsten über die Tantrāloka-Sitzung: „ja, beides so machen“):
 the checklist for the Sanskrit analysis — 23 rules, each for a mistake
