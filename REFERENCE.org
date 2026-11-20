@@ -1,9 +1,9 @@
 #+TITLE: Function Reference — buddhist-cat
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-11-20T10:11:15
+#+DATE: 2026-11-20T11:20:03
 #+OPTIONS: toc:2 num:nil
 
-Source tree: ~/Users/cp/buddhist-cat~  ·  97 modules  ·  2511 forms
+Source tree: ~/Users/cp/buddhist-cat~  ·  99 modules  ·  2580 forms
 
 Regenerated automatically by:
 
@@ -55,7 +55,7 @@ python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/buddhist-c
   - [[#doc-prep/tibetan-doc-prep.el][doc-prep/tibetan-doc-prep.el]]  (34)
   - [[#doc-prep/tibetan-document-genres.el][doc-prep/tibetan-document-genres.el]]  (9)
   - [[#doc-prep/tibetan-document-prep-claude.el][doc-prep/tibetan-document-prep-claude.el]]  (13)
-  - [[#doc-prep/tibetan-document-prep-wizard.el][doc-prep/tibetan-document-prep-wizard.el]]  (23)
+  - [[#doc-prep/tibetan-document-prep-wizard.el][doc-prep/tibetan-document-prep-wizard.el]]  (24)
   - [[#doc-prep/tibetan-ocr-correct.el][doc-prep/tibetan-ocr-correct.el]]  (14)
   - [[#doc-prep/tibetan-ocr-runner.el][doc-prep/tibetan-ocr-runner.el]]  (17)
   - [[#doc-prep/tibetan-ocr-validate.el][doc-prep/tibetan-ocr-validate.el]]  (23)
@@ -67,9 +67,11 @@ python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/buddhist-c
   - [[#persist/bcat-dossier.el][persist/bcat-dossier.el]]  (36)
   - [[#persist/bcat-export.el][persist/bcat-export.el]]  (99)
   - [[#persist/bcat-faces.el][persist/bcat-faces.el]]  (56)
+  - [[#persist/bcat-outline-draft.el][persist/bcat-outline-draft.el]]  (53)
+  - [[#persist/bcat-outline.el][persist/bcat-outline.el]]  (13)
   - [[#persist/bcat-parallel.el][persist/bcat-parallel.el]]  (7)
   - [[#persist/bcat-relayout.el][persist/bcat-relayout.el]]  (25)
-  - [[#persist/bcat-sentence.el][persist/bcat-sentence.el]]  (119)
+  - [[#persist/bcat-sentence.el][persist/bcat-sentence.el]]  (121)
   - [[#persist/bcat-status.el][persist/bcat-status.el]]  (11)
   - [[#persist/bcat-template.el][persist/bcat-template.el]]  (17)
   - [[#persist/bcat-zettel.el][persist/bcat-zettel.el]]  (31)
@@ -3480,7 +3482,7 @@ source texts (formerly Tibetan CAT).
 ** ~tibetan-increase-text-scale~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 496
+:LINE: 502
 :SIGNATURE: (tibetan-increase-text-scale)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -3491,7 +3493,7 @@ Increase Tibetan text scale by 0.1.
 ** ~tibetan-decrease-text-scale~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 502
+:LINE: 508
 :SIGNATURE: (tibetan-decrease-text-scale)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -3502,7 +3504,7 @@ Decrease Tibetan text scale by 0.1 (minimum 1.0).
 ** ~tibetan-thesaurus-prefix-map~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 321
+:LINE: 327
 :DEFAULT: (make-sparse-keymap)
 :END:
 
@@ -3518,7 +3520,7 @@ Keymap for thesaurus commands — prefix `C-c u z'.
 ** ~tibetan-cat-context-menu-map~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 325
+:LINE: 328
 :DEFAULT: (let ((map (make-sparse-keymap "Buddhist CAT")))
     (define-key map [segment-info] '(menu-item "Segment Info" tibetan-s
 :END:
@@ -10986,10 +10988,23 @@ Open SOURCE-FILE and run `tibetan-add-sentence-structure' on it.
 Demotes `*** Segment N' headings under `*** Sentence N' wrappers
 ready for analysis.
 
+** ~tibetan-document-prep-wizard--maybe-draft-outline~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 469
+:SIGNATURE: (tibetan-document-prep-wizard--maybe-draft-outline source-file)
+:END:
+
+Offer to draft the outline (Gliederung, sa bcad) of SOURCE-FILE with
+Claude (`bcat-outline-draft-source', C-c u S) — Carsten 20.11.2026: a
+new work gets its outline with its preparation.  Only for a source
+that has sentences by now (Section → Sentence → Segment); returns the
+number of requests sent, nil when declined or not possible.
+
 ** ~tibetan-document-prep-wizard--maybe-run-auto-analyze~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 466
+:LINE: 481
 :SIGNATURE: (tibetan-document-prep-wizard--maybe-run-auto-analyze source-file
                                                             class-mode)
 :END:
@@ -11001,7 +11016,7 @@ When CLASS-MODE is `reading', additionally offer to run
 ** ~tibetan-document-prep-wizard--format-summary~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 487
+:LINE: 502
 :SIGNATURE: (tibetan-document-prep-wizard--format-summary state)
 :END:
 
@@ -11010,7 +11025,7 @@ Render a human-readable summary of the wizard's STATE.
 ** ~tibetan-document-prep-wizard~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 543
+:LINE: 558
 :SIGNATURE: (tibetan-document-prep-wizard)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -17926,6 +17941,793 @@ The face remapping of `cp/tibetan-shad-face' in this buffer, or nil.
 /(no docstring)/
 
 
+* persist/bcat-outline-draft.el
+:PROPERTIES:
+:CUSTOM_ID: persist/bcat-outline-draft.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/persist/bcat-outline-draft.el
+:END:
+
+** ~bcat-outline-draft--squeeze~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 67
+:SIGNATURE: (bcat-outline-draft--squeeze text)
+:END:
+
+TEXT on one line, blanks squeezed.
+
+** ~bcat-outline-draft--translation~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 71
+:SIGNATURE: (bcat-outline-draft--translation source num)
+:END:
+
+The translation at hand for sentence NUM of SOURCE as (TEXT .
+REFERENCE-P), or nil: the own one of its sentence file („*Translation:*
+…“ — after an analysis), else its first reference translation with the
+translator's name (REFERENCE-P t).  Read from the files as they are;
+nothing is saved or changed.
+
+** ~bcat-outline-draft--items~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 86
+:SIGNATURE: (bcat-outline-draft--items source)
+:END:
+
+The sentences of SOURCE as a draft sees them, in the order of the
+source: plists (:num :verse :section :folio-from :folio-to :text
+:translation) — the text its segments joined, the translation what is
+at hand (`bcat-outline-draft--translation').  A reference translation
+that stands at several sentences in a row (a verse's at every sentence
+of its commentary) is given at the first of them only: MSA IX with
+Sthiramati, 20.11. — 706 000 of 743 000 characters were the same
+passages again and again.
+
+** ~bcat-outline-draft--info~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 113
+:SIGNATURE: (bcat-outline-draft--info source)
+:END:
+
+What a draft knows of the document SOURCE: (:title :context :sections
+:date) — its #+TITLE up to „ — “, its #+TIBETAN_CLAUDE_CONTEXT lines,
+the labels of its sections in order.
+
+** ~bcat-outline-draft--size~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 128
+:SIGNATURE: (bcat-outline-draft--size item)
+:END:
+
+The characters ITEM brings into a request.
+
+** ~bcat-outline-draft--parts~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 132
+:SIGNATURE: (bcat-outline-draft--parts items size &optional count)
+:END:
+
+ITEMS (`bcat-outline-draft--items') as the parts of a draft: lists of
+consecutive items, each up to SIZE characters of text and translation
+and, with COUNT, up to COUNT sentences — cut where the source begins a
+section; a section larger than that is cut between its sentences.  nil
+without ITEMS.
+
+** ~bcat-outline-draft-system-prompt~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 179
+:SIGNATURE: (bcat-outline-draft-system-prompt)
+:END:
+
+The system prompt of a draft — the same for every document and every
+part, so the prompt cache stays warm.  The form asked for is that of
+WS26-27/Tantraloka/Gliederung-TA1.org (Tantrāloka-Sitzung, 20.11.).
+
+** ~bcat-outline-draft--folios~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 199
+:SIGNATURE: (bcat-outline-draft--folios item)
+:END:
+
+The folios of ITEM as „A“ or „A–B“, or nil.
+
+** ~bcat-outline-draft--sentence-lines~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 206
+:SIGNATURE: (bcat-outline-draft--sentence-lines items)
+:END:
+
+ITEMS as the lines of a request: „[N] verse V · folio: text“ and, when
+a translation is at hand, „  = translation“; before the first sentence
+of a section of the source its label between dashes.
+
+** ~bcat-outline-draft--notes~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 226
+:SIGNATURE: (bcat-outline-draft--notes info)
+:END:
+
+The notes on the document INFO for a request, or "": its
+#+TIBETAN_CLAUDE_CONTEXT lines under a line that says what they are —
+they were written for the analysis of the sentences and may name a
+target language; the outline is German all the same.
+
+** ~bcat-outline-draft-user-prompt~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 237
+:SIGNATURE: (bcat-outline-draft-user-prompt info items &optional part parts before open)
+:END:
+
+The user prompt of a draft for the document INFO
+(`bcat-outline-draft--info') with the sentences ITEMS.  For a document
+drafted in parts: PART of PARTS, BEFORE the lines of the nodes outlined
+so far, OPEN the titles of the nodes that outline ends in, outermost
+first — a part may begin inside one of them and says so ("under",
+`bcat-outline-draft--join').  Such a request leaves the view of the
+whole to the last one (`bcat-outline-draft-frame-prompt').
+
+** ~bcat-outline-draft-frame-prompt~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 272
+:SIGNATURE: (bcat-outline-draft-frame-prompt info tops)
+:END:
+
+The user prompt of the last request of a document drafted in parts:
+INFO the document, TOPS the outermost nodes of all parts as lines
+„[sentences] title — text“.  It asks for the frame — title, intro, the
+work as a whole, and the large parts („groups“) the nodes fall into.
+
+** ~bcat-outline-draft--read~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 288
+:SIGNATURE: (bcat-outline-draft--read response)
+:END:
+
+The JSON object in Claude's RESPONSE as an alist, or nil.
+
+** ~bcat-outline-draft--number~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 300
+:SIGNATURE: (bcat-outline-draft--number value)
+:END:
+
+VALUE (a number, or digits as a string) as a number, or nil.
+
+** ~bcat-outline-draft--field~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 305
+:SIGNATURE: (bcat-outline-draft--field alist key)
+:END:
+
+The string under KEY in ALIST, trimmed; "" when there is none.
+
+** ~bcat-outline-draft--span~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 310
+:SIGNATURE: (bcat-outline-draft--span node items)
+:END:
+
+(FIRST . LAST), the positions in ITEMS (the order of the source) that
+NODE of an answer covers: from its first to its last sentence as given,
+widened by what its nodes below cover; nil when it names no sentence
+of ITEMS.
+
+** ~bcat-outline-draft--runs~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 322
+:SIGNATURE: (bcat-outline-draft--runs numbers)
+:END:
+
+NUMBERS in the order of the source as runs: „1001, 1–3“.  A number
+goes on the run it continues, wherever that stands — where root text
+and commentary alternate (AS with Bhāṣya: 2, 3, 1002, 4, 1003, 5) the
+node has the two runs they are, „2–5, 1002–1003“; the runs keep the
+order in which they begin.
+
+** ~bcat-outline-draft--verses~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 337
+:SIGNATURE: (bcat-outline-draft--verses labels)
+:END:
+
+The verse LABELS of a node as one item of its line: „SDA 1–3“ when
+they share their name and count on, „SDA 1“ for one, else first –
+last.
+
+** ~bcat-outline-draft--head-line~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 350
+:SIGNATURE: (bcat-outline-draft--head-line span items)
+:END:
+
+The line under a node's heading for SPAN (positions in ITEMS): its
+sentences („Satz 1001“, „Sätze 1001, 1–3“ — what `bcat-outline--ranges'
+reads), their verses, their folios, joined by „ · “.
+
+** ~bcat-outline-draft--role~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 366
+:SIGNATURE: (bcat-outline-draft--role entry)
+:END:
+
+The role of the sentence ENTRY with a capital, or "".
+
+** ~bcat-outline-draft--entry-line~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 371
+:SIGNATURE: (bcat-outline-draft--entry-line entry)
+:END:
+
+The line of a single sentence: „- *N*: Rolle. text“ — the role not
+said twice when the text begins with it.
+
+** ~bcat-outline-draft--title~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 385
+:SIGNATURE: (bcat-outline-draft--title node items)
+:END:
+
+The title of NODE of an answer on one line — without the numbers of
+its sentences in parentheses or brackets at its end („VI. Kommentar zu
+Vers 3 (3, 2055–2075)“: the second part of the Kadam commentary,
+20.11.).  Taken off only when they are the node's own: the first is its
+first sentence or the last its last.  What else stands there stays
+(„(V. 2–3)“, „(arthakriyā)“, a count).
+
+** ~bcat-outline-draft--node-text~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 408
+:SIGNATURE: (bcat-outline-draft--node-text node items depth)
+:END:
+
+NODE of an answer as org text at DEPTH (1: a heading of level 2):
+heading, the line of what it covers, transition, what it says, the
+lines of its sentences, the nodes below.  Below the fifth level a node
+is a bold line.
+
+** ~bcat-outline-draft--place-of~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 430
+:SIGNATURE: (bcat-outline-draft--place-of nodes items position)
+:END:
+
+(PATH . ROLE) for the sentence at POSITION of ITEMS in the tree NODES:
+the short titles on the way down to the innermost node that covers it,
+and the role of its own line, when it has one; nil when no node covers
+it.
+
+** ~bcat-outline-draft--uncovered~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 455
+:SIGNATURE: (bcat-outline-draft--uncovered data items)
+:END:
+
+The numbers of the sentences of ITEMS that no node of the answer DATA
+covers — to be said, never dropped in silence.
+
+** ~bcat-outline-draft--places~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 463
+:SIGNATURE: (bcat-outline-draft--places data items)
+:END:
+
+The list „Ort im Ganzen“ for the answer DATA: a line for every
+sentence of ITEMS — the way down the short titles, „: Rolle“ when the
+sentence has a line of its own (not when the node it stands in is
+called just that: „Kolophon“, not „Kolophon: Kolophon“ — the first real
+draft, bDen gnyis, 20.11.); a sentence no node covers stands under the
+node before it, marked „(nicht eingeordnet)“.
+
+** ~bcat-outline-draft--stamped~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 521
+:SIGNATURE: (bcat-outline-draft--stamped text)
+:END:
+
+TEXT of a drafted outline with its stamp after the #+OPTIONS line.
+
+** ~bcat-outline-draft-untouched-p~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 528
+:SIGNATURE: (bcat-outline-draft-untouched-p text)
+:END:
+
+Non-nil when the outline TEXT is a draft of the tool that nobody
+changed since: it has the stamp, and the stamp fits what stands there.
+An outline written or corrected by hand is not — a new draft never
+overwrites it.
+
+** ~bcat-outline-draft-render~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 540
+:SIGNATURE: (bcat-outline-draft-render data info items)
+:END:
+
+The outline of the document INFO as org text, from the answer DATA
+(title, intro, work, nodes) and the sentences ITEMS — in the form
+bcat-outline.el reads: the head for the PDF, what it is, the work as a
+whole, the nodes, the list „Ort im Ganzen“ for every sentence; stamped
+as a draft.
+
+** ~bcat-outline-draft--open-path~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 581
+:SIGNATURE: (bcat-outline-draft--open-path tops)
+:END:
+
+The nodes in which the outline TOPS (outermost nodes in order) ends,
+outermost first: its last node, that one's last node, and so on.
+
+** ~bcat-outline-draft--join~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 590
+:SIGNATURE: (bcat-outline-draft--join answers items)
+:END:
+
+The nodes of ANSWERS (the parts of a draft in order) as one list of
+outermost nodes.  A part may begin inside a node the part before left
+open (the AS, 20.11.: the first request ended in „II. … › E. Bestimmung
+des rūpaskandha“, the second set its first node beside II.): an
+outermost node of an answer whose field `under' is the title of a node
+the outline so far ends in (`bcat-outline-draft--open-path') hangs
+below that one; without it, or when it names no such node, the node is
+an outermost one.  The answers are not changed.
+
+** ~bcat-outline-draft--merge~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 618
+:SIGNATURE: (bcat-outline-draft--merge answers frame items)
+:END:
+
+The answers of a draft as one: the nodes of ANSWERS (the parts in
+order) one after the other (`bcat-outline-draft--join') — under the
+groups of FRAME (the last
+request of a draft in parts; for one part its answer itself) where it
+gives some: a node goes under the group that has its first sentence —,
+with FRAME's title, introduction and view of the whole work.
+
+** ~bcat-outline-draft--top-lines~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 666
+:SIGNATURE: (bcat-outline-draft--top-lines answers items)
+:END:
+
+The outermost nodes of ANSWERS (`bcat-outline-draft--join') as lines
+„[sentences] title — text“.  The sentences stand in front, in brackets:
+behind the title in parentheses the next part took them for the form of
+a title.
+
+** ~bcat-outline-draft--store~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 688
+:SIGNATURE: (bcat-outline-draft--store source file)
+:END:
+
+Where the answers of the draft of the outline FILE from SOURCE are
+kept: analysis/.answers/<name of FILE>.eld beside SOURCE — with the
+answers of its sentence files, also when the outline lies elsewhere
+(one for a pair of sources, beside the other documents of the course).
+
+** ~bcat-outline-draft--key~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 696
+:SIGNATURE: (bcat-outline-draft--key part)
+:END:
+
+What makes PART of a draft the same part again: its sentences, number
+and text.  (Not the translations at hand: they help a draft, and grow
+with the reading.)
+
+** ~bcat-outline-draft--stored~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 704
+:SIGNATURE: (bcat-outline-draft--stored source file)
+:END:
+
+What is kept of the draft of the outline FILE from SOURCE: (:parts
+((:nums :key :answer) …) :frame OBJ), or nil.
+
+** ~bcat-outline-draft--keep~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 715
+:SIGNATURE: (bcat-outline-draft--keep file run)
+:END:
+
+Write what the draft RUN for the outline FILE has so far.
+
+** ~bcat-outline-draft--plan~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 732
+:SIGNATURE: (bcat-outline-draft--plan source &optional fresh)
+:END:
+
+The draft of the outline of SOURCE as it stands: (:file :items :parts
+:answers :frame :pending) — its sentences in parts, the answers at hand
+(a list like :parts, nil where one is to be asked for), the answer for
+the whole, the number of requests still to send.  The parts are those
+of the draft kept, as long as the source has the same sentences in the
+same order — else, and with FRESH, cut anew
+(`bcat-outline-draft--parts'); a kept answer counts for a part whose
+sentences are unchanged (`bcat-outline-draft--key'), never with FRESH.
+The answer for the whole counts only with every part's.
+
+** ~bcat-outline-draft-pending~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 765
+:SIGNATURE: (bcat-outline-draft-pending source &optional fresh)
+:END:
+
+The requests a draft of the outline of SOURCE still has to send — 0
+when every answer is at hand and the outline is only set anew.  FRESH:
+as if nothing were kept.
+
+** ~bcat-outline-draft--target~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 771
+:SIGNATURE: (bcat-outline-draft--target file)
+:END:
+
+Where a new draft for the outline FILE is written: FILE itself when
+there is none yet or it is a draft nobody worked on
+(`bcat-outline-draft-untouched-p'); else <name>-Entwurf.org beside it —
+an outline written or corrected by hand is never overwritten.
+
+** ~bcat-outline-draft--finish~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 782
+:SIGNATURE: (bcat-outline-draft--finish file)
+:END:
+
+Write the outline of the draft under way for FILE and say what came
+of it.
+
+** ~bcat-outline-draft--fail~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 814
+:SIGNATURE: (bcat-outline-draft--fail file reason)
+:END:
+
+End the draft under way for FILE: REASON.
+
+** ~bcat-outline-draft--next~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 824
+:SIGNATURE: (bcat-outline-draft--next file)
+:END:
+
+Send the next request of the draft under way for FILE — the first
+part without an answer, then (for a draft in parts) the whole —, or
+finish.  Every answer is kept as it lands (`bcat-outline-draft--keep').
+
+** ~bcat-outline-draft-source~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 883
+:SIGNATURE: (bcat-outline-draft-source source &optional fresh)
+:END:
+
+Draft the outline of the document SOURCE with Claude: one request for
+a document within `bcat-outline-part-size' and
+`bcat-outline-part-sentences', else one per part and one for the whole;
+the answers are set as an org file in the form bcat-outline.el reads
+(`bcat-outline-draft-render').  Answers kept from a draft before count
+(`bcat-outline-draft--plan'): only what is missing is asked for, and
+with everything at hand the outline is set anew without a request —
+unless FRESH.  Written is the outline of SOURCE (`bcat-outline-file') —
+or, when that one was worked on by hand, <name>-Entwurf.org beside it.
+Asynchronous; returns the number of requests, nil when a draft for it
+is under way.
+
+** ~bcat-outline-draft~  /function/  ⚡  ↗
+:PROPERTIES:
+:KIND: defun
+:LINE: 908
+:SIGNATURE: (bcat-outline-draft &optional fresh)
+:INTERACTIVE: t
+:AUTOLOAD: t
+:END:
+
+C-c u S: draft the outline (Gliederung, sa bcad) of the document at
+hand with Claude — in a cascade source that source, in a sentence file
+its source (Carsten 20.11.: the tool drafts the outline, for a new
+work with its preparation, for the ones in work „reverse“ from what is
+analysed already).  Asks first, naming the requests: only those whose
+answers are not at hand from a draft before — with all of them at hand
+the outline is only set anew, without a request.  With a prefix
+argument (C-u C-c u S, FRESH) everything is asked for again.  The
+result is a draft to be checked; an outline worked on by hand is not
+overwritten.
+
+** ~bcat-outline-part-size~  /customize variable/
+:PROPERTIES:
+:KIND: defcustom
+:LINE: 48
+:TYPE: 'integer
+:GROUP: bcat-outline
+:DEFAULT: 24000
+:END:
+
+Characters of text and translation one request of a draft takes
+(`bcat-outline-draft--parts').  A document within it is drafted in one
+request; a larger one in parts, cut where the source begins a section.
+
+** ~bcat-outline-part-sentences~  /customize variable/
+:PROPERTIES:
+:KIND: defcustom
+:LINE: 55
+:TYPE: 'integer
+:GROUP: bcat-outline
+:DEFAULT: 80
+:END:
+
+Sentences one request of a draft takes at most.  Every sentence of a
+commentary gets a line of its own in the answer, and the answer has a
+limit (`tibetan-claude-max-tokens'): by its characters alone a part of
+short sentences would be too many of them.
+
+** ~bcat-outline-draft--schema~  /constant/
+:PROPERTIES:
+:KIND: defconst
+:LINE: 175
+:DEFAULT: "{\"title\": \"…\", \"intro\": \"…\", \"nodes\": [{\"title\": \"…\", \"short\": \"…\", \"from\": 0, \"to\": 0, \"text\":
+:END:
+
+The JSON contract of a draft (`bcat-outline-draft-system-prompt').
+
+** ~bcat-outline-draft--latex-head~  /constant/
+:PROPERTIES:
+:KIND: defconst
+:LINE: 485
+:DEFAULT: (concat
+   "#+LATEX_COMPILER: lualatex\n"
+   "#+LATEX_CLASS: article\n"
+   "#+LATEX_CLASS_OPTIONS: [11pt,a4paper]\n"
+   
+:END:
+
+The head of an outline for its PDF — that of the Tantrāloka's
+(lualatex, Libertinus, five levels of headings; the introductions of
+the readings have the same), and the overview of the nodes in front.
+
+** ~bcat-outline-draft--stamp~  /constant/
+:PROPERTIES:
+:KIND: defconst
+:LINE: 516
+:DEFAULT: "CAT_OUTLINE_WRITTEN"
+:END:
+
+The keyword of the stamp on a drafted outline: the md5 of its text
+without that line.  An outline that still has its stamp is a draft
+nobody worked on (`bcat-outline-draft-untouched-p').
+
+** ~bcat-outline-draft--runs~  /variable/
+:PROPERTIES:
+:KIND: defvar
+:LINE: 657
+:DEFAULT: (make-hash-table :test 'equal)
+:END:
+
+Outline file → the draft under way: (:source :info :items :parts
+:answers :frame) — :answers a list like :parts, nil where the answer is
+still to come.
+
+** ~bcat-outline-draft-done-functions~  /variable/
+:PROPERTIES:
+:KIND: defvar
+:LINE: 662
+:DEFAULT: nil
+:END:
+
+Called with (SOURCE FILE) when a draft has been written — FILE the
+outline, or the draft beside an outline someone worked on.
+
+** ~bcat-outline~  /customize group/
+:PROPERTIES:
+:KIND: defgroup
+:LINE: 44
+:END:
+
+The outline (Gliederung, sa bcad) of a document.
+
+
+* persist/bcat-outline.el
+:PROPERTIES:
+:CUSTOM_ID: persist/bcat-outline.el
+:SOURCE_PATH: /Users/cp/buddhist-cat/persist/bcat-outline.el
+:END:
+
+** ~bcat-outline--header~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 45
+:SIGNATURE: (bcat-outline--header file key)
+:END:
+
+The value of #+KEY: in the head of FILE, or nil.
+
+** ~bcat-outline-file~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 54
+:SIGNATURE: (bcat-outline-file source)
+:END:
+
+The outline of the document SOURCE (whether it exists or not): the
+file its #+CAT_OUTLINE names, relative to its folder — several sources
+may share one (a pair with the same numbers) —, else
+Gliederung-<name of SOURCE>.org beside it.  nil without SOURCE.
+
+** ~bcat-outline-text~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 64
+:SIGNATURE: (bcat-outline-text source)
+:END:
+
+The text of the outline of SOURCE (`bcat-outline-file'), or nil when
+it has none yet.
+
+** ~bcat-outline--ranges~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 71
+:SIGNATURE: (bcat-outline--ranges line)
+:END:
+
+((FROM . TO) …) of the sentences the line LINE under a heading names,
+or nil when it is no such line: „Satz N“ or „Sätze A–B“ — also several
+runs, „Sätze 1001, 1–28, 1002“ (a title before verse 1, a colophon
+after the last); without these „V. N“ or „V. A–B“ (a verse's number is
+its sentence's — the Tantrāloka's outline).  The line is one of items
+separated by „ · “.
+
+** ~bcat-outline--covers-p~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 91
+:SIGNATURE: (bcat-outline--covers-p node num)
+:END:
+
+Non-nil when NODE (of `bcat-outline-nodes') has sentence NUM.
+
+** ~bcat-outline-nodes~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 95
+:SIGNATURE: (bcat-outline-nodes text)
+:END:
+
+The nodes of the outline TEXT in order: plists (:level :title :ranges
+:from :to :text) — a heading that has, as its next line, the sentences
+it covers (`bcat-outline--ranges': :ranges every run, :from the first
+number, :to the last); :text what it says, its paragraphs joined (not
+its table, not the lines of its sentences).  A heading without such a
+line is no node.
+
+** ~bcat-outline-entries~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 132
+:SIGNATURE: (bcat-outline-entries text)
+:END:
+
+The lines of the single sentences in the outline TEXT, in order: ((NUM
+. TEXT) …) — „- *1009*: …“, a line of several joined into one.
+
+** ~bcat-outline-places~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 143
+:SIGNATURE: (bcat-outline-places text)
+:END:
+
+The list „Ort im Ganzen“ of the outline TEXT: ((NUM . PLACE) …) — the
+lines „- NUM: place“ under #+NAME: ort-im-ganzen.  nil without it.
+
+** ~bcat-outline--plain-title~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 154
+:SIGNATURE: (bcat-outline--plain-title title)
+:END:
+
+TITLE of a node without the range in parentheses at its end („A.
+Bindung und Befreiung (V. 22–35)“ → „A. Bindung und Befreiung“).
+
+** ~bcat-outline--covering~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 160
+:SIGNATURE: (bcat-outline--covering text num)
+:END:
+
+The way down the outline TEXT to sentence NUM, outermost node first:
+the deepest node whose own sentences include NUM, after the nodes above
+it in the headings.  The nodes above need not include NUM themselves —
+a commentary stands at its place under the verse it explains, its
+sentences numbered apart („I. Einleitung (V. 1–21)“ over the Viveka's
+1009–1059).  nil when no node has NUM.
+
+** ~bcat-outline-place~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 177
+:SIGNATURE: (bcat-outline-place text num)
+:END:
+
+The place of sentence NUM in the whole, from the outline TEXT: its
+line in the list „Ort im Ganzen“ (`bcat-outline-places'), else the way
+down the nodes that cover it — their titles without the range in
+parentheses, joined by „ › “.  nil when the outline does not know it.
+
+** ~bcat-outline-request-block~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 187
+:SIGNATURE: (bcat-outline-request-block text num before after)
+:END:
+
+What a fetch for sentence NUM is told of the outline TEXT, or nil
+when the outline does not know the sentence (Tantrāloka-Sitzung 20.11.:
+the outline goes with the request, the analysis fits the structure —
+and says where it contradicts it): its place, the node it stands in
+with what that says, the outline's lines for the sentence BEFORE, for
+NUM and for the one AFTER (numbers, nil: none), and the request for the
+field `outline_note'.
+
+** ~bcat-outline--places-name~  /constant/
+:PROPERTIES:
+:KIND: defconst
+:LINE: 41
+:DEFAULT: "ort-im-ganzen"
+:END:
+
+The #+NAME of the list „Ort im Ganzen“ at the end of an outline: one
+line per sentence, „- NUM: place“.
+
+
 * persist/bcat-parallel.el
 :PROPERTIES:
 :CUSTOM_ID: persist/bcat-parallel.el
@@ -18357,7 +19159,7 @@ compared: the overview with the sigla.
 ** ~bcat-sentence--header-value~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 56
+:LINE: 57
 :SIGNATURE: (bcat-sentence--header-value file key)
 :END:
 
@@ -18366,7 +19168,7 @@ The value of FILE's #+KEY: line (in its head), or nil.
 ** ~bcat-sentence-template-name~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 66
+:LINE: 67
 :SIGNATURE: (bcat-sentence-template-name source-file)
 :END:
 
@@ -18379,7 +19181,7 @@ cascade sources and while `bcat-sentence-templates' is on.
 ** ~bcat-sentence--sanskrit-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 77
+:LINE: 78
 :SIGNATURE: (bcat-sentence--sanskrit-p source-file)
 :END:
 
@@ -18390,7 +19192,7 @@ Tibetan translation, 30.10.).
 ** ~bcat-sentence-parallel-source~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 87
+:LINE: 88
 :SIGNATURE: (bcat-sentence-parallel-source source-file)
 :END:
 
@@ -18402,7 +19204,7 @@ resolved relative to it: the Tibetan translation of a Sanskrit source
 ** ~bcat-sentence--sentences~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 99
+:LINE: 100
 :SIGNATURE: (bcat-sentence--sentences file)
 :END:
 
@@ -18414,7 +19216,7 @@ commentary has 1009 sentences, asked for again and again per verse.
 ** ~bcat-sentence--sentence~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 116
+:LINE: 117
 :SIGNATURE: (bcat-sentence--sentence sent-num file)
 :END:
 
@@ -18423,7 +19225,7 @@ Sentence SENT-NUM of the source FILE as a plist, or nil.
 ** ~bcat-sentence--paired-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 122
+:LINE: 123
 :SIGNATURE: (bcat-sentence--paired-p source-file)
 :END:
 
@@ -18434,7 +19236,7 @@ other (Carsten 30.10.: one C-c u G builds the files of both).
 ** ~bcat-sentence--parallel-sentence~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 135
+:LINE: 136
 :SIGNATURE: (bcat-sentence--parallel-sentence sent-num source-file)
 :END:
 
@@ -18446,7 +19248,7 @@ sentence numbers), else the one with the same number (AS).
 ** ~bcat-sentence--parallel-segs~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 148
+:LINE: 149
 :SIGNATURE: (bcat-sentence--parallel-segs sent-num source-file)
 :END:
 
@@ -18456,7 +19258,7 @@ that goes with SENT-NUM of SOURCE-FILE, or nil.
 ** ~bcat-sentence--analysis-folder~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 153
+:LINE: 154
 :SIGNATURE: (bcat-sentence--analysis-folder source-file)
 :END:
 
@@ -18465,7 +19267,7 @@ The analysis/ folder of SOURCE-FILE.
 ** ~bcat-sentence-partner-file~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 158
+:LINE: 159
 :SIGNATURE: (bcat-sentence-partner-file sent-num source-file)
 :END:
 
@@ -18476,7 +19278,7 @@ source), or nil.
 ** ~bcat-sentence--verse-mode-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 173
+:LINE: 174
 :SIGNATURE: (bcat-sentence--verse-mode-p source-file)
 :END:
 
@@ -18488,7 +19290,7 @@ bhāṣya, stand in it.
 ** ~bcat-sentence--section-sentences~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 182
+:LINE: 183
 :SIGNATURE: (bcat-sentence--section-sentences sentence source-file)
 :END:
 
@@ -18498,7 +19300,7 @@ order.
 ** ~bcat-sentence-owner~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 190
+:LINE: 191
 :SIGNATURE: (bcat-sentence-owner sent-num source-file)
 :END:
 
@@ -18509,7 +19311,7 @@ its own), else the sentence itself; nil when there is none.
 ** ~bcat-sentence-ensure-file~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 201
+:LINE: 202
 :SIGNATURE: (bcat-sentence-ensure-file sent-num source-file)
 :END:
 
@@ -18522,7 +19324,7 @@ no such sentence.
 ** ~bcat-sentence--bhasya-segs~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 222
+:LINE: 223
 :SIGNATURE: (bcat-sentence--bhasya-segs sentence source-file)
 :END:
 
@@ -18532,7 +19334,7 @@ SOURCE-FILE — the bhāṣya around the verse —, in order.
 ** ~bcat-sentence--bhasya-texts~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 228
+:LINE: 229
 :SIGNATURE: (bcat-sentence--bhasya-texts sent-num source-file)
 :END:
 
@@ -18543,7 +19345,7 @@ Wylie; nil when there is none.
 ** ~bcat-sentence--bhasya-fields~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 241
+:LINE: 242
 :SIGNATURE: (bcat-sentence--bhasya-fields sent-num source-file)
 :END:
 
@@ -18555,7 +19357,7 @@ Uchen over Wylie; nil when the verse has none.
 ** ~bcat-sentence-file-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 265
+:LINE: 266
 :SIGNATURE: (bcat-sentence-file-p file)
 :END:
 
@@ -18567,7 +19369,7 @@ carries the line too).
 ** ~bcat-sentence--with-source~  /macro/
 :PROPERTIES:
 :KIND: defmacro
-:LINE: 277
+:LINE: 278
 :SIGNATURE: (bcat-sentence--with-source source-file &rest body)
 :END:
 
@@ -18578,7 +19380,7 @@ Run BODY with the dictionary lookups bound to SOURCE-FILE: its folder
 ** ~bcat-sentence--wylie~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 293
+:LINE: 294
 :SIGNATURE: (bcat-sentence--wylie text)
 :END:
 
@@ -18587,7 +19389,7 @@ TEXT (Tibetan Unicode) as one Wylie line.
 ** ~bcat-sentence--dictionary-rows~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 297
+:LINE: 298
 :SIGNATURE: (bcat-sentence--dictionary-rows text)
 :END:
 
@@ -18598,7 +19400,7 @@ is known — C-c u G replaces it), or nil.
 ** ~bcat-sentence--dictionary-table~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 303
+:LINE: 304
 :SIGNATURE: (bcat-sentence--dictionary-table rows)
 :END:
 
@@ -18607,7 +19409,7 @@ ROWS (`bcat-sentence--dictionary-rows') as an org table; "" for none.
 ** ~bcat-sentence--dictionary-words~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 307
+:LINE: 308
 :SIGNATURE: (bcat-sentence--dictionary-words rows)
 :END:
 
@@ -18618,7 +19420,7 @@ the label row (last).
 ** ~bcat-sentence--tibetan-segment~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 318
+:LINE: 319
 :SIGNATURE: (bcat-sentence--tibetan-segment s)
 :END:
 
@@ -18630,7 +19432,7 @@ the table from the dictionaries — its first row the Uchen of each word
 ** ~bcat-sentence--sanskrit-segment~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 333
+:LINE: 334
 :SIGNATURE: (bcat-sentence--sanskrit-segment s)
 :END:
 
@@ -18641,7 +19443,7 @@ transmitted too — C-c u G resolves the sandhis.
 ** ~bcat-sentence--parallel-fields~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 343
+:LINE: 344
 :SIGNATURE: (bcat-sentence--parallel-fields sent-num source-file)
 :END:
 
@@ -18657,7 +19459,7 @@ the sentence.
 ** ~bcat-sentence--pair-rump~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 377
+:LINE: 378
 :SIGNATURE: (bcat-sentence--pair-rump template segments parallel)
 :END:
 
@@ -18670,7 +19472,7 @@ nil for another template.
 ** ~bcat-sentence--verse-run-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 394
+:LINE: 395
 :SIGNATURE: (bcat-sentence--verse-run-p lines)
 :END:
 
@@ -18679,7 +19481,7 @@ Non-nil when LINES are a verse whose metre the tool knows.
 ** ~bcat-sentence--quoted-verses~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 398
+:LINE: 399
 :SIGNATURE: (bcat-sentence--quoted-verses texts)
 :END:
 
@@ -18696,7 +19498,7 @@ are one org table.  Prose lines are never part of a run.
 ** ~bcat-sentence--recitation~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 458
+:LINE: 459
 :SIGNATURE: (bcat-sentence--recitation texts)
 :END:
 
@@ -18711,7 +19513,7 @@ without the pāda letters).
 ** ~bcat-sentence--metre-name~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 489
+:LINE: 490
 :SIGNATURE: (bcat-sentence--metre-name segs)
 :END:
 
@@ -18722,7 +19524,7 @@ named Śālinī for a Nardaṭaka); nil for prose and an unknown metre.
 ** ~bcat-sentence--references~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 496
+:LINE: 497
 :SIGNATURE: (bcat-sentence--references sent-num source-file)
 :END:
 
@@ -18733,7 +19535,7 @@ never Carsten's own „Übersetzung …“ rubric (as in the materializer).
 ** ~bcat-sentence--comparison~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 506
+:LINE: 507
 :SIGNATURE: (bcat-sentence--comparison refs)
 :END:
 
@@ -18743,7 +19545,7 @@ footnote definitions in them at the end (`bcat-analysis-footnotes-last').
 ** ~bcat-sentence--commentary-fields~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 523
+:LINE: 524
 :SIGNATURE: (bcat-sentence--commentary-fields sent-num source-file context &optional assignment)
 :END:
 
@@ -18758,7 +19560,7 @@ wie Sthiramati im MSA, die unbedingt mit rein müssen“).
 ** ~bcat-sentence--lectures~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 555
+:LINE: 556
 :SIGNATURE: (bcat-sentence--lectures sent-num source-file)
 :END:
 
@@ -18769,7 +19571,7 @@ references): ((NAME . BODY) …), or nil.
 ** ~bcat-sentence--lecture-fields~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 564
+:LINE: 565
 :SIGNATURE: (bcat-sentence--lecture-fields sent-num source-file)
 :END:
 
@@ -18783,7 +19585,7 @@ handwritten notes.  In the prompt only for the comparison
 ** ~bcat-sentence-rump-context~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 577
+:LINE: 578
 :SIGNATURE: (bcat-sentence-rump-context sent-num segs source-file
                                             &optional extra-refs keep)
 :END:
@@ -18797,7 +19599,7 @@ existing file (user slots, `created').
 ** ~bcat-sentence-create-file~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 622
+:LINE: 627
 :SIGNATURE: (bcat-sentence-create-file sent-num segs source-file filepath
                                            &optional extra-refs keep)
 :END:
@@ -18809,7 +19611,7 @@ no AI) and return FILEPATH.  EXTRA-REFS and KEEP as in
 ** ~bcat-sentence--template-sections~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 635
+:LINE: 640
 :SIGNATURE: (bcat-sentence--template-sections name source-file)
 :END:
 
@@ -18819,7 +19621,7 @@ writes, a placeholder matching anything (`* Sentence {{num}}').
 ** ~bcat-sentence--render~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 655
+:LINE: 660
 :SIGNATURE: (bcat-sentence--render name context source-file)
 :END:
 
@@ -18832,7 +19634,7 @@ section the template writes itself (* Bhāṣya, a commentary's * Sentence
 ** ~bcat-sentence--text~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 683
+:LINE: 688
 :SIGNATURE: (bcat-sentence--text file)
 :END:
 
@@ -18841,7 +19643,7 @@ The contents of FILE ("" when missing).
 ** ~bcat-sentence--l1-body~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 689
+:LINE: 694
 :SIGNATURE: (bcat-sentence--l1-body text heading)
 :END:
 
@@ -18851,7 +19653,7 @@ nil when absent or empty.
 ** ~bcat-sentence--own-sections~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 722
+:LINE: 727
 :SIGNATURE: (bcat-sentence--own-sections text)
 :END:
 
@@ -18864,7 +19666,7 @@ verbatim, in order, as ((TITLE . TEXT) …); nil when there are none.
 ** ~bcat-sentence--overview~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 749
+:LINE: 754
 :SIGNATURE: (bcat-sentence--overview text)
 :END:
 
@@ -18879,7 +19681,7 @@ happens to be current (in a Lisp buffer a line end is no whitespace).
 ** ~bcat-sentence--neighbours-block~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 771
+:LINE: 776
 :SIGNATURE: (bcat-sentence--neighbours-block sentence source-file)
 :END:
 
@@ -18891,7 +19693,7 @@ geht“ takes in the neighbours („zweite Runde“, „Rückverweis auf
 ** ~bcat-sentence--keep~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 793
+:LINE: 798
 :SIGNATURE: (bcat-sentence--keep file)
 :END:
 
@@ -18906,7 +19708,7 @@ the template sets it in front again, word for word), with
 ** ~bcat-sentence--compared~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 815
+:LINE: 820
 :SIGNATURE: (bcat-sentence--compared file)
 :END:
 
@@ -18920,7 +19722,7 @@ a reference — sent to Claude as „E = Entscheidungen“.
 ** ~bcat-sentence--old-references~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 855
+:LINE: 860
 :SIGNATURE: (bcat-sentence--old-references file)
 :END:
 
@@ -18931,7 +19733,7 @@ slots (DharmaMitra, Discussion).
 ** ~bcat-sentence--extra-references~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 874
+:LINE: 879
 :SIGNATURE: (bcat-sentence--extra-references names refs)
 :END:
 
@@ -18941,7 +19743,7 @@ a machine name (Translation, DharmaMitra) — marks stripped.
 ** ~bcat-sentence--generated-body~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 916
+:LINE: 921
 :SIGNATURE: (bcat-sentence--generated-body text)
 :END:
 
@@ -18954,7 +19756,7 @@ Not the header, the notes, the sections of the file's own.
 ** ~bcat-sentence--body-hash~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 930
+:LINE: 935
 :SIGNATURE: (bcat-sentence--body-hash text)
 :END:
 
@@ -18964,7 +19766,7 @@ The stamp of the sentence file TEXT: the md5 of its generated part
 ** ~bcat-sentence--text-header~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 935
+:LINE: 940
 :SIGNATURE: (bcat-sentence--text-header text key)
 :END:
 
@@ -18974,7 +19776,7 @@ heading), or nil.
 ** ~bcat-sentence--text-reviewed~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 943
+:LINE: 948
 :SIGNATURE: (bcat-sentence--text-reviewed text)
 :END:
 
@@ -18987,7 +19789,7 @@ before the stamp that does not say it is reviewed.
 ** ~bcat-sentence-reviewed~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 955
+:LINE: 960
 :SIGNATURE: (bcat-sentence-reviewed file)
 :END:
 
@@ -18998,7 +19800,7 @@ request and keeps the file (`bcat-sentence--keep-reviewed').
 ** ~bcat-sentence--stamped~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 962
+:LINE: 967
 :SIGNATURE: (bcat-sentence--stamped text old)
 :END:
 
@@ -19015,7 +19817,7 @@ analysis: not reviewed, #+CAT_REVIEWED_BEFORE the version it replaces.
 ** ~bcat-sentence--keep-reviewed~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 987
+:LINE: 992
 :SIGNATURE: (bcat-sentence--keep-reviewed file)
 :END:
 
@@ -19030,7 +19832,7 @@ the last reviewed version is the reference.
 ** ~bcat-sentence--reviewed-text~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1008
+:LINE: 1013
 :SIGNATURE: (bcat-sentence--reviewed-text file)
 :END:
 
@@ -19041,7 +19843,7 @@ the version it names (#+CAT_REVIEWED_BEFORE).
 ** ~bcat-sentence--plain-lines~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1020
+:LINE: 1025
 :SIGNATURE: (bcat-sentence--plain-lines text)
 :END:
 
@@ -19052,7 +19854,7 @@ squeezed.
 ** ~bcat-sentence--reviewed-block~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1035
+:LINE: 1040
 :SIGNATURE: (bcat-sentence--reviewed-block file)
 :END:
 
@@ -19063,7 +19865,7 @@ the reviewed version goes with the request — its decisions stand).
 ** ~bcat-sentence--departures~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1048
+:LINE: 1053
 :SIGNATURE: (bcat-sentence--departures file)
 :END:
 
@@ -19074,7 +19876,7 @@ spacing aside —, or nil when it names none.
 ** ~bcat-sentence--report-departures~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1060
+:LINE: 1065
 :SIGNATURE: (bcat-sentence--report-departures file)
 :END:
 
@@ -19085,7 +19887,7 @@ replaced — nothing is overwritten in silence (Carsten 20.11.).
 ** ~bcat-sentence-show-departures~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 1074
+:LINE: 1079
 :SIGNATURE: (bcat-sentence-show-departures)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -19099,7 +19901,7 @@ hand (Carsten 20.11.: „danach anzeigen, wo die neue Fassung abweicht“).
 ** ~bcat-sentence-mark-reviewed~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 1089
+:LINE: 1094
 :SIGNATURE: (bcat-sentence-mark-reviewed &optional remove)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -19114,7 +19916,7 @@ REMOVE the mark goes, and the file as it stands counts as the tool's
 ** ~bcat-sentence--write~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1113
+:LINE: 1118
 :SIGNATURE: (bcat-sentence--write file text)
 :END:
 
@@ -19126,7 +19928,7 @@ analysis is reviewed and the tool's stamp (`bcat-sentence--stamped').
 ** ~bcat-sentence--save-visit~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1147
+:LINE: 1152
 :SIGNATURE: (bcat-sentence--save-visit file)
 :END:
 
@@ -19136,7 +19938,7 @@ typing is read (and kept) by a rebuild.
 ** ~bcat-sentence--segments-part~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1174
+:LINE: 1179
 :SIGNATURE: (bcat-sentence--segments-part text)
 :END:
 
@@ -19153,7 +19955,7 @@ segments under `* Sentence N').
 ** ~bcat-sentence--goto-segments~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1197
+:LINE: 1202
 :SIGNATURE: (bcat-sentence--goto-segments)
 :END:
 
@@ -19165,7 +19967,7 @@ Returns non-nil when found; point at the start of the buffer before.
 ** ~bcat-sentence--unaligned~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1207
+:LINE: 1212
 :SIGNATURE: (bcat-sentence--unaligned file)
 :END:
 
@@ -19176,7 +19978,7 @@ stripped.
 ** ~bcat-sentence-fetch-state~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1219
+:LINE: 1224
 :SIGNATURE: (bcat-sentence-fetch-state file seg-nums)
 :END:
 
@@ -19192,7 +19994,7 @@ segment (added by hand); nil when the file is complete.
 ** ~bcat-sentence--own-translations~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1243
+:LINE: 1248
 :SIGNATURE: (bcat-sentence--own-translations text)
 :END:
 
@@ -19202,7 +20004,7 @@ The ⟦N⟧ translations in TEXT: ((N . TRANSLATION) …), without the
 ** ~bcat-sentence--block-lines~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1252
+:LINE: 1257
 :SIGNATURE: (bcat-sentence--block-lines block)
 :END:
 
@@ -19211,7 +20013,7 @@ The lines of a translation BLOCK without their org line breaks.
 ** ~bcat-sentence--align-merge~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1257
+:LINE: 1262
 :SIGNATURE: (bcat-sentence--align-merge text parsed)
 :END:
 
@@ -19225,7 +20027,7 @@ Everything else stays as it is.
 ** ~bcat-sentence--unreadable~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1330
+:LINE: 1335
 :SIGNATURE: (bcat-sentence--unreadable what file response problem)
 :END:
 
@@ -19236,7 +20038,7 @@ on FILE's status line.  Returns nil.
 ** ~bcat-sentence--align-land~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1343
+:LINE: 1348
 :SIGNATURE: (bcat-sentence--align-land file response)
 :END:
 
@@ -19246,7 +20048,7 @@ the answer is unreadable.
 ** ~bcat-sentence--align-one~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1356
+:LINE: 1361
 :SIGNATURE: (bcat-sentence--align-one file sentence source-file)
 :END:
 
@@ -19256,7 +20058,7 @@ no DharmaMitra, no new analysis.
 ** ~bcat-sentence--references-for~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1383
+:LINE: 1388
 :SIGNATURE: (bcat-sentence--references-for file sent-num source-file)
 :END:
 
@@ -19267,7 +20069,7 @@ compared of FILE.
 ** ~bcat-sentence--prepare~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1392
+:LINE: 1397
 :SIGNATURE: (bcat-sentence--prepare file sentence source-file)
 :END:
 
@@ -19281,7 +20083,7 @@ sections and references added by hand carried over.  Returns
 ** ~bcat-sentence--dm-status~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1417
+:LINE: 1422
 :SIGNATURE: (bcat-sentence--dm-status translation)
 :END:
 
@@ -19292,7 +20094,7 @@ in *Messages*).
 ** ~bcat-sentence--dharmamitra~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1427
+:LINE: 1432
 :SIGNATURE: (bcat-sentence--dharmamitra file sentence)
 :END:
 
@@ -19302,7 +20104,7 @@ must not stop the analysis); never with an org link in it.
 ** ~bcat-sentence--second-language~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1443
+:LINE: 1448
 :SIGNATURE: (bcat-sentence--second-language sentence source-file)
 :END:
 
@@ -19315,7 +20117,7 @@ nil.
 ** ~bcat-sentence--context-with-zettels~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1456
+:LINE: 1461
 :SIGNATURE: (bcat-sentence--context-with-zettels meta segs source-file &optional lines)
 :END:
 
@@ -19327,7 +20129,7 @@ them.
 ** ~bcat-sentence--sanskrit-checklist~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1465
+:LINE: 1470
 :SIGNATURE: (bcat-sentence--sanskrit-checklist source-file)
 :END:
 
@@ -19338,10 +20140,38 @@ of checklist-sanskrit.org without its comment, found like a template —
 in the folder of SOURCE-FILE first (a list of its own replaces the
 tool's), then the tool's Templates/analysis/.
 
+** ~bcat-sentence--outline-block~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 1481
+:SIGNATURE: (bcat-sentence--outline-block sentence source-file)
+:END:
+
+What the request for SENTENCE of SOURCE-FILE is told of the outline
+of the document (`bcat-outline-request-block'), or nil when it has none
+or the outline does not know the sentence — the sentences before and
+after it are those of the source, whatever their numbers (the Viveka's
+1009 follows verse 1).
+
+** ~bcat-sentence--outline-report~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 1497
+:SIGNATURE: (bcat-sentence--outline-report file sentence source-file parsed)
+:END:
+
+After the answer PARSED for SENTENCE of SOURCE-FILE was written into
+FILE: say in the status and as a message what touches the outline — the
+answer's `outline_note' (its analysis contradicts the outline's line),
+and a line of the outline for this sentence still marked „wohl“ or
+„nicht geprüft“: with the analysis at hand it can be checked.  The
+outline is not changed (Tantrāloka-Sitzung 20.11.: „Die Gliederung
+ändert es nicht still“).
+
 ** ~bcat-sentence--prompts~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1476
+:LINE: 1519
 :SIGNATURE: (bcat-sentence--prompts sentence source-file refs &optional file)
 :END:
 
@@ -19355,7 +20185,7 @@ goes with the request (20.11., `bcat-sentence--reviewed-block').
 ** ~bcat-sentence--write-analysed~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1517
+:LINE: 1563
 :SIGNATURE: (bcat-sentence--write-analysed file sent-num segs source-file build)
 :END:
 
@@ -19367,7 +20197,7 @@ during a request survives); LAST_ANALYZED is today.
 ** ~bcat-sentence--fetched-context~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1535
+:LINE: 1581
 :SIGNATURE: (bcat-sentence--fetched-context base sentence source-file refs parsed &optional tibetan)
 :END:
 
@@ -19378,7 +20208,7 @@ Tibetan request; REFS the references sent with the request.
 ** ~bcat-sentence--answers-file~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1549
+:LINE: 1595
 :SIGNATURE: (bcat-sentence--answers-file file)
 :END:
 
@@ -19387,7 +20217,7 @@ Where the answers for the sentence FILE are kept: .answers/ beside it.
 ** ~bcat-sentence--keep-answers~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1554
+:LINE: 1600
 :SIGNATURE: (bcat-sentence--keep-answers file record)
 :END:
 
@@ -19400,7 +20230,7 @@ signals: keeping is no reason to lose a landing.
 ** ~bcat-sentence--answers~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1575
+:LINE: 1621
 :SIGNATURE: (bcat-sentence--answers file)
 :END:
 
@@ -19410,7 +20240,7 @@ or nil.
 ** ~bcat-sentence--write-fetched~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1586
+:LINE: 1632
 :SIGNATURE: (bcat-sentence--write-fetched file sentence source-file refs parsed &optional tibetan)
 :END:
 
@@ -19422,7 +20252,7 @@ compared are REFS as sent, marked from the answer's segment parts.
 ** ~bcat-sentence--write-partner~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1604
+:LINE: 1652
 :SIGNATURE: (bcat-sentence--write-partner sentence source-file tibetan trefs sanskrit &optional hint assignment sanskrit-translation bhasya-translation)
 :END:
 
@@ -19438,7 +20268,7 @@ Returns the file.
 ** ~bcat-sentence--padapatha-warnings~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1630
+:LINE: 1678
 :SIGNATURE: (bcat-sentence--padapatha-warnings file sentence source-file parsed)
 :END:
 
@@ -19451,7 +20281,7 @@ segment numbers.
 ** ~bcat-sentence--land~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1652
+:LINE: 1700
 :SIGNATURE: (bcat-sentence--land file sentence source-file refs response)
 :END:
 
@@ -19463,7 +20293,7 @@ finishes the file; any other ends here (C-c u H).
 ** ~bcat-sentence--tibetan-prompts~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1670
+:LINE: 1718
 :SIGNATURE: (bcat-sentence--tibetan-prompts sentence source-file parsed trefs)
 :END:
 
@@ -19477,7 +20307,7 @@ reference translations of the Tibetan, the Tibetan source's
 ** ~bcat-sentence--tibetan-land~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1699
+:LINE: 1747
 :SIGNATURE: (bcat-sentence--tibetan-land file sentence source-file refs parsed trefs response)
 :END:
 
@@ -19490,7 +20320,7 @@ FILE as the Sanskrit answer left it when the answer is unreadable.
 ** ~bcat-sentence--tibetan-one~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1722
+:LINE: 1770
 :SIGNATURE: (bcat-sentence--tibetan-one file sentence source-file refs parsed)
 :END:
 
@@ -19504,7 +20334,7 @@ the Tibetan.
 ** ~bcat-sentence--prepare-partner~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1746
+:LINE: 1794
 :SIGNATURE: (bcat-sentence--prepare-partner sentence source-file)
 :END:
 
@@ -19514,7 +20344,7 @@ paired SOURCE-FILE; nil when the Tibetan lacks the sentence.
 ** ~bcat-sentence--pair-state~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1756
+:LINE: 1804
 :SIGNATURE: (bcat-sentence--pair-state file sentence source-file)
 :END:
 
@@ -19526,7 +20356,7 @@ two requests.
 ** ~bcat-sentence--add-compared~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1771
+:LINE: 1819
 :SIGNATURE: (bcat-sentence--add-compared file name text)
 :END:
 
@@ -19538,7 +20368,7 @@ points for the discussion, under its own heading.
 ** ~bcat-sentence--dm-one~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1793
+:LINE: 1841
 :SIGNATURE: (bcat-sentence--dm-one file sentence source-file)
 :END:
 
@@ -19551,7 +20381,7 @@ why and nothing goes to Claude.
 ** ~bcat-sentence--fetch-one~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1816
+:LINE: 1864
 :SIGNATURE: (bcat-sentence--fetch-one file sentence source-file)
 :END:
 
@@ -19562,7 +20392,7 @@ request through the queue.
 ** ~bcat-sentence-fetch~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1845
+:LINE: 1893
 :SIGNATURE: (bcat-sentence-fetch scope &optional force)
 :END:
 
@@ -19581,7 +20411,7 @@ from the same requests.  Returns (:sentences N :fired N :complete N
 ** ~bcat-sentence-templates~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 48
+:LINE: 49
 :TYPE: 'boolean
 :GROUP: buddhist-cat
 :DEFAULT: t
@@ -19595,7 +20425,7 @@ the old pipeline.
 ** ~bcat-sentence-word-formation-folded~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 646
+:LINE: 651
 :TYPE: 'boolean
 :GROUP: buddhist-cat
 :DEFAULT: nil
@@ -19610,7 +20440,7 @@ translation of their segment.  C-c u L sets existing files anew.
 ** ~tibetan-analysis--target-lang~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 45
+:LINE: 46
 :END:
 
 /(no docstring)/
@@ -19618,7 +20448,7 @@ translation of their segment.  C-c u L sets existing files anew.
 ** ~tibetan-analysis--source-lang~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 46
+:LINE: 47
 :END:
 
 /(no docstring)/
@@ -19626,7 +20456,7 @@ translation of their segment.  C-c u L sets existing files anew.
 ** ~bcat-sentence--pair-templates~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 83
+:LINE: 84
 :DEFAULT: '
 :END:
 
@@ -19635,7 +20465,7 @@ translation of their segment.  C-c u L sets existing files anew.
 ** ~bcat-sentence--sentence-cache~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 96
+:LINE: 97
 :DEFAULT: (make-hash-table :test #'equal)
 :END:
 
@@ -19644,7 +20474,7 @@ Source file → (MODTIME . SENTENCES), see `bcat-sentence--sentences'.
 ** ~bcat-sentence--user-slots~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 698
+:LINE: 703
 :DEFAULT: '
 :END:
 
@@ -19653,7 +20483,7 @@ Source file → (MODTIME . SENTENCES), see `bcat-sentence--sentences'.
 ** ~bcat-sentence--tool-sections~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 704
+:LINE: 709
 :DEFAULT: '
 :END:
 
@@ -19662,7 +20492,7 @@ Source file → (MODTIME . SENTENCES), see `bcat-sentence--sentences'.
 ** ~bcat-sentence--overview-heading~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 742
+:LINE: 747
 :DEFAULT: "Worum es geht"
 :END:
 
@@ -19675,7 +20505,7 @@ whatever the language of the rest.
 ** ~bcat-sentence--neighbour-limit~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 767
+:LINE: 772
 :DEFAULT: 600
 :END:
 
@@ -19685,7 +20515,7 @@ Longest text of a neighbouring sentence in a request
 ** ~bcat-sentence--reviewed-folder~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 901
+:LINE: 906
 :DEFAULT: ".reviewed"
 :END:
 
@@ -19696,7 +20526,7 @@ with „sent-“: no folder scan takes one for a sentence file).
 ** ~bcat-sentence--raw-write~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 906
+:LINE: 911
 :DEFAULT: nil
 :END:
 
@@ -19706,7 +20536,7 @@ lines of `bcat-sentence--stamped' (`bcat-sentence-mark-reviewed').
 ** ~bcat-sentence--fresh~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 910
+:LINE: 915
 :DEFAULT: nil
 :END:
 
@@ -19718,7 +20548,7 @@ file's folder) of the reviewed version it replaces
 ** ~tibetan-cascade-subtree-confirm-threshold~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 1166
+:LINE: 1171
 :END:
 
 /(no docstring)/
@@ -19726,7 +20556,7 @@ file's folder) of the reviewed version it replaces
 ** ~tibetan-dharmamitra-sentence-request-delay~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 1167
+:LINE: 1172
 :END:
 
 /(no docstring)/
@@ -19734,7 +20564,7 @@ file's folder) of the reviewed version it replaces
 ** ~tibetan-sentence-claude--dm-schedule-count~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 1168
+:LINE: 1173
 :END:
 
 /(no docstring)/
@@ -19742,7 +20572,7 @@ file's folder) of the reviewed version it replaces
 ** ~bcat-sentence-after-fetch-functions~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 1170
+:LINE: 1175
 :DEFAULT: nil
 :END:
 
@@ -19759,7 +20589,7 @@ it (§5.74) — C-c u H (PDF + reMarkable) hangs here.
 ** ~bcat-status-mode~  /major mode/
 :PROPERTIES:
 :KIND: define-derived-mode
-:LINE: 41
+:LINE: 42
 :SIGNATURE: (bcat-status-mode …)
 :END:
 
@@ -19768,7 +20598,7 @@ it (§5.74) — C-c u H (PDF + reMarkable) hangs here.
 ** ~bcat-status--buffer~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 44
+:LINE: 45
 :SIGNATURE: (bcat-status--buffer)
 :END:
 
@@ -19777,7 +20607,7 @@ it (§5.74) — C-c u H (PDF + reMarkable) hangs here.
 ** ~bcat-status--line~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 50
+:LINE: 51
 :SIGNATURE: (bcat-status--line label steps)
 :END:
 
@@ -19786,7 +20616,7 @@ The text of a sentence line: LABEL and STEPS in the fixed order.
 ** ~bcat-status-begin~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 57
+:LINE: 58
 :SIGNATURE: (bcat-status-begin command label items)
 :END:
 
@@ -19797,7 +20627,7 @@ Open a block for a run of COMMAND ("C-c u G") on LABEL; ITEMS
 ** ~bcat-status-add~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 77
+:LINE: 78
 :SIGNATURE: (bcat-status-add file label after)
 :END:
 
@@ -19809,7 +20639,7 @@ no line.
 ** ~bcat-status-step~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 97
+:LINE: 98
 :SIGNATURE: (bcat-status-step file key text)
 :END:
 
@@ -19849,7 +20679,7 @@ The status buffer.
 ** ~bcat-status--entries~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 38
+:LINE: 39
 :DEFAULT: (make-hash-table :test 'equal)
 :END:
 

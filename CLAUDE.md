@@ -25,7 +25,11 @@ Reading + eigenes PDF „Worum es geht“; reMarkable: Ordner wie im Finder, neu
 Fassung ohne Datum, alte ins Archiv, /Reading geleert; seit 20.11. Prüfliste
 (23 Regeln) in jedem Sanskrit-Abruf, geprüfte Satzdateien geschützt
 (#+CAT_REVIEWED / #+CAT_WRITTEN, Referenz im Abruf, Kopie in .reviewed/, C-c u d),
-Zeichenprüfung; als Nächstes: Gliederung (sa bcad) als Pattern; offen:
+Zeichenprüfung; seit 20.11. GLIEDERUNG (sa bcad) je Dokument:
+Gliederung-<Quelle>.org bzw. #+CAT_OUTLINE, gelesen von bcat-outline.el,
+Zeile „Ort im Ganzen“ in den Satzdateien, Ort + Nachbarzeilen im Abruf
+(outline_note), C-c u S entwirft sie per Abruf (bcat-outline-draft.el,
+Antworten bleiben, von Hand Bearbeitetes wird nie überschrieben); offen:
 Philologie-Teil weiter gliedern, Kompositum-Auflösung straffen).
 Before that 2026-10-28 (§5.74: SATZDATEIEN
 NACH VORLAGE — Reading-Klassen, Tibetisch: `#+CAT_TEMPLATE: tibetan' im
@@ -5710,15 +5714,156 @@ Prompt-Änderung: „ja“).
 - GRENZE: im Paar (AS, MSA) geht die geprüfte Fassung der TIBETISCHEN
   Datei noch nicht mit der tibetischen Anfrage (aufbewahrt und gemeldet
   wird sie).  Beim Umbau von AS/MSA nachziehen.
-- NÄCHSTES (Auftrag Punkt 3, Carsten 20.11.): GLIEDERUNG (sa bcad) als
-  Pattern — für jedes Dokument eine Gliederung nach dem Muster
-  WS26-27/Tantraloka/Gliederung-TA1.org (Werk im Ganzen; Kapitel
-  verschachtelt mit Kopfzeile Verse · Seiten; Kommentar an seiner
-  Stelle, eine Zeile je Satz; Anhang „Ort im Ganzen“, #+NAME:
-  ort-im-ganzen), neu erzeugt bei neuen Dokumenten, für bestehende
-  „reverse“; je Satzdatei eine Zeile „Ort im Ganzen“; Vorschlag der
-  Tantrāloka-Sitzung: die Gliederung geht als Kontext in den Abruf,
-  Widersprüche danach melden.  Umfang mit Carsten klären (Masterarbeit?).
+- Auftrag Punkt 3 (Gliederung als Pattern): siehe den nächsten Block.
+
+20.11.2026, GLIEDERUNG (sa bcad) (`44367d0' lesen + Ort + Abrufkontext,
+`38ec006' Entwurf, `ac78ee5', `e648268' im Workflow; nach den ersten
+echten Entwürfen `5c8fb53', `a8e59b8', `1aeacf3', `c3d6aca', `403a11e',
+`993d686', `38e3589', `54f5c9a', `38566e7', `040ae75', `ac50542';
+Carsten 20.11.: „selbst
+entwerfen und ggf. die Tantraloka Gliederung überarbeiten.  Es soll
+generisch und Teil des Workflows sein.  Wenn künftig ein neues Werk
+hinzu kommt soll in der Vorbereitung für's CAT (Segmentierung etc.)
+auch gleich mit die Gliederung.  Reverse für das was wir im Moment
+(WS26-27) in Arbeit haben.“ — Masterarbeit/Rgyan gehört dazu;
+Reihenfolge Tibetisch V → AS → MSA).
+- DATEI: org neben der Quelle.  „#+CAT_OUTLINE: <Datei>“ im Quellkopf
+  (relativ; mehrere Quellen dürfen eine teilen — ein Paar mit gleichen
+  Satznummern wie AS Sanskrit/Tibetisch), sonst
+  Gliederung-<Quellname>.org (`bcat-outline-file').  Form — Referenz
+  WS26-27/Tantraloka/Gliederung-TA1.org (von Hand, gehört der
+  Tantrāloka-Sitzung):
+    * <Werk> im Ganzen            Gedanke des Werks, seine großen Teile
+    * <Abschnitt>: Gliederung     verschachtelt; ein KNOTEN ist eine
+    ** I. …                       Überschrift, deren NÄCHSTE Zeile sagt,
+    Sätze 1009–1025 · V. … · Bl.  was er umfasst: „Satz N“, „Sätze A–B“
+                                  (mehrere Läufe mit Komma: „Sätze 1001,
+    Zwei bis vier Sätze.          1–28, 1002“) oder „V. A–B“; dann, was
+                                  er sagt;
+    - *1009*: Rolle. …            je Satz eines Kommentars eine Zeile
+    * Anhang: Ort im Ganzen je Satz
+    #+NAME: ort-im-ganzen
+    - 1017: TĀ 1.1 › Deutung 1 › Mutter › Beiwort 2
+  Eine Überschrift ohne solche Zeile ist kein Knoten.
+- LESEN (persist/bcat-outline.el): `bcat-outline-nodes' (:level :title
+  :ranges :from :to :text), `-entries' (Zeilen der Sätze), `-places'
+  (Liste im Anhang), `-place' (Zeile der Liste, sonst der Weg der
+  Knotentitel ohne „(V. …)“), `-request-block'.  Der Weg folgt der
+  HIERARCHIE DER ÜBERSCHRIFTEN, nicht den Zahlen: ein Kommentar steht
+  unter dem Vers, den er erklärt, auch wenn dessen Zahlen ihn nicht
+  einschließen („I. Einleitung (V. 1–21)“ über den Viveka-Sätzen
+  1009–1059).
+- SATZDATEI: erste Zeile unter * Text „*Ort im Ganzen:* …“ (alle vier
+  Vorlagen, `{{#place}}'); kommt mit C-c u A / L / G; ohne Gliederung
+  keine Zeile.  Kein Massen-Relayout: jede Datei bekommt sie bei ihrem
+  nächsten Setzen.
+- ABRUF (C-c u G): Ort, der Knoten mit seinem Text und die Zeilen der
+  Gliederung für den Satz davor, diesen und den danach gehen mit
+  (`bcat-sentence--outline-block'); verlangt wird das Feld
+  „outline_note“ — EIN Satz, wenn die Analyse der Gliederung
+  widerspricht (anderes Lemma, anderer Bezug, andere Quelle eines Zitats,
+  andere Rolle), sonst leer.  Der Status zeigt ihn (Schritt :outline).
+  Die Gliederung wird nie stillschweigend angepasst — sie zu ändern ist
+  Handarbeit.  Am echten Abruf noch nicht erprobt.
+- ENTWURF (persist/bcat-outline-draft.el; C-c u S in der Quelle oder
+  einer Satzdatei; im Vorbereitungs-Wizard Schritt 10b; der Abruf einer
+  Satzdatei weist darauf hin, wenn das Dokument noch keine hat): die
+  Sätze der Quelle — Nummer, Vers, Blatt, Text; dazu die Übersetzung der
+  schon analysierten Satzdatei („reverse“), sonst die erste Referenz —
+  gehen an Claude, die JSON-Antwort wird in obiger Form gesetzt
+  (`bcat-outline-draft-render').  Inhalt laut Prompt: deutsch, schlicht,
+  keine Schul-/doxographische Zuordnung, Unsicheres „wohl“ / „nicht
+  geprüft“, nichts erfinden.  Der Prompt ist neu und noch nicht von
+  Carsten abgenommen.
+  · TEILE: je Abruf bis 24 000 Zeichen UND bis 80 Sätze
+    (`bcat-outline-part-size', `bcat-outline-part-sentences' — die
+    Antwort hat je Satz eine Zeile, die Ausgabegrenze entscheidet;
+    gemessen ~0,6–0,7 KB Antwort je Satz), geschnitten an den
+    Abschnitten der Quelle.  Bei mehreren Teilen ein letzter Abruf fürs
+    Ganze (Titel, Einleitung, Werk im Ganzen, Gruppen über den Knoten
+    der Teile).
+  · NAHT ZWISCHEN TEILEN: die Schnitte liegen an den (flachen)
+    Abschnitten der Quelle, also manchmal mitten in einem Knoten.  Die
+    Anfrage eines Teils nennt, was bisher gegliedert ist („- [Sätze]
+    Titel — Text“; die Sätze VORN in eckigen Klammern — hinter dem Titel
+    in runden hielt der nächste Teil sie für die Form eines Titels) und
+    die Knoten, in denen die Gliederung gerade endet
+    (`bcat-outline-draft--open-path').  Ein Knoten mit dem Feld
+    „under“ = Titel eines dieser Knoten hängt beim Zusammensetzen
+    darunter (`bcat-outline-draft--join'); sonst ist er ein oberster.
+  · DAS GANZE: die großen Teile über den Knoten der Teile tragen KEINE
+    eigene Zählung (die Knoten sind schon I. … XXVI. durchgezählt).
+  · IM SATZ BEREINIGT (ohne Abruf): Satznummern am Ende eines Titels
+    weg, wenn es die des Knotens sind (`bcat-outline-draft--title');
+    die Zeile der Sätze nennt zwei abwechselnde Schichten als zwei Läufe
+    („Sätze 2–20, 1002–1015“, `bcat-outline-draft--runs'); im Ort kein
+    Name zweimal hintereinander, die Rolle nicht, wenn der Knoten so
+    heißt („Kolophon“, nicht „Kolophon: Kolophon“).
+  · EINE REFERENZ NUR EINMAL: steht dieselbe Referenzübersetzung an
+    mehreren Sätzen hintereinander (Vers-Übersetzung an jedem Satz des
+    Kommentars), geht sie nur am ersten mit — sonst Sthiramati IX 50
+    statt 16 Abrufe.
+  · ANTWORTEN BLEIBEN: analysis/.answers/<Gliederung>.eld bei der
+    QUELLE, aus der entworfen wurde (je Teil Nummern, Schlüssel aus
+    Nummer + Text, Antwort; dazu das Ganze).  C-c u S fragt nur ab, was fehlt (nach einem
+    Abbruch: fortsetzen); liegt alles vor: NEU SETZEN OHNE ABRUF (nach
+    einer Korrektur am Layout — das Gegenstück zu C-c u L); C-u C-c u S
+    ruft alles neu ab.  `bcat-outline-draft-pending' nennt die Zahl.
+  · SCHUTZ: der Entwurf trägt „#+CAT_OUTLINE_WRITTEN: <md5>“.  Stimmt
+    der Stempel nicht mehr (von Hand bearbeitet) oder fehlt er (TĀ),
+    wird die Datei NIE überschrieben: der neue Entwurf landet als
+    <Name>-Entwurf.org daneben.  Sätze, die die Antwort auslässt,
+    stehen in der Liste als „(nicht eingeordnet)“ und in der Meldung.
+- PDF: C-c u H in der Gliederungsdatei (`bcat-export-reading-document',
+  A4).  Die Übersicht der Knoten vorn füllt sich nur mit num:t +
+  secnumdepth 0 im Kopf (mit num:nil schreibt org \section*, das
+  Verzeichnis bleibt leer) — so setzt es der Entwurf; die
+  TĀ-Gliederung hat noch num:nil (Hinweis an die Tantrāloka-Sitzung).
+- STAND 20.11. — drei Entwürfe in ~/buddhist-studies (dort NICHT
+  committet; alle tragen den Stempel, keiner ist von Carsten geprüft):
+  · WS26-27/Tibetisch V/bden-gnyis-cat/Gliederung-bden-gnyis-cat.org —
+    30 Sätze, 1 Abruf (vor dem Speichern der Antworten: neu setzen
+    hieße hier neu abrufen), 13 Knoten, PDF 8 S.
+  · WS26-27/Tibetisch V/Kadam-Commentary/Gliederung-bum-cat.org — 224
+    Sätze, 4 Teile + das Ganze, 105 Knoten (I.–XXVI. unter fünf
+    Gruppen), 222 Satzzeilen, PDF 45 S.; Verse und ihre Erklärung je
+    Knoten („A. Vers 3“ / „B. Kommentar zu Vers 3“).
+  · WS26-27/Abhidharmasamuccaya/Gliederung-ASam-1.org — EINE für beide
+    Quellen (gleiche 49 Satznummern; beide Quellköpfe tragen seit 20.11.
+    „#+CAT_OUTLINE: ../Gliederung-ASam-1.org“), 2 Teile + das Ganze, 49
+    Knoten, PDF 15 S.  Entworfen aus der Sanskrit-Quelle; die Antworten
+    liegen in Sanskrit/analysis/.answers/.
+  Im Spiegel geprüft: alle Vorlagen-Satzdateien bekommen ihre Zeile (bDen
+  21, Kadam 224, AS 9 + 9), zweiter Lauf unverändert.  Echte Satzdateien
+  sind nicht neu gesetzt.
+- BEFUNDE AM INHALT (Carsten gemeldet; nicht berichtigt — die Entwürfe
+  sind zu prüfen): bDen gnyis Satz 24 „Akaniṣṭha – der höchsten Ebene des
+  Formlosen Bereichs“ (falsch und ohne „wohl“: aus dem Wissen des
+  Modells, nicht aus Text oder Übersetzung); Tippfehler („Buddhaworie“);
+  Begriffe des Originals stehen in Klammern statt kursiv; AS an der Naht:
+  der Vers zu den mahābhūta (Satz 21) hängt unter „E. › 2. Bhāṣya …“.
+- OFFEN (Carstens Entscheidung, nichts davon begonnen):
+  · MSA IX: drei Quellen mit VERSCHIEDENEN Satznummern (Sanskrit 184,
+    Tibetisch 264, Sthiramati 1009) — eine Gliederung je Quelle wäre 5 +
+    5 + 16 Abrufe.  Vorschlag: nur die Sanskrit-Quelle gliedern (5
+    Abrufe) und den Ort der tibetischen und der Kommentar-Satzdateien
+    über den VERS (:VERSE:) aus ihr nehmen (noch zu bauen; rührt
+    Sthiramati/`commentary' nicht an).  MSA I: 1 + 3, XI: 1 + 1 +
+    Phywa pa 1.
+  · Rgyan (Masterarbeit/Translations/Rgyan-cat.org): 737 Sätze in 254 §,
+    15 Abrufe; der Quellkopf hat keine #+TIBETAN_CLAUDE_CONTEXT-Notizen —
+    der Entwurf wüsste nur Titel, Text und die 253 vorhandenen
+    Übersetzungen.  Die alten Satzdateien dort zeigen keinen „Ort im
+    Ganzen“ (keine Vorlage).
+  · tantraloka-1.org braucht „#+CAT_OUTLINE: Gliederung-TA1.org“ (Datei
+    der Tantrāloka-Sitzung, ihr gemeldet).
+  · „Ort im Ganzen“ im PDF der Satzdatei (bisher nur im .org); Fußleiste
+    des Gliederungs-PDFs („Bden · Bden · Anhang:“ — erste Wörter der
+    Überschriften); „⑴“ fehlt in Libertinus fett/kursiv (AS-Titel).
+  · Der Entwurfs-Prompt ist nicht abgenommen; Abruf mit Gliederungs-
+    kontext (outline_note) am echten Satz nicht erprobt.
+  ERT 2998 / 2996 erwartet / 0 unerwartet / 2 übersprungen, BDD 251,
+  compile sauber.
 
 #### Offen
 
