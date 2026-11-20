@@ -375,6 +375,33 @@ answer writes nothing."
         (should (equal by-hand (bcat-outline-text src)))
         (should (zerop (hash-table-count bcat-outline-draft--runs)))))))
 
+(ert-deftest bcat-outline-draft-gives-a-reference-once ()
+  "A reference translation that stands at several sentences in a row —
+the translation of a verse at every sentence of its commentary (MSA IX
+with Sthiramati, measured 20.11.: 706 000 of 743 000 characters of
+translation were such repetitions, 50 requests instead of a dozen) —
+goes into the request at the first of them only, and the request says
+so.  A sentence's own translation is its own."
+  (bcat-outline-draft-test--with-source
+    (make-directory (expand-file-name "analysis" dir) t)
+    (cl-letf (((symbol-function 'bcat-sentence--references)
+               (lambda (num _source)
+                 (pcase num
+                   (1 '(("Lindtner 1981" . "The Buddhas' teaching relies on two truths.")))
+                   ((or 2 3) '(("Lindtner 1981" . "The relative is held to be twofold: false and correct.")))))))
+      (should (equal '("The Buddhas' teaching relies on two truths. (Lindtner 1981)"
+                       "The relative is held to be twofold: false and correct. (Lindtner 1981)"
+                       nil)
+                     (mapcar (lambda (i) (plist-get i :translation)) (bcat-outline-draft--items src))))
+      ;; its own translation: kept, although the reference before it is the same
+      (with-temp-file (tibetan-sentence--filepath 3 (file-name-as-directory (expand-file-name "analysis" dir)) src)
+        (insert "#+CAT_TEMPLATE: tibetan\n* Text\n*Translation:* Pleasing as long as it is not examined.\n"))
+      (should (equal "Pleasing as long as it is not examined."
+                     (plist-get (nth 2 (bcat-outline-draft--items src)) :translation)))
+      (should (string-match-p
+               "„=“ a translation at hand (one that covers several sentences in a row stands at the first)"
+               (bcat-outline-draft-user-prompt (bcat-outline-draft--info src) (bcat-outline-draft--items src)))))))
+
 (ert-deftest bcat-outline-draft-in-parts ()
   "A document larger than `bcat-outline-part-size': one request per part
 — each told which part it is and what was outlined so far —, then one

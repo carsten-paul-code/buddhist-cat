@@ -69,37 +69,46 @@ short sentences would be too many of them."
   (string-trim (replace-regexp-in-string "[ \t\n]+" " " (or text ""))))
 
 (defun bcat-outline-draft--translation (source num)
-  "The translation at hand for sentence NUM of SOURCE, or nil: the own
-one of its sentence file („*Translation:* …“ — after an analysis), else
-its first reference translation with the translator's name.  Read from
-the files as they are; nothing is saved or changed."
+  "The translation at hand for sentence NUM of SOURCE as (TEXT .
+REFERENCE-P), or nil: the own one of its sentence file („*Translation:*
+…“ — after an analysis), else its first reference translation with the
+translator's name (REFERENCE-P t).  Read from the files as they are;
+nothing is saved or changed."
   (let* ((folder (file-name-as-directory (expand-file-name "analysis" (file-name-directory source))))
          (file (ignore-errors (tibetan-sentence--filepath num folder source)))
          (text (and file (file-readable-p file) (bcat-sentence--text file)))
          (own (and text (string-match "^\\*Translation:\\*[ \t]+\\(.+\\)$" text)
                    (bcat-outline-draft--squeeze (match-string 1 text))))
          (ref (and (not own) (car (ignore-errors (bcat-sentence--references num source))))))
-    (cond ((and own (not (string-empty-p own))) own)
-          (ref (format "%s (%s)" (bcat-outline-draft--squeeze (cdr ref)) (car ref))))))
+    (cond ((and own (not (string-empty-p own))) (cons own nil))
+          (ref (cons (format "%s (%s)" (bcat-outline-draft--squeeze (cdr ref)) (car ref)) t)))))
 
 (defun bcat-outline-draft--items (source)
   "The sentences of SOURCE as a draft sees them, in the order of the
 source: plists (:num :verse :section :folio-from :folio-to :text
 :translation) — the text its segments joined, the translation what is
-at hand (`bcat-outline-draft--translation')."
+at hand (`bcat-outline-draft--translation').  A reference translation
+that stands at several sentences in a row (a verse's at every sentence
+of its commentary) is given at the first of them only: MSA IX with
+Sthiramati, 20.11. — 706 000 of 743 000 characters were the same
+passages again and again."
   (require 'bcat-sentence)
-  (mapcar (lambda (s)
-            (let ((num (plist-get s :sent-num))
-                  (folios (delq nil (mapcar #'cdr (plist-get s :folios)))))
-              (list :num num
-                    :verse (plist-get s :verse)
-                    :section (plist-get s :section-label)
-                    :folio-from (car folios)
-                    :folio-to (car (last folios))
-                    :text (bcat-outline-draft--squeeze
-                           (mapconcat (lambda (g) (cdr g)) (plist-get s :segs) " "))
-                    :translation (bcat-outline-draft--translation source num))))
-          (bcat-sentence--sentences source)))
+  (let ((before nil))
+    (mapcar (lambda (s)
+              (let* ((num (plist-get s :sent-num))
+                     (folios (delq nil (mapcar #'cdr (plist-get s :folios))))
+                     (found (bcat-outline-draft--translation source num))
+                     (again (and (cdr found) (equal (car found) before))))
+                (setq before (and (cdr found) (car found)))
+                (list :num num
+                      :verse (plist-get s :verse)
+                      :section (plist-get s :section-label)
+                      :folio-from (car folios)
+                      :folio-to (car (last folios))
+                      :text (bcat-outline-draft--squeeze
+                             (mapconcat (lambda (g) (cdr g)) (plist-get s :segs) " "))
+                      :translation (and (not again) (car found)))))
+            (bcat-sentence--sentences source))))
 
 (defun bcat-outline-draft--info (source)
   "What a draft knows of the document SOURCE: (:title :context :sections
@@ -247,7 +256,7 @@ last one (`bcat-outline-draft-frame-prompt')."
                  "")
                "\nLeave \"work\", \"title\" and \"intro\" empty — they follow when all parts are outlined.\n")
      "")
-   "\nSentences — number, verse or prose, folio; „=“ a translation at hand:\n"
+   "\nSentences — number, verse or prose, folio; „=“ a translation at hand (one that covers several sentences in a row stands at the first):\n"
    (bcat-outline-draft--sentence-lines items)
    "\n\nReturn the JSON object now."))
 
