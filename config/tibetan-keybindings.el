@@ -124,6 +124,11 @@
 ;; ihrer Satzdateien.  Eine von Hand bearbeitete Gliederung bleibt, der
 ;; Entwurf kommt daneben.
 (global-set-key (kbd "C-c u S") 'bcat-outline-draft)
+;; C-c u Q (Carsten 22.11.2026: „Wenn es mehrere Quellen gibt wäre so ein
+;; Übersichtsdokument noch gut“): der Überblick über die Quellen einer
+;; Stelle — Schichten, Sanskrit gegen Tibetisch, Stimmen — per Abruf aus
+;; dem, was schon analysiert ist (bcat-survey.el).  Q wie Quellen.
+(global-set-key (kbd "C-c u Q") 'bcat-survey)
 ;; C-c u V (Carsten 5.11.2026): the reading dossier of the verse — text,
 ;; bhāṣya, commentary one under the other (bcat-dossier.el).
 (global-set-key (kbd "C-c u V") 'bcat-dossier)

@@ -30,6 +30,7 @@
 (declare-function bcat-commentary-lead "bcat-commentary" (commentary-source))
 (declare-function bcat-commentary-label "bcat-commentary" (section commentary-source))
 (declare-function bcat-commentary-doc-text "bcat-commentary" (doc))
+(declare-function bcat-survey-pdf-text "bcat-survey" (file))
 (declare-function bcat-commentary-sources "bcat-commentary" (source-file))
 (declare-function bcat-commentary-documents "bcat-commentary" (sent-num source-file))
 (declare-function bcat-commentary--l1-sections "bcat-commentary" (text))
@@ -1480,6 +1481,10 @@ since now.  Never signals: remembering is no reason to spoil an export."
 (defconst bcat-export--overview-suffix "-worum-es-geht"
   "What the name of the PDF of „Worum es geht“ adds to that of its file's.")
 
+(defconst bcat-export--survey-suffix "-ueberblick"
+  "What the name of the PDF of the survey of a passage („Überblick“,
+bcat-survey.el) adds to that of its file's.")
+
 (defun bcat-export--second-pdf (file text head target suffix)
   "A document that goes with the PDF of the sentence FILE — set from the
 org TEXT, beside TARGET, the PDF of the file, as <name>SUFFIX.pdf: the
@@ -1594,6 +1599,14 @@ the PDF path (the first's)."
          ;; only what that export lacked — without it the variable holds
          ;; an earlier export's
          (overview-missing (and overview bcat-export--missing))
+         ;; 22.11.: the survey of the sources on the passage („Überblick“,
+         ;; bcat-survey.el), when there is one — a PDF of its own
+         (survey (and view (not commentary) (fboundp 'bcat-survey-pdf-text)
+                      (bcat-export--second-pdf
+                       file (bcat-survey-pdf-text file) head
+                       (or (plist-get info :handout) (concat (file-name-sans-extension file) ".pdf"))
+                       bcat-export--survey-suffix)))
+         (survey-missing (and survey bcat-export--missing))
          (lectures (bcat-export--second-pdf file (plist-get views :lectures) head
                                             (plist-get info :handout) "-lectures"))
          (view-file (and view (expand-file-name (concat bcat-export--copy-prefix (file-name-nondirectory file))
@@ -1618,7 +1631,7 @@ the PDF path (the first's)."
           (error (message "PDF nicht nach handouts/ verschoben (%s): %s"
                           (file-name-nondirectory target) (error-message-string err))))))
     ;; the characters the second PDF lacks are reported with the first's
-    (dolist (m overview-missing)
+    (dolist (m (append overview-missing survey-missing))
       (unless (member m bcat-export--missing)
         (setq bcat-export--missing (append bcat-export--missing (list m)))))
     (bcat-status-step status-file :pdf (if bcat-export--missing
@@ -1639,7 +1652,10 @@ the PDF path (the first's)."
                                            "Vortrag" (cdr lectures)))
                                 (and overview
                                      (list (car overview) (format "%s Worum es geht" label)
-                                           "Worum es geht" (cdr overview)))))))
+                                           "Worum es geht" (cdr overview)))
+                                (and survey
+                                     (list (car survey) (format "%s Überblick" label)
+                                           "Überblick" (cdr survey)))))))
           (require 'tibetan-discussion-paper)
           (bcat-status-step status-file :upload (if first "reMarkable …" "reMarkable: unverändert"))
           (bcat-export--upload-row status-file (plist-get info :work) (plist-get info :device-folder)
@@ -1749,6 +1765,24 @@ rmapi failure must not spoil the landed analysis."
         (bcat-status-step file :pdf "PDF folgt mit dem Rest des Verses"))))))
 
 (add-hook 'bcat-sentence-after-fetch-functions #'bcat-export-after-fetch)
+
+(defvar bcat-survey-done-functions)
+
+(defun bcat-export-after-survey (lead _survey)
+  "Hook for `bcat-survey-done-functions': C-c u Q ends with C-c u H of
+the passage (when `bcat-export-auto') — the PDFs of the sentence file
+LEAD, of which the device gets what it does not have as it is: the
+survey.  Never for a file under `temporary-file-directory'; never
+signals."
+  (require 'tibetan-discussion-paper)
+  (when (and bcat-export-auto
+             (not (tibetan-discussion-paper--temp-source-p lead)))
+    (condition-case err
+        (bcat-export-file lead)
+      (error (message "C-c u H nach C-c u Q fehlgeschlagen (%s): %s"
+                      (file-name-nondirectory lead) (error-message-string err))))))
+
+(add-hook 'bcat-survey-done-functions #'bcat-export-after-survey)
 
 ;;;###autoload
 (defun bcat-export ()

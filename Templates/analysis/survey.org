@@ -1,0 +1,85 @@
+#+begin_comment
+VORLAGE Überblick — die Quellen einer Stelle nebeneinander (Buddhist CAT,
+Carsten 22.11.2026: „Wenn es mehrere Quellen gibt wäre so ein
+Übersichtsdokument noch gut.  Was verschiebt sich z.B. im bhasya, bei
+Sthiramati usw.  Welche unterschiedlichen Gesichtspunkte betrachten die
+Übersetzungen“ — „im Tantraloka z.B. auch Sanderson betont mehr das,
+Dyzkowki das“ — „das Tibetische könnte, im Gegensatz zum Sanskrit, die
+Übersetzung/Interpretation zu lassen“).  C-c u Q erzeugt die Datei per
+Abruf aus dem, was schon analysiert ist (bcat-survey.el), als
+analysis/survey-<N>-<Quelle>.org neben der Satzdatei; C-c u H des Verses
+legt sie als eigenes PDF aufs reMarkable („<Vers> Überblick“).  Sie ist
+ein Entwurf: der Stempel #+CAT_SURVEY_WRITTEN kennzeichnet, was niemand
+bearbeitet hat; eine von Hand bearbeitete Datei wird nie überschrieben.
+
+Felder: label of-link date; gist; layers (name place key shift-key says
+shift) layers-point; wording-p wording (text); voices-p voices (name
+from key text) voices-line; questions-p questions (num text); documents
+(name).  Die Tabellen tragen nur Stichworte (sie müssen auf die Seite des
+reMarkable passen); das Ausführliche steht darunter.
+#+end_comment
+#+TITLE: {{label}} — Überblick
+#+OPTIONS: toc:nil num:nil
+#+CAT_SURVEY_OF: {{of-link}}
+#+DATE: {{date}}
+
+# Entwurf (C-c u Q): aus den vorliegenden Analysen erzeugt, nicht am Original geprüft.
+
+* Die Stelle in einem Satz
+{{gist}}
+
+* Die Schichten — was jede daraus macht
+| Schicht | Kern | Was sich verschiebt |
+|---------+------+---------------------|
+{{#layers}}
+| {{name}} | {{key}} | {{shift-key}} |
+{{/layers}}
+
+{{#layers}}
+** {{name}} ({{place}})
+{{says}}
+
+{{#shift}}
+*Verschiebt sich:* {{shift}}
+
+{{/shift}}
+{{/layers}}
+{{#layers-point}}
+*Worauf es ankommt:* {{layers-point}}
+
+{{/layers-point}}
+{{#wording-p}}
+* Sanskrit und Tibetisch — was der Wortlaut zulässt
+{{#wording}}
+- {{text}}
+{{/wording}}
+
+{{/wording-p}}
+{{#voices-p}}
+* Die Stimmen — worauf jede achtet
+| Wer | Woraus | Kennzeichnend |
+|-----+--------+---------------|
+{{#voices}}
+| {{name}} | {{from}} | {{key}} |
+{{/voices}}
+
+{{#voices}}
+- *{{name}}:* {{text}}
+{{/voices}}
+
+{{#voices-line}}
+*Die Linie:* {{voices-line}}
+
+{{/voices-line}}
+{{/voices-p}}
+{{#questions-p}}
+* Fragen fürs Reading
+{{#questions}}
+{{num}}. {{text}}
+{{/questions}}
+
+{{/questions-p}}
+* Wo es steht
+{{#documents}}
+- „{{name}}“
+{{/documents}}

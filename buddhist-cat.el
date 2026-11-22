@@ -543,6 +543,7 @@ in the appropriate instance."
 (require 'bcat-outline-draft)
 (require 'bcat-zettel)
 (require 'bcat-dossier)
+(require 'bcat-survey)
 
 (provide 'buddhist-cat)
 ;; The old feature name, announced too: code that waits on it

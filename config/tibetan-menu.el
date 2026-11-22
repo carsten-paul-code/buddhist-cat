@@ -120,6 +120,9 @@
      ["Gliederung entwerfen (C-c u S)" bcat-outline-draft
       :help "Die Gliederung (sa bcad) des Dokuments per Abruf entwerfen — Werk im Ganzen, Knoten, eine Zeile je Kommentarsatz, Ort im Ganzen"
       :active (fboundp 'bcat-outline-draft)]
+     ["Überblick über die Quellen (C-c u Q)" bcat-survey
+      :help "Die Quellen der Stelle nebeneinander: was sich von Schicht zu Schicht verschiebt, Sanskrit gegen Tibetisch, worauf jede Übersetzung achtet — ein Abruf aus dem, was schon analysiert ist"
+      :active (fboundp 'bcat-survey)]
      ["Als geprüft vermerken" bcat-sentence-mark-reviewed
       :help "#+CAT_REVIEWED: ein neuer Abruf gibt die Analyse dann als Referenz mit und bewahrt die Datei auf"
       :active (fboundp 'bcat-sentence-mark-reviewed)]
