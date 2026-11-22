@@ -40,8 +40,10 @@ es geht) mit eigenen PDFs („MSA XI.15 Bhāṣya“, „MSA XI.15–16 Phywa
 pa“), das Vers-Dossier analysiert nur noch den Vers, C-c u L setzt
 alte Kommentardokumente ohne Abruf um (XI umgesetzt, IX auf sein Wort),
 Bhāṣya auf der Reading-Seite Satz für Satz; ÜBERBLICK ÜBER DIE QUELLEN
-EINER STELLE (C-c u Q, bcat-survey.el) gebaut, Prompt wartet auf sein
-Wort — noch nichts abgerufen;
+EINER STELLE (bcat-survey.el) — kommt mit C-c u G, wenn es etwas zu
+beachten gibt, C-c u Q auf Zuruf; erster Abruf XI.15, noch nicht auf dem
+Gerät; UNTERORDNER JE VERS auf dem reMarkable, wo es Kommentar-Dokumente
+gibt (MSA XI verschoben);
 offen: Philologie-Teil weiter gliedern, Kompositum-Auflösung straffen).
 Before that 2026-10-28 (§5.74: SATZDATEIEN
 NACH VORLAGE — Reading-Klassen, Tibetisch: `#+CAT_TEMPLATE: tibetan' im
@@ -6161,11 +6163,36 @@ Abruf umsetzen — XI gleich, IX erst auf sein Wort).
   anderen; C-c u Q endet damit.  Gemeinsame Helfer in bcat-analysis.el:
   `bcat-analysis-read-object', `bcat-analysis-draft-stamped',
   `-draft-untouched-p' (auch vom Gliederungs-Entwurf benutzt).
-  STAND: gebaut und getestet, NICHTS ABGERUFEN.  Der Wortlaut des
-  Prompts (`bcat-survey-system-prompt') ist Carsten vorgelegt; der erste
-  Abruf (XI.15) erst auf sein Wort.  Seine noch offenen Festlegungen —
-  von mir vorläufig so angenommen: je Vers/Satz (nicht je Gruppe), auf
-  Zuruf (nicht mit C-c u G).  Offen: im Tantrāloka sind die
+  CARSTENS FESTLEGUNGEN (22.11., `aa74eca'): der Prompt „passt“; „je
+  Vers und nicht auf Zuruf, sondern wenn es was gibt was beachtet
+  werden sollte“.  Also kommt der Überblick MIT C-c u G: wenn alles vom
+  Vers da ist und sein PDF exportiert wurde
+  (`bcat-export-passage-complete-functions' → `bcat-survey-after-fetch'),
+  ein weiterer Abruf — für Stellen mit mindestens zwei Quellen neben
+  sich selbst (`bcat-survey-auto-sources' 3), nur wenn für das Material
+  noch keine Antwort vorliegt; abschaltbar (`bcat-survey-auto').  Die
+  Antwort sagt selbst, ob es etwas zu beachten gibt (Feld `notable':
+  „yes“/„no“, die EINE Regel, die zum gebilligten Wortlaut hinzukam);
+  nur dann wird der Überblick geschrieben und geht als PDF mit, sonst
+  bleibt nur die Antwort aufbewahrt.  C-c u Q auf Zuruf schreibt ihn
+  immer.  In der Testsuite ist `bcat-survey-auto' aus.
+  ERSTER ECHTER ABRUF: XI.15 (22.11., 14:25; acht Quellen, rund 10 000
+  Zeichen) → Sanskrit-11/analysis/survey-032-msa.org,
+  handouts/msa-XI.15-ueberblick.pdf (4 S.); NICHT hochgeladen (wartet
+  auf sein Wort), XI.16–20 nicht abgerufen.  Befund: Aufbau und die
+  meisten Beobachtungen tragen (Phywa pa trägt pariniṣpanna nach und
+  macht aus der Erläuterung einen Beweis; Dharmachakras „features“;
+  Lévis zwei Versehen).  Schwächer als das Muster von Hand: dass
+  DASSELBE Bildelement (der Träger der Täuschung) im Bhāṣya für
+  paratantra, bei Phywa pa für pariniṣpanna steht, wird nur halb
+  gesagt; der Teil „Sanskrit und Tibetisch“ übersieht yantra/mantra und
+  bhrāntinimitta/rgyu mtshan und spekuliert beim Passiv; Begriffe nicht
+  durchweg kursiv.  Vorschlag an Carsten (Prompt nur auf sein Wort):
+  bei einem Gleichnis je Schicht sagen lassen, wofür jedes Bildelement
+  steht.  Die Tabellen haben Absatzspalten fester Breite (:align p{…}):
+  die Antwort schrieb Zellen von einem Dutzend Wörtern, und die Tabelle
+  wurde unlesbar klein.
+  Offen: im Tantrāloka sind die
   Viveka-Sätze eigene Sätze derselben Quelle und noch keine „Schicht“
   des Verses (dort gäbe es vorerst nur „Stimmen“: Dyczkowski,
   Sanderson).

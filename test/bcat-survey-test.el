@@ -110,8 +110,11 @@ a draft and carries the tool's stamp."
     ;; for its PDF: the title, but neither author nor date; its tables
     ;; are plain ones — no row of them is a gloss
     (should (string-match-p "^#\\+OPTIONS: toc:nil num:nil author:nil date:nil$" text))
+    ;; … and their columns are paragraphs of a fixed width: a long cell
+    ;; wraps (22.11., the first real survey: cells of a dozen words, the
+    ;; tables scaled down until nobody could read them)
     (should (= 2 (with-temp-buffer (insert text)
-                                   (how-many "^#\\+ATTR_LATEX: :font \\\\bcatplain\n| " (point-min) (point-max)))))
+                                   (how-many "^#\\+ATTR_LATEX: :font \\\\bcatplain :align p{[^\n]*}\n| " (point-min) (point-max)))))
     (should (string-match-p "^\\* Die Stelle in einem Satz\nZwei Vergleiche: wie der Mond" text))
     ;; (the tables are aligned)
     (should (string-match-p "^| Vers +| zwei Vergleiche +| — +|\n| Bhāṣya +| Beweis durch Beispiel +| Logik kommt herein +|$" text))

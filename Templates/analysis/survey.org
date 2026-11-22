@@ -18,7 +18,10 @@ from key text) voices-line; questions-p questions (num text); documents
 (name).  Die Tabellen tragen nur Stichworte (sie müssen auf die Seite des
 reMarkable passen); das Ausführliche steht darunter.  „#+ATTR_LATEX:
 :font \bcatplain“ kennzeichnet sie für das PDF als schlichte Tabellen —
-sonst färbt der Export ihre Zeilen wie die einer Glossentabelle.
+sonst färbt der Export ihre Zeilen wie die einer Glossentabelle.  Die
+Spalten sind Absätze fester Breite (:align p{…}): eine lange Zelle
+bricht um, statt dass die Tabelle verkleinert wird (22.11., der erste
+echte Überblick: Zellen von einem Dutzend Wörtern, unlesbar klein).
 #+end_comment
 #+TITLE: {{label}} — Überblick
 #+OPTIONS: toc:nil num:nil author:nil date:nil
@@ -31,7 +34,7 @@ sonst färbt der Export ihre Zeilen wie die einer Glossentabelle.
 {{gist}}
 
 * Die Schichten — was jede daraus macht
-#+ATTR_LATEX: :font \bcatplain
+#+ATTR_LATEX: :font \bcatplain :align p{0.18\linewidth}p{0.37\linewidth}p{0.37\linewidth}
 | Schicht | Kern | Was sich verschiebt |
 |---------+------+---------------------|
 {{#layers}}
@@ -60,7 +63,7 @@ sonst färbt der Export ihre Zeilen wie die einer Glossentabelle.
 {{/wording-p}}
 {{#voices-p}}
 * Die Stimmen — worauf jede achtet
-#+ATTR_LATEX: :font \bcatplain
+#+ATTR_LATEX: :font \bcatplain :align p{0.2\linewidth}p{0.36\linewidth}p{0.36\linewidth}
 | Wer | Woraus | Kennzeichnend |
 |-----+--------+---------------|
 {{#voices}}
