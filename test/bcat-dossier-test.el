@@ -263,6 +263,40 @@ twice."
       (should (= 1 (cl-count "Reading" parts :test #'equal)))
       (should (bcat-dossier-test--links-resolve text)))))
 
+(ert-deftest bcat-dossier-bhasya-analysed ()
+  "Carsten 22.11.: „das tibetische Bhāṣya analysiert“.  With the bhāṣya
+named as a commentary and fetched, the dossier's layer „02 Bhāṣya“ —
+the Sanskrit and Tibetan text with translation and hint, as before —
+jumps into its analysis, and the PDF has the part „Bhāṣya“ with the
+Tibetan sentences of the bhāṣya's document (jump targets bh-N, apart
+from the commentator's comm-N), before the commentator's part."
+  (bcat-commentary-test--with-bhasya
+    (bcat-commentary-test--with-file-stubs #'bcat-commentary-test--bhasya-answer
+      (bcat-sentence-test--fetch-n src 36))
+    (let* ((file (tibetan-sentence--filepath 36 folder src))
+           (ctx (bcat-dossier-context file t))
+           (layers (alist-get 'layers ctx))
+           (text (plist-get (bcat-dossier-pdf-text file) :text))
+           (parts (bcat-dossier-test--parts text)))
+      (should (equal '("01 Vers" "02 Bhāṣya" "03 Sthiramati")
+                     (mapcar (lambda (l) (car (split-string (alist-get 'heading l) " (")))
+                             layers)))
+      (should (equal "[[#bhasya][Analyse ↓]]" (alist-get 'link (nth 1 layers))))
+      (should (equal '("comm-IX.16-mdo.org" "comm-IX.16-savbh.org")
+                     (mapcar #'file-name-nondirectory (alist-get 'commentary-docs ctx))))
+      ;; the parts: Bhāṣya before Sthiramati, both after the Tibetan
+      (should (equal '("Tibetan" "Bhāṣya" "Sthiramati")
+                     (cl-remove-if-not (lambda (p) (member p '("Tibetan" "Bhāṣya" "Sthiramati"))) parts)))
+      (should (string-match-p
+               (regexp-quote (concat "* Bhāṣya\n:PROPERTIES:\n:CUSTOM_ID: bhasya\n:END:\n"
+                                     "** Sentence 65\n:PROPERTIES:\n:CUSTOM_ID: bh-65\n:END:\n"))
+               text))
+      (should (string-match-p "^\\*\\* Sentence 258\n:PROPERTIES:\n:CUSTOM_ID: comm-258\n:END:$" text))
+      (should (bcat-dossier-test--links-resolve text)))
+    ;; in the org dossier the layer links the document
+    (let ((layer (nth 1 (alist-get 'layers (bcat-dossier-context (tibetan-sentence--filepath 36 folder src))))))
+      (should (string-match-p "comm-IX\\.16-mdo\\.org\\]\\[Analyse\\]\\]" (alist-get 'link layer))))))
+
 (ert-deftest bcat-dossier-folio-of-a-manuscript ()
   "22.11., Phywa pa: his folios are given as „Ms 82b4“ (a manuscript,
 counted after the scan), not as one word like „D105b4“ — the reading

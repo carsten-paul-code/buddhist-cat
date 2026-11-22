@@ -177,19 +177,39 @@ for the verse's wording."
   (let ((v (and file (bcat-sentence--header-value file key))))
     (and v (expand-file-name v (file-name-directory (expand-file-name file))))))
 
+(defun bcat-commentary-sources (source-file)
+  "The commentary sources of the verse SOURCE-FILE in the order named:
+every #+CAT_COMMENTARY of the Sanskrit source (for the Tibetan one, of
+its parallel).  22.11.: a verse may have several — the bhāṣya (the
+Tibetan source of the pair itself, `bcat-commentary-bhasya-p') and a
+commentator, Sthiramati or Phywa pa."
+  (let ((lead (if (equal (bcat-sentence-template-name source-file) "bilingual-tibetan")
+                  (bcat-sentence-parallel-source source-file)
+                source-file)))
+    (and lead
+         (mapcar (lambda (v) (expand-file-name v (file-name-directory (expand-file-name lead))))
+                 (bcat-sentence--header-values lead "CAT_COMMENTARY")))))
+
+(defun bcat-commentary-bhasya-p (commentary-source)
+  "Non-nil when COMMENTARY-SOURCE is the Tibetan source of a pair of
+verse sources.  Named as a commentary (Carsten 22.11.: „das tibetische
+Bhāṣya analysiert“), its commentary is the bhāṣya: the sentences
+around its verses, of each verse Section for that verse alone."
+  (equal (bcat-sentence-template-name commentary-source) "bilingual-tibetan"))
+
 (defun bcat-commentary-source (source-file)
-  "The commentary source of the verse SOURCE-FILE — #+CAT_COMMENTARY of
-the Sanskrit source (for the Tibetan one, of its parallel) — or nil."
-  (bcat-commentary--header-path
-   (if (equal (bcat-sentence-template-name source-file) "bilingual-tibetan")
-       (bcat-sentence-parallel-source source-file)
-     source-file)
-   "CAT_COMMENTARY"))
+  "„The“ commentary source of the verse SOURCE-FILE — the first named
+that is a commentator's, not the bhāṣya (`bcat-commentary-sources') —,
+or nil: the one the verse files link their lemmata to."
+  (cl-find-if-not #'bcat-commentary-bhasya-p (bcat-commentary-sources source-file)))
 
 (defun bcat-commentary-lead (commentary-source)
   "The Sanskrit verse source COMMENTARY-SOURCE comments on
-\(#+CAT_COMMENTS_ON), or nil."
-  (bcat-commentary--header-path commentary-source "CAT_COMMENTS_ON"))
+\(#+CAT_COMMENTS_ON; for the bhāṣya, `bcat-commentary-bhasya-p', the
+parallel of its source), or nil."
+  (or (bcat-commentary--header-path commentary-source "CAT_COMMENTS_ON")
+      (and (bcat-commentary-bhasya-p commentary-source)
+           (bcat-sentence-parallel-source commentary-source))))
 
 (defun bcat-commentary--section-labels (file)
   "The Section labels of FILE's sentences, in order, each once."
@@ -235,20 +255,29 @@ in its order: the verse Sections of LEAD each covers — those its title
 names (`bcat-commentary--range'); for a Section named like a verse
 Section that one and the following ones at which no Section of the
 commentary begins (Sthiramati's IX.2 covers IX.3); nil for one that
-names none."
-  (let* ((own (bcat-commentary--section-labels commentary-source))
-         (order (bcat-commentary--section-labels lead))
-         (ranges (mapcar (lambda (s) (cons s (bcat-commentary--range s order))) own))
-         (begins (delq nil (mapcar (lambda (r) (if (cdr r) (cadr r) (car (member (car r) order))))
-                                   ranges))))
-    (mapcar (lambda (r)
-              (cons (car r)
-                    (or (cdr r)
-                        (let ((pos (cl-position (car r) order :test #'equal)))
-                          (and pos (cons (car r)
-                                         (cl-loop for l in (nthcdr (1+ pos) order)
-                                                  until (member l begins) collect l)))))))
-            ranges)))
+names none.  Only Sections that have commentary count (not one with a
+root verse alone); the bhāṣya's (`bcat-commentary-bhasya-p') cover their
+own verse Section and no other."
+  (let* (;; its Sections that have commentary — not one with a root
+         ;; verse alone
+         (own (delete-dups
+               (delq nil (mapcar (lambda (s) (and (not (plist-get s :verse)) (plist-get s :section-label)))
+                                 (bcat-sentence--sentences commentary-source)))))
+         (order (bcat-commentary--section-labels lead)))
+    (if (bcat-commentary-bhasya-p commentary-source)
+        ;; the bhāṣya of a verse Section is that verse's alone
+        (mapcar (lambda (s) (cons s (and (member s order) (list s)))) own)
+      (let* ((ranges (mapcar (lambda (s) (cons s (bcat-commentary--range s order))) own))
+             (begins (delq nil (mapcar (lambda (r) (if (cdr r) (cadr r) (car (member (car r) order))))
+                                       ranges))))
+        (mapcar (lambda (r)
+                  (cons (car r)
+                        (or (cdr r)
+                            (let ((pos (cl-position (car r) order :test #'equal)))
+                              (and pos (cons (car r)
+                                             (cl-loop for l in (nthcdr (1+ pos) order)
+                                                      until (member l begins) collect l)))))))
+                ranges)))))
 
 (defun bcat-commentary-sections (label lead commentary-source)
   "The Sections of COMMENTARY-SOURCE that comment on the verse Section
@@ -391,9 +420,13 @@ HIT (PADA . READINGS): the pāda with a link into its Tibetan verse file
 ;; ----------------------------------------------------------------------------
 
 (defun bcat-commentary--author (commentary-source)
-  "The commentator: COMMENTARY-SOURCE's #+TITLE up to the first comma."
-  (let ((title (bcat-sentence--header-value commentary-source "TITLE")))
-    (string-trim (car (split-string (or title (file-name-base commentary-source)) "[,—]")))))
+  "The commentator: COMMENTARY-SOURCE's #+TITLE up to the first comma;
+„Bhāṣya“ for the bhāṣya of a pair's Tibetan source
+\(`bcat-commentary-bhasya-p')."
+  (if (bcat-commentary-bhasya-p commentary-source)
+      "Bhāṣya"
+    (let ((title (bcat-sentence--header-value commentary-source "TITLE")))
+      (string-trim (car (split-string (or title (file-name-base commentary-source)) "[,—]"))))))
 
 (defun bcat-commentary-rump-context (section commentary-source &optional keep lemmata)
   "Template fields of the commentary document of SECTION, all without
@@ -581,15 +614,22 @@ Rules:
             ;; 16.11.: „Worum es geht“ — what the commentator does
             (bcat-analysis--overview-rule) lang)))
 
-(defun bcat-commentary-user-prompt (verse sentences refs &optional context)
+(defun bcat-commentary-user-prompt (verse sentences refs &optional context sanskrit)
   "The user prompt of a commentary request: VERSE ((NUM . WYLIE) …) the
 Tibetan verse lines, SENTENCES ((NUM (SEG TIBETAN WYLIE) …) …) the
 commentary, REFS ((NAME . TEXT) …), CONTEXT the source's
-#+TIBETAN_CLAUDE_CONTEXT lines."
+#+TIBETAN_CLAUDE_CONTEXT lines.  SANSKRIT: the lines of the Sanskrit
+the passage translates — for the bhāṣya (22.11.), not for a Tibetan
+commentator."
   (concat
    (if context (concat (mapconcat #'identity context "\n") "\n\n") "")
    "The verse (Tibetan, by line):\n"
    (mapconcat (lambda (l) (format "[%d] %s" (car l) (cdr l))) verse "\n")
+   (if sanskrit
+       (concat "\n\nThe Sanskrit of this passage:\n"
+               (mapconcat #'identity sanskrit "\n")
+               "\n(The Tibetan below translates it; where the two differ, say so in the note of the segment.)")
+     "")
    "\n\nThe commentary — sentences and segments:\n"
    (mapconcat (lambda (s)
                 (concat (format "Sentence %d\n" (car s))
@@ -829,7 +869,12 @@ get their links and the document goes to the reMarkable (C-c u H)."
       (let* ((source (plist-get run :source))
              (lead (bcat-commentary-lead source))
              (parallel (bcat-sentence-parallel-source lead)))
-        (dolist (v (bcat-commentary--verses (plist-get run :section) lead source))
+        ;; the verse files link the lemmata of „the“ commentary
+        ;; (`bcat-commentary-source'), not the bhāṣya's
+        (dolist (v (and (equal (expand-file-name source)
+                               (and (bcat-commentary-source lead)
+                                    (expand-file-name (bcat-commentary-source lead))))
+                        (bcat-commentary--verses (plist-get run :section) lead source)))
           (let* ((n (plist-get v :sent-num))
                  (assignment (bcat-commentary--verse-assignment n lead))
                  (other (bcat-sentence--parallel-sentence n lead)))
@@ -882,7 +927,13 @@ the run ends and the next C-c u G asks again."
          (doc (plist-get run :doc))
          (meta (ignore-errors (tibetan-analysis--read-source-metadata source)))
          (lead (bcat-commentary-lead source))
-         (verse (bcat-commentary--padas (bcat-commentary--verses (plist-get run :section) lead source) lead))
+         (verses (bcat-commentary--verses (plist-get run :section) lead source))
+         (verse (bcat-commentary--padas verses lead))
+         ;; the bhāṣya translates a Sanskrit text: that goes with it
+         (sanskrit (and (bcat-commentary-bhasya-p source)
+                        (cl-loop for v in verses
+                                 append (mapcar (lambda (g) (string-trim (cdr g)))
+                                                (bcat-sentence--bhasya-segs v lead)))))
          (dm (plist-get run :dm))
          (k 0))
     (bcat-commentary--status run (format "angefragt (%d Teil%s)" (length chunks)
@@ -900,7 +951,8 @@ the run ends and the next C-c u G asks again."
          (format "bcat-commentary-%d" k) doc
          (lambda ()
            (cons (bcat-commentary-system-prompt (or (plist-get meta :target-lang) "en"))
-                 (bcat-commentary-user-prompt verse sentences refs (plist-get meta :claude-context))))
+                 (bcat-commentary-user-prompt verse sentences refs (plist-get meta :claude-context)
+                                              sanskrit)))
          (lambda (_f response) (bcat-commentary--land doc k response))
          (lambda (_f reason) (bcat-commentary--fail doc k reason)))))))
 

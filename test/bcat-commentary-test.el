@@ -550,19 +550,24 @@ Sections — by the name of the document."
                       " \"grammar\": \"g\", \"translation\": \"t\", \"comparison\": \"\", \"bhasya_hint\": \"\"}")
             bcat-commentary-test--verse-answer-sa)))))))
 
-(defmacro bcat-commentary-test--with-phywa-stubs (&rest body)
+(defmacro bcat-commentary-test--with-file-stubs (answer &rest body)
   "BODY with `bcat-sentence-test--with-stubs', every request answered by
-`bcat-commentary-test--phywa-answer'."
-  (declare (indent 0))
+ANSWER, a function of the request's kind and its file."
+  (declare (indent 1))
   `(bcat-sentence-test--with-stubs #'ignore
      (cl-letf (((symbol-function 'tibetan-discussion--submit)
                 (lambda (kind file thunk land &optional _fail)
                   (cl-incf submits)
                   (push kind kinds)
                   (push (funcall thunk) prompts)
-                  (funcall land file (bcat-commentary-test--phywa-answer kind file))
+                  (funcall land file (funcall ,answer kind file))
                   t)))
        ,@body)))
+
+(defmacro bcat-commentary-test--with-phywa-stubs (&rest body)
+  "BODY with every request answered by `bcat-commentary-test--phywa-answer'."
+  (declare (indent 0))
+  `(bcat-commentary-test--with-file-stubs #'bcat-commentary-test--phywa-answer ,@body))
 
 (ert-deftest bcat-commentary-fetch-every-section-of-a-verse ()
   "Carsten 22.11.: „je Vers“, Phywa pa as the third layer, „so wie bei IX
@@ -601,6 +606,102 @@ commentary came with IX.15."
       ;; one export per verse
       (should (equal (list (tibetan-sentence--filepath 34 folder src) (tibetan-sentence--filepath 36 folder src))
                      (sort (mapcar #'expand-file-name exports) #'string<))))))
+
+(defmacro bcat-commentary-test--with-bhasya (&rest body)
+  "As `bcat-commentary-test--with-msa', the Sanskrit source naming two
+commentaries: its own Tibetan parallel — the bhāṣya there is to be
+analysed — and Sthiramati."
+  (declare (indent 0))
+  `(bcat-commentary-test--with-msa
+     (with-temp-file src
+       (insert (replace-regexp-in-string
+                "^#\\+CAT_COMMENTARY: \\.\\./Sthiramati/savbh-cat\\.org$"
+                "#+CAT_COMMENTARY: ../Tibetisch/mdo-cat.org\n#+CAT_COMMENTARY: ../Sthiramati/savbh-cat.org"
+                bcat-commentary-test--sanskrit t)))
+     ,@body))
+
+(defun bcat-commentary-test--bhasya-answer (kind file)
+  "Claude's answer in the trio with the bhāṣya as a commentary: for the
+bhāṣya's document (comm-…-mdo.org) its one segment, else as
+`bcat-commentary-test--answers'."
+  (if (and (string-prefix-p "bcat-commentary" kind)
+           (string-match-p "-mdo\\.org\\'" file))
+      (format "{\"segments\": [%s], \"sentences\": [{\"num\": 65, \"grammar\": \"/sgrub par byed do/ closes the sentence.\"}]}"
+              (bcat-commentary-test--segment 143 0 "By this fifth verse he proves by an example …"))
+    (bcat-commentary-test--answers kind)))
+
+(ert-deftest bcat-commentary-sources-with-bhasya ()
+  "Carsten 22.11. (what he misses of the Tibetan in the MSA dossier: the
+full analysis of the verse „und das tibetische Bhāṣya analysiert“).
+The bhāṣya is a commentary on the verse and is analysed as one: the
+Sanskrit source names its Tibetan parallel as a commentary
+\(#+CAT_COMMENTARY, as many lines as there are commentaries), and the
+sentences of that source that are no verses are the commentary — the
+bhāṣya of each verse Section, of that Section only.  A verse without
+bhāṣya has no such Section.  „The“ commentary of a verse stays the
+first real one (Sthiramati)."
+  (bcat-commentary-test--with-bhasya
+    (should (equal (list tsrc csrc) (bcat-commentary-sources src)))
+    (should (equal (list tsrc csrc) (bcat-commentary-sources tsrc)))
+    (should (equal csrc (bcat-commentary-source src)))
+    (should (bcat-commentary-bhasya-p tsrc))
+    (should-not (bcat-commentary-bhasya-p csrc))
+    (should (equal src (bcat-commentary-lead tsrc)))
+    (should (equal "Bhāṣya" (bcat-commentary--author tsrc)))
+    (should (equal '("Section IX.16") (bcat-commentary-sections "Section IX.16" src tsrc)))
+    (should (equal '(65) (mapcar (lambda (s) (plist-get s :sent-num))
+                                 (bcat-commentary--sentences "Section IX.16" tsrc))))
+    (should (equal '("Section IX.16") (bcat-commentary--covered "Section IX.16" src tsrc)))
+    (should (equal (expand-file-name "comm-IX.16-mdo.org" tfolder)
+                   (bcat-commentary-file "Section IX.16" tsrc)))
+    ;; IX.15 and IX.17 have no bhāṣya in the Tibetan source: nothing
+    ;; there, and the bhāṣya of IX.16 does not reach over to IX.17
+    (should-not (bcat-commentary-sections "Section IX.15" src tsrc))
+    (should-not (bcat-commentary-sections "Section IX.17" src tsrc)))
+  ;; one commentary, as before
+  (bcat-commentary-test--with-msa
+    (should (equal (list csrc) (bcat-commentary-sources src)))
+    (should (equal csrc (bcat-commentary-source src)))))
+
+(ert-deftest bcat-commentary-fetch-bhasya-with-verse ()
+  "C-c u G on the verse IX.16 with two commentaries named: the verse
+pair, Sthiramati's Section and the bhāṣya's — the bhāṣya's document
+\(comm-IX.16-mdo.org beside the Tibetan source) with the full analysis
+of its Tibetan sentence.  Its request is told the Sanskrit of the
+passage (the bhāṣya is a translation; Phywa pa's or Sthiramati's
+commentary is not).  One PDF for the verse, when all three are in."
+  (bcat-commentary-test--with-bhasya
+    (let ((exports '())
+          (bhasya (expand-file-name "comm-IX.16-mdo.org" tfolder))
+          (sthiramati (expand-file-name "comm-IX.16-savbh.org" cfolder)))
+      (cl-letf (((symbol-function 'bcat-export-file) (lambda (f) (push f exports) nil))
+                ((symbol-function 'tibetan-discussion-paper--temp-source-p) #'ignore))
+        (let ((bcat-export-auto t))
+          (bcat-commentary-test--with-file-stubs #'bcat-commentary-test--bhasya-answer
+            (add-hook 'bcat-sentence-after-fetch-functions #'bcat-export-after-fetch)
+            (bcat-sentence-test--fetch-n src 36)
+            (should (= 2 (cl-count-if (lambda (k) (string-prefix-p "bcat-commentary" k)) kinds)))
+            (should (= 4 (length kinds)))
+            ;; the request for the bhāṣya: with its Sanskrit
+            (let ((user (cdr (cl-find-if (lambda (pr) (string-match-p (regexp-quote "Sentence 65\n[143] Tibetan:") (cdr pr)))
+                                         prompts))))
+              (should user)
+              (should (string-match-p
+                       (regexp-quote "The Sanskrit of this passage:\natha pañcamaḥ ślokaḥ /\nanena pañcamena sarvagatatve")
+                       user)))
+            ;; Sthiramati's request: no Sanskrit of his own
+            (should-not (string-match-p "The Sanskrit of this passage"
+                                        (cdr (cl-find-if (lambda (pr) (string-match-p (regexp-quote "Sentence 258\n") (cdr pr)))
+                                                         prompts)))))))
+      (should (file-exists-p sthiramati))
+      (should (file-exists-p bhasya))
+      (let ((text (bcat-sentence-test--text-of bhasya)))
+        (should (string-match-p "^#\\+TITLE: Bhāṣya zu MSA IX\\.16$" text))
+        (should (string-match-p "^\\* Sentence 65$" text))
+        (should-not (string-match-p "^\\* Sentence 64$" text))
+        (should (string-match-p "^⟦143⟧ \\*Translation:\\* By this fifth verse he proves by an example" text))
+        (should-not (bcat-commentary-incomplete-p "Section IX.16" tsrc)))
+      (should (equal (list (tibetan-sentence--filepath 36 folder src)) exports)))))
 
 (ert-deftest bcat-commentary-create ()
   "C-c u A in Sthiramati's source (no AI): the commentary document of the

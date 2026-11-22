@@ -64,6 +64,17 @@ the old pipeline."
                                nil t)
         (match-string 1)))))
 
+(defun bcat-sentence--header-values (file key)
+  "The values of every #+KEY: line in the head of FILE, in order."
+  (when (and file (file-readable-p file))
+    (with-temp-buffer
+      (insert-file-contents file nil 0 4096)
+      (goto-char (point-min))
+      (let ((out '()))
+        (while (re-search-forward (format "^#\\+%s:[ \t]*\\(.*[^ \t\n]\\)" (regexp-quote key)) nil t)
+          (push (match-string 1) out))
+        (nreverse out)))))
+
 (defun bcat-sentence-template-name (source-file)
   "The template new sentence files of SOURCE-FILE are built from, or nil
 for the old layout.  A source switches it on explicitly with
@@ -512,6 +523,7 @@ footnote definitions in them at the end (`bcat-analysis-footnotes-last')."
               refs "\n\n")))
 
 (declare-function bcat-commentary-source "bcat-commentary" (source-file))
+(declare-function bcat-commentary-sources "bcat-commentary" (source-file))
 (declare-function bcat-commentary-lead "bcat-commentary" (commentary-source))
 (declare-function bcat-commentary--verses "bcat-commentary" (section lead commentary-source))
 (declare-function bcat-commentary-section "bcat-commentary" (label lead commentary-source))
@@ -1920,8 +1932,10 @@ from the same requests.  Returns (:sentences N :fired N :complete N
          (redirect (and (equal (bcat-sentence-template-name given) "bilingual-tibetan")
                         (bcat-sentence--paired-p given)))
          (src (if redirect (bcat-sentence-parallel-source given) given))
-         (commentary (and (bcat-sentence--verse-mode-p src)
-                          (progn (require 'bcat-commentary) (bcat-commentary-source src))))
+         ;; 22.11.: every commentary named — the bhāṣya of the Tibetan
+         ;; source, the commentator(s)
+         (commentaries (and (bcat-sentence--verse-mode-p src)
+                            (progn (require 'bcat-commentary) (bcat-commentary-sources src))))
          (pair (bcat-sentence--paired-p src))
          (label (plist-get scope :label))
          ;; From the Tibetan source: its sentence → its verse (verse
@@ -1960,11 +1974,15 @@ from the same requests.  Returns (:sentences N :fired N :complete N
       (let* (;; 22.11.: every Section of the commentary that covers the
              ;; verse (Phywa pa: an introduction to the group and the
              ;; Section on the pair) — those still to be analysed
+             ;; … as ((COMMENTARY . SECTION) …)
              (open-of (lambda (s)
-                        (and commentary
-                             (cl-remove-if-not
-                              (lambda (sec) (or force (bcat-commentary-incomplete-p sec commentary)))
-                              (bcat-commentary-sections (plist-get s :section-label) src commentary)))))
+                        (cl-loop for commentary in commentaries
+                                 append (mapcar
+                                         (lambda (sec) (cons commentary sec))
+                                         (cl-remove-if-not
+                                          (lambda (sec) (or force (bcat-commentary-incomplete-p sec commentary)))
+                                          (bcat-commentary-sections (plist-get s :section-label)
+                                                                    src commentary))))))
              (states (mapcar (lambda (s)
                                (cons s (or (cond
                                             (force 'full)
@@ -2006,8 +2024,8 @@ from the same requests.  Returns (:sentences N :fired N :complete N
             ;; waits for it.
             (when (fboundp 'bcat-dossier-await)
               (dolist (o open)
-                (dolist (sec (cdr o))
-                  (bcat-dossier-await (funcall file-of (car o)) (bcat-commentary-file sec commentary)))))
+                (dolist (cs (cdr o))
+                  (bcat-dossier-await (funcall file-of (car o)) (bcat-commentary-file (cdr cs) (car cs))))))
             ;; the verses …
             (dolist (c todo)
               (when (eq 'fired
@@ -2020,10 +2038,10 @@ from the same requests.  Returns (:sentences N :fired N :complete N
             ;; … then the commentary with them (Carsten 30.10.: „immer
             ;; beide“) — once per Section of the commentary.
             (dolist (o open)
-              (dolist (sec (cdr o))
-                (unless (member sec sections)
-                  (push sec sections)
-                  (bcat-commentary-fetch sec commentary (funcall file-of (car o))))))))
+              (dolist (cs (cdr o))
+                (unless (member cs sections)
+                  (push cs sections)
+                  (bcat-commentary-fetch (cdr cs) (car cs) (funcall file-of (car o))))))))
         (if (null todo)
             (message "%s: vollständig — nichts abgerufen (neu abrufen: C-u C-c u G)" label)
           (message "%s: %d Satz/Sätze — %d abgerufen (davon %d Zuordnung neuer Vergleichsübersetzungen), %d vollständig%s%s"
