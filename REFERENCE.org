@@ -1,9 +1,9 @@
 #+TITLE: Function Reference — buddhist-cat
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-11-22T13:55:19
+#+DATE: 2026-11-22T14:23:25
 #+OPTIONS: toc:2 num:nil
 
-Source tree: ~/Users/cp/buddhist-cat~  ·  100 modules  ·  2643 forms
+Source tree: ~/Users/cp/buddhist-cat~  ·  100 modules  ·  2649 forms
 
 Regenerated automatically by:
 
@@ -65,7 +65,7 @@ python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/buddhist-c
   - [[#persist/bcat-analysis.el][persist/bcat-analysis.el]]  (189)
   - [[#persist/bcat-commentary.el][persist/bcat-commentary.el]]  (75)
   - [[#persist/bcat-dossier.el][persist/bcat-dossier.el]]  (42)
-  - [[#persist/bcat-export.el][persist/bcat-export.el]]  (106)
+  - [[#persist/bcat-export.el][persist/bcat-export.el]]  (107)
   - [[#persist/bcat-faces.el][persist/bcat-faces.el]]  (56)
   - [[#persist/bcat-outline-draft.el][persist/bcat-outline-draft.el]]  (53)
   - [[#persist/bcat-outline.el][persist/bcat-outline.el]]  (13)
@@ -73,7 +73,7 @@ python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/buddhist-c
   - [[#persist/bcat-relayout.el][persist/bcat-relayout.el]]  (25)
   - [[#persist/bcat-sentence.el][persist/bcat-sentence.el]]  (122)
   - [[#persist/bcat-status.el][persist/bcat-status.el]]  (11)
-  - [[#persist/bcat-survey.el][persist/bcat-survey.el]]  (30)
+  - [[#persist/bcat-survey.el][persist/bcat-survey.el]]  (35)
   - [[#persist/bcat-template.el][persist/bcat-template.el]]  (17)
   - [[#persist/bcat-zettel.el][persist/bcat-zettel.el]]  (31)
   - [[#persist/tibetan-analysis-claude.el][persist/tibetan-analysis-claude.el]]  (77)
@@ -17313,7 +17313,7 @@ asked for (`bcat-export-force-upload').
 ** ~bcat-export-after-fetch~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1797
+:LINE: 1802
 :SIGNATURE: (bcat-export-after-fetch file)
 :END:
 
@@ -17329,7 +17329,7 @@ rmapi failure must not spoil the landed analysis.
 ** ~bcat-export-after-survey~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1840
+:LINE: 1848
 :SIGNATURE: (bcat-export-after-survey lead _survey)
 :END:
 
@@ -17342,7 +17342,7 @@ signals.
 ** ~bcat-export~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 1857
+:LINE: 1865
 :SIGNATURE: (bcat-export)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -17782,10 +17782,21 @@ What the name of the PDF of „Worum es geht“ adds to that of its file's.
 What the name of the PDF of the survey of a passage („Überblick“,
 bcat-survey.el) adds to that of its file's.
 
+** ~bcat-export-passage-complete-functions~  /variable/
+:PROPERTIES:
+:KIND: defvar
+:LINE: 1797
+:DEFAULT: nil
+:END:
+
+Called with the sentence FILE of a passage when, after a fetch, all
+of it is in and its PDF was exported (`bcat-export-after-fetch') — the
+survey of its sources follows (bcat-survey.el, 22.11.).
+
 ** ~bcat-survey-done-functions~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 1838
+:LINE: 1846
 :END:
 
 /(no docstring)/
@@ -21198,7 +21209,7 @@ The status buffer of C-c u G / C-c u H.
 ** ~bcat-survey--lead~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 65
+:LINE: 90
 :SIGNATURE: (bcat-survey--lead file)
 :END:
 
@@ -21209,7 +21220,7 @@ commentary document; nil when FILE is none of these.
 ** ~bcat-survey-file~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 74
+:LINE: 99
 :SIGNATURE: (bcat-survey-file file)
 :END:
 
@@ -21220,7 +21231,7 @@ with „sent-“: no folder scan takes it for a sentence file).
 ** ~bcat-survey--plain~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 84
+:LINE: 109
 :SIGNATURE: (bcat-survey--plain text)
 :END:
 
@@ -21230,7 +21241,7 @@ text, no block lines, no lines left blank at its ends.
 ** ~bcat-survey--references~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 94
+:LINE: 119
 :SIGNATURE: (bcat-survey--references comparison)
 :END:
 
@@ -21242,7 +21253,7 @@ not the class's own „Translation“, not a machine translation.
 ** ~bcat-survey--transliterated~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 114
+:LINE: 139
 :SIGNATURE: (bcat-survey--transliterated lines)
 :END:
 
@@ -21255,7 +21266,7 @@ transliteration carries the mark.
 ** ~bcat-survey--layer~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 134
+:LINE: 159
 :SIGNATURE: (bcat-survey--layer layer)
 :END:
 
@@ -21266,7 +21277,7 @@ translation, its hint, its sentences each as „[N] lines → translation“.
 ** ~bcat-survey-material~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 158
+:LINE: 183
 :SIGNATURE: (bcat-survey-material file)
 :END:
 
@@ -21286,7 +21297,7 @@ nil when FILE has no analysis to read.
 ** ~bcat-survey-sources~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 210
+:LINE: 235
 :SIGNATURE: (bcat-survey-sources material)
 :END:
 
@@ -21296,7 +21307,7 @@ translations, the lecturers.
 ** ~bcat-survey-system-prompt~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 225
+:LINE: 250
 :SIGNATURE: (bcat-survey-system-prompt)
 :END:
 
@@ -21307,7 +21318,7 @@ prompt cache stays warm.  Its wording was laid before Carsten
 ** ~bcat-survey-user-prompt~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 245
+:LINE: 271
 :SIGNATURE: (bcat-survey-user-prompt material)
 :END:
 
@@ -21316,7 +21327,7 @@ The user prompt of the survey of MATERIAL (`bcat-survey-material').
 ** ~bcat-survey--read~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 268
+:LINE: 294
 :SIGNATURE: (bcat-survey--read response)
 :END:
 
@@ -21325,7 +21336,7 @@ The JSON object in Claude's RESPONSE as an alist, or nil.
 ** ~bcat-survey--field~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 276
+:LINE: 302
 :SIGNATURE: (bcat-survey--field alist key)
 :END:
 
@@ -21334,7 +21345,7 @@ The string under KEY in ALIST, trimmed; "" when missing.
 ** ~bcat-survey--cell~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 281
+:LINE: 307
 :SIGNATURE: (bcat-survey--cell text)
 :END:
 
@@ -21343,7 +21354,7 @@ TEXT as the cell of a table: one line, no bar.
 ** ~bcat-survey--list~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 285
+:LINE: 311
 :SIGNATURE: (bcat-survey--list value)
 :END:
 
@@ -21352,7 +21363,7 @@ VALUE of an answer as a list (a vector of JSON, a list, or nothing).
 ** ~bcat-survey--aligned~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 290
+:LINE: 316
 :SIGNATURE: (bcat-survey--aligned text)
 :END:
 
@@ -21361,7 +21372,7 @@ The org TEXT with its tables aligned.
 ** ~bcat-survey-untouched-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 299
+:LINE: 325
 :SIGNATURE: (bcat-survey-untouched-p text)
 :END:
 
@@ -21371,7 +21382,7 @@ changed since (`bcat-analysis-draft-untouched-p').
 ** ~bcat-survey-render~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 304
+:LINE: 330
 :SIGNATURE: (bcat-survey-render data material)
 :END:
 
@@ -21385,7 +21396,7 @@ part without content is left out.  Stamped as a draft
 ** ~bcat-survey--target~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 356
+:LINE: 382
 :SIGNATURE: (bcat-survey--target survey)
 :END:
 
@@ -21395,7 +21406,7 @@ that file was worked on by hand, <name>-Entwurf.org beside it.
 ** ~bcat-survey-pdf-text~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 364
+:LINE: 390
 :SIGNATURE: (bcat-survey-pdf-text file)
 :END:
 
@@ -21405,7 +21416,7 @@ PDF — without the tool's stamp —, or nil when there is none.
 ** ~bcat-survey--store~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 377
+:LINE: 403
 :SIGNATURE: (bcat-survey--store survey)
 :END:
 
@@ -21415,7 +21426,7 @@ analysis/.answers/<its name>.eld — with those of the sentence files.
 ** ~bcat-survey--stored~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 383
+:LINE: 409
 :SIGNATURE: (bcat-survey--stored survey)
 :END:
 
@@ -21424,7 +21435,7 @@ What is kept for SURVEY: (:key MD5 :answer OBJ), or nil.
 ** ~bcat-survey--keep~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 393
+:LINE: 419
 :SIGNATURE: (bcat-survey--keep survey key answer)
 :END:
 
@@ -21433,7 +21444,7 @@ Keep ANSWER, given for the material with KEY, for SURVEY.
 ** ~bcat-survey--key~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 404
+:LINE: 430
 :SIGNATURE: (bcat-survey--key material)
 :END:
 
@@ -21442,7 +21453,7 @@ What makes MATERIAL the same material again: its request.
 ** ~bcat-survey-pending-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 408
+:LINE: 434
 :SIGNATURE: (bcat-survey-pending-p file &optional fresh)
 :END:
 
@@ -21453,31 +21464,58 @@ one.
 ** ~bcat-survey--write~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 423
+:LINE: 449
 :SIGNATURE: (bcat-survey--write survey answer material)
 :END:
 
 Write the survey SURVEY from ANSWER and MATERIAL
 (`bcat-survey--target'); returns the file written.
 
+** ~bcat-survey-notable-p~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 469
+:SIGNATURE: (bcat-survey-notable-p answer)
+:END:
+
+Non-nil unless ANSWER, a survey's, says outright that there is
+nothing to note across the sources (its `notable' is „no“) — in doubt
+the survey is shown.
+
 ** ~bcat-survey-fetch~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 443
-:SIGNATURE: (bcat-survey-fetch file &optional fresh)
+:LINE: 477
+:SIGNATURE: (bcat-survey-fetch file &optional fresh auto)
 :END:
 
 Write the survey of the passage of the sentence FILE: ONE request
 that reads what is analysed (`bcat-survey-material') — or none, when
 the answer for this material is kept and FRESH does not ask for a new
-one: then the survey is set anew from it.  Asynchronous; returns the
-number of requests (1 or 0), nil while one is under way.  A passage
-with one source only has no survey (`user-error').
+one: then the survey is set anew from it.  AUTO: it comes with the
+fetch, unasked (`bcat-survey-after-fetch') — then a survey that finds
+nothing to note (`bcat-survey-notable-p') is not written, only kept.
+Asynchronous; returns the number of requests (1 or 0), nil while one is
+under way.  A passage with one source only has no survey
+(`user-error').
+
+** ~bcat-survey-after-fetch~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 523
+:SIGNATURE: (bcat-survey-after-fetch file)
+:END:
+
+Hook for `bcat-export-passage-complete-functions': C-c u G ends with
+the survey of the passage of the sentence FILE (`bcat-survey-auto') —
+when it has sources enough (`bcat-survey-auto-sources') and no answer
+is kept for its material as it is now.  Never signals: a survey is no
+reason to spoil a fetch.
 
 ** ~bcat-survey~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 480
+:LINE: 542
 :SIGNATURE: (bcat-survey &optional fresh)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -21493,10 +21531,41 @@ survey is only set anew, without a request.  With a prefix argument
 (C-u C-c u Q, FRESH) it is asked for again.  The result is a draft to
 be checked; a survey worked on by hand is not overwritten.
 
+** ~bcat-survey-auto~  /customize variable/
+:PROPERTIES:
+:KIND: defcustom
+:LINE: 62
+:TYPE: 'boolean
+:GROUP: buddhist-cat
+:DEFAULT: t
+:END:
+
+When non-nil, C-c u G of a passage ends with the survey of its
+sources (`bcat-survey-after-fetch') — Carsten 22.11., asked whether it
+should come on demand: „nicht auf Zuruf, sondern wenn es was gibt was
+beachtet werden sollte“.  One more request per passage with at least
+`bcat-survey-auto-sources' sources; the survey is written only when its
+answer finds something to note (`bcat-survey-notable-p').
+
+** ~bcat-survey-auto-sources~  /customize variable/
+:PROPERTIES:
+:KIND: defcustom
+:LINE: 72
+:TYPE: 'integer
+:GROUP: buddhist-cat
+:DEFAULT: 3
+:END:
+
+How many sources a passage must have for its survey to come with the
+fetch (`bcat-survey-auto'): itself and two others — a commentary and a
+published translation, two translations, a translation and a lecture.
+With one published translation alone the comparison in the sentence
+file says it all; C-c u Q still gives the survey on demand.
+
 ** ~bcat-survey--stamp~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 52
+:LINE: 58
 :DEFAULT: "CAT_SURVEY_WRITTEN"
 :END:
 
@@ -21506,7 +21575,7 @@ The keyword of the stamp on a drafted survey
 ** ~bcat-survey-done-functions~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 56
+:LINE: 81
 :DEFAULT: nil
 :END:
 
@@ -21517,11 +21586,19 @@ survey someone worked on.
 ** ~bcat-survey--schema~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 221
-:DEFAULT: "{\"gist\": \"…\", \"layers\": [{\"name\": \"…\", \"place\": \"…\", \"key\": \"…\", \"shift_key\": \"…\", \"says\": \"…\
+:LINE: 246
+:DEFAULT: "{\"notable\": \"yes\", \"gist\": \"…\", \"layers\": [{\"name\": \"…\", \"place\": \"…\", \"key\": \"…\", \"shift_key\":
 :END:
 
 The JSON contract of a survey (`bcat-survey-system-prompt').
+
+** ~bcat-export-passage-complete-functions~  /variable/
+:PROPERTIES:
+:KIND: defvar
+:LINE: 521
+:END:
+
+/(no docstring)/
 
 
 * persist/bcat-template.el

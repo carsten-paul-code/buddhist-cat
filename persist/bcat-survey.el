@@ -19,6 +19,12 @@
 ;; from one to the next, where the wording of one language allows what
 ;; the other does not, what each translator or lecturer attends to.
 ;;
+;; The survey comes with the fetch: C-c u G of a verse ends with it
+;; (Carsten 22.11.: „je Vers und nicht auf Zuruf, sondern wenn es was
+;; gibt was beachtet werden sollte“) — one more request, and the survey
+;; is written only when the answer finds something to note.  C-c u Q
+;; gives it on demand, noteworthy or not.
+;;
 ;; C-c u Q (`bcat-survey') asks ONE request per passage; it is given
 ;; only what is analysed already (`bcat-survey-material'): the layers
 ;; as the reading page of the dossier has them, the published
@@ -52,6 +58,25 @@
 (defconst bcat-survey--stamp "CAT_SURVEY_WRITTEN"
   "The keyword of the stamp on a drafted survey
 \(`bcat-analysis-draft-stamped').")
+
+(defcustom bcat-survey-auto t
+  "When non-nil, C-c u G of a passage ends with the survey of its
+sources (`bcat-survey-after-fetch') — Carsten 22.11., asked whether it
+should come on demand: „nicht auf Zuruf, sondern wenn es was gibt was
+beachtet werden sollte“.  One more request per passage with at least
+`bcat-survey-auto-sources' sources; the survey is written only when its
+answer finds something to note (`bcat-survey-notable-p')."
+  :type 'boolean
+  :group 'buddhist-cat)
+
+(defcustom bcat-survey-auto-sources 3
+  "How many sources a passage must have for its survey to come with the
+fetch (`bcat-survey-auto'): itself and two others — a commentary and a
+published translation, two translations, a translation and a lecture.
+With one published translation alone the comparison in the sentence
+file says it all; C-c u Q still gives the survey on demand."
+  :type 'integer
+  :group 'buddhist-cat)
 
 (defvar bcat-survey-done-functions nil
   "Called with (LEAD FILE) when a survey has been written — LEAD the
@@ -219,7 +244,7 @@ translations, the lecturers."
 ;; ----------------------------------------------------------------------------
 
 (defconst bcat-survey--schema
-  "{\"gist\": \"…\", \"layers\": [{\"name\": \"…\", \"place\": \"…\", \"key\": \"…\", \"shift_key\": \"…\", \"says\": \"…\", \"shift\": \"…\"}], \"layers_point\": \"…\", \"wording\": [\"…\"], \"voices\": [{\"name\": \"…\", \"from\": \"…\", \"key\": \"…\", \"text\": \"…\"}], \"voices_line\": \"…\", \"questions\": [\"…\"]}"
+  "{\"notable\": \"yes\", \"gist\": \"…\", \"layers\": [{\"name\": \"…\", \"place\": \"…\", \"key\": \"…\", \"shift_key\": \"…\", \"says\": \"…\", \"shift\": \"…\"}], \"layers_point\": \"…\", \"wording\": [\"…\"], \"voices\": [{\"name\": \"…\", \"from\": \"…\", \"key\": \"…\", \"text\": \"…\"}], \"voices_line\": \"…\", \"questions\": [\"…\"]}"
   "The JSON contract of a survey (`bcat-survey-system-prompt').")
 
 (defun bcat-survey-system-prompt ()
@@ -230,6 +255,7 @@ prompt cache stays warm.  Its wording was laid before Carsten
    "You compare the sources on one passage of a classical Indian or Tibetan text for a university reading class. You are given everything the class has on the passage: the passage itself, in one or two languages, with the class's own translation; its commentaries sentence by sentence, each with a translation; the published translations word for word; and, where there are any, excerpts of lectures. Each source has been analysed on its own already. What is missing is the view across them. Answer with ONE JSON object and nothing else (no prose, no code fence):\n\n"
    bcat-survey--schema
    "\n\nRules:\n"
+   "- notable: \"yes\" when a reader of the single documents would miss something that shows only across them — a shift between the layers that changes what the passage is taken to say, a wording of one language that opens or closes a reading, translations that differ in more than words; \"no\" when the layers say the same in other words and the voices agree. Fill the other fields either way.\n"
    "- gist: what the passage itself says, in one or two sentences — only what it says, nothing a commentary adds.\n"
    "- layers: the passage and every commentary given, in the order given, the passage first. name: as given („Vers“, „Bhāṣya“, the commentator). place: the numbers of its sentences or segments as given. says: what this layer says about the passage, two to four sentences. shift: what changes against the layer before it — a term that comes in, something narrowed, widened, reinterpreted or dropped, the same image assigned differently, a new vocabulary; „—“ for the passage itself; where nothing shifts, say so. key and shift_key: says and shift in a few words each, for a table.\n"
    "- layers_point: the one shift a reader must not miss, and what would have to be clarified in class; two to four sentences. \"\" with one layer only.\n"
@@ -440,13 +466,24 @@ one."
     (run-hook-with-args 'bcat-survey-done-functions (plist-get material :lead) target)
     target))
 
-(defun bcat-survey-fetch (file &optional fresh)
+(defun bcat-survey-notable-p (answer)
+  "Non-nil unless ANSWER, a survey's, says outright that there is
+nothing to note across the sources (its `notable' is „no“) — in doubt
+the survey is shown."
+  (let ((v (alist-get 'notable answer)))
+    (not (and (stringp v)
+              (member (downcase (string-trim v)) '("no" "nein" "false"))))))
+
+(defun bcat-survey-fetch (file &optional fresh auto)
   "Write the survey of the passage of the sentence FILE: ONE request
 that reads what is analysed (`bcat-survey-material') — or none, when
 the answer for this material is kept and FRESH does not ask for a new
-one: then the survey is set anew from it.  Asynchronous; returns the
-number of requests (1 or 0), nil while one is under way.  A passage
-with one source only has no survey (`user-error')."
+one: then the survey is set anew from it.  AUTO: it comes with the
+fetch, unasked (`bcat-survey-after-fetch') — then a survey that finds
+nothing to note (`bcat-survey-notable-p') is not written, only kept.
+Asynchronous; returns the number of requests (1 or 0), nil while one is
+under way.  A passage with one source only has no survey
+\(`user-error')."
   (let* ((material (or (bcat-survey-material file)
                        (user-error "%s hat keine Analyse, aus der ein Überblick entstehen könnte"
                                    (file-name-nondirectory file))))
@@ -456,9 +493,14 @@ with one source only has no survey (`user-error')."
                   (plist-get material :label) (or (car sources) "keine")))
     (let* ((survey (bcat-survey-file file))
            (key (bcat-survey--key material))
-           (stored (bcat-survey--stored survey)))
+           (stored (bcat-survey--stored survey))
+           (set (lambda (answer)
+                  (if (and auto (not (bcat-survey-notable-p answer)))
+                      (message "Überblick %s: nichts, was über die einzelnen Dokumente hinaus zu beachten wäre — nicht geschrieben (C-c u Q zeigt ihn trotzdem)"
+                               (plist-get material :label))
+                    (bcat-survey--write survey answer material)))))
       (if (and (not fresh) stored (equal key (plist-get stored :key)))
-          (progn (bcat-survey--write survey (plist-get stored :answer) material) 0)
+          (progn (funcall set (plist-get stored :answer)) 0)
         (require 'tibetan-translation-discussion)
         (message "Überblick %s: Abruf …" (plist-get material :label))
         (and (tibetan-discussion--submit
@@ -470,11 +512,31 @@ with one source only has no survey (`user-error')."
                       (message "Überblick %s: Antwort nicht lesbar — nichts geschrieben"
                                (plist-get material :label))
                     (bcat-survey--keep survey key answer)
-                    (bcat-survey--write survey answer material))))
+                    (funcall set answer))))
               (lambda (_file reason)
                 (message "Überblick %s: kein Ergebnis (%s) — nichts geschrieben"
                          (plist-get material :label) (or reason "ohne Antwort"))))
              1)))))
+
+(defvar bcat-export-passage-complete-functions)
+
+(defun bcat-survey-after-fetch (file)
+  "Hook for `bcat-export-passage-complete-functions': C-c u G ends with
+the survey of the passage of the sentence FILE (`bcat-survey-auto') —
+when it has sources enough (`bcat-survey-auto-sources') and no answer
+is kept for its material as it is now.  Never signals: a survey is no
+reason to spoil a fetch."
+  (when bcat-survey-auto
+    (condition-case err
+        (let ((material (bcat-survey-material file)))
+          (when (and material
+                     (>= (length (bcat-survey-sources material)) bcat-survey-auto-sources)
+                     (bcat-survey-pending-p file))
+            (bcat-survey-fetch file nil t)))
+      (error (message "Überblick nach C-c u G (%s): %s"
+                      (file-name-nondirectory file) (error-message-string err))))))
+
+(add-hook 'bcat-export-passage-complete-functions #'bcat-survey-after-fetch)
 
 ;;;###autoload
 (defun bcat-survey (&optional fresh)

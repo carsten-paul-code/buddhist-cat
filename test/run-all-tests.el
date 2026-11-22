@@ -39,6 +39,10 @@ device).  Tests that need it bind it to t and stub the upload.")
 ;; 5.11.: C-c u G ends with the reading dossier — not from the suite.
 (defvar bcat-dossier-auto nil)
 (setq bcat-dossier-auto nil)
+;; 22.11.: C-c u G ends with the survey of the sources — not from the
+;; suite (the tests of it switch it on).
+(defvar bcat-survey-auto nil)
+(setq bcat-survey-auto nil)
 (setq bcat-zettel-link-concepts nil
       bcat-zettel-belege-auto nil
       bcat-zettel-in-prompt nil)

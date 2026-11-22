@@ -187,6 +187,100 @@ source is enough (the text and one published translation)."
           (should-error (bcat-survey-fetch file t) :type 'user-error)
           (should (= 1 submits)))))))
 
+(defun bcat-survey-test--plain-answers (kind file)
+  "The fixture's answers; the survey finds nothing to note."
+  (if (equal kind "bcat-survey")
+      (replace-regexp-in-string "\\`{" "{\"notable\": \"no\", " bcat-survey-test--answer)
+    (bcat-commentary-test--bhasya-answer kind file)))
+
+(ert-deftest bcat-survey-with-the-fetch ()
+  "Carsten 22.11., asked whether the survey should come on demand:
+„nicht auf Zuruf, sondern wenn es was gibt was beachtet werden sollte“.
+C-c u G of a verse ends with its survey — once all of the verse is in
+\(when its PDF is exported), ONE more request, for a passage with at
+least two sources beside itself.  The answer says whether there is
+anything to note (`notable'): only then the survey is written; without,
+nothing is written, and the answer is kept, so that the same material
+is not asked about again."
+  (bcat-commentary-test--with-bhasya
+    (let ((file (tibetan-sentence--filepath 36 folder src))
+          (survey (expand-file-name "survey-036-msa.org" folder))
+          (bcat-survey-auto t)
+          (bcat-export-auto t))
+      (cl-letf (((symbol-function 'bcat-export-file) (lambda (_f) nil))
+                ((symbol-function 'tibetan-discussion-paper--temp-source-p) #'ignore))
+        ;; something to note: written
+        (bcat-commentary-test--with-file-stubs #'bcat-survey-test--answers
+          (add-hook 'bcat-sentence-after-fetch-functions #'bcat-export-after-fetch)
+          (bcat-sentence-test--fetch-n src 36)
+          (should (= 1 (cl-count "bcat-survey" kinds :test #'equal)))
+          ;; … after everything of the verse
+          (should (equal "bcat-survey" (car kinds))))
+        (should (file-exists-p survey))
+        (should (string-match-p "^\\*\\* Bhāṣya (Satz 65)$" (bcat-sentence-test--text-of survey)))
+        ;; the same material again: no request
+        (bcat-commentary-test--with-file-stubs #'bcat-survey-test--answers
+          (bcat-survey-after-fetch file)
+          (should-not kinds))))))
+
+(ert-deftest bcat-survey-nothing-to-note ()
+  "„… wenn es was gibt was beachtet werden sollte“: a survey that finds
+nothing to note — the layers say the same in other words, the
+translations agree — is not written when it came with the fetch; on
+demand (C-c u Q) it is, for whoever asks wants to see it."
+  (bcat-commentary-test--with-bhasya
+    (let ((file (tibetan-sentence--filepath 36 folder src))
+          (survey (expand-file-name "survey-036-msa.org" folder))
+          (bcat-survey-auto t)
+          (bcat-export-auto t))
+      (cl-letf (((symbol-function 'bcat-export-file) (lambda (_f) nil))
+                ((symbol-function 'tibetan-discussion-paper--temp-source-p) #'ignore))
+        (bcat-commentary-test--with-file-stubs #'bcat-survey-test--plain-answers
+          (add-hook 'bcat-sentence-after-fetch-functions #'bcat-export-after-fetch)
+          (bcat-sentence-test--fetch-n src 36)
+          (should (= 1 (cl-count "bcat-survey" kinds :test #'equal))))
+        (should-not (file-exists-p survey))
+        (should-not (bcat-survey-notable-p (plist-get (bcat-survey--stored survey) :answer)))
+        ;; asked once: not again for the same material
+        (bcat-commentary-test--with-file-stubs #'bcat-survey-test--plain-answers
+          (bcat-survey-after-fetch file)
+          (should-not kinds))
+        ;; on demand: set from the answer kept, and shown
+        (bcat-commentary-test--with-file-stubs #'bcat-survey-test--plain-answers
+          (should (= 0 (bcat-survey-fetch file)))
+          (should-not kinds))
+        (should (file-exists-p survey)))))
+  ;; what counts as nothing to note: only an outright no
+  (should (bcat-survey-notable-p '((gist . "G."))))
+  (should (bcat-survey-notable-p '((notable . "yes"))))
+  (should-not (bcat-survey-notable-p '((notable . "no"))))
+  (should-not (bcat-survey-notable-p '((notable . "Nein"))))
+  (should (string-match-p "\"notable\": \"yes\"" (bcat-survey-system-prompt))))
+
+(ert-deftest bcat-survey-with-the-fetch-needs-two-others ()
+  "With the fetch the survey comes only for a passage with at least two
+sources beside itself (a commentary and a translation, two
+translations …): with one published translation alone the comparison of
+the sentence file says it all.  Switched off (`bcat-survey-auto'), it
+never comes by itself."
+  (bcat-sentence-test--with-source
+    (bcat-sentence-test--create src)
+    (let ((file (tibetan-sentence--filepath 9 folder src))
+          (bcat-survey-auto t))
+      (bcat-sentence-test--with-stubs bcat-survey-test--answer
+        (should (= 2 (length (bcat-survey-sources (bcat-survey-material file)))))
+        (bcat-survey-after-fetch file)
+        (should (= 0 submits)))))
+  (bcat-survey-test--with-verse
+    (let ((bcat-survey-auto nil))
+      (bcat-commentary-test--with-file-stubs #'bcat-survey-test--answers
+        (bcat-survey-after-fetch file)
+        (should-not kinds)))
+    (let ((bcat-survey-auto t))
+      (bcat-commentary-test--with-file-stubs #'bcat-survey-test--answers
+        (bcat-survey-after-fetch file)
+        (should (equal '("bcat-survey") kinds))))))
+
 (ert-deftest bcat-survey-export ()
   "C-c u H of the verse puts the survey on the reMarkable too, as a PDF
 of its own beside the others: „MSA IX.16 Überblick“

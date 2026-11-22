@@ -1794,6 +1794,11 @@ asked for (`bcat-export-force-upload')."
                                                   bcat-export--overview-suffix ".pdf")
                                     (plist-get views :overview)))))))))
 
+(defvar bcat-export-passage-complete-functions nil
+  "Called with the sentence FILE of a passage when, after a fetch, all
+of it is in and its PDF was exported (`bcat-export-after-fetch') — the
+survey of its sources follows (bcat-survey.el, 22.11.).")
+
 (defun bcat-export-after-fetch (file)
   "Hook for `bcat-sentence-after-fetch-functions': C-c u G ends with
 C-c u H (when `bcat-export-auto') — for a verse file its dossier, once
@@ -1827,7 +1832,10 @@ rmapi failure must not spoil the landed analysis."
        (files
         ;; 22.11.: a commentary's Section may belong to several verses —
         ;; the dossier of each that waited for it
-        (mapc export files))
+        (mapc export files)
+        ;; … and what follows when all of a passage is in (its survey)
+        (dolist (f files)
+          (run-hook-with-args 'bcat-export-passage-complete-functions f)))
        ;; 5.11.: the other half of the verse is still coming — its
        ;; landing exports the dossier, once.
        ((not commentary)
