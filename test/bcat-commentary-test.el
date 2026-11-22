@@ -432,6 +432,7 @@ own with him, is covered by IX.16 (Sthiramati's IX.2 covers IX.3)."
           "#+TIBETAN_LAYOUT: cascade\n"
           "#+CAT_TEMPLATE: commentary\n"
           "#+CAT_COMMENTS_ON: ../Sanskrit/msa-cat.org\n"
+          "#+CAT_SHORT: Phywa pa\n"
           "#+TIBETAN_TARGET_LANG: en\n\n"
           "* Phywa pa\n"
           "** Section IX.15–17 Einleitung\n"
@@ -1071,17 +1072,47 @@ disk into the handouts folder of the verses' source."
   (bcat-commentary-test--with-msa
     (let ((info (bcat-export-info (bcat-sentence-ensure-file 259 csrc))))
       (should (equal "Mahāyānasūtrālaṃkāra IX mit Bhāṣya" (plist-get info :work)))
-      (should (equal "Sthiramati zu MSA IX.16, MSA IX.17" (plist-get info :label)))
+      ;; 22.11.: named after the verses it covers, then the commentator —
+      ;; it sorts beside its verse („MSA IX.16“, „MSA IX.16–17 Sthiramati“)
+      (should (equal "MSA IX.16–17 Sthiramati" (plist-get info :label)))
       (should (equal "Sthiramati" (plist-get info :folder)))
       ;; Carsten 30.10.: „im MSA Handoutsordner hätte ich jetzt auch den
       ;; Kommentar erwartet“ — beside the verse's msa-IX.16.pdf.
-      (should (equal (expand-file-name "Sanskrit/handouts/savbh-IX.16.pdf" dir)
+      (should (equal (expand-file-name "Sanskrit/handouts/msa-IX.16-17-Sthiramati.pdf" dir)
                      (plist-get info :handout)))
       (should-not (plist-get info :sent-num))
       (should (string-match-p
                (regexp-quote "{\\small Sthiramati · \\textit{Mahāyānasūtrālaṃkāra IX mit Bhāṣya} · MSA IX.16, MSA IX.17}")
                (bcat-export-head-lines (plist-get info :folder) (plist-get info :work)
                                        (plist-get info :sent-num) (plist-get info :verse)))))))
+
+(ert-deftest bcat-commentary-document-names ()
+  "Carsten 22.11. (bhāṣya, Phywa pa and Sthiramati as files of their
+own; on the reMarkable „Gleicher Ordner, Name mit Zusatz“): a
+commentary document is named after the verses it covers, then the
+commentator in short (#+CAT_SHORT of his source, else his name) —
+„MSA XI.15 Bhāṣya“, „MSA XI.15–16 Phywa pa“ —, a Section that
+introduces a group of verses with its title after that („MSA XI.15–20
+Phywa pa Einleitung“).  Its PDF lies beside the verse's under the same
+name (msa-…)."
+  (bcat-commentary-test--with-phywa
+    (should (equal "MSA IX.15–17 Phywa pa Einleitung" (bcat-commentary-label "Section IX.15–17 Einleitung" psrc)))
+    (should (equal "MSA IX.15–16 Phywa pa" (bcat-commentary-label "Section IX.15–16 sgyu ma'i mtshan nyid" psrc)))
+    (should (equal "MSA IX.17 Phywa pa" (bcat-commentary-label "Section IX.17 dpe dang sbyar ba" psrc)))
+    (let ((info (bcat-export-info (bcat-commentary-create "Section IX.15–16 sgyu ma'i mtshan nyid" psrc))))
+      (should (equal "MSA IX.15–16 Phywa pa" (plist-get info :label)))
+      (should (equal (expand-file-name "Sanskrit/handouts/msa-IX.15-16-Phywa-pa.pdf" dir)
+                     (plist-get info :handout)))
+      (should (equal "MSA IX.15, MSA IX.16" (plist-get info :verse))))
+    (should (equal (expand-file-name "Sanskrit/handouts/msa-IX.15-17-Phywa-pa-Einleitung.pdf" dir)
+                   (plist-get (bcat-export-info (bcat-commentary-create "Section IX.15–17 Einleitung" psrc))
+                              :handout))))
+  (bcat-commentary-test--with-bhasya
+    (should (equal "MSA IX.16 Bhāṣya" (bcat-commentary-label "Section IX.16" tsrc)))
+    (should (equal (expand-file-name "Sanskrit/handouts/msa-IX.16-Bhasya.pdf" dir)
+                   (plist-get (bcat-export-info (bcat-commentary-create "Section IX.16" tsrc)) :handout)))
+    ;; a commentator without #+CAT_SHORT: his name
+    (should (equal "MSA IX.15 Sthiramati" (bcat-commentary-label "Section IX.15" csrc)))))
 
 (ert-deftest bcat-commentary-verse-export-names ()
   "The verse's PDF: „MSA IX.16“ on the reMarkable, msa-IX.16.pdf in the

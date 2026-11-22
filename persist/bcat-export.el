@@ -28,6 +28,7 @@
 (declare-function tibetan-sentence--filepath "tibetan-sentence-persist" (sent-num &optional folder source-file))
 (declare-function tibetan-cascade--collect-sentences "tibetan-cascade" ())
 (declare-function bcat-commentary-lead "bcat-commentary" (commentary-source))
+(declare-function bcat-commentary-label "bcat-commentary" (section commentary-source))
 (declare-function tibetan-analysis-make-short-name "tibetan-analysis-persist" (source-file))
 (declare-function tibetan-cascade--scope-at-point "tibetan-cascade" ())
 (declare-function tibetan-discussion-paper--upload "tibetan-discussion-paper"
@@ -132,7 +133,10 @@ anything else but letters, digits and dots a hyphen; nil without SOURCE."
   (when source
     (let ((ascii (replace-regexp-in-string
                   "[^A-Za-z0-9.]+" "-"
-                  (replace-regexp-in-string "[^[:ascii:]]" "" (ucs-normalize-NFD-string name))))
+                  ;; a dash separates („XI.15–16“ → XI.15-16), it is not dropped
+                  (replace-regexp-in-string
+                   "[^[:ascii:]]" ""
+                   (ucs-normalize-NFD-string (replace-regexp-in-string "[–—]" "-" name)))))
           (own (and (file-readable-p source) (bcat-sentence--header-value source "CAT_HANDOUTS"))))
       (expand-file-name (concat (string-trim ascii "-+" "-+") ".pdf")
                         (if own
@@ -143,8 +147,9 @@ anything else but letters, digits and dots a hyphen; nil without SOURCE."
   "`bcat-export-info' for the commentary document FILE: the folder of
 the commentary source, the work of the verses it comments on (beside
 their PDFs on the reMarkable), the verses from #+CAT_VERSE, named after
-the document; on disk beside the verses' PDFs too (savbh-IX.60.pdf in
-the handouts folder of the text)."
+its verses and the commentator (`bcat-commentary-label': „MSA XI.15–16
+Phywa pa“); on disk beside the verses' PDFs too, under the same name
+\(msa-XI.15-16-Phywa-pa.pdf in the handouts folder of the text)."
   (let* ((src (tibetan-sentence--source-file-from-analysis file))
          (lead (and src (bcat-commentary-lead src)))
          (verse-line (bcat-sentence--header-value file "CAT_VERSE"))
@@ -152,7 +157,10 @@ the handouts folder of the text)."
                    (while (and verse-line (string-match "\\]\\[\\([^]]+\\)\\]\\]" verse-line pos))
                      (push (match-string 1 verse-line) out)
                      (setq pos (match-end 0)))
-                   (nreverse out))))
+                   (nreverse out)))
+         (link (bcat-sentence--header-value file "SOURCE"))
+         (section (and link (string-match "::\\*\\(Section [^]]+\\)\\]" link) (match-string 1 link)))
+         (label (and src section (ignore-errors (bcat-commentary-label section src)))))
     (list :source src
           :folder (and src (file-name-nondirectory
                             (directory-file-name (file-name-directory src))))
@@ -161,15 +169,19 @@ the handouts folder of the text)."
           :work (or (bcat-export--title lead) (and lead (file-name-base lead)) (file-name-base file))
           :sent-num nil
           :verse (and verses (string-join verses ", "))
-          :label (or (bcat-sentence--header-value file "TITLE") (file-name-base file))
-          :handout (let* ((link (bcat-sentence--header-value file "SOURCE"))
-                          (section (and link (string-match "::\\*\\(?:Section \\)?\\([^]]+\\)\\]" link)
-                                        (match-string 1 link))))
-                     ;; Beside the verses' PDFs (Carsten 30.10.): their
-                     ;; source's handouts/, the commentary's own name.
-                     (and src section
-                          (bcat-export--handout
-                           (or lead src) (concat (tibetan-analysis-make-short-name src) "-" section)))))))
+          ;; 22.11.: named after its verses and the commentator — it
+          ;; sorts beside its verse (`bcat-commentary-label')
+          :label (or label (bcat-sentence--header-value file "TITLE") (file-name-base file))
+          ;; Beside the verses' PDFs (Carsten 30.10.): their source's
+          ;; handouts/, under the same name (msa-XI.15-Bhasya.pdf beside
+          ;; msa-XI.15.pdf).
+          :handout (and src label
+                        (bcat-export--handout
+                         (or lead src)
+                         (concat (tibetan-analysis-make-short-name (or lead src)) "-"
+                                 (if (string-match "\\`[^ ]+ +" label)
+                                     (substring label (match-end 0))
+                                   label)))))))
 
 (defun bcat-export-info (file)
   "What the PDF of the sentence FILE is labelled with: (:source :folder

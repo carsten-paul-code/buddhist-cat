@@ -419,6 +419,66 @@ HIT (PADA . READINGS): the pāda with a link into its Tibetan verse file
 ;; The document without AI (C-c u A)
 ;; ----------------------------------------------------------------------------
 
+(defun bcat-commentary--short-author (commentary-source)
+  "The commentator in short, for the name of a document: #+CAT_SHORT of
+COMMENTARY-SOURCE („Phywa pa“), else `bcat-commentary--author'."
+  (or (and (not (bcat-commentary-bhasya-p commentary-source))
+           (bcat-sentence--header-value commentary-source "CAT_SHORT"))
+      (bcat-commentary--author commentary-source)))
+
+(defun bcat-commentary--verse-range (verses)
+  "The verse labels VERSES in order as one: „MSA XI.15“ for one, „MSA
+XI.15–16“ for several that differ in their last number only, else the
+first and the last with a dash; nil for none."
+  (cond ((null verses) nil)
+        ((null (cdr verses)) (car verses))
+        (t (let* ((first (car verses)) (last (car (last verses)))
+                  (stem (lambda (v) (replace-regexp-in-string "[0-9]+\\'" "" v))))
+             (if (and (equal (funcall stem first) (funcall stem last))
+                      (string-match "[0-9]+\\'" last))
+                 (concat first "–" (match-string 0 last))
+               (concat first " – " last))))))
+
+(defun bcat-commentary-introduction-p (section lead commentary-source)
+  "Non-nil when SECTION of COMMENTARY-SOURCE only introduces a group of
+verses of LEAD: a narrower Section of the commentary covers one of its
+verses too (Phywa pa's „XI.15–20 Einleitung“ before „XI.15–16 …“)."
+  (let* ((cover (bcat-commentary--coverage lead commentary-source))
+         (own (cdr (assoc section cover))))
+    (cl-some (lambda (c) (and (not (equal (car c) section))
+                              (cdr c)
+                              (< (length (cdr c)) (length own))
+                              (cl-subsetp (cdr c) own :test #'equal)))
+             cover)))
+
+(defun bcat-commentary-label (section commentary-source)
+  "The name of the commentary document of SECTION of COMMENTARY-SOURCE
+— on the reMarkable and of its PDF (Carsten 22.11.: beside its verse,
+„Name mit Zusatz“): the verses it covers, then the commentator in short
+\(„MSA XI.15 Bhāṣya“, „MSA XI.15–16 Phywa pa“); a Section that
+introduces a group of verses with its title after that („MSA XI.15–20
+Phywa pa Einleitung“).  Without verses the commentator and the Section."
+  (let* ((lead (bcat-commentary-lead commentary-source))
+         (verses (and lead (mapcar (lambda (v) (plist-get v :verse))
+                                   (bcat-commentary--verses section lead commentary-source))))
+         (author (bcat-commentary--short-author commentary-source))
+         (rest (and lead (bcat-commentary-introduction-p section lead commentary-source)
+                    (let* ((bare (bcat-commentary--bare section))
+                           (order (bcat-commentary--section-labels lead))
+                           (names (mapcar #'bcat-commentary--bare order))
+                           (from (car (sort (cl-remove-if-not (lambda (n) (string-prefix-p n bare)) names)
+                                            (lambda (x y) (> (length x) (length y)))))))
+                      ;; its title after the range it begins with
+                      (string-trim
+                       (replace-regexp-in-string
+                        "\\`[ \t]*[–-][ \t]*[[:alnum:].]+" ""
+                        (if from (substring bare (length from)) bare)))))))
+    (if verses
+        (string-join (delq nil (list (bcat-commentary--verse-range verses) author
+                                     (and rest (not (string-empty-p rest)) rest)))
+                     " ")
+      (format "%s %s" author (bcat-commentary--bare section)))))
+
 (defun bcat-commentary--author (commentary-source)
   "The commentator: COMMENTARY-SOURCE's #+TITLE up to the first comma;
 „Bhāṣya“ for the bhāṣya of a pair's Tibetan source
