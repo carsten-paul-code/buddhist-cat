@@ -579,7 +579,8 @@ analysed ONCE although the pair's belongs to both verses; his Section
 on IX.17 is not touched.  The documents hold his sentences only, not
 the root verses of his source.  Each verse's PDF is exported once, when
 all of it is there (5.11.: „doppelten Upload weg“) — IX.16 too, whose
-commentary came with IX.15."
+commentary came with IX.15 —, and each of his documents once, when it
+lands (22.11.: files of their own)."
   (bcat-commentary-test--with-phywa
     (let ((exports '())
           (intro (expand-file-name "comm-IX.15-17-Einleitung-phywa.org" pfolder))
@@ -604,8 +605,11 @@ commentary came with IX.15."
         (should (string-match-p "Phywa pa 21\\." text))
         (should-not (bcat-commentary-incomplete-p "Section IX.15–16 sgyu ma'i mtshan nyid" psrc)))
       (should (string-match-p "Phywa pa 1\\." (bcat-sentence-test--text-of intro)))
-      ;; one export per verse
-      (should (equal (list (tibetan-sentence--filepath 34 folder src) (tibetan-sentence--filepath 36 folder src))
+      ;; one export per verse — and, since 22.11. (files of their own),
+      ;; one per document of the commentary
+      (should (equal (sort (list (tibetan-sentence--filepath 34 folder src) (tibetan-sentence--filepath 36 folder src)
+                                 intro pair)
+                           #'string<)
                      (sort (mapcar #'expand-file-name exports) #'string<))))))
 
 (defmacro bcat-commentary-test--with-bhasya (&rest body)
@@ -670,7 +674,8 @@ pair, Sthiramati's Section and the bhāṣya's — the bhāṣya's document
 \(comm-IX.16-mdo.org beside the Tibetan source) with the full analysis
 of its Tibetan sentence.  Its request is told the Sanskrit of the
 passage (the bhāṣya is a translation; Phywa pa's or Sthiramati's
-commentary is not).  One PDF for the verse, when all three are in."
+commentary is not).  One PDF for the verse, when all three are in; the
+two documents are exported themselves (22.11.)."
   (bcat-commentary-test--with-bhasya
     (let ((exports '())
           (bhasya (expand-file-name "comm-IX.16-mdo.org" tfolder))
@@ -702,7 +707,9 @@ commentary is not).  One PDF for the verse, when all three are in."
         (should-not (string-match-p "^\\*+ Sentence 64$" text))
         (should (string-match-p "^⟦143⟧ \\*Translation:\\* By this fifth verse he proves by an example" text))
         (should-not (bcat-commentary-incomplete-p "Section IX.16" tsrc)))
-      (should (equal (list (tibetan-sentence--filepath 36 folder src)) exports)))))
+      ;; the verse once, when all three are in; each document when it lands
+      (should (equal (sort (list (tibetan-sentence--filepath 36 folder src) bhasya sthiramati) #'string<)
+                     (sort (mapcar #'expand-file-name exports) #'string<))))))
 
 (ert-deftest bcat-commentary-create ()
   "C-c u A in Sthiramati's source (no AI): the commentary document of the
@@ -1365,6 +1372,114 @@ name (msa-…)."
                    (plist-get (bcat-export-info (bcat-commentary-create "Section IX.16" tsrc)) :handout)))
     ;; a commentator without #+CAT_SHORT: his name
     (should (equal "MSA IX.15 Sthiramati" (bcat-commentary-label "Section IX.15" csrc)))))
+
+(defmacro bcat-commentary-test--with-export-stubs (&rest body)
+  "Run BODY with the LaTeX run and the upload replaced: EXPORTED the
+\((NAME . TEXT) …) given to `bcat-export-pdf' (latest first), UPLOADED
+the ((PDF-NAME . LABEL) …) sent (latest first)."
+  (declare (indent 0))
+  `(let ((exported '()) (uploaded '()))
+     (cl-letf (((symbol-function 'bcat-export-pdf)
+                (lambda (f &rest _)
+                  (push (cons (file-name-nondirectory f)
+                              (with-temp-buffer (insert-file-contents f) (buffer-string)))
+                        exported)
+                  (let ((pdf (concat (file-name-sans-extension f) ".pdf")))
+                    (with-temp-file pdf (insert "PDF")) pdf)))
+               ((symbol-function 'tibetan-discussion-paper--upload)
+                (lambda (pdf _title label &optional done &rest _)
+                  (push (cons (file-name-nondirectory pdf) label) uploaded)
+                  (when done (funcall done t label)) t)))
+       (let ((bcat-export-upload t))
+         ,@body))))
+
+(ert-deftest bcat-commentary-export-own-pdfs ()
+  "Carsten 22.11.: „bhasya, Phya Pa und Sthiramati eigene Dateien, auch
+untergliedert in Philologie und worum es geht“; on the reMarkable
+„Gleicher Ordner, Name mit Zusatz“.  C-c u H in a commentary document
+exports the document itself — no longer the dossier of its verse —, as
+two PDFs like a sentence file's: the reading PDF (parts Text and
+Philology, a sentence of the text jumping to its analysis and back)
+under the document's name, and „<name> Worum es geht“."
+  (bcat-commentary-test--with-msa
+    (bcat-sentence-test--with-stubs #'bcat-commentary-test--answers
+      (bcat-sentence-test--fetch-n src 36))
+    (let ((doc (expand-file-name "comm-IX.16-savbh.org" cfolder)))
+      (bcat-sentence-test--put-overview doc "* Working Translation")
+      (bcat-commentary-test--with-export-stubs
+        (bcat-export-file doc)
+        (should (equal '(("msa-IX.16-17-Sthiramati.pdf" . "MSA IX.16–17 Sthiramati")
+                         ("msa-IX.16-17-Sthiramati-worum-es-geht.pdf" . "MSA IX.16–17 Sthiramati Worum es geht"))
+                       (reverse uploaded)))
+        (should (= 2 (length exported)))
+        (let ((reading (cdr (cl-find-if-not (lambda (e) (string-match-p "worum-es-geht" (car e))) exported)))
+              (overview (cdr (cl-find-if (lambda (e) (string-match-p "worum-es-geht" (car e))) exported))))
+          ;; the document, not the dossier of the verse
+          (should-not (string-match-p "^\\* Reading$\\|Lesedossier" reading))
+          (should (string-match-p "\\`#\\+TITLE: MSA IX\\.16–17 Sthiramati\n" reading))
+          (should (string-match-p "^\\* Text\n:PROPERTIES:\n:CUSTOM_ID: text\n:END:\n\\*\\* Verse\n" reading))
+          (should (string-match-p "^\\* Philology\n:PROPERTIES:\n:CUSTOM_ID: philology\n:END:\n" reading))
+          (should-not (string-match-p "^\\* Worum es geht$" reading))
+          ;; a sentence of the text and its analysis: there and back
+          (should (string-match-p (regexp-quote "** Sentence 258\n:PROPERTIES:\n:CUSTOM_ID: text-258\n:END:\n[[#phil-258][Analyse ↓]]\n#+begin_verse\n")
+                                  reading))
+          (should (string-match-p (regexp-quote "** Sentence 258\n:PROPERTIES:\n:CUSTOM_ID: phil-258\n:END:\n[[#text-258][Text ↑]]\n")
+                                  reading))
+          (should (string-match-p "^\\*\\*\\* Segment 627$" reading))
+          (should (string-match-p "^⟦627⟧ \\*Translation:\\* „Just as, when a vessel of water is broken,$" reading))
+          ;; „Worum es geht“: a document of its own, without the mark's drawer
+          (should (string-match-p "\\`#\\+TITLE: MSA IX\\.16–17 Sthiramati — Worum es geht\n" overview))
+          (should (string-match-p "^\\* Worum es geht\n:PROPERTIES:\n:CUSTOM_ID: overview\n:END:\n" overview))
+          (should-not (string-match-p "GENERATED_HASH\\|^\\* Text$\\|^\\* Philology$" overview)))
+        ;; beside the verse's PDFs
+        (should (file-exists-p (expand-file-name "Sanskrit/handouts/msa-IX.16-17-Sthiramati.pdf" dir)))
+        (should (file-exists-p (expand-file-name "Sanskrit/handouts/msa-IX.16-17-Sthiramati-worum-es-geht.pdf" dir)))
+        (should-not (directory-files cfolder nil "\\.pdf\\'\\|\\`pdfview-"))))))
+
+(ert-deftest bcat-commentary-export-notes-and-old-layout ()
+  "The PDF of a commentary document: its notes (Working Translation, My
+Notes) as a part of their own when there are any; a document still in
+the old order gives the same PDF as after C-c u L — and stays as it
+is."
+  (bcat-commentary-test--with-msa
+    (make-directory cfolder t)
+    (let ((doc (expand-file-name "comm-IX.16-savbh.org" cfolder)))
+      (with-temp-file doc (insert bcat-commentary-test--old-document))
+      (let* ((old (bcat-export-views doc))
+             (view (plist-get old :view)))
+        (should (string-match-p "^\\* Text\n:PROPERTIES:\n:CUSTOM_ID: text\n:END:\n" view))
+        (should (string-match-p "^\\* Philology\n:PROPERTIES:\n:CUSTOM_ID: philology\n:END:\n" view))
+        (should (string-match-p (regexp-quote "* Notes\n:PROPERTIES:\n:CUSTOM_ID: notes\n:END:\n** Working Translation\nMeine Fassung.\n\n** My Notes\nNotiz.\n")
+                                view))
+        (should-not (string-match-p "^\\* Footnotes" view))
+        (should (string-match-p "^\\*Erklärt wird:\\* der Vergleich\\.$" (plist-get old :overview)))
+        ;; the file was not written
+        (should (equal bcat-commentary-test--old-document (bcat-sentence-test--text-of doc)))
+        ;; … and after C-c u L the same
+        (bcat-relayout-file doc)
+        (should (equal old (bcat-export-views doc)))))
+    ;; without notes and without „Worum es geht“: neither part
+    (let* ((doc (bcat-commentary-create "Section IX.15" csrc))
+           (views (bcat-export-views doc)))
+      (should (plist-get views :view))
+      (should-not (string-match-p "^\\* Notes$" (plist-get views :view)))
+      (should-not (plist-get views :overview)))))
+
+(ert-deftest bcat-commentary-landing-exports-document-and-verse ()
+  "C-c u G ends with C-c u H for all that came: when a commentary
+document lands, the document itself is exported (its own PDFs) and the
+dossier of the verse that waited for it — each once."
+  (bcat-commentary-test--with-msa
+    (let ((exports '())
+          (doc (expand-file-name "comm-IX.16-savbh.org" cfolder))
+          (verse (tibetan-sentence--filepath 36 folder src)))
+      (cl-letf (((symbol-function 'bcat-export-file) (lambda (f) (push (expand-file-name f) exports) nil))
+                ((symbol-function 'tibetan-discussion-paper--temp-source-p) #'ignore))
+        (let ((bcat-export-auto t))
+          (bcat-sentence-test--with-stubs #'bcat-commentary-test--answers
+            (add-hook 'bcat-sentence-after-fetch-functions #'bcat-export-after-fetch)
+            (bcat-sentence-test--fetch-n src 36))))
+      (should (equal (sort (list doc verse) #'string<) (sort exports #'string<))))))
 
 (ert-deftest bcat-commentary-verse-export-names ()
   "The verse's PDF: „MSA IX.16“ on the reMarkable, msa-IX.16.pdf in the

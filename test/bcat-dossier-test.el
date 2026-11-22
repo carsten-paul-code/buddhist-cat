@@ -441,13 +441,14 @@ targets and links renamed so that they cannot meet the first file's."
                   "Bhāṣya" "bhasya" '("segments" "grammar")))))
 
 (ert-deftest bcat-dossier-export ()
-  "C-c u H on any file of a verse with commentary exports the dossier:
+  "C-c u H on the file of a verse with commentary exports the dossier:
 the PDF under the verse's name (msa-IX.16.pdf), uploaded once as the
-verse — no PDF of its own for the commentary document any more."
+verse.  (5.–22.11. the commentary document exported the dossier too;
+since 22.11. it has PDFs of its own — bcat-commentary-export-own-pdfs.)"
   (bcat-commentary-test--with-msa
     (bcat-sentence-test--with-stubs #'bcat-commentary-test--answers
       (bcat-sentence-test--fetch-n src 36))
-    (let ((doc (expand-file-name "comm-IX.16-savbh.org" cfolder))
+    (let ((doc (tibetan-sentence--filepath 36 folder src))
           (exported nil) (uploaded '()))
       (cl-letf (((symbol-function 'bcat-export-pdf)
                  (lambda (f &rest _)
@@ -507,8 +508,9 @@ Worum es geht“ (msa-IX.16-worum-es-geht.pdf beside msa-IX.16.pdf)."
   "Carsten 5.11.: „doppelten Upload weg“.  One C-c u G on a verse with
 commentary lands twice — the verse pair, then the commentary (or the
 other way round); each ended with C-c u H, and both exported the same
-dossier.  Now the first to land waits for the other: one export, when
-both are in."
+dossier.  Now the first to land waits for the other: one export of the
+verse, when both are in.  (22.11.: the commentary document is exported
+itself when it lands — once.)"
   (bcat-commentary-test--with-msa
     (let ((exports '()))
       (cl-letf (((symbol-function 'bcat-export-file) (lambda (f) (push f exports) nil))
@@ -517,7 +519,10 @@ both are in."
           (bcat-sentence-test--with-stubs #'bcat-commentary-test--answers
             (add-hook 'bcat-sentence-after-fetch-functions #'bcat-export-after-fetch)
             (bcat-sentence-test--fetch-n src 36))))
-      (should (= 1 (length exports))))))
+      (should (equal (sort (list (tibetan-sentence--filepath 36 folder src)
+                                 (expand-file-name "comm-IX.16-savbh.org" cfolder))
+                           #'string<)
+                     (sort (mapcar #'expand-file-name exports) #'string<))))))
 
 (ert-deftest bcat-dossier-commentary-waits-only-for-a-running-verse ()
   "11.11., MSA IX.62: the commentary landed alone (its earlier request
@@ -526,10 +531,12 @@ Translations compared in no segment (fetch state `align') — the
 commentary waited for the verse („PDF folgt mit dem Rest des Verses“)
 although nothing of the verse was on the way, and no PDF came.  The
 commentary waits only while a request of the verse is in flight; then
-the verse's landing exports."
+the verse's landing exports.  (22.11.: this is about the verse's
+dossier; the commentary document itself is exported whenever it lands.)"
   (bcat-commentary-test--with-msa
     (let ((exports '())
           (verse (tibetan-sentence--filepath 36 folder src))
+          (doc (expand-file-name "comm-IX.16-savbh.org" cfolder))
           (orig (symbol-function 'bcat-sentence-fetch-state)))
       (bcat-sentence-test--with-stubs #'bcat-commentary-test--answers
         (bcat-sentence-test--fetch-n src 36))
@@ -542,7 +549,8 @@ the verse's landing exports."
           (bcat-sentence-test--with-stubs #'bcat-commentary-test--answers
             (add-hook 'bcat-sentence-after-fetch-functions #'bcat-export-after-fetch)
             (bcat-commentary-fetch "Section IX.16" csrc verse))
-          (should (= 1 (length exports)))
+          (should (equal (list verse) (cl-remove doc (mapcar #'expand-file-name exports) :test #'equal)))
+          (should (= 1 (cl-count doc (mapcar #'expand-file-name exports) :test #'equal)))
           ;; a verse request in flight: the commentary waits for it
           (let ((key (concat "bcat-analysis:" (file-truename verse))))
             (unwind-protect
@@ -551,7 +559,9 @@ the verse's landing exports."
                   (bcat-sentence-test--with-stubs #'bcat-commentary-test--answers
                     (add-hook 'bcat-sentence-after-fetch-functions #'bcat-export-after-fetch)
                     (bcat-commentary-fetch "Section IX.16" csrc verse))
-                  (should (= 1 (length exports))))
+                  ;; the verse's dossier not again — the document itself, yes
+                  (should (= 1 (cl-count verse (mapcar #'expand-file-name exports) :test #'equal)))
+                  (should (= 2 (cl-count doc (mapcar #'expand-file-name exports) :test #'equal))))
               (remhash key tibetan-discussion--inflight))))))))
 
 (ert-deftest bcat-dossier-key ()

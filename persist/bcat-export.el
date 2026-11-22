@@ -29,6 +29,8 @@
 (declare-function tibetan-cascade--collect-sentences "tibetan-cascade" ())
 (declare-function bcat-commentary-lead "bcat-commentary" (commentary-source))
 (declare-function bcat-commentary-label "bcat-commentary" (section commentary-source))
+(declare-function bcat-commentary-doc-text "bcat-commentary" (doc))
+(declare-function bcat-commentary--l1-sections "bcat-commentary" (text))
 (declare-function tibetan-analysis-make-short-name "tibetan-analysis-persist" (source-file))
 (declare-function tibetan-cascade--scope-at-point "tibetan-cascade" ())
 (declare-function tibetan-discussion-paper--upload "tibetan-discussion-paper"
@@ -1094,9 +1096,75 @@ the tables of its Sanskrit segments are laid out for the page (18.11.)."
 pdf-<its template> (cascade of its source) rendered with the fields C-c u
 L reads back from FILE (`bcat-relayout-file-context', completed by
 `bcat-export--view-context').  The file stays as it is.  nil when there
-is no such template (a commentary document) or FILE is no sentence file
-of a template — C-c u H then exports the file itself."
+is no such template or FILE is no sentence file of a template — C-c u H
+then exports the file itself."
   (plist-get (bcat-export-views file) :view))
+
+(defun bcat-export-commentary-views (file)
+  "The views of the commentary document FILE (Carsten 22.11.: „bhasya,
+Phya Pa und Sthiramati eigene Dateien, auch untergliedert in Philologie
+und worum es geht“): (:view TEXT :overview TEXT-or-nil), as a sentence
+file's (`bcat-export-views').  :view — the reading PDF under the
+document's name (`bcat-export-info', :label): the parts Text and
+Philology, each sentence of the text jumping to its analysis and back
+\(text-N ↔ phil-N), and Notes (Working Translation, My Notes) when
+there are any; the footnotes when it has some.  :overview — „Worum es
+geht“ as a document of its own, when the document has the section.
+Read through `bcat-commentary-doc-text': a document still in the old
+order gives the same.  nil for a text without * Text."
+  (require 'bcat-commentary)
+  (let* ((text (bcat-commentary-doc-text file))
+         (label (plist-get (bcat-export-info file) :label))
+         (sections (cdr (bcat-commentary--l1-sections text)))
+         (body (lambda (title)
+                 (let ((b (cdr (assoc title sections))))
+                   (and b (not (string-blank-p b)) (concat (string-trim b) "\n\n")))))
+         (options "#+OPTIONS: toc:nil num:nil title:nil author:nil date:nil\n\n")
+         (part (lambda (title id content)
+                 (format "* %s\n:PROPERTIES:\n:CUSTOM_ID: %s\n:END:\n%s" title id content)))
+         (numbers (lambda (content)
+                    (let ((pos 0) (out '()))
+                      (while (and content (string-match "^\\*\\* Sentence \\([0-9]+\\)[ \t]*$" content pos))
+                        (push (match-string 1 content) out)
+                        (setq pos (match-end 0)))
+                      out)))
+         (first (funcall body "Text"))
+         (second (funcall body "Philology"))
+         (both (cl-intersection (funcall numbers first) (funcall numbers second) :test #'equal))
+         ;; ** Sentence N as a jump target ID-N, with the jump to OTHER-N
+         (jumps (lambda (content id other name after)
+                  (replace-regexp-in-string
+                   "^\\*\\* Sentence \\([0-9]+\\)[ \t]*\n"
+                   (lambda (m)
+                     (let ((n (match-string 1 m)))
+                       (if (member n both)
+                           (format "** Sentence %s\n:PROPERTIES:\n:CUSTOM_ID: %s-%s\n:END:\n[[#%s-%s][%s]]\n%s"
+                                   n id n other n name after)
+                         m)))
+                   content t t)))
+         (overview (bcat-sentence--overview text))
+         (working (funcall body "Working Translation"))
+         (notes (funcall body "My Notes"))
+         (footnotes (funcall body "Footnotes")))
+    (when first
+      (list :view (concat
+                   (format "#+TITLE: %s\n" label) options
+                   (funcall part "Text" "text" (funcall jumps first "text" "phil" "Analyse ↓" ""))
+                   (if second
+                       ;; a blank line after the jump: the grammar that
+                       ;; may follow is a paragraph of its own
+                       (funcall part "Philology" "philology" (funcall jumps second "phil" "text" "Text ↑" "\n"))
+                     "")
+                   (if (or working notes)
+                       (funcall part "Notes" "notes"
+                                (concat (if working (concat "** Working Translation\n" working) "")
+                                        (if notes (concat "** My Notes\n" notes) "")))
+                     "")
+                   (if footnotes (concat "* Footnotes\n" footnotes) ""))
+            :overview (and overview
+                           (concat (format "#+TITLE: %s — Worum es geht\n" label) options
+                                   (funcall part bcat-sentence--overview-heading "overview"
+                                            (concat (car overview) "\n"))))))))
 
 (defun bcat-export-views (file)
   "The views of the sentence FILE (`bcat-export-view'): (:view TEXT
@@ -1108,28 +1176,31 @@ geht“); and, when the sentence has lectures (#+CAT_LECTURES), the
 document of the whole lectures (template pdf-lectures, Carsten 5.11.:
 „das was einen konkreten Vers betrifft in einem Extradokument“), NAME
 the lecturer (the first lecture's name up to its comma).  nil without
-a pdf template."
+a pdf template.  A commentary document: `bcat-export-commentary-views'."
   (require 'bcat-relayout)
   (let* ((template (bcat-sentence-file-p file))
          (source (and template (tibetan-sentence--source-file-from-analysis file)))
          (name (and template (concat "pdf-" template))))
-    (when (and name (bcat-template-find name source))
-      (let ((read (bcat-relayout-file-context file)))
-        (unless (plist-get read :error)
-          (let* ((context (bcat-export--view-context
-                           ;; 16.11.: „Prüfen:“ in the PDF as in the file
-                           (bcat-analysis-with-padapatha-checks (plist-get read :context))
-                           template))
-                 (lectures (alist-get 'lectures context)))
-            (list :view (bcat-template-render-named name context (plist-get read :source))
-                  :overview (and (bcat-export--filled-p (alist-get 'overview context))
-                                 (bcat-template-find "pdf-overview" source)
-                                 (bcat-template-render-named "pdf-overview" context (plist-get read :source)))
-                  :lectures (and lectures (bcat-template-find "pdf-lectures" source)
-                                 (bcat-template-render-named "pdf-lectures" context (plist-get read :source)))
-                  :lecturer (and lectures
-                                 (string-trim (car (split-string (alist-get 'lecture-name (car lectures))
-                                                                 "[,(]")))))))))))
+    (if (equal template "commentary")
+        ;; 22.11.: a commentary document — its own two PDFs
+        (bcat-export-commentary-views file)
+      (when (and name (bcat-template-find name source))
+	(let ((read (bcat-relayout-file-context file)))
+          (unless (plist-get read :error)
+            (let* ((context (bcat-export--view-context
+                             ;; 16.11.: „Prüfen:“ in the PDF as in the file
+                             (bcat-analysis-with-padapatha-checks (plist-get read :context))
+                             template))
+                   (lectures (alist-get 'lectures context)))
+              (list :view (bcat-template-render-named name context (plist-get read :source))
+                    :overview (and (bcat-export--filled-p (alist-get 'overview context))
+                                   (bcat-template-find "pdf-overview" source)
+                                   (bcat-template-render-named "pdf-overview" context (plist-get read :source)))
+                    :lectures (and lectures (bcat-template-find "pdf-lectures" source)
+                                   (bcat-template-render-named "pdf-lectures" context (plist-get read :source)))
+                    :lecturer (and lectures
+                                   (string-trim (car (split-string (alist-get 'lecture-name (car lectures))
+                                                                   "[,(]"))))))))))))
 
 (defcustom bcat-export-bar-width 90
   "Characters the titles of the bar may take together before they are
@@ -1467,11 +1538,14 @@ folder scan takes it for a sentence file — and removed after the
 export; without a view the file itself.  A file of a verse with more
 than one layer (bhāṣya, commentary — Carsten 5.11.: the reading
 dossier) exports the dossier's PDF instead (`bcat-dossier-pdf-text'),
-under the name and label of the verse — from any of its files, the
-commentary document too.  19.11.: „Worum es geht“ of a sentence file
-is a second PDF beside the first (`bcat-export--second-pdf'), on the
-reMarkable „<label> Worum es geht“; 22.11.: the dossier's likewise
-\(„MSA XI.15“ and „MSA XI.15 Worum es geht“).  On the device the PDFs
+under the name and label of the verse.  19.11.: „Worum es geht“ of a
+sentence file is a second PDF beside the first
+\(`bcat-export--second-pdf'), on the reMarkable „<label> Worum es
+geht“; 22.11.: the dossier's likewise („MSA XI.15“ and „MSA XI.15
+Worum es geht“), and a commentary document is exported itself — the
+bhāṣya's, Phywa pa's, Sthiramati's: its reading PDF and its „Worum es
+geht“ (`bcat-export-commentary-views'; „MSA XI.15 Bhāṣya“, „MSA
+XI.15–16 Phywa pa“ beside the verse's).  On the device the PDFs
 go into the folder of the source
 as in the Finder (`bcat-export--device-folder'), each only when the
 device does not have it as it is (`bcat-export--on-device-p',
@@ -1479,7 +1553,11 @@ device does not have it as it is (`bcat-export--on-device-p',
 folder's Archiv under its date (`bcat-export--upload-row').  Returns
 the PDF path (the first's)."
   (let* ((status-file file)
-         (dossier (and (fboundp 'bcat-dossier-pdf-text)
+         ;; 22.11.: a commentary document is exported itself, not the
+         ;; dossier of its verse
+         (commentary (equal (bcat-sentence-file-p file) "commentary"))
+         (dossier (and (not commentary)
+                       (fboundp 'bcat-dossier-pdf-text)
                        (condition-case err (bcat-dossier-pdf-text file)
                          (error (message "Lesedossier-PDF von %s nicht gesetzt (%s)"
                                          (file-name-nondirectory file) (error-message-string err))
@@ -1487,7 +1565,11 @@ the PDF path (the first's)."
          (file (or (plist-get dossier :lead) file))
          (info (bcat-export-info file))
          (head (bcat-export-head-lines (plist-get info :folder) (plist-get info :work)
-                                       (plist-get info :sent-num) (plist-get info :verse)))
+                                       (plist-get info :sent-num)
+                                       ;; a commentary document: its name
+                                       ;; („MSA XI.15 Bhāṣya“) says more
+                                       ;; than the verses alone
+                                       (if commentary (plist-get info :label) (plist-get info :verse))))
          (views (condition-case err (bcat-export-views file)
                   (error (message "PDF-Ansicht von %s nicht gesetzt (%s) — die Datei selbst"
                                   (file-name-nondirectory file) (error-message-string err))
@@ -1603,27 +1685,42 @@ Returns the PDF."
 
 (defun bcat-export-after-fetch (file)
   "Hook for `bcat-sentence-after-fetch-functions': C-c u G ends with
-C-c u H (when `bcat-export-auto').  Never for a FILE under
+C-c u H (when `bcat-export-auto') — for a verse file its dossier, once
+all of the verse is there (`bcat-dossier-export-files'); for a
+commentary document the document itself and the dossiers of the verses
+that waited for it.  Never for a FILE under
 `temporary-file-directory' — a test fixture; an ERT run in a live Emacs
 put such papers on the device (§5.69).  Never signals — a LaTeX or
 rmapi failure must not spoil the landed analysis."
   (require 'tibetan-discussion-paper)
   (when (and bcat-export-auto
              (not (tibetan-discussion-paper--temp-source-p file)))
-    (condition-case err
-        (let ((files (if (fboundp 'bcat-dossier-export-files)
-                         (bcat-dossier-export-files file)
-                       (list file))))
-          (if (null files)
-              ;; 5.11.: the other half of the verse is still coming — its
-              ;; landing exports the dossier, once.
-              (bcat-status-step file :pdf "PDF folgt mit dem Rest des Verses")
-            ;; 22.11.: a commentary's Section may belong to several
-            ;; verses — the dossier of each that waited for it
-            (dolist (f files) (bcat-export-file f))))
-      (error (message "C-c u H nach C-c u G fehlgeschlagen (%s): %s"
-                      (file-name-nondirectory file) (error-message-string err))
-             (bcat-status-step file :pdf (concat "PDF: Fehler — " (error-message-string err)))))))
+    (let* ((commentary (equal (bcat-sentence-file-p file) "commentary"))
+           (export (lambda (f)
+                     (condition-case err
+                         (bcat-export-file f)
+                       (error (message "C-c u H nach C-c u G fehlgeschlagen (%s): %s"
+                                       (file-name-nondirectory f) (error-message-string err))
+                              (bcat-status-step f :pdf (concat "PDF: Fehler — " (error-message-string err)))))))
+           (files (condition-case err
+                      (if (fboundp 'bcat-dossier-export-files)
+                          (bcat-dossier-export-files file)
+                        (and (not commentary) (list file)))
+                    (error (message "C-c u H nach C-c u G (%s): %s"
+                                    (file-name-nondirectory file) (error-message-string err))
+                           nil))))
+      ;; 22.11.: a commentary document has PDFs of its own — they come
+      ;; when it lands, whatever its verses still wait for
+      (when commentary (funcall export file))
+      (cond
+       (files
+        ;; 22.11.: a commentary's Section may belong to several verses —
+        ;; the dossier of each that waited for it
+        (mapc export files))
+       ;; 5.11.: the other half of the verse is still coming — its
+       ;; landing exports the dossier, once.
+       ((not commentary)
+        (bcat-status-step file :pdf "PDF folgt mit dem Rest des Verses"))))))
 
 (add-hook 'bcat-sentence-after-fetch-functions #'bcat-export-after-fetch)
 
