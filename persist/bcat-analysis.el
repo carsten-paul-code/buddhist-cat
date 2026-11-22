@@ -746,7 +746,8 @@ Devanāgarī, Tibetan) is none."
   "(OBJECT . PROBLEM) for Claude's RESPONSE: the JSON object as an alist
 \(keys as symbols, arrays as lists) and nil, or nil and a short
 description why there is none — an answer cut off at the output limit
-says so.  Tolerates a code fence or prose around the object, and mends
+says so (one whose brackets stay open and that does not end with the
+brace of its object; a complete one with a bracket amiss does not).  Tolerates a code fence or prose around the object, and mends
 what `bcat-analysis--repair-json' mends; its quotations are closed as
 they were opened (`bcat-analysis--close-quotes')."
   (if (not (and (stringp response) (string-match "{" response)))
@@ -770,8 +771,15 @@ they were opened (`bcat-analysis--close-quotes')."
             ;; 19.11.: „…\" → „…“
             (cons (bcat-analysis--close-quotes obj) nil))
            ((or obj (null (cdr strict))) (cons nil "JSON ohne segments"))
-           ((bcat-analysis--unterminated-p (substring response start))
+           ;; cut off: its brackets stay open AND it does not end with
+           ;; the brace of its object (22.11.: a complete answer with
+           ;; one bracket amiss was called cut off)
+           ((and (bcat-analysis--unterminated-p (substring response start))
+                 (not (string-match-p "}[ \t\n\r`]*\\'" response)))
             (cons nil "abgeschnitten — Grenze `tibetan-claude-max-tokens' erreicht"))
+           ((bcat-analysis--unterminated-p (substring response start))
+            (cons nil (concat (bcat-analysis--json-problem (cdr strict) start)
+                              " — die Antwort ist vollständig, aber ihre Klammern gehen nicht auf")))
            (t (cons nil (bcat-analysis--json-problem (cdr strict) start)))))))))
 
 (defun bcat-analysis-parse (response)

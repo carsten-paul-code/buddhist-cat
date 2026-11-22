@@ -916,6 +916,28 @@ the object.  Valid JSON is left alone."
   (let ((golden "{\"segments\": [{\"num\": 1, \"structure\": \"x ] y } z\"}]}"))
     (should (equal golden (bcat-analysis--repair-json golden)))))
 
+(ert-deftest bcat-analysis-read-complete-answer-is-not-cut-off ()
+  "22.11., MSA XI.17: the answer was complete — it ended with its last
+brace and the closing fence — but one bracket inside did not match, and
+C-c u G said „abgeschnitten — Grenze `tibetan-claude-max-tokens'
+erreicht“.  That sends one looking for a limit that was not reached
+\(22 KB of 32 000 tokens).  Cut off is only an answer that does not end
+with the brace of its object; a complete one that cannot be read says
+where its JSON breaks."
+  ;; two closers missing — the list of segments and the object never
+  ;; close; that is beyond mending
+  (let* ((broken (concat "```json\n{\"segments\": [{\"num\": 1, \"x\": [{\"a\": 1 ],\n"
+                         " \"grammar\": \"g\"}\n```"))
+         (read (bcat-analysis-read broken)))
+    (should-not (car read))
+    (should-not (string-match-p "abgeschnitten" (cdr read)))
+    (should (string-match-p "JSON-Fehler" (cdr read))))
+  ;; really cut off: still said so
+  (should (string-match-p "abgeschnitten"
+                          (cdr (bcat-analysis-read
+                                (concat "{\"segments\": [{\"num\": 15, \"words\": []},"
+                                        " {\"num\": 16, \"words\": [{\"word\": \"pañ"))))))
+
 (ert-deftest bcat-analysis-parse-repairs-copied-text ()
   "The prompt asks for the reference translations verbatim inside JSON
 strings — Lindtner's verse 9 with its note (a paragraph break; Eimer
