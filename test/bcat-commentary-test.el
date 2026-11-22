@@ -1481,6 +1481,54 @@ dossier of the verse that waited for it — each once."
             (bcat-sentence-test--fetch-n src 36))))
       (should (equal (sort (list doc verse) #'string<) (sort exports #'string<))))))
 
+(ert-deftest bcat-commentary-export-from-the-verse ()
+  "C-c u H on a verse in the source puts all of the verse on the
+reMarkable: its dossier — and, since the commentaries are files of
+their own (22.11.), the commentary documents that cover it, as far as
+the device does not have them as they are.  A document that is there
+unchanged is not set again (C-u C-c u H sets and sends everything)."
+  (bcat-commentary-test--with-msa
+    (bcat-sentence-test--with-stubs #'bcat-commentary-test--answers
+      (bcat-sentence-test--fetch-n src 36))
+    (let ((press (lambda (&optional force)
+                   (with-current-buffer (find-file-noselect src)
+                     (unwind-protect
+                         (progn
+                           (goto-char (point-min))
+                           (re-search-forward "^\\*\\*\\* Sentence 36")
+                           (let ((current-prefix-arg force))
+                             (bcat-export)))
+                       (kill-buffer))))))
+      (bcat-commentary-test--with-export-stubs
+        (funcall press)
+        (should (equal '(("msa-IX.16.pdf" . "MSA IX.16")
+                         ("msa-IX.16-17-Sthiramati.pdf" . "MSA IX.16–17 Sthiramati"))
+                       (reverse uploaded)))
+        (should (equal '("pdfview-sent-036-msa.org" "pdfview-comm-IX.16-savbh.org")
+                       (reverse (mapcar #'car exported)))))
+      ;; again: the document is on the device as it is — not set, not sent
+      (bcat-commentary-test--with-export-stubs
+        (funcall press)
+        (should-not uploaded)
+        (should (equal '("pdfview-sent-036-msa.org") (mapcar #'car exported))))
+      ;; a correction in the document's philology: it goes again — the
+      ;; dossier, whose reading page shows the commentary's text and
+      ;; translation only, is on the device as it is
+      (let* ((doc (expand-file-name "comm-IX.16-savbh.org" cfolder))
+             (text (bcat-sentence-test--text-of doc)))
+        (should (string-match-p "^\\*Grammar:\\* /dpe bstan pa'i phyir/ introduces the lemma\\.$" text))
+        (with-temp-file doc
+          (insert (replace-regexp-in-string "introduces the lemma\\.$"
+                                            "introduces the lemma (final clause)."
+                                            text t t))))
+      (bcat-commentary-test--with-export-stubs
+        (funcall press)
+        (should (equal '(("msa-IX.16-17-Sthiramati.pdf" . "MSA IX.16–17 Sthiramati")) uploaded)))
+      ;; C-u: everything
+      (bcat-commentary-test--with-export-stubs
+        (funcall press '(4))
+        (should (equal '("msa-IX.16.pdf" "msa-IX.16-17-Sthiramati.pdf") (reverse (mapcar #'car uploaded))))))))
+
 (ert-deftest bcat-commentary-verse-export-names ()
   "The verse's PDF: „MSA IX.16“ on the reMarkable, msa-IX.16.pdf in the
 handouts of the Sanskrit source (Carsten 30.10.: „...IX.60.pdf“)."

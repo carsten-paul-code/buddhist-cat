@@ -30,6 +30,8 @@
 (declare-function bcat-commentary-lead "bcat-commentary" (commentary-source))
 (declare-function bcat-commentary-label "bcat-commentary" (section commentary-source))
 (declare-function bcat-commentary-doc-text "bcat-commentary" (doc))
+(declare-function bcat-commentary-sources "bcat-commentary" (source-file))
+(declare-function bcat-commentary-documents "bcat-commentary" (sent-num source-file))
 (declare-function bcat-commentary--l1-sections "bcat-commentary" (text))
 (declare-function tibetan-analysis-make-short-name "tibetan-analysis-persist" (source-file))
 (declare-function tibetan-cascade--scope-at-point "tibetan-cascade" ())
@@ -1683,6 +1685,24 @@ Returns the PDF."
       (message "PDF: %s" pdf))
     pdf))
 
+(defun bcat-export--commentary-due-p (doc)
+  "Non-nil when C-c u H on a verse is to export its commentary document
+DOC too: the reMarkable does not have its reading PDF or its „Worum es
+geht“ as they are now (`bcat-export--on-device-p'), or everything is
+asked for (`bcat-export-force-upload')."
+  (or bcat-export-force-upload
+      (let* ((views (bcat-export-views doc))
+             (target (plist-get (bcat-export-info doc) :handout))
+             (there (lambda (pdf text)
+                      (and pdf (file-exists-p pdf)
+                           (bcat-export--on-device-p pdf (md5 text nil nil 'utf-8))))))
+        (and (plist-get views :view)
+             (not (and (funcall there target (plist-get views :view))
+                       (or (not (plist-get views :overview))
+                           (funcall there (concat (file-name-sans-extension target)
+                                                  bcat-export--overview-suffix ".pdf")
+                                    (plist-get views :overview)))))))))
+
 (defun bcat-export-after-fetch (file)
   "Hook for `bcat-sentence-after-fetch-functions': C-c u G ends with
 C-c u H (when `bcat-export-auto') — for a verse file its dossier, once
@@ -1733,7 +1753,10 @@ sentence under the heading at point — files still in the old layout
 are skipped (C-c u G first).  Sources without a template yet keep the
 old handout.  19.11.: a PDF the reMarkable has unchanged is not sent
 again; with a prefix argument (C-u C-c u H) it is
-\(`bcat-export-force-upload')."
+\(`bcat-export-force-upload').  22.11.: a commentary document is
+exported itself; on a verse its commentary documents come with the
+dossier, those the device does not have as they are
+\(`bcat-export--commentary-due-p')."
   (interactive)
   (let ((file (buffer-file-name))
         (bcat-export-force-upload (or bcat-export-force-upload (and current-prefix-arg t))))
@@ -1766,7 +1789,17 @@ again; with a prefix argument (C-u C-c u H) it is
                  (files (mapcar (lambda (n) (tibetan-sentence--filepath n folder src))
                                 (plist-get scope :sent-nums)))
                  (ready (cl-remove-if-not #'bcat-sentence-file-p files))
-                 (old (- (length files) (length ready))))
+                 (old (- (length files) (length ready)))
+                 ;; 22.11.: the commentaries are files of their own —
+                 ;; with the verse those the device does not have as
+                 ;; they are
+                 (documents (and (progn (require 'bcat-commentary) (bcat-commentary-sources src))
+                                 (cl-remove-if-not
+                                  #'bcat-export--commentary-due-p
+                                  (delete-dups
+                                   (cl-loop for n in (plist-get scope :sent-nums)
+                                            append (bcat-commentary-documents n src))))))
+                 (ready (append ready documents)))
             (when (and (> (length ready) tibetan-cascade-subtree-confirm-threshold)
                        (not (y-or-n-p (format "%d PDFs erzeugen und hochladen? " (length ready)))))
               (user-error "Abgebrochen"))
