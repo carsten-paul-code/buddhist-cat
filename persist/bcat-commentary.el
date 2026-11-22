@@ -989,7 +989,11 @@ segment parts) and grammar; the whole translation."
             base)))
 
 (defun bcat-commentary--write (run)
-  "Write the commentary document of RUN from the answers landed so far."
+  "Write the commentary document of RUN from the answers landed so far.
+What is written is a new analysis (`bcat-sentence--fresh'): a document
+corrected by hand is kept in analysis/.reviewed/ before
+\(`bcat-sentence--keep-reviewed', 22.11. — as the sentence files since
+20.11.), and the new one names it."
   (let* ((doc (plist-get run :doc))
          (section (plist-get run :section))
          (source (plist-get run :source))
@@ -998,7 +1002,8 @@ segment parts) and grammar; the whole translation."
     (let ((base (bcat-commentary-rump-context
                  section source
                  (cons (cons 'last-analyzed (format-time-string "%Y-%m-%d")) (bcat-sentence--keep doc))
-                 (bcat-commentary--lemmata section source parsed))))
+                 (bcat-commentary--lemmata section source parsed)))
+          (bcat-sentence--fresh (or (bcat-sentence--keep-reviewed doc) t)))
       (bcat-sentence--write doc (bcat-sentence--render "commentary"
                                                        (bcat-commentary--context base parsed (plist-get run :refs))
                                                        source)))))
@@ -1068,6 +1073,9 @@ get their links and the document goes to the reMarkable (C-c u H)."
           (when (fboundp 'bcat-dossier-landed)
             (bcat-dossier-landed (plist-get run :doc))))
       (bcat-commentary--status run "✓")
+      ;; how far the new analysis departs from a corrected version it
+      ;; replaced (C-c u d) — nothing is overwritten in silence
+      (bcat-sentence--report-departures (plist-get run :doc))
       (let* ((source (plist-get run :source))
              (lead (bcat-commentary-lead source))
              (parallel (bcat-sentence-parallel-source lead)))

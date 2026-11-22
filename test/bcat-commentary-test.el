@@ -947,6 +947,41 @@ commentary documents that cover it."
         (should (member doc done)))
       (should (funcall three)))))
 
+(ert-deftest bcat-commentary-fetch-keeps-a-corrected-document ()
+  "Carsten 20.11. (sentence files: „ja, beides so machen“), now for the
+commentary documents too — in three parts their generated text carries
+the tool's stamp: a document corrected by hand is not replaced in
+silence by a new fetch.  The corrected version is kept in
+analysis/.reviewed/, the new document names it (#+CAT_REVIEWED_BEFORE,
+C-c u d shows the difference) and does not itself count as reviewed."
+  (bcat-commentary-test--with-msa
+    (bcat-sentence-test--with-stubs #'bcat-commentary-test--answers
+      (bcat-sentence-test--fetch-n src 36))
+    (let ((doc (expand-file-name "comm-IX.16-savbh.org" cfolder)))
+      (should-not (bcat-sentence-reviewed doc))
+      ;; a correction by hand, in * Text
+      (let ((text (bcat-sentence-test--text-of doc)))
+        (should (string-match-p "^\\*Translation:\\* To show the example: " text))
+        (with-temp-file doc
+          (insert (replace-regexp-in-string "^\\*Translation:\\* To show the example: "
+                                            "*Translation:* Um das Beispiel zu zeigen (korrigiert): "
+                                            text t t))))
+      (should (bcat-sentence-reviewed doc))
+      ;; … and a new fetch of the commentary
+      (bcat-sentence-test--with-stubs #'bcat-commentary-test--answers
+        (bcat-commentary-fetch "Section IX.16" csrc))
+      (let* ((text (bcat-sentence-test--text-of doc))
+             (before (bcat-sentence--text-header text "CAT_REVIEWED_BEFORE")))
+        (should-not (string-match-p "korrigiert" text))
+        (should-not (string-match-p "^#\\+CAT_REVIEWED:" text))
+        (should-not (bcat-sentence-reviewed doc))
+        (should (and before (string-match-p "\\`\\.reviewed/.* comm-IX\\.16-savbh\\.org\\'" before)))
+        (should (string-match-p "Um das Beispiel zu zeigen (korrigiert)"
+                                (bcat-sentence-test--text-of (expand-file-name before cfolder))))
+        ;; the copy is no commentary document of the folder
+        (should (equal '("comm-IX.16-savbh.org") (directory-files cfolder nil "\\`comm-")))
+        (should (> (bcat-sentence--departures doc) 0))))))
+
 (ert-deftest bcat-commentary-verse-links ()
   "The verse files link the commentary: in the header, and per segment
 the Sthiramati sentences with the lemmata of its pādas — known once the
