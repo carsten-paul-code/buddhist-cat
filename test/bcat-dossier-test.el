@@ -305,6 +305,69 @@ bhāṣya or of the commentator."
     (let ((layer (nth 1 (alist-get 'layers (bcat-dossier-context (tibetan-sentence--filepath 36 folder src))))))
       (should (string-match-p "comm-IX\\.16-mdo\\.org\\]\\[Analyse\\]\\]" (alist-get 'link layer))))))
 
+(ert-deftest bcat-dossier-bhasya-sentence-by-sentence ()
+  "Carsten 22.11. („Bhasya bitte machen“): on the reading page the
+bhāṣya stands sentence by sentence with its translation, as the
+commentator — no longer as one block of Sanskrit, one of Tibetan and one
+translation.  The sentences are those of the analysed bhāṣya (its
+document): each with the Sanskrit that belongs to it above its Tibetan,
+and the translation from its analysis.  The hint of the verse's
+analysis stays.  A bhāṣya not analysed (no document) reads as before."
+  (bcat-commentary-test--with-bhasya
+    (bcat-commentary-test--with-file-stubs #'bcat-commentary-test--bhasya-answer
+      (bcat-sentence-test--fetch-n src 36))
+    (let* ((file (tibetan-sentence--filepath 36 folder src))
+           (layer (nth 1 (alist-get 'layers (bcat-dossier-context file t))))
+           (items (alist-get 'items layer))
+           (text (plist-get (bcat-dossier-pdf-text file) :text)))
+      (should (string-prefix-p "02 Bhāṣya" (alist-get 'heading layer)))
+      ;; one sentence in the Tibetan bhāṣya of IX.16 — the two Sanskrit
+      ;; units (the line before the verse, the bhāṣya after it) with it
+      (should (equal '("65") (mapcar (lambda (i) (alist-get 'head i)) items)))
+      (let ((lines (split-string (alist-get 'lines (car items)) "\n")))
+        (should (equal "atha pañcamaḥ ślokaḥ /" (nth 1 lines)))
+        (should (string-prefix-p "anena pañcamena sarvagatatve" (nth 3 lines)))
+        (should (string-prefix-p "ལྔ་པ་འདིས་ནི་" (nth 4 lines)))
+        (should (string-prefix-p "lnga pa 'dis ni " (nth 5 lines)))
+        (should (= 6 (length lines))))
+      (should (equal "By this fifth verse he proves by an example …"
+                     (alist-get 'item-translation (car items))))
+      ;; not the blocks and the one translation any more
+      (should-not (alist-get 'verses layer))
+      (should-not (alist-get 'translation layer))
+      ;; on the page: the layer, where its analysis is, the sentence
+      (should (string-match-p
+               "^\\*\\* 02 Bhāṣya.*\nAnalyse: MSA IX\\.16 Bhāṣya\n\\(?:.*\n\\)*?\\*\\*\\* 65\n#\\+begin_verse\n"
+               text))
+      (should (string-match-p "^→ By this fifth verse he proves by an example …$" text))
+      (should (bcat-dossier-test--links-resolve text))))
+  ;; not analysed: the layer as it was
+  (bcat-commentary-test--with-msa
+    (bcat-sentence-test--with-stubs #'bcat-commentary-test--answers
+      (bcat-sentence-test--fetch-n src 36))
+    (let ((layer (nth 1 (alist-get 'layers (bcat-dossier-context (tibetan-sentence--filepath 36 folder src) t)))))
+      (should (string-prefix-p "02 Bhāṣya" (alist-get 'heading layer)))
+      (should (alist-get 'verses layer))
+      (should (alist-get 'translation layer))
+      (should-not (alist-get 'items layer)))))
+
+(ert-deftest bcat-dossier-spread-by-length ()
+  "Which Sanskrit units go with which sentence of the Tibetan bhāṣya
+when their numbers differ (MSA XI.20: five daṇḍa units, four Tibetan
+sentences — the last renders two): consecutive groups, cut where the
+running length of the one text is nearest to that of the other.  The
+same number: one each."
+  ;; XI.20, the lengths as in the sources
+  (should (equal '(1 1 1 2) (bcat-dossier--spread '(57 61 50 55 46) '(73 82 70 120))))
+  (should (equal '(1 1 1) (bcat-dossier--spread '(40 150 200) '(70 140 210))))
+  (should (equal '(2) (bcat-dossier--spread '(22 100) '(90))))
+  (should (equal '(2 1) (bcat-dossier--spread '(30 30 60) '(50 50))))
+  ;; every group has at least one member
+  (should (equal '(1 1 1) (bcat-dossier--spread '(100 1 1) '(1 1 100))))
+  ;; fewer units than sentences: nothing to spread
+  (should-not (bcat-dossier--spread '(50) '(20 30)))
+  (should-not (bcat-dossier--spread '() '(20 30))))
+
 (ert-deftest bcat-dossier-folio-of-a-manuscript ()
   "22.11., Phywa pa: his folios are given as „Ms 82b4“ (a manuscript,
 counted after the scan), not as one word like „D105b4“ — the reading

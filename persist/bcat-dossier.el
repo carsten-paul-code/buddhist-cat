@@ -121,6 +121,70 @@ else the note that it comes with the next fetch), the hint."
                                     bcat-dossier--missing-translation)))
         (note . ,(bcat-dossier--filled (alist-get 'bhasya-hint context)))))))
 
+(defun bcat-dossier--spread (units sentences)
+  "How many of UNITS go with each of SENTENCES — both lists of lengths,
+of two texts that say the same in the same order (the daṇḍa units of
+the Sanskrit bhāṣya, the sentences of its Tibetan): consecutive groups,
+as many as there are sentences, each with at least one unit, cut where
+the running share of the units' length is nearest to that of the
+sentences'.  With as many units as sentences: one each.  nil when there
+are fewer units than sentences, or none — nothing to spread."
+  (let ((n (length units)) (k (length sentences)))
+    (when (and (> n 0) (>= n k) (> k 0))
+      (let* ((total-u (float (max 1 (apply #'+ units))))
+             (total-s (float (max 1 (apply #'+ sentences))))
+             (cum-u (let ((sum 0)) (mapcar (lambda (l) (/ (setq sum (+ sum l)) total-u)) units)))
+             (cum-s (let ((sum 0)) (mapcar (lambda (l) (/ (setq sum (+ sum l)) total-s)) sentences)))
+             (prev 0) (groups '()))
+        (cl-loop for j from 1 below k
+                 for target = (nth (1- j) cum-s)
+                 do (let ((best nil) (best-d nil))
+                      (cl-loop for c from (1+ prev) to (- n (- k j))
+                               for d = (abs (- (nth (1- c) cum-u) target))
+                               when (or (null best-d) (< d best-d))
+                               do (setq best c best-d d))
+                      (push (- best prev) groups)
+                      (setq prev best)))
+        (push (- n prev) groups)
+        (nreverse groups)))))
+
+(defun bcat-dossier-bhasya-sentences (context docs folios to &optional pdf)
+  "The bhāṣya layer of a verse sentence by sentence (Carsten 22.11.:
+„Bhasya bitte machen“ — as the commentator's), or nil when its
+documents DOCS have no sentences: (items . …) — the sentences of the
+analysed bhāṣya (`bcat-dossier-commentary-items' with FOLIOS, TO, PDF),
+each with the Sanskrit that belongs to it above its Tibetan
+\(`bhasya-sanskrit' of the verse file's CONTEXT, spread over the
+sentences by `bcat-dossier--spread') and the translation from its
+analysis — and (note . the hint of the verse's analysis).  With fewer
+Sanskrit units than sentences the Sanskrit stands as a block before
+them (verses)."
+  (let* ((items (cl-loop for doc in docs append (bcat-dossier-commentary-items doc folios to pdf)))
+         (skt (cl-remove-if-not
+               (lambda (p) (or (bcat-dossier--filled (car p)) (bcat-dossier--filled (cdr p))))
+               (mapcar (lambda (s) (cons (alist-get 'devanagari s) (alist-get 'samhita s)))
+                       (alist-get 'bhasya-sanskrit context))))
+         (groups (bcat-dossier--spread
+                  (mapcar (lambda (p) (length (or (bcat-dossier--filled (cdr p)) (car p)))) skt)
+                  (mapcar (lambda (i) (length (or (alist-get 'lines i) ""))) items)))
+         (rest skt))
+    (when items
+      `(,@(and skt (not groups)
+               `((verses . (((text . ,(bcat-dossier--block skt)))))))
+        (note . ,(bcat-dossier--filled (alist-get 'bhasya-hint context)))
+        (items . ,(if (not groups)
+                      items
+                    (cl-mapcar
+                     (lambda (item n)
+                       (let ((mine (seq-take rest n)))
+                         (setq rest (nthcdr n rest))
+                         (cons (cons 'lines
+                                     (string-join (delq nil (list (bcat-dossier--block mine)
+                                                                  (bcat-dossier--filled (alist-get 'lines item))))
+                                                  "\n"))
+                               (assq-delete-all 'lines (copy-alist item)))))
+                     items groups)))))))
+
 (defun bcat-dossier--folios (commentary-source)
   "Hash: segment number → :FOLIO: of COMMENTARY-SOURCE — the whole
 value („D105b4“; „Ms 82b4“ for a manuscript)."
@@ -334,7 +398,14 @@ With PDF a layer whose analysis is in documents of its own names them
                              `((link . ,(if pdf (funcall names bhasya-docs)
                                           (format "[[file:%s][Analyse]]"
                                                   (file-relative-name (car bhasya-docs) to))))))
-                      ,@bh)
+                      ;; … and then sentence by sentence, as the
+                      ;; commentator; not analysed: the text as before
+                      ,@(or (and bhasya-docs
+                                 (bcat-dossier-bhasya-sentences
+                                  ctx bhasya-docs
+                                  (bcat-dossier--folios (cl-find-if #'bcat-commentary-bhasya-p sources))
+                                  to pdf))
+                            bh))
                     layers))
              (bh-file
               (let ((bread (bcat-relayout-file-context bh-file)))
