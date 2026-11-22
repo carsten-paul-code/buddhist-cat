@@ -260,6 +260,18 @@ demand (C-c u Q) it is, for whoever asks wants to see it."
   (should-not (bcat-survey-notable-p '((notable . "Nein"))))
   (should (string-match-p "\"notable\": \"yes\"" (bcat-survey-system-prompt))))
 
+(ert-deftest bcat-survey-prompt-follows-the-image ()
+  "Carsten 22.11., after the first real survey (MSA XI.15): it said
+that Phywa pa adds the third nature, but only by half that the SAME
+element of the image — what carries the illusion — stands for the
+dependent nature in the bhāṣya and for the perfected one in Phywa pa:
+the shift the survey is for.  His yes to one more rule: with an image,
+say for each layer what each of its elements stands for, and name it
+when the same element is assigned differently."
+  (let ((prompt (bcat-survey-system-prompt)))
+    (should (string-match-p "what each element of the image stands for" prompt))
+    (should (string-match-p "assigns the same element differently" prompt))))
+
 (ert-deftest bcat-survey-with-the-fetch-needs-two-others ()
   "With the fetch the survey comes only for a passage with at least two
 sources beside itself (a commentary and a translation, two

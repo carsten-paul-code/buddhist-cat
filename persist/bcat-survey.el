@@ -250,7 +250,10 @@ translations, the lecturers."
 (defun bcat-survey-system-prompt ()
   "The system prompt of a survey — the same for every passage, so the
 prompt cache stays warm.  Its wording was laid before Carsten
-\(22.11.2026); change it only on his word."
+\(22.11.2026: „passt“); on his word since: `notable' (the survey comes
+with the fetch, „wenn es was gibt was beachtet werden sollte“) and the
+rule on the elements of an image (after the first real survey, MSA
+XI.15).  Change it only on his word."
   (concat
    "You compare the sources on one passage of a classical Indian or Tibetan text for a university reading class. You are given everything the class has on the passage: the passage itself, in one or two languages, with the class's own translation; its commentaries sentence by sentence, each with a translation; the published translations word for word; and, where there are any, excerpts of lectures. Each source has been analysed on its own already. What is missing is the view across them. Answer with ONE JSON object and nothing else (no prose, no code fence):\n\n"
    bcat-survey--schema
@@ -258,6 +261,7 @@ prompt cache stays warm.  Its wording was laid before Carsten
    "- notable: \"yes\" when a reader of the single documents would miss something that shows only across them — a shift between the layers that changes what the passage is taken to say, a wording of one language that opens or closes a reading, translations that differ in more than words; \"no\" when the layers say the same in other words and the voices agree. Fill the other fields either way.\n"
    "- gist: what the passage itself says, in one or two sentences — only what it says, nothing a commentary adds.\n"
    "- layers: the passage and every commentary given, in the order given, the passage first. name: as given („Vers“, „Bhāṣya“, the commentator). place: the numbers of its sentences or segments as given. says: what this layer says about the passage, two to four sentences. shift: what changes against the layer before it — a term that comes in, something narrowed, widened, reinterpreted or dropped, the same image assigned differently, a new vocabulary; „—“ for the passage itself; where nothing shifts, say so. key and shift_key: says and shift in a few words each, for a table.\n"
+   "- Where the passage works with an image or a comparison (an illusion, a reflection, a dream): say in says, for each layer, what each element of the image stands for there; and when a layer assigns the same element differently than the layer before it, name that in shift — the element, what it stood for before, what it stands for now.\n"
    "- layers_point: the one shift a reader must not miss, and what would have to be clarified in class; two to four sentences. \"\" with one layer only.\n"
    "- wording: only when the passage is given in two languages — each entry one point where the wording of one language allows a reading the other does not, or settles what the other leaves open (a term that can be taken two ways, a case or a voice that changes, a reading of the text that one language decides). Name the words of both languages in /italic/ and say what follows for translation or interpretation. What makes no difference to the sense gets one entry at the end, together. [] with one language.\n"
    "- voices: every published translation and every lecturer given, then the class's own translation last. name: as given. from: what it translates from and whether it reads with a commentary, as far as the material shows („wohl“ when inferred). text: what this voice attends to or stresses — the decision it takes on the terms that matter, what it reads into the passage from a commentary, where it departs from the others; one to three sentences; a slip or an emendation is named as such. key: its characteristic choice in a few words, quoted where possible. A translation given twice (its original and a working translation of it) is one voice.\n"
