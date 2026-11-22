@@ -1462,6 +1462,49 @@ reference was added under Translations compared that no segment shows."
         (write-region (point-min) (point-max) file nil 0))
       (should (eq 'align (bcat-sentence-fetch-state file '(38 39)))))))
 
+(ert-deftest bcat-sentence-machine-translation-is-never-unaligned ()
+  "22.11., MSA XI.15–20: five verses analysed in the morning were sent to
+Claude again by the next C-c u G, both files of each pair.  Since 18.11.
+the machine translation is no reference („Dharma Mitra ist inzwischen
+für mich keine Referenz mehr“): it stands last under Translations
+compared, under a heading of its own, and no segment shows it any more
+— but it still counted as „a reference no segment shows“, so EVERY
+analysed file was in the state `align'.  The test of that state had
+not seen it: its answer still carried DharmaMitra in the segments.  A
+machine translation alone is no reason for that state; a reference
+added by hand still is."
+  (bcat-sentence-test--with-source
+    (bcat-sentence-test--create src)
+    (let ((file (tibetan-sentence--filepath 9 folder src))
+          ;; the answer as it comes since 18.11.: no machine translation
+          ;; among the references of a segment
+          (answer (replace-regexp-in-string
+                   "{\"name\": \"DharmaMitra\", \"text\": \"[^\"]*\"}" ""
+                   (replace-regexp-in-string
+                    ",[ \n]*{\"name\": \"DharmaMitra\", \"text\": \"[^\"]*\"}" ""
+                    bcat-sentence-test--answer t t)
+                   t t)))
+      (bcat-sentence-test--with-stubs answer
+        (bcat-sentence-test--fetch src))
+      (let ((text (bcat-sentence-test--file-text src)))
+        (should (string-match-p "^\\*DharmaMitra:\\* " text))
+        (should-not (string-match-p "^\\*DharmaMitra:\\* "
+                                    (bcat-sentence--segments-part text))))
+      (should (assoc "DharmaMitra" (bcat-sentence--compared file)))
+      (should-not (bcat-sentence-fetch-state file '(38 39)))
+      ;; a second C-c u G: nothing sent
+      (bcat-sentence-test--with-stubs answer
+        (bcat-sentence-test--fetch src)
+        (should (= 0 submits)))
+      ;; a reference added by hand: that is to be placed
+      (with-temp-buffer
+        (insert-file-contents file)
+        (bcat-sentence-test--goto-compared-end)
+        (insert "*Ruegg 1981:* A newly added rendering.\n\n")
+        (write-region (point-min) (point-max) file nil 0))
+      (should (assoc "Ruegg 1981" (bcat-sentence--unaligned file)))
+      (should (eq 'align (bcat-sentence-fetch-state file '(38 39)))))))
+
 ;; ----------------------------------------------------------------------------
 ;; Step 3c — a reference added by hand gets its segment parts
 ;; ----------------------------------------------------------------------------

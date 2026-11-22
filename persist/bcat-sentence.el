@@ -1243,7 +1243,8 @@ the Tibetan request needs the Sanskrit answer, so both again);
 `dm' when DharmaMitra is missing (30.10.: analysed while its daily
 limit held — fetched alone and placed by the alignment request);
 `align' when a reference under Translations compared appears in no
-segment (added by hand); nil when the file is complete."
+segment (added by hand) — a machine translation does not count —; nil
+when the file is complete."
   (let* ((text (bcat-sentence--text file))
          (segments (bcat-sentence--segments-part text)))
     (cond
@@ -1253,7 +1254,13 @@ segment (added by hand); nil when the file is complete."
            (not (string-match-p "^\\*\\* Segment [0-9]+ · \\(?:Tib\\|Skt\\)\\. " text)))
       'full)
      ((not (string-match-p "^\\*DharmaMitra:\\* " text)) 'dm)
-     ((bcat-sentence--unaligned file) 'align))))
+     ;; 22.11.: not for a machine translation alone — since 18.11. it is
+     ;; no reference and stands in no segment; counted here, it put
+     ;; EVERY analysed file into this state (MSA XI: the verses of the
+     ;; morning were about to be analysed again)
+     ((cl-remove-if (lambda (r) (member (car r) bcat-analysis-machine-references))
+                    (bcat-sentence--unaligned file))
+      'align))))
 
 ;; ----------------------------------------------------------------------------
 ;; Step 3c — placing references added by hand
@@ -1818,12 +1825,16 @@ paired SOURCE-FILE; nil when the Tibetan lacks the sentence."
 (defun bcat-sentence--pair-state (file sentence source-file)
   "What C-c u G still has to do for SENTENCE of the paired SOURCE-FILE
 \(FILE its Sanskrit file): `bcat-sentence-fetch-state' — and `full'
-while the Tibetan file is not complete: both files come from the same
+while the Tibetan file has no analysis: both files come from the same
 two requests."
   (let* ((n (plist-get sentence :sent-num))
          (tsegs (bcat-sentence--parallel-segs n source-file)))
     ;; The partner's missing DharmaMitra alone is no reason for both
-    ;; Claude requests again (30.10.).
+    ;; Claude requests again (30.10.) — nor is a reference there that no
+    ;; segment shows (22.11., MSA XI.15: „Lévi 1911“ unplaced in the
+    ;; Tibetan file — both files were analysed anew on every C-c u G,
+    ;; and the reference stayed unplaced).  A filled analysis is renewed
+    ;; on request only (C-u C-c u G).
     (if (and tsegs (memq (bcat-sentence-fetch-state (bcat-sentence-partner-file n source-file)
                                                     (mapcar #'car tsegs))
                          '(full align)))
