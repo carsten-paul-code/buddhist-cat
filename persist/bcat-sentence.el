@@ -1835,9 +1835,8 @@ two requests."
     ;; Tibetan file — both files were analysed anew on every C-c u G,
     ;; and the reference stayed unplaced).  A filled analysis is renewed
     ;; on request only (C-u C-c u G).
-    (if (and tsegs (memq (bcat-sentence-fetch-state (bcat-sentence-partner-file n source-file)
-                                                    (mapcar #'car tsegs))
-                         '(full align)))
+    (if (and tsegs (eq 'full (bcat-sentence-fetch-state (bcat-sentence-partner-file n source-file)
+                                                        (mapcar #'car tsegs))))
         'full
       (bcat-sentence-fetch-state file (mapcar #'car (plist-get sentence :segs))))))
 

@@ -950,6 +950,42 @@ does."
                                            (bcat-sentence--sentence 36 src) src))
     (should-not (bcat-commentary-incomplete-p "Section IX.16" csrc))))
 
+(ert-deftest bcat-verse-partner-reference-is-no-new-analysis ()
+  "22.11., MSA XI.15: in the Tibetan file of the pair a reference stood
+under Translations compared that no segment shows („Lévi 1911“ — the
+answer had placed only „Lévi 1911 (engl.)“).  The state of a pair
+counted that as `full': the next C-c u G analysed BOTH files anew, two
+Claude requests, and overwrote the analysis of the morning — on every
+C-c u G, for the reference stays unplaced.  Only a Tibetan file that is
+not analysed makes the pair `full' (the Tibetan request needs the
+Sanskrit answer).  A filled analysis is renewed on request only
+\(C-u C-c u G)."
+  (bcat-commentary-test--with-msa
+    (bcat-sentence-test--with-stubs #'bcat-commentary-test--answers
+      (bcat-sentence-test--fetch-n src 36))
+    (let ((file (tibetan-sentence--filepath 36 folder src))
+          (partner (bcat-sentence-partner-file 36 src)))
+      (should-not (bcat-sentence--pair-state file (bcat-sentence--sentence 36 src) src))
+      (with-temp-buffer
+        (insert-file-contents partner)
+        (bcat-sentence-test--goto-compared-end)
+        (insert "*Lévi 1911:* Comme la lune dans un vase brisé.\n\n")
+        (write-region (point-min) (point-max) partner nil 0))
+      (should (assoc "Lévi 1911" (bcat-sentence--unaligned partner)))
+      (should-not (eq 'full (bcat-sentence--pair-state file (bcat-sentence--sentence 36 src) src)))
+      ;; C-c u G again: no analysis of the verse
+      (bcat-sentence-test--with-stubs #'bcat-commentary-test--answers
+        (bcat-sentence-test--fetch-n src 36)
+        (should-not (member "bcat-analysis" kinds))
+        (should-not (member "bcat-tibetan" kinds))))
+    ;; a Tibetan file without analysis: both again, as before
+    (let ((partner (bcat-sentence-partner-file 36 src)))
+      (with-temp-file partner
+        (insert (replace-regexp-in-string "^⟦[0-9]+⟧ [^\n]*\n" ""
+                                          (bcat-sentence-test--text-of partner))))
+      (should (eq 'full (bcat-sentence--pair-state (tibetan-sentence--filepath 36 folder src)
+                                                   (bcat-sentence--sentence 36 src) src))))))
+
 (ert-deftest bcat-commentary-fetch-in-parts ()
   "A long commentary goes in parts (IX.8: 72 sentences): at most
 `bcat-commentary-chunk-segments' segments per request, at sentence
