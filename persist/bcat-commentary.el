@@ -290,8 +290,11 @@ SECTION covers."
                       (bcat-sentence--sentences lead))))
 
 (defun bcat-commentary--sentences (section commentary-source)
-  "The sentences of COMMENTARY-SOURCE in SECTION."
-  (cl-remove-if-not (lambda (s) (equal section (plist-get s :section-label)))
+  "The sentences of the commentary in SECTION of COMMENTARY-SOURCE — not
+the root verses a source may have with it (:VERSE:, Phywa pa's: the
+text commented on is the lead's)."
+  (cl-remove-if-not (lambda (s) (and (equal section (plist-get s :section-label))
+                                     (not (plist-get s :verse))))
                     (bcat-sentence--sentences commentary-source)))
 
 (defun bcat-commentary-file (section commentary-source)

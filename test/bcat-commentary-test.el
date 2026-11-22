@@ -508,6 +508,21 @@ verses' (Sthiramati) is as before: his IX.16 covers IX.17."
     (should (equal '("Section IX.16") (bcat-commentary-sections "Section IX.16" src csrc)))
     (should (equal '("Section IX.16" "Section IX.17") (bcat-commentary--covered "Section IX.16" src csrc)))))
 
+(ert-deftest bcat-commentary-root-verses-are-no-commentary ()
+  "Phywa pa's source has the root verses with it (Sentence 15, 16 with
+:VERSE:, before his sentences on them).  In a commentary source a
+sentence with :VERSE: is the text commented on, not commentary: it is
+no sentence of the commentary document, and nothing is asked about it."
+  (bcat-commentary-test--with-phywa
+    (should (equal '(2003 2004)
+                   (mapcar (lambda (s) (plist-get s :sent-num))
+                           (bcat-commentary--sentences "Section IX.15–16 sgyu ma'i mtshan nyid" psrc))))
+    (should (equal '(2001)
+                   (mapcar (lambda (s) (plist-get s :sent-num))
+                           (bcat-commentary--sentences "Section IX.15–17 Einleitung" psrc))))
+    ;; Sthiramati's has none
+    (should (= 6 (length (bcat-commentary--sentences "Section IX.16" csrc))))))
+
 (ert-deftest bcat-commentary-create ()
   "C-c u A in Sthiramati's source (no AI): the commentary document of the
 sentence's Section — the verses it covers (Tibetan) at the top with
