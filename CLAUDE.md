@@ -6187,11 +6187,24 @@ Abruf umsetzen — XI gleich, IX erst auf sein Wort).
   paratantra, bei Phywa pa für pariniṣpanna steht, wird nur halb
   gesagt; der Teil „Sanskrit und Tibetisch“ übersieht yantra/mantra und
   bhrāntinimitta/rgyu mtshan und spekuliert beim Passiv; Begriffe nicht
-  durchweg kursiv.  Vorschlag an Carsten (Prompt nur auf sein Wort):
-  bei einem Gleichnis je Schicht sagen lassen, wofür jedes Bildelement
-  steht.  Die Tabellen haben Absatzspalten fester Breite (:align p{…}):
-  die Antwort schrieb Zellen von einem Dutzend Wörtern, und die Tabelle
-  wurde unlesbar klein.
+  durchweg kursiv.  Die Tabellen haben Absatzspalten fester Breite
+  (:align p{…}): die Antwort schrieb Zellen von einem Dutzend Wörtern,
+  und die Tabelle wurde unlesbar klein.
+  CARSTEN DAZU (22.11.: „Ja zu allen 3“): (1) die Regel zum Gleichnis
+  in den Prompt (`580ff89': je Schicht sagen, wofür jedes Bildelement
+  steht, und benennen, wenn dasselbe Element anders zugeordnet wird);
+  (2) XI.16–20 abrufen; (3) aufs reMarkable.  AUSGEFÜHRT 14:59–15:12:
+  sechs Abrufe nacheinander (XI.15 neu, XI.16–20 erstmals), alle sechs
+  mit „notable: yes“, sechs Dateien Sanskrit-11/analysis/survey-032 …
+  042-msa.org, sechs PDFs „MSA XI.N Ueberblick“ in den Versordnern
+  (gegengeprüft, kein 429).  XI.15 sagt die Verschiebung jetzt
+  ausdrücklich (Bhāṣya: Holz/Erde plus Spruch = paratantra; Phywa pa:
+  die Grundlage allein = pariniṣpanna) und hat yantra/mantra im Teil
+  „Sanskrit und Tibetisch“.  NICHT am Original geprüft — es sind
+  Entwürfe; an XI.15 fiel eine ungenaue Stellenangabe auf (Lévis
+  Fußnote als „Kommentar an Stelle [125]“).  Dass alle sechs „yes“
+  sagten, heißt auch: ob der Filter je „no“ sagt, ist noch nicht
+  gesehen.
   Offen: im Tantrāloka sind die
   Viveka-Sätze eigene Sätze derselben Quelle und noch keine „Schicht“
   des Verses (dort gäbe es vorerst nur „Stimmen“: Dyczkowski,
