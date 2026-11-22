@@ -7,7 +7,7 @@ work on **Buddhist CAT** (`~/buddhist-cat`, GitHub
 Computer-Assisted Translation (CAT) system for Classical Tibetan and
 Sanskrit. Read it in full before editing. Symbols keep their
 `tibetan-' prefix until their module is rebuilt; new and rebuilt
-modules use `bcat-' (§5.73). Last updated 2026-11-20 (§5.74, Nachträge 18.11.:
+modules use `bcat-' (§5.73). Last updated 2026-11-22 (§5.74, Nachträge 18.11.:
 Wortbildung zurück am Segment — Bedeutungen der Glieder und Auflösung des
 Kompositums (Prompt-Felder `members'/`layers'), drei PDF-Fehler; nachmittags
 IN DIE TABELLE DES SEGMENTS: die Teile unter den Wörtern, eine Zeile je Glied,
@@ -29,8 +29,10 @@ Zeichenprüfung; seit 20.11. GLIEDERUNG (sa bcad) je Dokument:
 Gliederung-<Quelle>.org bzw. #+CAT_OUTLINE, gelesen von bcat-outline.el,
 Zeile „Ort im Ganzen“ in den Satzdateien, Ort + Nachbarzeilen im Abruf
 (outline_note), C-c u S entwirft sie per Abruf (bcat-outline-draft.el,
-Antworten bleiben, von Hand Bearbeitetes wird nie überschrieben); offen:
-Philologie-Teil weiter gliedern, Kompositum-Auflösung straffen).
+Antworten bleiben, von Hand Bearbeitetes wird nie überschrieben); seit
+22.11. auch das LESEDOSSIER (AS/MSA) als zwei PDFs — ab Reading +
+„Worum es geht“ —, fehlende Klammer im JSON einer Antwort wird ergänzt;
+offen: Philologie-Teil weiter gliedern, Kompositum-Auflösung straffen).
 Before that 2026-10-28 (§5.74: SATZDATEIEN
 NACH VORLAGE — Reading-Klassen, Tibetisch: `#+CAT_TEMPLATE: tibetan' im
 Quellkopf, Gliederung * Text / * Segments / * Sentence, C-c u A = Rumpf
@@ -5671,7 +5673,7 @@ Prompt-Änderung: „ja“).
     nächsten C-c u G / C-c u H.  rmapi: `mv <Pfad> /trash' legt in den
     Papierkorb (wiederherstellbar); `rm' NICHT verwenden.
 - OFFEN: die Straffung der Kompositum-Auflösung (`layers'); Philologie-
-  Teil weiter gliedern; Dossier-PDF teilen (AS/MSA).
+  Teil weiter gliedern.  (Dossier-PDF teilen: erledigt 22.11.)
 
 20.11.2026, PRÜFLISTE + SCHUTZ GEPRÜFTER DATEIEN (`f23ff0c', `8b6c62f',
 `adaef41'; Carsten über die Tantrāloka-Sitzung: „ja, beides so machen“).
@@ -5870,6 +5872,42 @@ Reihenfolge Tibetisch V → AS → MSA).
     kontext (outline_note) am echten Satz nicht erprobt.
   ERT 2999 / 2997 erwartet / 0 unerwartet / 2 übersprungen, BDD 251,
   compile sauber.
+
+22.11.2026, MSA XI: LESEDOSSIER GETEILT + KLAMMER-REPARATUR (`714f40b',
+`96b2289', `0fc9266', `444fb4e'; Carsten: „ich habe gerade das
+Mahayanasutralamkara Chapter XI analysieren lassen.  Da kommt aber auf
+dem Remarkable noch nicht die neue Struktur an.“).
+- DOSSIER = ZWEI PDFs: ein Vers mit mehreren Schichten (MSA: Vers +
+  Bhāṣya; AS: Satz + Bhāṣya-Satz; MSA IX: + Kommentar) geht nicht als
+  Satzdatei, sondern als Lesedossier aufs Gerät.  Das war am 19.11. als
+  EIN PDF geblieben („Worum es geht“ vorn) — daher „MSA XI.15“ in alter
+  Anordnung neben „Satz 1022“ + „Satz 1022 Worum es geht“ beim
+  Tantrāloka.  Jetzt: `bcat-dossier-pdf-text' → (:lead :text :overview);
+  :text beginnt mit Reading, :overview ist das eigene Dokument (Vers;
+  im AS dazu „Bhāṣya — Worum es geht“, `bcat-dossier--overview-text');
+  `bcat-export-file' baut msa-XI.15-worum-es-geht.pdf neben
+  msa-XI.15.pdf, Gerät „MSA XI.15 Worum es geht“.
+  `bcat-export-view-with-overview' gibt es nicht mehr.  NICHT angefasst:
+  das „Worum es geht“ eines Kommentardokuments (Sthiramati) steht weiter
+  am Kopf des Kommentar-Teils — mit dem Kommentar-Umbau entscheiden.
+- XI.17 FEHLTE (Satz 36): die Antwort war vollständig (22 KB), ein
+  Eintrag in der Liste der Komposita hatte keine schließende Klammer
+  ({"word": …, "analysis": "…" ], "structure": …).
+  `bcat-analysis--repair-json' setzt jetzt den fehlenden Schließer vor
+  einen, der nur zur Klammer darunter passt, und lässt ein
+  Anführungszeichen einen Wert auch dort enden (nur wenn es danach in
+  der äußeren Klammer weitergeht — Klammern im laufenden Text bleiben
+  Text, bDen 16).  Die Meldung „abgeschnitten — Grenze erreicht“ kommt
+  nur noch, wenn die Antwort NICHT mit der Klammer ihres Objekts endet;
+  sonst „JSON-Fehler bei Zeichen N — die Antwort ist vollständig, aber
+  ihre Klammern gehen nicht auf“.
+- STAND: geprüft an einer Kopie von XI.15 mit echtem LaTeX (12 S. ab
+  Reading + 2 S.), ohne Upload.  Auf dem Gerät liegen noch die fünf
+  Dossiers vom Morgen (XI.15, 16, 18, 19, 20) in alter Form; neu
+  hochgeladen und XI.17 neu abgerufen wird erst auf Carstens Wort
+  (bzw. mit seinem C-c u H / C-c u G).  Die aufbewahrte Antwort von
+  sent-036 liegt nur im Temp-Ordner (bcat-responses/).
+  ERT 3003 / 3001 erwartet / 0 unerwartet / 2 übersprungen, BDD 251.
 
 #### Offen
 
