@@ -160,13 +160,17 @@ the dossier of the root sentence before it."
     ok))
 
 (ert-deftest bcat-dossier-pdf-msa ()
-  "The PDF of the dossier (Carsten 5.11., step 3): one document — the
-reading page (the layers, as in the org file) first, then the analysis
-of the verse (Segments, Grammar …), the commentary (each sentence a
-jump target, comm-N, reached from its place on the reading page), the
-concepts and the discussion; no part twice (the verse file's own
-Commentary and Reading out), every jump with its target.  From each
-file of the verse: the verse files and the commentary document."
+  "The PDF of the dossier (Carsten 5.11., step 3): the reading page (the
+layers, as in the org file) first, then the analysis of the verse
+\(Segments, Grammar …), the concepts and the discussion; no part twice
+\(the verse file's own Commentary and Reading out), every jump with its
+target.  22.11. („bhasya, Phya Pa und Sthiramati eigene Dateien“; the
+verse's document keeps the reading page with every layer and analyses
+the verse alone): the commentary's sentences stand on the reading page
+with their translation, its analysis is in its own document — the
+layer names it, there is no part of the commentator and no jump into
+one.  From each file of the verse: the verse files and the commentary
+document."
   (bcat-commentary-test--with-msa
     (bcat-sentence-test--with-stubs #'bcat-commentary-test--answers
       (bcat-sentence-test--fetch-n src 36))
@@ -178,11 +182,12 @@ file of the verse: the verse files and the commentary document."
       (should (equal file (plist-get pdf :lead)))
       (should-not (plist-get pdf :overview))
       (should (equal '("Reading" "Segments" "Grammar") (cl-subseq parts 0 3)))
-      (should (member "Sthiramati" parts))
-      (should-not (cl-intersection '("Commentary" "Meine Notizen") parts :test #'equal))
+      (should-not (cl-intersection '("Sthiramati" "Commentary" "Meine Notizen") parts :test #'equal))
       (should (string-match-p "^\\*\\* 01 Vers" text))
-      (should (string-match-p "^\\*\\* Sentence 258\n:PROPERTIES:\n:CUSTOM_ID: comm-258\n:END:$" text))
-      (should (string-match-p "^\\*\\*\\* 258\\b.*\n\\[\\[#comm-258\\]" text))
+      (should (string-match-p "^\\*\\* 03 Sthiramati\nAnalyse: MSA IX\\.16–17 Sthiramati$" text))
+      (should (string-match-p "^\\*\\*\\* 258$" text))
+      (should (string-match-p "^→ To show the example: „Just as, when a vessel of water is broken,$" text))
+      (should-not (string-match-p "comm-258\\|:CUSTOM_ID: commentary" text))
       (should (bcat-dossier-test--links-resolve text))
       (should (equal file (plist-get (bcat-dossier-pdf-text doc) :lead)))
       (should (equal file (plist-get (bcat-dossier-pdf-text (tibetan-sentence--filepath 64 tfolder tsrc)) :lead))))))
@@ -191,8 +196,8 @@ file of the verse: the verse files and the commentary document."
   "The dossier of a verse has every Section of the commentary that
 covers it (22.11., Phywa pa): IX.15 the introduction to the group and
 the Section on its pair — one layer „Phywa pa“ on the reading page with
-the sentences of both, one part in the PDF with both documents, each
-sentence a jump target; IX.16 the Section on the pair alone."
+the sentences of both, naming both documents (their analysis is theirs,
+22.11.); IX.16 the Section on the pair alone."
   (bcat-commentary-test--with-phywa
     (bcat-commentary-test--with-phywa-stubs
       (tibetan-cascade-fetch (list :source src :sent-nums '(34 36) :label "IX.15–16")))
@@ -214,12 +219,15 @@ sentence a jump target; IX.16 the Section on the pair alone."
                               (alist-get 'heading (car (last (alist-get 'layers first))))))
       (should (string-match-p "^03 Phywa pa chos kyi seng ge"
                               (alist-get 'heading (car (last (alist-get 'layers second))))))
-      ;; the PDF: one part, both documents, every sentence a target
-      (should (= 1 (cl-count "Phywa pa chos kyi seng ge" (bcat-dossier-test--parts text) :test #'equal)))
+      ;; the PDF: the layer names both documents; their analysis is
+      ;; not in the verse's document
+      (should-not (member "Phywa pa chos kyi seng ge" (bcat-dossier-test--parts text)))
+      (should (string-match-p
+               "^\\*\\* 02 Phywa pa chos kyi seng ge\nAnalyse: MSA IX\\.15–17 Phywa pa Einleitung · MSA IX\\.15–16 Phywa pa$"
+               text))
       (dolist (n '(2001 2003 2004))
-        (should (string-match-p (format "^\\*\\* Sentence %d\n:PROPERTIES:\n:CUSTOM_ID: comm-%d\n:END:$" n n) text)))
-      (should (string-match-p "^\\*IX\\.15–17 Einleitung\\*$" text))
-      (should (string-match-p "^\\*IX\\.15–16 sgyu ma'i mtshan nyid\\*$" text))
+        (should (string-match-p (format "^\\*\\*\\* %d$" n) text)))
+      (should-not (string-match-p "comm-2001" text))
       (should (bcat-dossier-test--links-resolve text)))))
 
 (ert-deftest bcat-dossier-pdf-tibetan-analysis ()
@@ -264,12 +272,13 @@ twice."
       (should (bcat-dossier-test--links-resolve text)))))
 
 (ert-deftest bcat-dossier-bhasya-analysed ()
-  "Carsten 22.11.: „das tibetische Bhāṣya analysiert“.  With the bhāṣya
-named as a commentary and fetched, the dossier's layer „02 Bhāṣya“ —
-the Sanskrit and Tibetan text with translation and hint, as before —
-jumps into its analysis, and the PDF has the part „Bhāṣya“ with the
-Tibetan sentences of the bhāṣya's document (jump targets bh-N, apart
-from the commentator's comm-N), before the commentator's part."
+  "Carsten 22.11.: „das tibetische Bhāṣya analysiert“ — and, the same
+day: bhāṣya, Phywa pa and Sthiramati as files of their own.  With the
+bhāṣya named as a commentary and fetched, the dossier's layer „02
+Bhāṣya“ — the Sanskrit and Tibetan text with translation and hint, as
+before — names the document with its analysis („MSA IX.16 Bhāṣya“; in
+the org dossier a link to it); the verse's PDF has no part of the
+bhāṣya or of the commentator."
   (bcat-commentary-test--with-bhasya
     (bcat-commentary-test--with-file-stubs #'bcat-commentary-test--bhasya-answer
       (bcat-sentence-test--fetch-n src 36))
@@ -281,17 +290,16 @@ from the commentator's comm-N), before the commentator's part."
       (should (equal '("01 Vers" "02 Bhāṣya" "03 Sthiramati")
                      (mapcar (lambda (l) (car (split-string (alist-get 'heading l) " (")))
                              layers)))
-      (should (equal "[[#bhasya][Analyse ↓]]" (alist-get 'link (nth 1 layers))))
+      (should (equal "Analyse: MSA IX.16 Bhāṣya" (alist-get 'link (nth 1 layers))))
+      (should (equal "Analyse: MSA IX.16–17 Sthiramati" (alist-get 'link (nth 2 layers))))
       (should (equal '("comm-IX.16-mdo.org" "comm-IX.16-savbh.org")
                      (mapcar #'file-name-nondirectory (alist-get 'commentary-docs ctx))))
-      ;; the parts: Bhāṣya before Sthiramati, both after the Tibetan
-      (should (equal '("Tibetan" "Bhāṣya" "Sthiramati")
+      ;; the verse's own Tibetan stays; no part of the bhāṣya's or the
+      ;; commentator's document
+      (should (equal '("Tibetan")
                      (cl-remove-if-not (lambda (p) (member p '("Tibetan" "Bhāṣya" "Sthiramati"))) parts)))
-      (should (string-match-p
-               (regexp-quote (concat "* Bhāṣya\n:PROPERTIES:\n:CUSTOM_ID: bhasya\n:END:\n"
-                                     "** Sentence 65\n:PROPERTIES:\n:CUSTOM_ID: bh-65\n:END:\n"))
-               text))
-      (should (string-match-p "^\\*\\* Sentence 258\n:PROPERTIES:\n:CUSTOM_ID: comm-258\n:END:$" text))
+      (should-not (string-match-p ":CUSTOM_ID: \\(?:bhasya\\|bh-65\\|comm-258\\)$" text))
+      (should (string-match-p "^\\*\\* 02 Bhāṣya.*\nAnalyse: MSA IX\\.16 Bhāṣya$" text))
       (should (bcat-dossier-test--links-resolve text)))
     ;; in the org dossier the layer links the document
     (let ((layer (nth 1 (alist-get 'layers (bcat-dossier-context (tibetan-sentence--filepath 36 folder src))))))
@@ -332,10 +340,9 @@ sentences arrive as two documents since 19.11. („ein PDF mit dem
 Philologie Part und eines mit Worum es geht“), a verse with layers
 still as one with the section in front.  The dossier's PDF starts with
 the reading page; the verse's „Worum es geht“ is a document of its own
-\(:overview), as a sentence file's.  The commentary document's own
-stays at the head of the commentary's part (the commentary is not
-rebuilt yet).  Without the section there is no such document
-\(bcat-dossier-pdf-msa)."
+\(:overview), as a sentence file's.  The commentary document's own is
+in neither: it belongs to the commentary's documents (22.11.).  Without
+the section there is no such document (bcat-dossier-pdf-msa)."
   (bcat-commentary-test--with-msa
     (bcat-sentence-test--with-stubs #'bcat-commentary-test--answers
       (bcat-sentence-test--fetch-n src 36))
@@ -357,11 +364,9 @@ rebuilt yet).  Without the section there is no such document
                  (regexp-quote (concat "* Worum es geht\n:PROPERTIES:\n:CUSTOM_ID: overview\n:END:\n"
                                        bcat-sentence-test--overview "\n"))
                  overview))
-        (should (string-match-p
-                 (regexp-quote (concat "* Sthiramati\n:PROPERTIES:\n:CUSTOM_ID: commentary\n:END:\n"
-                                       "** Worum es geht\n*Erklärt wird:* Vers IX.16, Pāda für Pāda.\n\n"
-                                       "** Sentence 258\n"))
-                 text))
+        ;; the commentary document's own: in ITS documents (22.11.)
+        (should-not (string-match-p "Pāda für Pāda" text))
+        (should-not (string-match-p "Pāda für Pāda" overview))
         (should (bcat-dossier-test--links-resolve text))
         ;; from the commentary document the same two
         (should (equal overview (plist-get (bcat-dossier-pdf-text doc) :overview)))))))
@@ -456,7 +461,8 @@ verse — no PDF of its own for the commentary document any more."
         (let ((bcat-export-upload t))
           (bcat-export-file doc)
           (should (string-match-p "^\\* Reading$" exported))
-          (should (string-match-p "^\\* Sthiramati$" exported))
+          (should (string-match-p "^\\*\\* 03 Sthiramati" exported))
+          (should-not (string-match-p "^\\* Sthiramati$" exported))
           (should (equal '(("msa-IX.16.pdf" . "MSA IX.16")) uploaded)))))))
 
 (ert-deftest bcat-dossier-export-two-pdfs ()
@@ -491,7 +497,8 @@ Worum es geht“ (msa-IX.16-worum-es-geht.pdf beside msa-IX.16.pdf)."
                 (overview (cdr (cl-find-if (lambda (e) (string-match-p "worum-es-geht" (car e))) exported))))
             (should (= 2 (length exported)))
             (should (string-match-p "^\\* Reading$" dossier))
-            (should (string-match-p "^\\* Sthiramati$" dossier))
+            (should (string-match-p "^\\*\\* 03 Sthiramati" dossier))
+            (should-not (string-match-p "^\\* Sthiramati$" dossier))
             (should-not (string-match-p "^\\* Worum es geht$" dossier))
             (should (string-match-p "^\\* Worum es geht$" overview))
             (should-not (string-match-p "^\\* Reading$" overview))))))))

@@ -841,8 +841,8 @@ before the verse, survives C-c u G where it stands."
 (ert-deftest bcat-commentary-fetch-writes-overview ()
   "16.11.: the commentary document gets its „Worum es geht“ from the
 answer of its request — what the commentator does with the verse —,
-marked as generated; in the PDF of the dossier it stands at the head of
-the commentary's part without the mark's drawer."
+marked as generated.  It is the commentary's: the PDF of the verse does
+not show it (22.11.)."
   (bcat-commentary-test--with-msa
     (bcat-sentence-test--with-stubs
         (lambda (kind)
@@ -859,12 +859,11 @@ the commentary's part without the mark's drawer."
                              (bcat-analysis-overview-hash generated) "\n:END:\n" generated "\n\n")
                      (bcat-sentence-test--section text)))
       (should (string-match-p "\n\n\\* Worum es geht\n\\(?:.\\|\n\\)*?\n\n\\* Verse\n" text))
-      (let ((pdf (plist-get (bcat-dossier-pdf-text doc) :text)))
-        (should (string-match-p
-                 (regexp-quote (concat "* Sthiramati\n:PROPERTIES:\n:CUSTOM_ID: commentary\n:END:\n"
-                                       "** Worum es geht\n" generated "\n\n** Sentence 258\n"))
-                 pdf))
-        (should-not (string-match-p "GENERATED_HASH" pdf))))))
+      ;; 22.11.: not in the PDF of the verse — the commentary is a file
+      ;; of its own, with its own „Worum es geht“
+      (let ((pdf (bcat-dossier-pdf-text doc)))
+        (should-not (string-match-p "Pāda für Pāda" (plist-get pdf :text)))
+        (should-not (plist-get pdf :overview))))))
 
 (ert-deftest bcat-commentary-merged-overview ()
   "A commentary in parts (MSA IX.8: 72 sentences): the overviews of the

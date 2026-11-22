@@ -143,14 +143,14 @@ FROM) as seen from the folder TO."
                            (file-relative-name (expand-file-name path from) to)))))
    text t t))
 
-(defun bcat-dossier-commentary-items (doc folios to &optional pdf prefix)
+(defun bcat-dossier-commentary-items (doc folios to &optional pdf)
   "The sentences of the commentary document DOC as items: (head . „N ·
 folio“) with FOLIOS (`bcat-dossier--folios'), (lines . the Uchen and
 Wylie lines, a line of a segment that takes up the verse — *Lemma:* or
 „(lemma)“ in its analysis — in bold), (item-translation . …), (lemma .
 the *Lemma:* line, its links seen from the folder TO), (item-link . into
-the analysis of the sentence — the document, or with PDF its jump
-target PREFIX-N, by default comm-N)."
+the analysis of the sentence in the document — not with PDF: there the
+analysis is in the commentary's own document, 22.11.)."
   (let ((text (with-temp-buffer (insert-file-contents doc) (buffer-string)))
         (from (file-name-directory doc))
         (items '()) (start 0))
@@ -177,7 +177,7 @@ target PREFIX-N, by default comm-N)."
                           lines)
                  (when w (push w lines)))
         (push `((head . ,(if folio (format "%s · %s" n folio) n))
-                (item-link . ,(if pdf (format "[[#%s-%s][Analyse ↓]]" (or prefix "comm") n)
+                (item-link . ,(unless pdf
                                 (format "[[file:%s::*Sentence %s][Analyse]]" (file-relative-name doc to) n)))
                 (lines . ,(string-join (nreverse lines) "\n"))
                 (item-translation . ,(and (string-match "^\\*Translation:\\* \\(.+\\)$" body)
@@ -253,11 +253,11 @@ named like its PDF in handouts/."
 label, path, links to the analyses, layers (text, bhāṣya, commentary),
 each with its link into the analysis — the file, or with PDF the jump
 target of the dossier's PDF (#segments, #bhasya, #commentary, #comm-N);
-for the PDF `bhasya-docs' (the documents of the analysed bhāṣya),
-`commentaries' ((AUTHOR ID PREFIX DOC …) … — a commentator, the
-CUSTOM_ID of his part, the prefix of his sentences' jump targets, the
-documents of his Sections that cover the verse) and `commentary-docs'
-\(all of these documents)."
+`bhasya-docs' (the documents of the analysed bhāṣya), `commentaries'
+\((AUTHOR DOC …) … — a commentator and the documents of his Sections
+that cover the verse) and `commentary-docs' (all of these documents).
+With PDF a layer whose analysis is in documents of its own names them
+\(„Analyse: MSA XI.15 Bhāṣya“) instead of jumping (22.11.)."
   (require 'bcat-relayout)
   (require 'bcat-export)
   (require 'bcat-commentary)
@@ -297,7 +297,12 @@ documents of his Sections that cover the verse) and `commentary-docs'
                                 (mapcar (lambda (section) (bcat-commentary-file section commentary))
                                         (bcat-commentary-sections (plist-get verse :section-label)
                                                                   source commentary))))))
-               (k 0))
+               ;; „Analyse: MSA XI.15 Bhāṣya“ — where the analysis of a
+               ;; layer is to be found, by the names of its documents
+               (names (lambda (docs)
+                        (concat "Analyse: "
+                                (mapconcat (lambda (doc) (plist-get (bcat-export-info doc) :label))
+                                           docs " · ")))))
           (setq bhasya-docs (cl-loop for c in sources
                                      when (bcat-commentary-bhasya-p c) append (funcall docs-of c)))
           (let ((bh (bcat-dossier-bhasya-layer ctx))
@@ -306,10 +311,11 @@ documents of his Sections that cover the verse) and `commentary-docs'
              (bh
               (dolist (doc bhasya-docs) (push (cons "Bhāṣya" doc) links))
               (push `((heading . ,(bcat-dossier--heading 2 "Bhāṣya" sigla))
-                      ;; its Tibetan analysed (the document of the
-                      ;; bhāṣya): the jump into that
+                      ;; its Tibetan analysed: in the document of the
+                      ;; bhāṣya (22.11.: a file of its own) — a link to
+                      ;; it, in the PDF its name
                       ,@(and bhasya-docs
-                             `((link . ,(if pdf "[[#bhasya][Analyse ↓]]"
+                             `((link . ,(if pdf (funcall names bhasya-docs)
                                           (format "[[file:%s][Analyse]]"
                                                   (file-relative-name (car bhasya-docs) to))))))
                       ,@bh)
@@ -326,12 +332,8 @@ documents of his Sections that cover the verse) and `commentary-docs'
           (dolist (commentary (cl-remove-if #'bcat-commentary-bhasya-p sources))
             (let ((docs (funcall docs-of commentary)))
               (when docs
-                (cl-incf k)
                 (let ((author (bcat-commentary--author commentary))
-                      (folios (bcat-dossier--folios commentary))
-                      ;; a second commentator's jump targets apart
-                      (id (if (= k 1) "commentary" (format "commentary-%d" k)))
-                      (prefix (if (= k 1) "comm" (format "comm%d" k))))
+                      (folios (bcat-dossier--folios commentary)))
                   (dolist (doc docs)
                     (push (cons (if (cdr docs)
                                     (format "%s (%s)" author
@@ -341,10 +343,11 @@ documents of his Sections that cover the verse) and `commentary-docs'
                           links))
                   (push `((heading . ,(bcat-dossier--heading (1+ (length layers)) author
                                                              (list (bcat-dossier--siglum commentary))))
+                          ,@(and pdf `((link . ,(funcall names docs))))
                           (items . ,(cl-loop for doc in docs
-                                             append (bcat-dossier-commentary-items doc folios to pdf prefix))))
+                                             append (bcat-dossier-commentary-items doc folios to pdf))))
                         layers)
-                  (push (append (list author id prefix) docs) groups))))))
+                  (push (cons author docs) groups))))))
         `((label . ,(plist-get (bcat-export-info lead) :label))
           (path . ,path)
           (analysis . ,(mapconcat (lambda (l) (format "[[file:%s][%s]]" (file-relative-name (cdr l) to) (car l)))
@@ -353,7 +356,7 @@ documents of his Sections that cover the verse) and `commentary-docs'
           (bhasya-docs . ,bhasya-docs)
           (commentaries . ,(reverse groups))
           (commentary-docs . ,(append bhasya-docs
-                                      (cl-loop for g in (reverse groups) append (nthcdr 3 g)))))))))
+                                      (cl-loop for g in (reverse groups) append (cdr g)))))))))
 
 (defun bcat-dossier--keep-notes (path)
   "The body of „* Meine Notizen“ in the dossier PATH, or nil."
@@ -442,41 +445,6 @@ mtshan nyid“) —, or nil."
     (and source (string-match "::\\*Section[ \t]+\\([^]]+\\)\\]" source)
          (string-trim (match-string 1 source)))))
 
-(defun bcat-dossier--commentary-part (docs author &optional id prefix)
-  "The sentences of the commentary documents DOCS as the part „* AUTHOR“
-of the PDF (CUSTOM_ID ID, by default commentary), one level down, each
-a jump target PREFIX-N (by default comm-N); before the sentences of a
-document its „Worum es geht“ (16.11.), when it has one.  Several
-documents — the Sections of the commentary that cover the verse
-\(22.11., Phywa pa) — follow each other, each under a line with the
-title of its Section."
-  (concat "* " author "\n:PROPERTIES:\n:CUSTOM_ID: " (or id "commentary") "\n:END:\n"
-          (mapconcat
-           (lambda (doc)
-             (let ((text (with-temp-buffer (insert-file-contents doc) (buffer-string)))
-                   (section (and (cdr docs) (bcat-dossier--doc-section doc))))
-               (concat
-                (if section (format "*%s*\n\n" section) "")
-                (mapconcat (lambda (p)
-                             (let ((title (nth 1 p)) (body (nth 2 p)))
-                               (cond
-                                ((string-match "\\`Sentence \\([0-9]+\\)" title)
-                                 (let ((n (match-string 1 title)))
-                                   (replace-regexp-in-string
-                                    "\\`\\(\\*\\* [^\n]*\n\\)"
-                                    (concat "\\1:PROPERTIES:\n:CUSTOM_ID: " (or prefix "comm") "-" n "\n:END:\n")
-                                    (bcat-dossier--demote body) t)))
-                                ;; its text, without the drawer of a
-                                ;; generated one's mark
-                                ((equal title bcat-sentence--overview-heading)
-                                 (let ((overview (bcat-sentence--overview text)))
-                                   (if overview
-                                       (concat "** " title "\n" (car overview) "\n\n")
-                                     "")))
-                                (t ""))))
-                           (bcat-dossier--split-parts text) ""))))
-           docs "")))
-
 (defun bcat-dossier--tibetan-jumps (segments tibetan)
   "SEGMENTS, the part of the verse's view with the tables — those of the
 Tibetan segments under „⟦N⟧ · Skt. M“ —, each such line with a jump to
@@ -526,10 +494,11 @@ as in the dossier, each with its jump into the analysis), then the
 verse's Segments and Grammar, the Tibetan verse file's own analysis
 \(22.11.: the part „Tibetan“ — its Grammar, Concepts and Discussion —,
 the tables of the Tibetan segments jumping to their notes there), the
-bhāṣya sentence's analysis (AS) or the analysed bhāṣya of a verse (its
-document, part „Bhāṣya“, jump targets bh-N), the
-commentary's sentences, the verse's Concepts, Discussion, Further
-Reading, Notes; the dossier's notes at the end.  :overview — „Worum es
+bhāṣya sentence's analysis (AS), the verse's Concepts, Discussion,
+Further Reading, Notes; the dossier's notes at the end.  The analysed
+bhāṣya of a verse and its commentators are NOT in it: files of their
+own since 22.11. (Carsten: „bhasya, Phya Pa und Sthiramati eigene
+Dateien“), named on the reading page.  :overview — „Worum es
 geht“ as a document of its own, as a sentence file's (Carsten 19.11.:
 „ein PDF mit dem Philologie Part und eines mit Worum es geht“; 22.11.,
 MSA XI: „Da kommt aber auf dem Remarkable noch nicht die neue Struktur
@@ -581,15 +550,10 @@ its own view (`bcat-export-views')."
                      (bcat-dossier--tibetan-jumps (funcall part "segments") tib)
                      (funcall part "grammar")
                      (or tib "")
+                     ;; 22.11.: the analysed bhāṣya of a verse and its
+                     ;; commentators are documents of their own — the
+                     ;; reading page names them, nothing of them here
                      (or bh "")
-                     ;; 22.11.: the bhāṣya analysed (its Tibetan, from
-                     ;; the bhāṣya's document), then the commentators
-                     (if (alist-get 'bhasya-docs ctx)
-                         (bcat-dossier--commentary-part (alist-get 'bhasya-docs ctx) "Bhāṣya" "bhasya" "bh")
-                       "")
-                     (mapconcat (lambda (g)
-                                  (bcat-dossier--commentary-part (nthcdr 3 g) (nth 0 g) (nth 1 g) (nth 2 g)))
-                                (alist-get 'commentaries ctx) "")
                      (funcall part "concepts") (funcall part "discussion")
                      (funcall part "further-reading") (funcall part "notes")
                      (if notes (concat "* " bcat-dossier--notes "\n:PROPERTIES:\n:CUSTOM_ID: dossier-notes\n:END:\n" notes "\n") "")))))))
