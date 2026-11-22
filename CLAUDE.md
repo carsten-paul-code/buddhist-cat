@@ -34,7 +34,11 @@ Antworten bleiben, von Hand Bearbeitetes wird nie überschrieben); seit
 „Worum es geht“ —, fehlende Klammer im JSON einer Antwort wird ergänzt;
 MEHRERE KOMMENTARE JE VERS (MSA XI: Bhāṣya der tibetischen Quelle als
 analysierter Kommentar + Phywa pa mit Abschnitten über Vers-Bereiche),
-Teil „Tibetan“ im Dossier;
+Teil „Tibetan“ im Dossier; seit 22.11. mittags BHĀṢYA / PHYWA PA /
+STHIRAMATI ALS EIGENE DATEIEN in drei Teilen (Text / Philology / Worum
+es geht) mit eigenen PDFs („MSA XI.15 Bhāṣya“, „MSA XI.15–16 Phywa
+pa“), das Vers-Dossier analysiert nur noch den Vers, C-c u L setzt
+alte Kommentardokumente ohne Abruf um (XI umgesetzt, IX auf sein Wort);
 offen: Philologie-Teil weiter gliedern, Kompositum-Auflösung straffen).
 Before that 2026-10-28 (§5.74: SATZDATEIEN
 NACH VORLAGE — Reading-Klassen, Tibetisch: `#+CAT_TEMPLATE: tibetan' im
@@ -5997,13 +6001,85 @@ anfassen“).
   Verzögerung) wird nicht zurückgesetzt; ein Vers-Abruf kann lange nach
   den Kommentaren kommen und sein Dossier wird dann zweimal exportiert
   (XI.17) — offen.
-- OFFEN: „Worum es geht“ der Kommentardokumente steht weiter in ihrem
-  Teil (nicht im eigenen PDF); auf der Reading-Seite zeigt 02 Bhāṣya
+- OFFEN (Stand vormittags; „Worum es geht“ der Kommentardokumente als
+  eigenes PDF: erledigt mittags, siehe unten): auf der Reading-Seite
+  zeigt 02 Bhāṣya
   den Text wie bisher (nicht Satz für Satz mit Übersetzung wie der
   Kommentator); Lemma-Zeilen des Bhāṣya in den Versdateien gibt es
   nicht; das Sanskrit-Bhāṣya wird nicht eigens analysiert; MSA IX
   bekommt das Bhāṣya erst, wenn Carsten die Kopfzeile dort will.
   ERT 3014 / 3012 erwartet / 0 unerwartet / 2 übersprungen, BDD 251.
+
+22.11.2026 mittags, BHĀṢYA / PHYWA PA / STHIRAMATI ALS EIGENE DATEIEN
+(`b8a2b9d', `69e846d', `d202aae', `debb354', `45df5d5', `7be8e0e',
+`59573d7'; Carsten, als XI.15–20 mit allen Schichten auf dem Gerät lag:
+„Ich denke, dass bhasya, Phya Pa und Sthiramati eigene Dateien, auch
+untergliedert in Philologie und worum es geht sein sollten.“ — seine
+Festlegungen: (1) Zuschnitt je Abschnitt wie jetzt; (2) im Vers-Dokument
+die Reading-Seite mit allen Schichten, analysiert nur der Vers; (3) auf
+dem reMarkable gleicher Ordner, Name mit Zusatz; (4) Bestand ohne neuen
+Abruf umsetzen — XI gleich, IX erst auf sein Wort).
+- NAMEN (`bcat-commentary-label'): die Verse, dann der Kommentator in
+  Kurzform (#+CAT_SHORT der Kommentarquelle, sonst sein Name; „Bhāṣya“
+  für die tibetische Quelle des Paars), bei einer Einleitung ihr Titel
+  dahinter — „MSA XI.15 Bhāṣya“, „MSA XI.15–16 Phywa pa“, „MSA XI.15–20
+  Phywa pa Einleitung“.  PDF neben dem des Verses:
+  handouts/msa-XI.15-16-Phywa-pa.pdf; auf dem Gerät im Ordner des
+  Verses.  Die Phywa-pa-Quelle trägt dafür „#+CAT_SHORT: Phywa pa“.
+- VERS-DOSSIER (`bcat-dossier-pdf-text'): Reading-Seite mit allen
+  Schichten (Vers, Bhāṣya, Kommentator Satz für Satz mit Übersetzung),
+  jede Schicht nennt ihr Dokument („Analyse: MSA XI.15 Bhāṣya“);
+  danach nur die Analyse des Verses (Segments, Grammar, Tibetan,
+  Concepts, Discussion).  Die Teile BHĀṢYA und Kommentator sind raus
+  (`bcat-dossier--commentary-part' entfernt).
+- KOMMENTARDOKUMENT IN DREI TEILEN (Vorlage commentary.org): * Text
+  (** Verse, ** Sentence N mit Uchen über Wylie + Translation,
+  ** Translation des Ganzen) / * Philology (** Sentence N mit
+  Glossenzeile + Grammar, darunter *** Segment M eingeklappt) /
+  * Worum es geht; dann die eigenen Abschnitte.  ALTE DOKUMENTE BLEIBEN
+  LESBAR: `bcat-commentary-legacy-text' bringt die alte Ordnung in die
+  neue (nichts fällt weg, zweiter Lauf ändert nichts);
+  `bcat-commentary-doc-text' ist der eine Lesezugang (Lemma-Zeilen,
+  Reading-Seite des Dossiers, Sprünge, PDF).
+- C-c u L (`bcat-commentary-relayout-file', über `bcat-relayout-file'):
+  setzt ein Kommentardokument an Ort und Stelle um, ohne Abruf.  Wo
+  gedrückt: im Dokument — dieses allein; auf einem Abschnitt der
+  Kommentarquelle — dessen Dokument; auf einem Vers — dessen Dateien
+  und die Kommentardokumente, die ihn decken
+  (`bcat-commentary-documents').
+- SCHUTZ (BUG `45df5d5'): in den drei Teilen trägt der Stempel
+  #+CAT_WRITTEN auch beim Kommentardokument (vorher immer der des
+  leeren Textes — „Worum es geht“ stand vorn).  Ein neuer Abruf hebt
+  ein von Hand korrigiertes Dokument jetzt nach analysis/.reviewed/ auf
+  und nennt es (#+CAT_REVIEWED_BEFORE, C-c u d); vorher ging die
+  Korrektur stillschweigend verloren und die NEUE Analyse hieß
+  „geprüft“.  Die geprüfte Fassung geht beim Kommentar-Abruf noch nicht
+  mit in die Anfrage (offen).
+- EIGENE PDFs (`bcat-export-commentary-views', über
+  `bcat-export-views'): Lese-PDF mit den Teilen Text · Philology
+  (· Notes, wenn gefüllt), Satz ↔ Analyse über text-N / phil-N; „Worum
+  es geht“ als zweites PDF („<Name> Worum es geht“,
+  …-worum-es-geht.pdf).  C-c u H im Dokument exportiert das Dokument
+  (nicht mehr das Dossier des Verses); im Seitenkopf steht sein Name.
+  Landet ein Dokument bei C-c u G, kommen seine PDFs sofort, dann die
+  Dossiers der Verse, die darauf gewartet haben
+  (`bcat-export-after-fetch').  C-c u H auf einem Vers nimmt die
+  Kommentardokumente mit, die dem Gerät fehlen oder dort veraltet sind
+  (`bcat-export--commentary-due-p'; C-u: alle).
+- STAND (22.11., mittags): die zehn XI-Dokumente (6 Bhāṣya, 4 Phywa pa)
+  sind ohne Abruf umgesetzt — verglichen mit einer Kopie: keine Zeile
+  verloren, keine hinzu.  An einer Kopie mit echtem LaTeX gebaut: 20
+  PDFs, keine fehlenden Zeichen.  NICHT hochgeladen — auf dem Gerät
+  liegen noch die Dossiers von 10:39–10:48 (mit Bhāṣya- und
+  Phywa-pa-Teil); neu aufs Gerät erst auf Carstens Wort.  MSA IX
+  (Sthiramati, comm-IX.60…63-savbh.org) steht in der alten Ordnung und
+  wird so gelesen; umsetzen (C-c u L) erst auf sein Wort.
+- OFFEN: 02 Bhāṣya auf der Reading-Seite zeigt den Text wie bisher
+  (nicht Satz für Satz mit Übersetzung); landet ein Kommentar allein
+  und deckt mehrere Verse, wird nur das Dossier des ersten neu
+  exportiert (`bcat-dossier-export-files'); Sanskrit-Bhāṣya nicht
+  eigens analysiert; DharmaMitra-Staffelung wie oben.
+  ERT 3024 / 3022 erwartet / 0 unerwartet / 2 übersprungen, BDD 251.
 
 #### Offen
 
@@ -6017,10 +6093,10 @@ anfassen“).
   Gerät nur beim ersten Mal.  TĀ 1.1: 24 → 16 Seiten + 11.  Die
   „Wiederholungen“ waren eine Täuschung beim Lesen (Carsten).
 
-- Kommentardokument (comm-…, Vorlage commentary) noch in alter Ordnung;
-  dieselbe Reihenfolge je Satz steht aus (Carsten: „Hier habe ich noch
-  keine generische Idee“ zu Kommentar vs. Weiterführendem — Vorschlag
-  * Commentary vor * Further Reading umgesetzt).
+- Kommentardokument (comm-…, Vorlage commentary): seit 22.11. in drei
+  Teilen (Text / Philology / Worum es geht), siehe oben „BHĀṢYA / PHYWA
+  PA / STHIRAMATI ALS EIGENE DATEIEN“; MSA IX noch in alter Ordnung
+  (wird so gelesen, C-c u L setzt um — auf Carstens Wort).
 - C-c u K/J von einer ⟦N⟧-Zeile unter * Commentary/* Tibetan aus: noch
   nicht über die Marke, nur über `** Segment N'.
 - MSA: IX.60 erneut (Tibetisch fehlt; Kommentar mit den neuen Lemmata

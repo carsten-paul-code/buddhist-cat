@@ -37,7 +37,11 @@ gibt es je Abschnitt des Bhāṣya (der tibetischen Quelle des Paars),
 Phywa pas, Sthiramatis.  Dokumente in der alten Ordnung („Worum es
 geht“ vorn, * Verse, * Sentence N, * Commentary) werden gelesen, als
 hätten sie die neue (`bcat-commentary-legacy-text'); C-c u L setzt sie
-ohne Abruf um.
+ohne Abruf um.  PDF: das Dokument selbst als Lese-PDF (Text · Philology,
+Satz ↔ Analyse) und „Worum es geht“ als zweites, unter seinem Namen
+neben dem Vers („MSA XI.15 Bhāṣya“, „MSA XI.15–16 Phywa pa“;
+`bcat-export-commentary-views') — das Dossier des Verses zeigt die
+Kommentare nur noch auf der Reading-Seite.
 #+end_comment
 #+TITLE: {{title}}
 #+STARTUP: showall
