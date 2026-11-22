@@ -747,7 +747,8 @@ Devanāgarī, Tibetan) is none."
 \(keys as symbols, arrays as lists) and nil, or nil and a short
 description why there is none — an answer cut off at the output limit
 says so (one whose brackets stay open and that does not end with the
-brace of its object; a complete one with a bracket amiss does not).  Tolerates a code fence or prose around the object, and mends
+brace of its object; a complete one with a bracket amiss does not).
+Tolerates a code fence or prose around the object, and mends
 what `bcat-analysis--repair-json' mends; its quotations are closed as
 they were opened (`bcat-analysis--close-quotes')."
   (if (not (and (stringp response) (string-match "{" response)))
