@@ -6235,6 +6235,36 @@ Abruf umsetzen — XI gleich, IX erst auf sein Wort).
   Viveka-Sätze eigene Sätze derselben Quelle und noch keine „Schicht“
   des Verses (dort gäbe es vorerst nur „Stimmen“: Dyczkowski,
   Sanderson).
+- LESEDOKUMENTE MIT DEM NAMEN AUS DEM FINDER (`558a20c'; Carsten
+  22.11.: „Eigentlich könnte doch jetzt schon mal für alle Readings die
+  Ordnerstruktur, die Gliederung und alles was sonst an allgemeinen
+  Dokumenten erzeugt ist auf den Remarkable gespielt werden“, Namen
+  „Wie im Finder“).  C-c u H in Einführung, Schlüsselbegriffe,
+  Gliederung, Glossar (`bcat-export-reading-document') legt das PDF
+  unter `bcat-export--finder-name' ab — Dateiname, Bindestrich =
+  Leerzeichen außer zwischen Ziffern („Einfuehrung MSA 9“, „Gliederung
+  bden gnyis cat“, „msa XI.15-20“) —, nicht mehr unter dem vollen
+  #+TITLE („Abhidharmasamuccaya mit Bhasya, Heft 1 Laksanasamuccaya …
+  - Gliederung“); die Kopfzeile des PDFs bleibt der Titel.  Die
+  Tantrāloka-Gliederung liegt noch als „Gliederung Kapitel 1“ (älterer
+  Name) auf dem Gerät: ein neues C-c u H legte „Gliederung TA1“
+  daneben — die alte dann nach Rückfrage ins Archiv.
+  AUF DEM GERÄT (22.11., 17:40–18:21, 35 Aufträge Datei für Datei mit
+  35 s Pause und 3 min nach je acht, kein 429, mit rmapi ls
+  gegengeprüft): Gliederung/Einführung/Schlüsselbegriffe für Tibetisch
+  V (bden-gnyis-cat, Kadam-Commentary) und AS, Einführung und
+  Schlüsselbegriffe MSA IX (Kap. I nicht — wird nicht gelesen),
+  „Philologische Grundlagen“ (WS26-27/Philologie), Tantrāloka
+  Einführung/Schlüsselbegriffe/Glossar/Padapāṭha, das MSA-Handout
+  XI.15–20 (handout-msa11.py: Asvabhāva, Sthiramati, Phywa pa) als
+  „msa XI.15-20“ in Sanskrit-11 neben den Versordnern; dazu die
+  fertigen Satz-PDFs von AS (Skt. Satz 2, 5, 6, 7, 1002, 1003; Tib.
+  2, 1002, 1003) und Tibetisch V (SDA 28, Satz 2001–2005, je mit
+  condensed).  AS 1004–1006 sind Bhāṣya-Sätze der Verse 5–7 und
+  stecken in deren Dossiers (`bcat-dossier-files' :bhasya) — C-c u H
+  auf ihnen baut das Dossier des Verses, kein eigenes Dokument; 1002
+  und 1003 gehören zu Satz 3 und 4, die noch keine Analyse haben, und
+  liegen darum einzeln oben.
 - OFFEN: landet ein Kommentar allein und deckt mehrere Verse, wird nur
   das Dossier des ersten neu exportiert (`bcat-dossier-export-files');
   Sanskrit-Bhāṣya nicht eigens analysiert; die geprüfte Fassung eines
