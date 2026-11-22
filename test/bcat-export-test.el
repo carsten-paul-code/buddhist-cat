@@ -567,6 +567,24 @@ gloss: the line stays whole and gets its font, as every other."
                           "\\end{verse}\n")
                   'latex nil))))
 
+(ert-deftest bcat-export-plain-table ()
+  "22.11., the survey of the sources („Überblick“): its tables — layers,
+voices — have a header row, and the export took them for tables of a
+word's parts: every row from the third on came out in the colour of the
+glosses.  A table marked as plain (#+ATTR_LATEX: :font \\bcatplain, a
+command that does nothing) keeps all its rows as they are."
+  (let ((table (concat "\\bcatplain\n\\begin{tabular}{lll}\n\\toprule\n"
+                       "Schicht & Kern & Was sich verschiebt\\\\\n\\midrule\n"
+                       "Vers & zwei Vergleiche & —\\\\\n"
+                       "Bhāṣya & Beweis & Logik\\\\\n"
+                       "Phywa pa & drei Naturen & Träger wandert\\\\\n"
+                       "\\bottomrule\n\\end{tabular}")))
+    (should (equal table (bcat-export--detail-rows table)))
+    ;; without the mark: as a table of parts, as before
+    (should (string-match-p "\\\\bcatg{Phywa pa}"
+                            (bcat-export--detail-rows (string-remove-prefix "\\bcatplain\n" table)))))
+  (should (string-match-p (regexp-quote "\\newcommand{\\bcatplain}{}") (bcat-export--font-lines))))
+
 (ert-deftest bcat-export-drops-word-analysis ()
   "A Sanskrit sentence file keeps its `** Word Analysis' (surface →
 lemma, read by the zettel highlighting, the discussion and the

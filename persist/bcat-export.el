@@ -291,6 +291,9 @@ vergleich-ta1-1.org, `bcat-analysis--rating-colours')."
    "#+LATEX_HEADER: \\newcommand{\\bcatg}[1]{\\textcolor{bcatgloss}{#1}}\n"
    ;; 18.11.: black inside a row of parts (member and meaning)
    "#+LATEX_HEADER: \\newcommand{\\bcatk}[1]{\\textcolor{black}{#1}}\n"
+   ;; 22.11.: the mark of a plain table (#+ATTR_LATEX: :font \\bcatplain) —
+   ;; it does nothing; `bcat-export--detail-rows' leaves such a table
+   "#+LATEX_HEADER: \\newcommand{\\bcatplain}{}\n"
    ;; 9.11. (TĀ 1009): the original under ⟦N⟧ on a line of its own
    ;; (\\\\: the mark before it in the same paragraph), the segment's
    ;; translation, the small title over the parts of the words.
@@ -510,7 +513,9 @@ header row — one row, then \\hline — and \\cellcolor); a table of a
 word's parts (5.11.: the members as a header row) has every row but the
 members' in \\bcatg — but not the row of the members' meanings right
 under them (18.11.); the table of a compound's resolution has only the
-relation, in brackets, in \\bcatg.  The rules of booktabs (\\toprule, \\midrule,
+relation, in brackets, in \\bcatg.  A table marked as plain
+\(#+ATTR_LATEX: :font \\bcatplain, 22.11.: the survey's tables of layers
+and voices) stays as it is.  The rules of booktabs (\\toprule, \\midrule,
 \\bottomrule — `org-latex-tables-booktabs', Carsten's setting) count
 like \\hline (18.11.)."
   (let* ((lines (split-string tabular "\n"))
@@ -527,6 +532,8 @@ like \\hline (18.11.)."
     (cond
      ((or (< (length rows) 2)
           (and header (string-match-p "\\\\cellcolor" tabular))
+          ;; 22.11.: a table marked as plain (the survey's: layers, voices)
+          (string-match-p "\\\\bcatplain\\b" tabular)
           (bcat-export--metre-row-p (nth 1 rows)))
       tabular)
      ;; 18.11.: the resolution of a compound — no header, three cells a

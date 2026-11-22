@@ -16,10 +16,12 @@ Felder: label of-link date; gist; layers (name place key shift-key says
 shift) layers-point; wording-p wording (text); voices-p voices (name
 from key text) voices-line; questions-p questions (num text); documents
 (name).  Die Tabellen tragen nur Stichworte (sie müssen auf die Seite des
-reMarkable passen); das Ausführliche steht darunter.
+reMarkable passen); das Ausführliche steht darunter.  „#+ATTR_LATEX:
+:font \bcatplain“ kennzeichnet sie für das PDF als schlichte Tabellen —
+sonst färbt der Export ihre Zeilen wie die einer Glossentabelle.
 #+end_comment
 #+TITLE: {{label}} — Überblick
-#+OPTIONS: toc:nil num:nil
+#+OPTIONS: toc:nil num:nil author:nil date:nil
 #+CAT_SURVEY_OF: {{of-link}}
 #+DATE: {{date}}
 
@@ -29,6 +31,7 @@ reMarkable passen); das Ausführliche steht darunter.
 {{gist}}
 
 * Die Schichten — was jede daraus macht
+#+ATTR_LATEX: :font \bcatplain
 | Schicht | Kern | Was sich verschiebt |
 |---------+------+---------------------|
 {{#layers}}
@@ -57,6 +60,7 @@ reMarkable passen); das Ausführliche steht darunter.
 {{/wording-p}}
 {{#voices-p}}
 * Die Stimmen — worauf jede achtet
+#+ATTR_LATEX: :font \bcatplain
 | Wer | Woraus | Kennzeichnend |
 |-----+--------+---------------|
 {{#voices}}

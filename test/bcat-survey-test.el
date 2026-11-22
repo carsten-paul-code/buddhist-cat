@@ -107,6 +107,11 @@ a draft and carries the tool's stamp."
     (should (string-match-p "\\`#\\+TITLE: MSA IX\\.16 — Überblick\n" text))
     (should (string-match-p (regexp-quote "#+CAT_SURVEY_OF: [[file:sent-036-msa.org][MSA IX.16]]") text))
     (should (bcat-survey-untouched-p text))
+    ;; for its PDF: the title, but neither author nor date; its tables
+    ;; are plain ones — no row of them is a gloss
+    (should (string-match-p "^#\\+OPTIONS: toc:nil num:nil author:nil date:nil$" text))
+    (should (= 2 (with-temp-buffer (insert text)
+                                   (how-many "^#\\+ATTR_LATEX: :font \\\\bcatplain\n| " (point-min) (point-max)))))
     (should (string-match-p "^\\* Die Stelle in einem Satz\nZwei Vergleiche: wie der Mond" text))
     ;; (the tables are aligned)
     (should (string-match-p "^| Vers +| zwei Vergleiche +| — +|\n| Bhāṣya +| Beweis durch Beispiel +| Logik kommt herein +|$" text))
