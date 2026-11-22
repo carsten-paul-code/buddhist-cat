@@ -427,6 +427,87 @@ own with him, is covered by IX.16 (Sthiramati's IX.2 covers IX.3)."
     (should (equal (expand-file-name "comm-IX.16-savbh.org" cfolder)
                    (bcat-commentary-file "Section IX.16" csrc)))))
 
+(defconst bcat-commentary-test--phywa
+  (concat "#+TITLE: Phywa pa chos kyi seng ge, mDo sde rgyan gyi bshad pa — CAT-Quelle\n"
+          "#+TIBETAN_LAYOUT: cascade\n"
+          "#+CAT_TEMPLATE: commentary\n"
+          "#+CAT_COMMENTS_ON: ../Sanskrit/msa-cat.org\n"
+          "#+TIBETAN_TARGET_LANG: en\n\n"
+          "* Phywa pa\n"
+          "** Section IX.15–17 Einleitung\n"
+          "*** Sentence 2001                                              :phywa:\n"
+          "**** Segment 1\nདོན་བཅུ་ལས།\n"
+          "** Section IX.15–16 sgyu ma'i mtshan nyid\n"
+          "*** Sentence 15\n:PROPERTIES:\n:VERSE: MSA IX.15 (tib. X.15)\n:END:\n"
+          "**** Segment 10\nཕུང་པོ་ལྔ། །\n"
+          "*** Sentence 16\n:PROPERTIES:\n:VERSE: MSA IX.16 (tib. X.16)\n:END:\n"
+          "**** Segment 11\nཇི་ལྟར་ཆུ་ཡི་སྣོད་ཆག་ན། །\n"
+          "*** Sentence 2003                                              :phywa:\n"
+          "**** Segment 20\nཇི་ལྟར་ཆུ་ཡི་སྣོད་ཆག་ན། །\n"
+          "**** Segment 21\nཞེས་པ་ནི་དཔེའོ། །\n"
+          "*** Sentence 2004                                              :phywa:\n"
+          "**** Segment 22\nདེ་ལྟར་ན་སྒྱུ་མའི་མཚན་ཉིད་དོ། །\n"
+          "** Section IX.17 dpe dang sbyar ba\n"
+          "*** Sentence 17\n:PROPERTIES:\n:VERSE: MSA IX.17 (tib. X.17)\n:END:\n"
+          "**** Segment 12\nསྐྱེ་མཆེད་བཅུ་གཉིས། །\n"
+          "*** Sentence 2005                                              :phywa:\n"
+          "**** Segment 23\nདཔེ་དང་སྦྱར་བའོ། །\n")
+  "A commentary as Phywa pa's on MSA XI.15–20 (22.11.): he comments on
+pairs of verses under titles of his own, after an introduction to the
+whole group, and his source has the root verses with it.")
+
+(defmacro bcat-commentary-test--with-phywa (&rest body)
+  "As `bcat-commentary-test--with-msa', the commentary of the Sanskrit
+source being PSRC (Phywa pa, PFOLDER its analysis/) instead of
+Sthiramati."
+  (declare (indent 0))
+  `(bcat-commentary-test--with-msa
+     (let* ((psrc (expand-file-name "Phywa/phywa-cat.org" dir))
+            (pfolder (file-name-as-directory (expand-file-name "Phywa/analysis" dir))))
+       (make-directory (expand-file-name "Phywa" dir) t)
+       (with-temp-file psrc (insert bcat-commentary-test--phywa))
+       (with-temp-file src
+         (insert (replace-regexp-in-string "\\.\\./Sthiramati/savbh-cat\\.org" "../Phywa/phywa-cat.org"
+                                           bcat-commentary-test--sanskrit t)))
+       (ignore pfolder)
+       ,@body)))
+
+(ert-deftest bcat-commentary-sections-by-range ()
+  "Carsten 22.11. (MSA XI with Phywa pa: „so wie bei IX … + Phya Pa“;
+the dossier stays „je Vers“): Phywa pa comments on pairs of verses
+under titles of his own — „XI.15–16 sgyu ma'i mtshan nyid“ — after an
+introduction to the group, „XI.15–20 Einleitung“.  A Section of a
+commentary whose title begins with a range of verse Sections covers
+those; a verse has every Section that covers it, the widest first —
+but one that only introduces a group (a narrower one covers the verse
+too) stands at the first verse of its range alone.  „The“ Section of a
+verse is the narrowest.  A commentary with Sections named like the
+verses' (Sthiramati) is as before: his IX.16 covers IX.17."
+  (bcat-commentary-test--with-phywa
+    (should (equal '("Section IX.15–17 Einleitung" "Section IX.15–16 sgyu ma'i mtshan nyid")
+                   (bcat-commentary-sections "Section IX.15" src psrc)))
+    (should (equal '("Section IX.15–16 sgyu ma'i mtshan nyid")
+                   (bcat-commentary-sections "Section IX.16" src psrc)))
+    (should (equal '("Section IX.17 dpe dang sbyar ba")
+                   (bcat-commentary-sections "Section IX.17" src psrc)))
+    (should (equal "Section IX.15–16 sgyu ma'i mtshan nyid"
+                   (bcat-commentary-section "Section IX.15" src psrc)))
+    ;; what a Section covers, and the verses there
+    (should (equal '("Section IX.15" "Section IX.16")
+                   (bcat-commentary--covered "Section IX.15–16 sgyu ma'i mtshan nyid" src psrc)))
+    (should (equal '("Section IX.15" "Section IX.16" "Section IX.17")
+                   (bcat-commentary--covered "Section IX.15–17 Einleitung" src psrc)))
+    (should (equal '(34 36)
+                   (mapcar (lambda (v) (plist-get v :sent-num))
+                           (bcat-commentary--verses "Section IX.15–16 sgyu ma'i mtshan nyid" src psrc))))
+    ;; its document
+    (should (equal (expand-file-name "comm-IX.15-16-sgyu-ma-i-mtshan-nyid-phywa.org" pfolder)
+                   (bcat-commentary-file "Section IX.15–16 sgyu ma'i mtshan nyid" psrc)))
+    ;; Sthiramati, named like the verses
+    (should (equal '("Section IX.16") (bcat-commentary-sections "Section IX.17" src csrc)))
+    (should (equal '("Section IX.16") (bcat-commentary-sections "Section IX.16" src csrc)))
+    (should (equal '("Section IX.16" "Section IX.17") (bcat-commentary--covered "Section IX.16" src csrc)))))
+
 (ert-deftest bcat-commentary-create ()
   "C-c u A in Sthiramati's source (no AI): the commentary document of the
 sentence's Section — the verses it covers (Tibetan) at the top with

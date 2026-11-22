@@ -195,27 +195,91 @@ the Sanskrit source (for the Tibetan one, of its parallel) — or nil."
   (delete-dups (delq nil (mapcar (lambda (s) (plist-get s :section-label))
                                  (bcat-sentence--sentences file)))))
 
-(defun bcat-commentary-section (label lead commentary-source)
-  "The Section of COMMENTARY-SOURCE that comments on the verse Section
-LABEL of LEAD: the one of that name, else the nearest earlier one —
-Sthiramati's IX.2 covers IX.3 —, nil before his first."
-  (let ((own (bcat-commentary--section-labels commentary-source)))
-    (if (member label own)
-        label
-      (let* ((order (bcat-commentary--section-labels lead))
-             (pos (cl-position label order :test #'equal)))
-        (and pos (cl-find-if (lambda (l) (member l own))
-                             (reverse (cl-subseq order 0 pos))))))))
+(defun bcat-commentary--bare (label)
+  "LABEL of a Section without its „Section “."
+  (replace-regexp-in-string "\\`Section[ \t]+" "" (or label "")))
 
-(defun bcat-commentary--covered (section lead commentary-source)
-  "The verse Sections of LEAD that the commentary SECTION covers: it and
-the following ones without a commentary Section of their own."
+(defun bcat-commentary--range (label order)
+  "The verse Sections (labels of ORDER, the lead's in order) that the
+title of the commentary Section LABEL names at its beginning, or nil
+when it is just a verse Section's name or begins with none: „XI.17 dpe
+dang sbyar ba“ names XI.17, „XI.15–16 sgyu ma'i mtshan nyid“ XI.15 and
+XI.16 — the end of a range in full or as its number alone (Phywa pa on
+MSA XI, 22.11.: he comments on pairs of verses under titles of his
+own)."
+  (let* ((bare (bcat-commentary--bare label))
+         (names (mapcar #'bcat-commentary--bare order))
+         ;; the longest name the title begins with, at a boundary
+         (from (car (sort (cl-remove-if-not
+                           (lambda (n)
+                             (and (string-prefix-p n bare)
+                                  (< (length n) (length bare))
+                                  (not (string-match-p "\\`[[:alnum:].]" (substring bare (length n))))))
+                           names)
+                          (lambda (x y) (> (length x) (length y)))))))
+    (when from
+      (let* ((rest (substring bare (length from)))
+             (to (and (string-match "\\`[ \t]*[–-][ \t]*\\([[:alnum:].]+\\)" rest)
+                      (let ((token (match-string 1 rest)))
+                        (or (car (member token names))
+                            (car (member (concat (replace-regexp-in-string "[0-9]+\\'" "" from) token)
+                                         names))))))
+             (first (cl-position from names :test #'equal))
+             (last (if to (cl-position to names :test #'equal) first)))
+        (and first last (<= first last) (cl-subseq order first (1+ last)))))))
+
+(defun bcat-commentary--coverage (lead commentary-source)
+  "((SECTION . VERSE-SECTIONS) …) for the Sections of COMMENTARY-SOURCE
+in its order: the verse Sections of LEAD each covers — those its title
+names (`bcat-commentary--range'); for a Section named like a verse
+Section that one and the following ones at which no Section of the
+commentary begins (Sthiramati's IX.2 covers IX.3); nil for one that
+names none."
   (let* ((own (bcat-commentary--section-labels commentary-source))
          (order (bcat-commentary--section-labels lead))
-         (pos (cl-position section order :test #'equal)))
-    (when pos
-      (cons section (cl-loop for l in (nthcdr (1+ pos) order)
-                             until (member l own) collect l)))))
+         (ranges (mapcar (lambda (s) (cons s (bcat-commentary--range s order))) own))
+         (begins (delq nil (mapcar (lambda (r) (if (cdr r) (cadr r) (car (member (car r) order))))
+                                   ranges))))
+    (mapcar (lambda (r)
+              (cons (car r)
+                    (or (cdr r)
+                        (let ((pos (cl-position (car r) order :test #'equal)))
+                          (and pos (cons (car r)
+                                         (cl-loop for l in (nthcdr (1+ pos) order)
+                                                  until (member l begins) collect l)))))))
+            ranges)))
+
+(defun bcat-commentary-sections (label lead commentary-source)
+  "The Sections of COMMENTARY-SOURCE that comment on the verse Section
+LABEL of LEAD, in the commentary's order: every one that covers it
+\(`bcat-commentary--coverage') — but a wider one, when a narrower one
+covers the verse too, only introduces a group of verses and stands at
+the first verse of its range alone (Phywa pa's „XI.15–20 Einleitung“
+before „XI.15–16 …“: in the dossier of XI.15, not in all six).  nil
+when none covers it (before the commentary's first Section)."
+  (let* ((hits (cl-remove-if-not (lambda (c) (member label (cdr c)))
+                                 (bcat-commentary--coverage lead commentary-source)))
+         (narrow (and hits (apply #'min (mapcar (lambda (c) (length (cdr c))) hits)))))
+    (mapcar #'car
+            (cl-remove-if-not (lambda (c) (or (= (length (cdr c)) narrow)
+                                              (equal label (cadr c))))
+                              hits))))
+
+(defun bcat-commentary-section (label lead commentary-source)
+  "The Section of COMMENTARY-SOURCE that comments on the verse Section
+LABEL of LEAD — of several (`bcat-commentary-sections') the narrowest:
+the one of that name, or whose title names it; else the nearest earlier
+one — Sthiramati's IX.2 covers IX.3 —, nil before his first."
+  (let* ((cover (bcat-commentary--coverage lead commentary-source))
+         (sections (bcat-commentary-sections label lead commentary-source))
+         (size (lambda (s) (length (cdr (assoc s cover)))))
+         (narrow (and sections (apply #'min (mapcar size sections)))))
+    (car (last (cl-remove-if-not (lambda (s) (= (funcall size s) narrow)) sections)))))
+
+(defun bcat-commentary--covered (section lead commentary-source)
+  "The verse Sections of LEAD that the commentary SECTION covers
+\(`bcat-commentary--coverage')."
+  (cdr (assoc section (bcat-commentary--coverage lead commentary-source))))
 
 (defun bcat-commentary--verses (section lead commentary-source)
   "The verse sentences (plists) of LEAD in the Sections the commentary
