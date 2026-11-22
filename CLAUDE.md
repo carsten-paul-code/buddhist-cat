@@ -6108,6 +6108,34 @@ Abruf umsetzen — XI gleich, IX erst auf sein Wort).
   Datei für Datei mit 25 s Pause nachgeschickt — ohne Fehler.  Dass die
   Warteschlange nach einem 429 von selbst pausiert, ist als Aufgabe
   vorgeschlagen, nicht gebaut.
+- UNTERORDNER JE VERS AUF DEM GERÄT (`e07937e'; Carsten 22.11., mit 32
+  Dokumenten für sechs Verse in einem Ordner: „Und jetzt wären
+  wahrscheinlich doch Unterordner je Vers auf dem Remarkable besser.“
+  — seine Festlegungen: nur für Verse mit eigenen Kommentar-Dokumenten;
+  ein Dokument, das mehrere Verse deckt, in den Ordner des ERSTEN;
+  Bestand verschieben).  `bcat-export--verse-folder' (<Ordner der
+  Quelle>/<Vers>), `bcat-export--documents-p' (ein genannter Kommentar
+  hat einen Abschnitt, der den Vers deckt — unabhängig vom Abruf);
+  `bcat-export-info' gibt :device-folder (Versordner; für ein
+  Kommentardokument der des ersten Verses aus #+CAT_VERSE) und
+  :device-flat (Ordner der Quelle).  Der Geräte-Index merkt sich je PDF
+  den Ordner (4. Element); liegt eine frühere Fassung woanders (MSA IX:
+  flach in Sanskrit-9), schiebt der Upload sie in derselben Sitzung
+  zuerst ins Archiv des alten Ordners (`tibetan-discussion-paper--upload',
+  FROM) — ein Dokument „MSA IX.60“ stünde sonst dem gleichnamigen Ordner
+  im Weg.  Das Archiv neuer Fassungen liegt im Versordner; die Archive
+  vom 22.11. vormittags bleiben in Sanskrit-11/Archiv.  Tantrāloka,
+  Tibetisch V, AS: flach wie bisher.
+  BESTAND VERSCHOBEN (22.11., 13:56–14:03, mit `rmapi ls' gegengeprüft):
+  die 32 Dokumente zu XI.15–20 liegen in Sanskrit-11/MSA XI.15 (8), .16
+  (4), .17 (6), .18 (4), .19 (6), .20 (4); im Kapitelordner nur noch
+  diese sechs Ordner und das Archiv.  Je Vers eine rmapi-Sitzung mit 75 s
+  Pause, kein 429.  Ein Dokument, das wie sein neuer Ordner heißt („MSA
+  XI.15“), musste erst umbenannt, dann der Ordner angelegt, dann
+  hineinverschoben werden.  Der Geräte-Index
+  (handouts/.bcat-remarkable.eld) trägt für alle 32 den Ordner.  Von MSA
+  IX liegt nichts auf dem Gerät (seit dem Leeren am 19.11.): dort
+  entstehen die Versordner beim nächsten Export.
 - ÜBERBLICK ÜBER DIE QUELLEN EINER STELLE (`e78bc64', `eb57418';
   Carsten 22.11.: „Wenn es mehrere Quellen gibt wäre so ein
   Übersichtsdokument noch gut.  Was verschiebt sich z.B. im bhasya, bei
