@@ -1119,19 +1119,6 @@ a pdf template."
                                  (string-trim (car (split-string (alist-get 'lecture-name (car lectures))
                                                                  "[,(]")))))))))))
 
-(defun bcat-export-view-with-overview (views)
-  "The view of VIEWS (`bcat-export-views') with „Worum es geht“ as its
-first part again — the one document of 16.11.–19.11., what the PDF of a
-dossier still is (`bcat-dossier-pdf-text'): the part of :overview set
-before the first part of :view.  Without :overview the view as it is."
-  (let ((view (plist-get views :view))
-        (overview (plist-get views :overview)))
-    (if (and view overview (string-match "^\\* " overview))
-        (let ((part (substring overview (match-beginning 0)))
-              (at (or (string-match "^\\* " view) (length view))))
-          (concat (substring view 0 at) part (substring view at)))
-      view)))
-
 (defcustom bcat-export-bar-width 90
   "Characters the titles of the bar may take together before they are
 shortened (`bcat-export--bar-labels') — one line at the foot."
@@ -1471,8 +1458,9 @@ dossier) exports the dossier's PDF instead (`bcat-dossier-pdf-text'),
 under the name and label of the verse — from any of its files, the
 commentary document too.  19.11.: „Worum es geht“ of a sentence file
 is a second PDF beside the first (`bcat-export--second-pdf'), on the
-reMarkable „<label> Worum es geht“; the dossier keeps the section in
-its one PDF.  On the device the PDFs go into the folder of the source
+reMarkable „<label> Worum es geht“; 22.11.: the dossier's likewise
+\(„MSA XI.15“ and „MSA XI.15 Worum es geht“).  On the device the PDFs
+go into the folder of the source
 as in the Finder (`bcat-export--device-folder'), each only when the
 device does not have it as it is (`bcat-export--on-device-p',
 `bcat-export-force-upload'); a version that is there goes into the
@@ -1494,10 +1482,11 @@ the PDF path (the first's)."
                          nil)))
          (view (or (plist-get dossier :text) (plist-get views :view)))
          ;; 19.11.: „Worum es geht“ as a PDF of its own — beside the
-         ;; file's, in handouts/ or (without that folder) beside the file
-         (overview (and view (not dossier)
+         ;; file's, in handouts/ or (without that folder) beside the file;
+         ;; 22.11.: a dossier's too (`bcat-dossier-pdf-text', :overview)
+         (overview (and view
                         (bcat-export--second-pdf
-                         file (plist-get views :overview) head
+                         file (if dossier (plist-get dossier :overview) (plist-get views :overview)) head
                          (or (plist-get info :handout) (concat (file-name-sans-extension file) ".pdf"))
                          bcat-export--overview-suffix)))
          ;; only what that export lacked — without it the variable holds

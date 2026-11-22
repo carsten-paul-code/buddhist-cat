@@ -6,7 +6,7 @@ gut sichtbar abgesetzt“): der Abschnitt „* Worum es geht“ der Datei
 für Notizen auf dem reMarkable, und ein eigener Eintrag in der Leiste.
 Ohne Text gibt es den Teil nicht.
 19.11.: der Teil steht im eigenen Dokument pdf-overview, nicht mehr vor
-Reading — nur das Lesedossier setzt ihn dort noch ein.
+Reading — seit 22.11. auch beim Lesedossier.
 #+end_comment
 {{#overview}}
 * Worum es geht

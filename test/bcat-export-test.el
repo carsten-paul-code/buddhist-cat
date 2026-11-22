@@ -1191,14 +1191,9 @@ first part of the one PDF, 16.11.)"
         (should (equal (concat "* Worum es geht\n:PROPERTIES:\n:CUSTOM_ID: overview\n:END:\n"
                                bcat-sentence-test--overview "\n\n")
                        (bcat-export-test--part overview "Worum es geht")))
-        ;; the two together are the view of 16.11. — what the dossier of
-        ;; a verse with layers still shows in one PDF
-        (should (equal '("Worum es geht" "Reading")
-                       (cl-subseq (bcat-export-test--parts (bcat-export-view-with-overview views)) 0 2)))
-        (should (string-match-p "\\`#\\+TITLE: Sentence 1007\n" (bcat-export-view-with-overview views)))
-        (should (= 1 (cl-count "Worum es geht" (bcat-export-test--parts (bcat-export-view-with-overview views))
-                               :test #'equal)))))
-    (should (equal "* Reading\nR.\n" (bcat-export-view-with-overview '(:view "* Reading\nR.\n"))))
+        ;; 22.11.: nothing sets the two together any more — the dossier
+        ;; of a verse with layers is two PDFs too
+        (should-not (fboundp 'bcat-export-view-with-overview))))
     (dolist (name '("pdf-tibetan" "pdf-sanskrit" "pdf-bilingual" "pdf-bilingual-tibetan"))
       (ert-info ((format "Vorlage %s" name))
         (should (equal "Reading"

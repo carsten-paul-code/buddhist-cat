@@ -176,6 +176,7 @@ file of the verse: the verse files and the commentary document."
            (text (plist-get pdf :text))
            (parts (bcat-dossier-test--parts text)))
       (should (equal file (plist-get pdf :lead)))
+      (should-not (plist-get pdf :overview))
       (should (equal '("Reading" "Segments" "Grammar") (cl-subseq parts 0 3)))
       (should (member "Sthiramati" parts))
       (should-not (cl-intersection '("Commentary" "Meine Notizen") parts :test #'equal))
@@ -199,10 +200,16 @@ lines after it."
                        (mapcar (lambda (p) (seq-take p 2)) (bcat-dossier--split-parts view))))))))
 
 (ert-deftest bcat-dossier-pdf-overview ()
-  "16.11.: in the PDF of the dossier the verse's „Worum es geht“ is the
-first part, before the reading page; the commentary document's own
-stands at the head of the commentary's part, before its sentences.
-Without the sections the dossier starts with Reading (bcat-dossier-pdf-msa)."
+  "Carsten 22.11., after the analysis of MSA XI: „Da kommt aber auf dem
+Remarkable noch nicht die neue Struktur an“ — the Tantrāloka's
+sentences arrive as two documents since 19.11. („ein PDF mit dem
+Philologie Part und eines mit Worum es geht“), a verse with layers
+still as one with the section in front.  The dossier's PDF starts with
+the reading page; the verse's „Worum es geht“ is a document of its own
+\(:overview), as a sentence file's.  The commentary document's own
+stays at the head of the commentary's part (the commentary is not
+rebuilt yet).  Without the section there is no such document
+\(bcat-dossier-pdf-msa)."
   (bcat-commentary-test--with-msa
     (bcat-sentence-test--with-stubs #'bcat-commentary-test--answers
       (bcat-sentence-test--fetch-n src 36))
@@ -210,20 +217,46 @@ Without the sections the dossier starts with Reading (bcat-dossier-pdf-msa)."
           (doc (expand-file-name "comm-IX.16-savbh.org" cfolder)))
       (bcat-sentence-test--put-overview file "* Text")
       (bcat-sentence-test--put-overview doc "* Verse" "*Erklärt wird:* Vers IX.16, Pāda für Pāda.")
-      (let* ((text (plist-get (bcat-dossier-pdf-text file) :text))
+      (let* ((pdf (bcat-dossier-pdf-text file))
+             (text (plist-get pdf :text))
+             (overview (plist-get pdf :overview))
              (parts (bcat-dossier-test--parts text)))
-        (should (equal '("Worum es geht" "Reading" "Segments") (cl-subseq parts 0 3)))
-        (should (= 1 (cl-count "Worum es geht" parts :test #'equal)))
+        (should (equal '("Reading" "Segments") (cl-subseq parts 0 2)))
+        (should-not (member "Worum es geht" parts))
+        (should-not (string-match-p (regexp-quote "/anuttarāmṛtakulam/") text))
+        ;; its own document
+        (should (equal '("Worum es geht") (bcat-dossier-test--parts overview)))
+        (should (string-match-p "\\`#\\+TITLE: Sentence 36 — Worum es geht\n" overview))
         (should (string-match-p
                  (regexp-quote (concat "* Worum es geht\n:PROPERTIES:\n:CUSTOM_ID: overview\n:END:\n"
-                                       bcat-sentence-test--overview "\n\n* Reading\n"))
-                 text))
+                                       bcat-sentence-test--overview "\n"))
+                 overview))
         (should (string-match-p
                  (regexp-quote (concat "* Sthiramati\n:PROPERTIES:\n:CUSTOM_ID: commentary\n:END:\n"
                                        "** Worum es geht\n*Erklärt wird:* Vers IX.16, Pāda für Pāda.\n\n"
                                        "** Sentence 258\n"))
                  text))
-        (should (bcat-dossier-test--links-resolve text))))))
+        (should (bcat-dossier-test--links-resolve text))
+        ;; from the commentary document the same two
+        (should (equal overview (plist-get (bcat-dossier-pdf-text doc) :overview)))))))
+
+(ert-deftest bcat-dossier-overview-of-two-sentences ()
+  "The AS: the dossier of a root sentence with its bhāṣya sentence is two
+sentence files, and each may have its „Worum es geht“.  Both go into
+the one document: the root's first, the bhāṣya's as a part of its own
+\(„Bhāṣya — Worum es geht“, its jump target apart).  One alone is the
+document; none, no document."
+  (let ((root (concat "#+TITLE: Sentence 2 — Worum es geht\n#+OPTIONS: toc:nil\n\n"
+                      "* Worum es geht\n:PROPERTIES:\n:CUSTOM_ID: overview\n:END:\nWurzel.\n\n"))
+        (bhasya (concat "#+TITLE: Sentence 1002 — Worum es geht\n#+OPTIONS: toc:nil\n\n"
+                        "* Worum es geht\n:PROPERTIES:\n:CUSTOM_ID: overview\n:END:\nBhāṣya.\n\n")))
+    (should (equal (concat root "* Bhāṣya — Worum es geht\n:PROPERTIES:\n:CUSTOM_ID: bhasya-overview\n:END:\nBhāṣya.\n\n")
+                   (bcat-dossier--overview-text root bhasya)))
+    (should (equal root (bcat-dossier--overview-text root nil)))
+    (should (equal (concat "#+TITLE: Sentence 1002 — Worum es geht\n#+OPTIONS: toc:nil\n\n"
+                           "* Bhāṣya — Worum es geht\n:PROPERTIES:\n:CUSTOM_ID: bhasya-overview\n:END:\nBhāṣya.\n\n")
+                   (bcat-dossier--overview-text nil bhasya)))
+    (should-not (bcat-dossier--overview-text nil nil))))
 
 (ert-deftest bcat-dossier-pdf-page-breaks ()
   "Carsten 9.11.: im PDF des Lesedossiers beginnt jede Schicht der
@@ -299,6 +332,43 @@ verse — no PDF of its own for the commentary document any more."
           (should (string-match-p "^\\* Reading$" exported))
           (should (string-match-p "^\\* Sthiramati$" exported))
           (should (equal '(("msa-IX.16.pdf" . "MSA IX.16")) uploaded)))))))
+
+(ert-deftest bcat-dossier-export-two-pdfs ()
+  "Carsten 22.11. (MSA XI.15–20 analysed; on the reMarkable one document
+„MSA XI.15“ each, beginning with „Worum es geht“): C-c u H of a verse
+with layers puts two documents there, as for a sentence file — the
+dossier from the reading page on under the verse's name, and „<Vers>
+Worum es geht“ (msa-IX.16-worum-es-geht.pdf beside msa-IX.16.pdf)."
+  (bcat-commentary-test--with-msa
+    (bcat-sentence-test--with-stubs #'bcat-commentary-test--answers
+      (bcat-sentence-test--fetch-n src 36))
+    (let ((file (tibetan-sentence--filepath 36 folder src))
+          (exported '()) (uploaded '()))
+      (bcat-sentence-test--put-overview file "* Text")
+      (cl-letf (((symbol-function 'bcat-export-pdf)
+                 (lambda (f &rest _)
+                   (push (cons (file-name-nondirectory f)
+                               (with-temp-buffer (insert-file-contents f) (buffer-string)))
+                         exported)
+                   (let ((pdf (concat (file-name-sans-extension f) ".pdf")))
+                     (with-temp-file pdf (insert "PDF")) pdf)))
+                ((symbol-function 'tibetan-discussion-paper--upload)
+                 (lambda (pdf _title label &optional done &rest _)
+                   (push (cons (file-name-nondirectory pdf) label) uploaded)
+                   (when done (funcall done t label)) t)))
+        (let ((bcat-export-upload t))
+          (bcat-export-file file)
+          (should (equal '(("msa-IX.16.pdf" . "MSA IX.16")
+                           ("msa-IX.16-worum-es-geht.pdf" . "MSA IX.16 Worum es geht"))
+                         (reverse uploaded)))
+          (let ((dossier (cdr (cl-find-if-not (lambda (e) (string-match-p "worum-es-geht" (car e))) exported)))
+                (overview (cdr (cl-find-if (lambda (e) (string-match-p "worum-es-geht" (car e))) exported))))
+            (should (= 2 (length exported)))
+            (should (string-match-p "^\\* Reading$" dossier))
+            (should (string-match-p "^\\* Sthiramati$" dossier))
+            (should-not (string-match-p "^\\* Worum es geht$" dossier))
+            (should (string-match-p "^\\* Worum es geht$" overview))
+            (should-not (string-match-p "^\\* Reading$" overview))))))))
 
 (ert-deftest bcat-dossier-one-upload ()
   "Carsten 5.11.: „doppelten Upload weg“.  One C-c u G on a verse with

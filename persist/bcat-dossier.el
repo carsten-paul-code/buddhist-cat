@@ -414,6 +414,22 @@ has one."
                             (t ""))))
                        (bcat-dossier--split-parts text) ""))))
 
+(defun bcat-dossier--overview-text (lead bhasya)
+  "The document „Worum es geht“ of a dossier from those of its sentence
+files (`bcat-export-views', :overview — org text or nil): LEAD, the
+verse's or root sentence's, as it is; BHASYA, the bhāṣya sentence's
+\(AS), as a part of its own after it — „Bhāṣya — Worum es geht“, its
+jump target bhasya-overview —, or as the document when the lead has
+none.  nil without both."
+  (let ((part (and bhasya (string-match "^\\* " bhasya)
+                   (replace-regexp-in-string
+                    "\\`\\* [^\n]*\n\\(:PROPERTIES:\n\\(?:[^\n]*\n\\)*?\\):CUSTOM_ID: [^\n]*\n"
+                    "* Bhāṣya — Worum es geht\n\\1:CUSTOM_ID: bhasya-overview\n"
+                    (substring bhasya (match-beginning 0)) t))))
+    (cond ((and lead part) (concat lead part))
+          (lead)
+          (part (concat (substring bhasya 0 (string-match "^\\* " bhasya)) part)))))
+
 (defun bcat-dossier--lead-of (file)
   "The sentence file whose dossier FILE belongs to: for a commentary
 document the first verse of its #+CAT_VERSE, else FILE."
@@ -424,14 +440,20 @@ document the first verse of its #+CAT_VERSE, else FILE."
     file))
 
 (defun bcat-dossier-pdf-text (file)
-  "The PDF of the dossier FILE belongs to (Carsten 5.11.): (:lead LEAD
-:text ORG) — the verse's „Worum es geht“ in front (16.11., when its
-file has one), the reading page (the layers as in the dossier, each
-with its jump into the analysis), then the verse's Segments and Grammar,
-the bhāṣya sentence's analysis (AS), the commentary's sentences, the
-verse's Concepts, Discussion, Further Reading, Notes; the dossier's
-notes at the end.  nil for a sentence with one layer — it keeps its own
-view (`bcat-export-views')."
+  "The PDFs of the dossier FILE belongs to (Carsten 5.11.): (:lead LEAD
+:text ORG :overview ORG-or-nil).  :text — the reading page (the layers
+as in the dossier, each with its jump into the analysis), then the
+verse's Segments and Grammar, the bhāṣya sentence's analysis (AS), the
+commentary's sentences, the verse's Concepts, Discussion, Further
+Reading, Notes; the dossier's notes at the end.  :overview — „Worum es
+geht“ as a document of its own, as a sentence file's (Carsten 19.11.:
+„ein PDF mit dem Philologie Part und eines mit Worum es geht“; 22.11.,
+MSA XI: „Da kommt aber auf dem Remarkable noch nicht die neue Struktur
+an“ — the dossier had kept the section in front of its one PDF): the
+verse's and, in the AS, the bhāṣya sentence's
+\(`bcat-dossier--overview-text').  The commentary document's own stays
+in the commentary's part.  nil for a sentence with one layer — it keeps
+its own view (`bcat-export-views')."
   (require 'bcat-export)
   (let* ((file (bcat-dossier--lead-of file))
          (ctx (and file (file-exists-p file) (bcat-dossier-context file t))))
@@ -444,22 +466,24 @@ view (`bcat-export-views')."
                          (bcat-dossier--demote
                           (substring text (string-match "^\\* " text)
                                      (string-match (concat "^\\* " bcat-dossier--notes) text))))))
-             ;; 19.11.: the view with „Worum es geht“ in front — the
-             ;; dossier stays one PDF (a sentence file's is two)
-             (parts (bcat-dossier--split-parts (bcat-export-view-with-overview (bcat-export-views lead))))
+             ;; 22.11.: „Worum es geht“ is a document of its own for a
+             ;; dossier too — the view without it
+             (views (bcat-export-views lead))
+             (parts (bcat-dossier--split-parts (plist-get views :view)))
              (part (lambda (id) (or (nth 2 (assoc id parts)) "")))
              (bh-file (plist-get files :bhasya))
-             (bh (and bh-file (let ((v (bcat-export-view-with-overview (bcat-export-views bh-file))))
-                                (and v (bcat-dossier--nest-view v "Bhāṣya" "bhasya"
-                                                                '("overview" "segments" "grammar" "concepts" "discussion"))))))
+             (bh-views (and bh-file (bcat-export-views bh-file)))
+             (bh (and (plist-get bh-views :view)
+                      (bcat-dossier--nest-view (plist-get bh-views :view) "Bhāṣya" "bhasya"
+                                               '("segments" "grammar" "concepts" "discussion"))))
              (doc (alist-get 'commentary-doc ctx))
              (notes (bcat-dossier--filled (bcat-dossier--keep-notes (alist-get 'path ctx)))))
         (list :lead lead
+              :overview (bcat-dossier--overview-text (plist-get views :overview)
+                                                     (plist-get bh-views :overview))
               :text (concat
                      (format "#+TITLE: %s — Lesedossier\n#+OPTIONS: toc:nil num:nil title:nil author:nil date:nil\n\n"
                              (alist-get 'label ctx))
-                     ;; 16.11.: „Worum es geht“ of the verse in front
-                     (funcall part "overview")
                      "* Reading\n:PROPERTIES:\n:CUSTOM_ID: reading\n:END:\n" reading
                      (funcall part "segments") (funcall part "grammar")
                      (or bh "")
@@ -470,7 +494,6 @@ view (`bcat-export-views')."
 
 (defvar bcat-commentary--runs)
 (declare-function bcat-sentence-fetch-state "bcat-sentence" (file seg-nums))
-(declare-function bcat-export-view-with-overview "bcat-export" (views))
 
 (defvar bcat-dossier--awaiting (make-hash-table :test #'equal)
   "Verse file → the commentary document C-c u G fetches with it.  Set
