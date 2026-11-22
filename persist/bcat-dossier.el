@@ -34,7 +34,7 @@
 (declare-function bcat-export-info "bcat-export" (file))
 (declare-function bcat-export-views "bcat-export" (file))
 (declare-function bcat-commentary-source "bcat-commentary" (source-file))
-(declare-function bcat-commentary-section "bcat-commentary" (label lead commentary-source))
+(declare-function bcat-commentary-sections "bcat-commentary" (label lead commentary-source))
 (declare-function bcat-commentary-file "bcat-commentary" (section commentary-source))
 (declare-function bcat-commentary--author "bcat-commentary" (commentary-source))
 (declare-function tibetan-sentence--source-file-from-analysis "tibetan-sentence-persist" (analysis-file))
@@ -251,7 +251,8 @@ named like its PDF in handouts/."
 label, path, links to the analyses, layers (text, bhāṣya, commentary),
 each with its link into the analysis — the file, or with PDF the jump
 target of the dossier's PDF (#segments, #bhasya, #commentary, #comm-N);
-`commentary-doc' and `commentary-author' for the PDF."
+`commentary-docs' (the documents of the commentary's Sections that
+cover the verse, in order) and `commentary-author' for the PDF."
   (require 'bcat-relayout)
   (require 'bcat-export)
   (require 'bcat-commentary)
@@ -268,7 +269,7 @@ target of the dossier's PDF (#segments, #bhasya, #commentary, #comm-N);
              (verse-p (bcat-sentence--verse-mode-p source))
              (sigla (list (bcat-dossier--siglum source) (bcat-dossier--siglum partner-source)))
              (layers '())
-             (comm-doc nil) (comm-author nil)
+             (comm-docs nil) (comm-author nil)
              (links (list (cons "Text" lead)))
              (partner (bcat-sentence-partner-file n source)))
         (when (and partner (file-exists-p partner)) (push (cons "Tib." partner) links))
@@ -290,23 +291,38 @@ target of the dossier's PDF (#segments, #bhasya, #commentary, #comm-N);
                                    (format "[[file:%s][Analyse]]" (file-relative-name bh-file to))))
                         ,@(bcat-dossier-text-layer (plist-get bread :context)))
                       layers))))))
+        ;; 22.11.: every Section of the commentary that covers the verse
+        ;; (Phywa pa: the introduction to a group of verses and the
+        ;; Section on the pair) — one layer, the documents in order
         (let* ((commentary (and verse-p (bcat-commentary-source source)))
                (verse (and commentary (bcat-sentence--sentence n source)))
-               (section (and verse (bcat-commentary-section (plist-get verse :section-label) source commentary)))
-               (doc (and section (bcat-commentary-file section commentary))))
-          (when (and doc (file-exists-p doc))
-            (push (cons (bcat-commentary--author commentary) doc) links)
-            (push `((heading . ,(bcat-dossier--heading (1+ (length layers)) (bcat-commentary--author commentary)
-                                                       (list (bcat-dossier--siglum commentary))))
-                    (items . ,(bcat-dossier-commentary-items doc (bcat-dossier--folios commentary) to pdf)))
-                  layers)
-            (setq comm-doc doc comm-author (bcat-commentary--author commentary))))
+               (docs (and verse
+                          (cl-remove-if-not
+                           #'file-exists-p
+                           (mapcar (lambda (section) (bcat-commentary-file section commentary))
+                                   (bcat-commentary-sections (plist-get verse :section-label)
+                                                             source commentary))))))
+          (when docs
+            (let ((author (bcat-commentary--author commentary))
+                  (folios (bcat-dossier--folios commentary)))
+              (dolist (doc docs)
+                (push (cons (if (cdr docs)
+                                (format "%s (%s)" author (or (bcat-dossier--doc-section doc) (file-name-base doc)))
+                              author)
+                            doc)
+                      links))
+              (push `((heading . ,(bcat-dossier--heading (1+ (length layers)) author
+                                                         (list (bcat-dossier--siglum commentary))))
+                      (items . ,(cl-loop for doc in docs
+                                         append (bcat-dossier-commentary-items doc folios to pdf))))
+                    layers)
+              (setq comm-docs docs comm-author author))))
         `((label . ,(plist-get (bcat-export-info lead) :label))
           (path . ,path)
           (analysis . ,(mapconcat (lambda (l) (format "[[file:%s][%s]]" (file-relative-name (cdr l) to) (car l)))
                                   (nreverse links) " · "))
           (layers . ,(nreverse layers))
-          (commentary-doc . ,comm-doc)
+          (commentary-docs . ,comm-docs)
           (commentary-author . ,comm-author))))))
 
 (defun bcat-dossier--keep-notes (path)
@@ -388,31 +404,47 @@ first file's (AS: the bhāṣya sentence)."
              "\\(:CUSTOM_ID: \\|\\[\\[#\\)\\([^]\n ]+\\)" (concat "\\1" id "-\\2")
              (bcat-dossier--demote body) t))))
 
-(defun bcat-dossier--commentary-part (doc author)
-  "The sentences of the commentary document DOC as the part „* AUTHOR“
+(defun bcat-dossier--doc-section (doc)
+  "The title of the Section the commentary document DOC is of, without
+„Section “ — from its #+SOURCE link („…::*Section XI.15–16 sgyu ma'i
+mtshan nyid“) —, or nil."
+  (let ((source (bcat-sentence--header-value doc "SOURCE")))
+    (and source (string-match "::\\*Section[ \t]+\\([^]]+\\)\\]" source)
+         (string-trim (match-string 1 source)))))
+
+(defun bcat-dossier--commentary-part (docs author)
+  "The sentences of the commentary documents DOCS as the part „* AUTHOR“
 of the PDF (CUSTOM_ID commentary), one level down, each a jump target
-comm-N; before them the document's „Worum es geht“ (16.11.), when it
-has one."
-  (let ((text (with-temp-buffer (insert-file-contents doc) (buffer-string))))
-    (concat "* " author "\n:PROPERTIES:\n:CUSTOM_ID: commentary\n:END:\n"
-            (mapconcat (lambda (p)
-                         (let ((title (nth 1 p)) (body (nth 2 p)))
-                           (cond
-                            ((string-match "\\`Sentence \\([0-9]+\\)" title)
-                             (let ((n (match-string 1 title)))
-                               (replace-regexp-in-string
-                                "\\`\\(\\*\\* [^\n]*\n\\)"
-                                (concat "\\1:PROPERTIES:\n:CUSTOM_ID: comm-" n "\n:END:\n")
-                                (bcat-dossier--demote body) t)))
-                            ;; its text, without the drawer of a
-                            ;; generated one's mark
-                            ((equal title bcat-sentence--overview-heading)
-                             (let ((overview (bcat-sentence--overview text)))
-                               (if overview
-                                   (concat "** " title "\n" (car overview) "\n\n")
-                                 "")))
-                            (t ""))))
-                       (bcat-dossier--split-parts text) ""))))
+comm-N; before the sentences of a document its „Worum es geht“ (16.11.),
+when it has one.  Several documents — the Sections of the commentary
+that cover the verse (22.11., Phywa pa) — follow each other, each under
+a line with the title of its Section."
+  (concat "* " author "\n:PROPERTIES:\n:CUSTOM_ID: commentary\n:END:\n"
+          (mapconcat
+           (lambda (doc)
+             (let ((text (with-temp-buffer (insert-file-contents doc) (buffer-string)))
+                   (section (and (cdr docs) (bcat-dossier--doc-section doc))))
+               (concat
+                (if section (format "*%s*\n\n" section) "")
+                (mapconcat (lambda (p)
+                             (let ((title (nth 1 p)) (body (nth 2 p)))
+                               (cond
+                                ((string-match "\\`Sentence \\([0-9]+\\)" title)
+                                 (let ((n (match-string 1 title)))
+                                   (replace-regexp-in-string
+                                    "\\`\\(\\*\\* [^\n]*\n\\)"
+                                    (concat "\\1:PROPERTIES:\n:CUSTOM_ID: comm-" n "\n:END:\n")
+                                    (bcat-dossier--demote body) t)))
+                                ;; its text, without the drawer of a
+                                ;; generated one's mark
+                                ((equal title bcat-sentence--overview-heading)
+                                 (let ((overview (bcat-sentence--overview text)))
+                                   (if overview
+                                       (concat "** " title "\n" (car overview) "\n\n")
+                                     "")))
+                                (t ""))))
+                           (bcat-dossier--split-parts text) ""))))
+           docs "")))
 
 (defun bcat-dossier--overview-text (lead bhasya)
   "The document „Worum es geht“ of a dossier from those of its sentence
@@ -476,7 +508,7 @@ its own view (`bcat-export-views')."
              (bh (and (plist-get bh-views :view)
                       (bcat-dossier--nest-view (plist-get bh-views :view) "Bhāṣya" "bhasya"
                                                '("segments" "grammar" "concepts" "discussion"))))
-             (doc (alist-get 'commentary-doc ctx))
+             (docs (alist-get 'commentary-docs ctx))
              (notes (bcat-dossier--filled (bcat-dossier--keep-notes (alist-get 'path ctx)))))
         (list :lead lead
               :overview (bcat-dossier--overview-text (plist-get views :overview)
@@ -487,7 +519,7 @@ its own view (`bcat-export-views')."
                      "* Reading\n:PROPERTIES:\n:CUSTOM_ID: reading\n:END:\n" reading
                      (funcall part "segments") (funcall part "grammar")
                      (or bh "")
-                     (if doc (bcat-dossier--commentary-part doc (alist-get 'commentary-author ctx)) "")
+                     (if docs (bcat-dossier--commentary-part docs (alist-get 'commentary-author ctx)) "")
                      (funcall part "concepts") (funcall part "discussion")
                      (funcall part "further-reading") (funcall part "notes")
                      (if notes (concat "* " bcat-dossier--notes "\n:PROPERTIES:\n:CUSTOM_ID: dossier-notes\n:END:\n" notes "\n") "")))))))
@@ -496,15 +528,33 @@ its own view (`bcat-export-views')."
 (declare-function bcat-sentence-fetch-state "bcat-sentence" (file seg-nums))
 
 (defvar bcat-dossier--awaiting (make-hash-table :test #'equal)
-  "Verse file → the commentary document C-c u G fetches with it.  Set
-before the verse is sent, cleared when the commentary lands: until
-then the verse's own landing does not export the dossier — whichever
-lands first (5.11.).")
+  "Verse file → the commentary documents C-c u G fetches with it.  Set
+before the verse is sent; a document is taken off when it lands
+\(`bcat-dossier-landed'): until then the verse's own landing does not
+export the dossier — whichever lands first (5.11.).")
 
 (defun bcat-dossier-await (verse-file doc)
   "Note that C-c u G fetches the commentary document DOC with the verse
-VERSE-FILE (see `bcat-dossier--awaiting')."
-  (puthash (expand-file-name verse-file) doc bcat-dossier--awaiting))
+VERSE-FILE (see `bcat-dossier--awaiting') — one of several, when more
+than one Section of the commentary covers the verse."
+  (let ((key (expand-file-name verse-file)))
+    (puthash key (cl-adjoin (expand-file-name doc) (gethash key bcat-dossier--awaiting) :test #'equal)
+             bcat-dossier--awaiting)))
+
+(defun bcat-dossier-landed (doc)
+  "The commentary document DOC is in, or its fetch gave up: no verse
+waits for it any more.  Returns the verse files that waited for it and
+now wait for no other document — a Section may belong to several verses
+\(22.11., Phywa pa's pairs; Sthiramati's IX.2 covers IX.3)."
+  (let ((doc (expand-file-name doc)) (changed '()) (free '()))
+    (maphash (lambda (k v) (when (member doc v) (push (cons k (remove doc v)) changed)))
+             bcat-dossier--awaiting)
+    (dolist (c changed)
+      (if (cdr c)
+          (puthash (car c) (cdr c) bcat-dossier--awaiting)
+        (remhash (car c) bcat-dossier--awaiting)
+        (push (car c) free)))
+    (sort free #'string<)))
 
 (declare-function tibetan-discussion--inflight-p "tibetan-translation-discussion" (kind file))
 
@@ -517,25 +567,40 @@ no gap between them)."
        (cl-some (lambda (kind) (tibetan-discussion--inflight-p kind lead))
                 '("bcat-analysis" "bcat-tibetan" "bcat-align"))))
 
-(defun bcat-dossier-export-pending-p (file)
-  "Non-nil when the PDF of FILE's dossier should wait — Carsten 5.11.:
-„doppelten Upload weg“.  One C-c u G on a verse with commentary lands
-twice; the first to land waits for the other: a verse file while its
-commentary document is still being fetched (`bcat-commentary--runs'),
-the commentary document while a request of its verse is still in flight
-\(`bcat-dossier--verse-running-p').  The landing of the commentary
-clears the verse's note (`bcat-dossier-await')."
+(defun bcat-dossier-export-files (file)
+  "The files whose dossier C-c u H is to export now that FILE has
+landed — Carsten 5.11.: „doppelten Upload weg“.  One C-c u G on a verse
+with commentary lands several times; the PDF of a verse comes once,
+when all of it is there:
+- FILE a verse file: itself, unless it still waits for a commentary
+  document (`bcat-dossier--awaiting') or one of its documents is being
+  fetched (`bcat-commentary--runs').
+- FILE a commentary document: the verses that waited for it and wait
+  for nothing else now (`bcat-dossier-landed') — a Section may belong
+  to several verses, each gets its PDF —, when none waited (the
+  commentary fetched alone) its first verse; never a verse a request of
+  which is still in flight (11.11., MSA IX.62: only that — its own
+  landing exports then)."
   (require 'bcat-commentary)
   (if (equal (bcat-sentence-file-p file) "commentary")
-      (let ((lead (bcat-dossier--lead-of file)))
-        (when lead (remhash (expand-file-name lead) bcat-dossier--awaiting))
-        ;; 11.11., MSA IX.62: not the verse's fetch state — a verse with
-        ;; a hand-added reference stays `align' and nothing would export.
-        (and lead (bcat-dossier--verse-running-p lead) t))
-    (or (and (gethash (expand-file-name file) bcat-dossier--awaiting) t)
-        (let* ((ctx (ignore-errors (bcat-dossier-context file)))
-               (doc (alist-get 'commentary-doc ctx)))
-          (and doc (gethash doc bcat-commentary--runs) t)))))
+      (let* ((lead (bcat-dossier--lead-of file))
+             (waiting (gethash (and lead (expand-file-name lead)) bcat-dossier--awaiting))
+             (free (bcat-dossier-landed file)))
+        (cl-remove-if #'bcat-dossier--verse-running-p
+                      (or free
+                          ;; nobody waited for it, and its first verse
+                          ;; waits for nothing else
+                          (and lead (not waiting) (list lead)))))
+    (unless (or (gethash (expand-file-name file) bcat-dossier--awaiting)
+                (let ((ctx (ignore-errors (bcat-dossier-context file))))
+                  (cl-some (lambda (doc) (gethash doc bcat-commentary--runs))
+                           (alist-get 'commentary-docs ctx))))
+      (list file))))
+
+(defun bcat-dossier-export-pending-p (file)
+  "Non-nil when nothing is to be exported yet for FILE
+\(`bcat-dossier-export-files')."
+  (null (bcat-dossier-export-files file)))
 
 (defun bcat-dossier-after-fetch (file)
   "Hook for `bcat-sentence-after-fetch-functions': C-c u G ends with the

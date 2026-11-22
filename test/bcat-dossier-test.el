@@ -187,6 +187,41 @@ file of the verse: the verse files and the commentary document."
       (should (equal file (plist-get (bcat-dossier-pdf-text doc) :lead)))
       (should (equal file (plist-get (bcat-dossier-pdf-text (tibetan-sentence--filepath 64 tfolder tsrc)) :lead))))))
 
+(ert-deftest bcat-dossier-commentary-of-several-sections ()
+  "The dossier of a verse has every Section of the commentary that
+covers it (22.11., Phywa pa): IX.15 the introduction to the group and
+the Section on its pair — one layer „Phywa pa“ on the reading page with
+the sentences of both, one part in the PDF with both documents, each
+sentence a jump target; IX.16 the Section on the pair alone."
+  (bcat-commentary-test--with-phywa
+    (bcat-commentary-test--with-phywa-stubs
+      (tibetan-cascade-fetch (list :source src :sent-nums '(34 36) :label "IX.15–16")))
+    (let* ((first (bcat-dossier-context (tibetan-sentence--filepath 34 folder src) t))
+           (second (bcat-dossier-context (tibetan-sentence--filepath 36 folder src) t))
+           (items (lambda (ctx) (mapcar (lambda (i) (alist-get 'head i))
+                                        (alist-get 'items (car (last (alist-get 'layers ctx)))))))
+           (pdf (bcat-dossier-pdf-text (tibetan-sentence--filepath 34 folder src)))
+           (text (plist-get pdf :text)))
+      (should (equal '("comm-IX.15-17-Einleitung-phywa.org" "comm-IX.15-16-sgyu-ma-i-mtshan-nyid-phywa.org")
+                     (mapcar #'file-name-nondirectory (alist-get 'commentary-docs first))))
+      (should (equal '("comm-IX.15-16-sgyu-ma-i-mtshan-nyid-phywa.org")
+                     (mapcar #'file-name-nondirectory (alist-get 'commentary-docs second))))
+      (should (equal '("2001" "2003" "2004") (funcall items first)))
+      (should (equal '("2003" "2004") (funcall items second)))
+      ;; the layer after the ones the verse has: IX.15 has no bhāṣya
+      ;; in this fixture, IX.16 has
+      (should (string-match-p "^02 Phywa pa chos kyi seng ge"
+                              (alist-get 'heading (car (last (alist-get 'layers first))))))
+      (should (string-match-p "^03 Phywa pa chos kyi seng ge"
+                              (alist-get 'heading (car (last (alist-get 'layers second))))))
+      ;; the PDF: one part, both documents, every sentence a target
+      (should (= 1 (cl-count "Phywa pa chos kyi seng ge" (bcat-dossier-test--parts text) :test #'equal)))
+      (dolist (n '(2001 2003 2004))
+        (should (string-match-p (format "^\\*\\* Sentence %d\n:PROPERTIES:\n:CUSTOM_ID: comm-%d\n:END:$" n n) text)))
+      (should (string-match-p "^\\*IX\\.15–17 Einleitung\\*$" text))
+      (should (string-match-p "^\\*IX\\.15–16 sgyu ma'i mtshan nyid\\*$" text))
+      (should (bcat-dossier-test--links-resolve text)))))
+
 (ert-deftest bcat-dossier-split-parts-in-any-buffer ()
   "18.11.: the CUSTOM_ID of a part is read the same whatever buffer is
 current — in a Lisp buffer (*scratch*: batch runs, emacsclient) a line

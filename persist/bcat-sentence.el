@@ -515,7 +515,9 @@ footnote definitions in them at the end (`bcat-analysis-footnotes-last')."
 (declare-function bcat-commentary-lead "bcat-commentary" (commentary-source))
 (declare-function bcat-commentary--verses "bcat-commentary" (section lead commentary-source))
 (declare-function bcat-commentary-section "bcat-commentary" (label lead commentary-source))
+(declare-function bcat-commentary-sections "bcat-commentary" (label lead commentary-source))
 (declare-function bcat-commentary-incomplete-p "bcat-commentary" (section commentary-source))
+(declare-function bcat-commentary-file "bcat-commentary" (section commentary-source))
 (declare-function bcat-commentary-fetch "bcat-commentary" (section commentary-source &optional status-file))
 (declare-function bcat-dossier-await "bcat-dossier" (verse-file doc))
 (declare-function bcat-commentary-verse-links "bcat-commentary" (sent-num source-file assignment))
@@ -1955,9 +1957,14 @@ from the same requests.  Returns (:sentences N :fired N :complete N
                                            ('created "Tib. angelegt") ('rebuilt "Tib. neu gebaut")))))))
           (when done
             (bcat-status-step (funcall file-of s) :file (string-join done " · ")))))
-      (let* ((section-of (lambda (s) (and commentary
-                                          (bcat-commentary-section (plist-get s :section-label)
-                                                                   src commentary))))
+      (let* (;; 22.11.: every Section of the commentary that covers the
+             ;; verse (Phywa pa: an introduction to the group and the
+             ;; Section on the pair) — those still to be analysed
+             (open-of (lambda (s)
+                        (and commentary
+                             (cl-remove-if-not
+                              (lambda (sec) (or force (bcat-commentary-incomplete-p sec commentary)))
+                              (bcat-commentary-sections (plist-get s :section-label) src commentary)))))
              (states (mapcar (lambda (s)
                                (cons s (or (cond
                                             (force 'full)
@@ -1965,9 +1972,7 @@ from the same requests.  Returns (:sentences N :fired N :complete N
                                             (t (bcat-sentence-fetch-state
                                                 (funcall file-of s) (mapcar #'car (plist-get s :segs)))))
                                            ;; The verse done, its commentary not.
-                                           (let ((sec (funcall section-of s)))
-                                             (and sec (bcat-commentary-incomplete-p sec commentary)
-                                                  'commentary)))))
+                                           (and (funcall open-of s) 'commentary))))
                              sentences))
              (todo (cl-remove-if-not #'cdr states))
              (align (cl-count-if (lambda (c) (eq (cdr c) 'align)) states))
@@ -1992,28 +1997,33 @@ from the same requests.  Returns (:sentences N :fired N :complete N
                 ((not go)
                  (bcat-status-step (funcall file-of (car c)) :state "Abruf abgelehnt"))))
         (when go
-          (let ((sections '()))
+          (let ((open (mapcar (lambda (c) (cons (car c) (funcall open-of (car c)))) todo))
+                (sections '()))
+            ;; 5.11.: a commentary that comes with the verse — the
+            ;; verse's landing leaves the dossier's PDF to it.  Noted
+            ;; for every verse BEFORE anything is sent: a Section may
+            ;; belong to several verses (22.11.), and each of them
+            ;; waits for it.
+            (when (fboundp 'bcat-dossier-await)
+              (dolist (o open)
+                (dolist (sec (cdr o))
+                  (bcat-dossier-await (funcall file-of (car o)) (bcat-commentary-file sec commentary)))))
+            ;; the verses …
             (dolist (c todo)
-              ;; 5.11.: a commentary that comes with the verse — the
-              ;; verse's landing leaves the dossier's PDF to it.
-              (let ((sec (funcall section-of (car c))))
-                (when (and sec (fboundp 'bcat-dossier-await)
-                           (or force (bcat-commentary-incomplete-p sec commentary)))
-                  (bcat-dossier-await (funcall file-of (car c)) (bcat-commentary-file sec commentary))))
               (when (eq 'fired
                         (pcase (cdr c)
                           ('align (bcat-sentence--align-one (funcall file-of (car c)) (car c) src))
                           ('dm (bcat-sentence--dm-one (funcall file-of (car c)) (car c) src))
                           ('commentary 'fired)
                           (_ (bcat-sentence--fetch-one (funcall file-of (car c)) (car c) src))))
-                (cl-incf fired))
-              ;; The commentary with the verse (Carsten 30.10.: „immer
-              ;; beide“) — once per Section of the commentary.
-              (let ((sec (funcall section-of (car c))))
-                (when (and sec (not (member sec sections))
-                           (or force (bcat-commentary-incomplete-p sec commentary)))
+                (cl-incf fired)))
+            ;; … then the commentary with them (Carsten 30.10.: „immer
+            ;; beide“) — once per Section of the commentary.
+            (dolist (o open)
+              (dolist (sec (cdr o))
+                (unless (member sec sections)
                   (push sec sections)
-                  (bcat-commentary-fetch sec commentary (funcall file-of (car c))))))))
+                  (bcat-commentary-fetch sec commentary (funcall file-of (car o))))))))
         (if (null todo)
             (message "%s: vollständig — nichts abgerufen (neu abrufen: C-u C-c u G)" label)
           (message "%s: %d Satz/Sätze — %d abgerufen (davon %d Zuordnung neuer Vergleichsübersetzungen), %d vollständig%s%s"

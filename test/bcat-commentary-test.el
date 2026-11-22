@@ -523,6 +523,85 @@ no sentence of the commentary document, and nothing is asked about it."
     ;; Sthiramati's has none
     (should (= 6 (length (bcat-commentary--sentences "Section IX.16" csrc))))))
 
+(defun bcat-commentary-test--phywa-answer (kind file)
+  "Claude's answer for a request of KIND about FILE in the Phywa trio:
+the verse IX.15 or IX.16 (either language), or one of Phywa pa's
+Sections — by the name of the document."
+  (let ((name (file-name-nondirectory file)))
+    (cond
+     ((string-prefix-p "bcat-commentary" kind)
+      (format "{\"segments\": [%s], \"sentences\": []}"
+              (mapconcat (lambda (n) (bcat-commentary-test--segment n 0 (format "Phywa pa %d." n)))
+                         (cond ((string-match-p "Einleitung" name) '(1))
+                               ((string-match-p "mtshan-nyid" name) '(20 21 22))
+                               (t '(23)))
+                         ", ")))
+     ((string-match-p "sent-03[46]-\\|sent-06[24]-" name)
+      (let ((first (string-match-p "sent-034-\\|sent-062-" name)))
+        (if (equal kind "bcat-tibetan")
+            (if first
+                (concat "{\"segments\": [{\"num\": 135, \"sanskrit\": 88, \"words\": [], \"translation\": \"The five\"},"
+                        " {\"num\": 136, \"sanskrit\": 89, \"words\": [], \"translation\": \"the eighteen\"}],"
+                        " \"differences\": [], \"grammar\": \"g\", \"translation\": \"t\", \"comparison\": \"\", \"rendering\": \"r\"}")
+              bcat-commentary-test--verse-answer-bo)
+          (if first
+              (concat "{\"segments\": [{\"num\": 88, \"words\": [], \"translation\": \"The five aggregates,\"},"
+                      " {\"num\": 89, \"words\": [], \"translation\": \"the eighteen elements.\"}],"
+                      " \"grammar\": \"g\", \"translation\": \"t\", \"comparison\": \"\", \"bhasya_hint\": \"\"}")
+            bcat-commentary-test--verse-answer-sa)))))))
+
+(defmacro bcat-commentary-test--with-phywa-stubs (&rest body)
+  "BODY with `bcat-sentence-test--with-stubs', every request answered by
+`bcat-commentary-test--phywa-answer'."
+  (declare (indent 0))
+  `(bcat-sentence-test--with-stubs #'ignore
+     (cl-letf (((symbol-function 'tibetan-discussion--submit)
+                (lambda (kind file thunk land &optional _fail)
+                  (cl-incf submits)
+                  (push kind kinds)
+                  (push (funcall thunk) prompts)
+                  (funcall land file (bcat-commentary-test--phywa-answer kind file))
+                  t)))
+       ,@body)))
+
+(ert-deftest bcat-commentary-fetch-every-section-of-a-verse ()
+  "Carsten 22.11.: „je Vers“, Phywa pa as the third layer, „so wie bei IX
+… + Phya Pa“.  C-c u G on the verses IX.15 and IX.16: the two pairs,
+and Phywa pa's Sections that cover them — the introduction to the group
+\(it stands at IX.15) and the Section on the pair IX.15–16 —, each
+analysed ONCE although the pair's belongs to both verses; his Section
+on IX.17 is not touched.  The documents hold his sentences only, not
+the root verses of his source.  Each verse's PDF is exported once, when
+all of it is there (5.11.: „doppelten Upload weg“) — IX.16 too, whose
+commentary came with IX.15."
+  (bcat-commentary-test--with-phywa
+    (let ((exports '())
+          (intro (expand-file-name "comm-IX.15-17-Einleitung-phywa.org" pfolder))
+          (pair (expand-file-name "comm-IX.15-16-sgyu-ma-i-mtshan-nyid-phywa.org" pfolder))
+          (rest (expand-file-name "comm-IX.17-dpe-dang-sbyar-ba-phywa.org" pfolder)))
+      (cl-letf (((symbol-function 'bcat-export-file) (lambda (f) (push f exports) nil))
+                ((symbol-function 'tibetan-discussion-paper--temp-source-p) #'ignore))
+        (let ((bcat-export-auto t))
+          (bcat-commentary-test--with-phywa-stubs
+            (add-hook 'bcat-sentence-after-fetch-functions #'bcat-export-after-fetch)
+            (tibetan-cascade-fetch (list :source src :sent-nums '(34 36) :label "IX.15–16"))
+            ;; two verse pairs, two Sections of the commentary
+            (should (= 2 (cl-count-if (lambda (k) (string-prefix-p "bcat-commentary" k)) kinds)))
+            (should (= 6 (length kinds))))))
+      (should (file-exists-p intro))
+      (should (file-exists-p pair))
+      (should-not (file-exists-p rest))
+      (let ((text (bcat-sentence-test--text-of pair)))
+        (should (string-match-p "^\\* Sentence 2003$" text))
+        (should (string-match-p "^\\* Sentence 2004$" text))
+        (should-not (string-match-p "^\\* Sentence 1[56]$" text))
+        (should (string-match-p "Phywa pa 21\\." text))
+        (should-not (bcat-commentary-incomplete-p "Section IX.15–16 sgyu ma'i mtshan nyid" psrc)))
+      (should (string-match-p "Phywa pa 1\\." (bcat-sentence-test--text-of intro)))
+      ;; one export per verse
+      (should (equal (list (tibetan-sentence--filepath 34 folder src) (tibetan-sentence--filepath 36 folder src))
+                     (sort (mapcar #'expand-file-name exports) #'string<))))))
+
 (ert-deftest bcat-commentary-create ()
   "C-c u A in Sthiramati's source (no AI): the commentary document of the
 sentence's Section — the verses it covers (Tibetan) at the top with

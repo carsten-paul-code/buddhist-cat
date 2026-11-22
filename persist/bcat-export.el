@@ -36,7 +36,7 @@
 (declare-function tibetan-discussion-paper--temp-source-p "tibetan-discussion-paper" (file))
 (declare-function tibetan-handout "tibetan-handout" (&optional org-only))
 (declare-function bcat-relayout-file-context "bcat-relayout" (file))
-(declare-function bcat-dossier-export-pending-p "bcat-dossier" (file))
+(declare-function bcat-dossier-export-files "bcat-dossier" (file))
 (declare-function org-latex-export-to-pdf "ox-latex")
 (declare-function org-end-of-subtree "org" (&optional invisible-ok to-heading element))
 (declare-function org-export-derived-backend-p "ox" (backend &rest backends))
@@ -1599,11 +1599,16 @@ rmapi failure must not spoil the landed analysis."
   (when (and bcat-export-auto
              (not (tibetan-discussion-paper--temp-source-p file)))
     (condition-case err
-        (if (and (fboundp 'bcat-dossier-export-pending-p) (bcat-dossier-export-pending-p file))
-            ;; 5.11.: the other half of the verse is still coming — its
-            ;; landing exports the dossier, once.
-            (bcat-status-step file :pdf "PDF folgt mit dem Rest des Verses")
-          (bcat-export-file file))
+        (let ((files (if (fboundp 'bcat-dossier-export-files)
+                         (bcat-dossier-export-files file)
+                       (list file))))
+          (if (null files)
+              ;; 5.11.: the other half of the verse is still coming — its
+              ;; landing exports the dossier, once.
+              (bcat-status-step file :pdf "PDF folgt mit dem Rest des Verses")
+            ;; 22.11.: a commentary's Section may belong to several
+            ;; verses — the dossier of each that waited for it
+            (dolist (f files) (bcat-export-file f))))
       (error (message "C-c u H nach C-c u G fehlgeschlagen (%s): %s"
                       (file-name-nondirectory file) (error-message-string err))
              (bcat-status-step file :pdf (concat "PDF: Fehler — " (error-message-string err)))))))

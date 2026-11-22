@@ -30,6 +30,7 @@
 (declare-function tibetan-analysis--read-source-metadata "tibetan-analysis-claude" (source-file))
 (declare-function tibetan-discussion--submit "tibetan-translation-discussion" (kind file prompts land &optional fail))
 (defvar tibetan-dharmamitra-sentence-request-delay)
+(declare-function bcat-dossier-landed "bcat-dossier" (doc))
 (declare-function tibetan-dharmamitra-api-limit-reached-p "tibetan-dharmamitra-api" ())
 (declare-function tibetan-sentence--filepath "tibetan-sentence-persist" (sent-num &optional folder source-file))
 
@@ -822,10 +823,8 @@ get their links and the document goes to the reMarkable (C-c u H)."
                                                (length failed) (plist-get run :chunks)))
           ;; 11.11.: the verse no longer waits for this commentary (its
           ;; PDF comes with the commentary of the next C-c u G).
-          (when (boundp 'bcat-dossier--awaiting)
-            (let ((doc (plist-get run :doc)) (keys '()))
-              (maphash (lambda (k v) (when (equal v doc) (push k keys))) bcat-dossier--awaiting)
-              (dolist (k keys) (remhash k bcat-dossier--awaiting)))))
+          (when (fboundp 'bcat-dossier-landed)
+            (bcat-dossier-landed (plist-get run :doc))))
       (bcat-commentary--status run "✓")
       (let* ((source (plist-get run :source))
              (lead (bcat-commentary-lead source))
