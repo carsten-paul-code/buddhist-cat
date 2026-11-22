@@ -5964,24 +5964,46 @@ anfassen“).
   Kontextfelder: `bhasya-docs', `commentaries' ((Autor ID Präfix
   Dokumente …) …), `commentary-docs' (alle).  Blattangaben ganz
   („Ms 82b4“).
-- STAND: an einer Kopie von XI geprüft (Zuordnung, Rumpfdokumente,
-  PDF mit echtem LaTeX: 31 S. ohne Analysen), OHNE Abruf und ohne
-  Upload.  In den echten Quellen fehlen noch die Kopfzeilen:
-  Sanskrit-11: „#+CAT_COMMENTARY: ../Tibetisch-11/mdo-sde-rgyan-11-cat.org“
-  und „#+CAT_COMMENTARY: ../Phywapa-11/phywa-11-cat.org“; Phywapa-11:
-  „#+CAT_TEMPLATE: commentary“ (statt tibetan) und „#+CAT_COMMENTS_ON:
-  ../Sanskrit-11/msa-11-cat.org“.  Die 19 Rumpf-Satzdateien
+- STAND (22.11., 10:50): auf Carstens Wort ausgeführt.  Kopfzeilen
+  eingetragen — Sanskrit-11: „#+CAT_COMMENTARY:
+  ../Tibetisch-11/mdo-sde-rgyan-11-cat.org“ und „#+CAT_COMMENTARY:
+  ../Phywapa-11/phywa-11-cat.org“; Phywapa-11: „#+CAT_TEMPLATE:
+  commentary“ (statt tibetan) und „#+CAT_COMMENTS_ON:
+  ../Sanskrit-11/msa-11-cat.org“.  Abgerufen für XI.15–20: 6
+  Bhāṣya-Dokumente (Tibetisch-11/analysis/comm-XI.N-mdo.org), 4
+  Phywa-pa-Abschnitte (Phywapa-11/analysis/comm-XI.…-phywa.org), XI.17
+  (Sanskrit + Tibetisch).  Alle sechs Verse vollständig; auf dem Gerät
+  je „MSA XI.N“ (22–42 S.) und „MSA XI.N Worum es geht“, die Fassungen
+  vom Morgen im Archiv.  Die 19 Rumpf-Satzdateien
   Phywapa-11/analysis/sent-…-phywa.org (Vorlage tibetan, 20.11.) werden
-  damit nicht mehr gebraucht — liegen lassen, nicht löschen.  Abruf für
-  XI.15–20 dann: 6 Bhāṣya-Dokumente + 4 Phywa-pa-Abschnitte + XI.17
-  (2) = 12 Claude-Abrufe; alles erst auf Carstens Wort.
+  nicht mehr gebraucht — liegen lassen, nicht löschen.
+- VORFALL BEIM ABRUF + ZWEI BUGS (`e3cb470', `03f9940'): der Abruf
+  schickte ALLE sechs Verse neu in die Analyse, nicht nur XI.17.
+  (1) Seit 18.11. steht DharmaMitra in keinem Segment mehr, zählte aber
+  als „Referenz, die kein Segment zeigt“ → JEDE analysierte Datei war
+  im Zustand `align'.  (2) Bei einem Paar machte `align' der
+  tibetischen Datei das Paar `full' → Neuanalyse beider Dateien bei
+  jedem C-c u G (so sind wohl auch Carstens sechs Verse am Morgen neu
+  analysiert worden).  Behoben: eine maschinelle Übersetzung zählt für
+  `align' nicht; nur eine tibetische Datei OHNE Analyse macht das Paar
+  `full'.  Abgefangen: drei Abrufe (XI.18–20) vor dem Senden aus der
+  Warteschlange genommen, zwei Antworten (XI.15, XI.16) verworfen — die
+  Analysen vom Morgen blieben; Kosten: zwei Sanskrit-Abrufe umsonst.
+  LEHRE: vor einem Abruf im Auftrag die Zustände vorab auswerten
+  (`bcat-sentence--pair-state', `bcat-commentary-incomplete-p') und mit
+  dem Freigegebenen vergleichen — die Meldung „N abgerufen“ kommt erst
+  danach.  Außerdem: die DharmaMitra-Staffelung
+  (`tibetan-sentence-claude--dm-schedule-count', stand bei 73 → 7 min
+  Verzögerung) wird nicht zurückgesetzt; ein Vers-Abruf kann lange nach
+  den Kommentaren kommen und sein Dossier wird dann zweimal exportiert
+  (XI.17) — offen.
 - OFFEN: „Worum es geht“ der Kommentardokumente steht weiter in ihrem
   Teil (nicht im eigenen PDF); auf der Reading-Seite zeigt 02 Bhāṣya
   den Text wie bisher (nicht Satz für Satz mit Übersetzung wie der
   Kommentator); Lemma-Zeilen des Bhāṣya in den Versdateien gibt es
   nicht; das Sanskrit-Bhāṣya wird nicht eigens analysiert; MSA IX
   bekommt das Bhāṣya erst, wenn Carsten die Kopfzeile dort will.
-  ERT 3012 / 3010 erwartet / 0 unerwartet / 2 übersprungen, BDD 251.
+  ERT 3014 / 3012 erwartet / 0 unerwartet / 2 übersprungen, BDD 251.
 
 #### Offen
 
