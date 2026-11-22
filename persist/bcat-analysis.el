@@ -509,7 +509,11 @@ key, is a value without key and gets \"text\" (30.10., MSA IX.60: a
 DharmaMitra reference {\"name\": \"DharmaMitra\", \"*The first …*\"} —
 the only bare text in our answers is a reference's); a backslash
 before a character JSON does not escape is dropped (29.10.: a backslash
-before the apostrophe of the genitive particle in a structure line).
+before the apostrophe of the genitive particle in a structure line); a
+closer that does not match the open bracket but the one below it gets
+the missing closer set before it (22.11., MSA XI.17: an entry of a list
+of compounds without its brace — {\"word\": …, \"analysis\": \"…\" ],
+\"structure\": … — cost the whole answer of the verse).
 Valid JSON comes back unchanged."
   (with-temp-buffer
     (insert text)
@@ -525,7 +529,15 @@ Valid JSON comes back unchanged."
                          key (and expect-key (eq (car stack) ?{))
                          start (point-marker)))
               ((or ?{ ?\[) (push c stack) (setq expect-key (eq c ?{)))
-              ((or ?} ?\]) (pop stack) (setq expect-key nil))
+              ((or ?} ?\])
+               ;; 22.11., MSA XI.17: a closer for the bracket BELOW the
+               ;; open one — the open one's own closer is missing
+               ;; ({"word": …, "analysis": "…" ], …); set it first.
+               (let ((want (if (eq c ?}) ?{ ?\[)))
+                 (when (and (cdr stack) (not (eq (car stack) want)) (eq (cadr stack) want))
+                   (insert (if (eq (car stack) ?{) "}" "]"))
+                   (pop stack)))
+               (pop stack) (setq expect-key nil))
               (?, (setq expect-key (eq (car stack) ?{)))
               (?: (setq expect-key nil)))
             (forward-char 1))
@@ -536,7 +548,23 @@ Valid JSON comes back unchanged."
               ;; of the genitive 'i): drop the backslash, keep the char.
               (delete-char 1)))
            ((eq c ?\")
-            (let* ((after (lambda (as-key)
+            (let* (;; After the closer at point (of the bracket BELOW the
+                   ;; open one — the open one's own is missing): does what
+                   ;; follows go on in OUTER, the bracket around both?  A
+                   ;; bracket in running text does not („[…, \"come to
+                   ;; realize\"] → main clause“, bDen 16).
+                   (beyond (lambda (outer)
+                             (forward-char 1)
+                             (skip-chars-forward " \t\n\r")
+                             (cond ((eobp) (null outer))
+                                   ((memq (char-after) '(?} ?\]))
+                                    (eq (char-after) (if (eq outer ?{) ?} ?\])))
+                                   ((eq (char-after) ?,)
+                                    (forward-char 1)
+                                    (looking-at (if (eq outer ?{)
+                                                    "[ \t\n\r]*\"[^\"\n]*\"[ \t\n\r]*:"
+                                                  value))))))
+                   (after (lambda (as-key)
                             (forward-char 1)
                             (skip-chars-forward " \t\n\r")
                             (cond ((eobp))
@@ -544,8 +572,16 @@ Valid JSON comes back unchanged."
                                   ((eq (char-after) ?,)
                                    (forward-char 1)
                                    (looking-at (if (eq (car stack) ?{) "[ \t\n\r]*\"" value)))
-                                  ((eq (car stack) ?{) (eq (char-after) ?}))
-                                  ((eq (car stack) ?\[) (eq (char-after) ?\])))))
+                                  ((eq (car stack) ?{)
+                                   (or (eq (char-after) ?})
+                                       ;; the object's brace missing before
+                                       ;; the `]' of the array it stands in
+                                       (and (eq (cadr stack) ?\[) (eq (char-after) ?\])
+                                            (funcall beyond (nth 2 stack)))))
+                                  ((eq (car stack) ?\[)
+                                   (or (eq (char-after) ?\])
+                                       (and (eq (cadr stack) ?{) (eq (char-after) ?})
+                                            (funcall beyond (nth 2 stack))))))))
                    (close (save-excursion (funcall after key)))
                    ;; A value where a key belongs: as if it were one.
                    (orphan (and key (not close)

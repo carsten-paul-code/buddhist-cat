@@ -888,6 +888,34 @@ the token limit; a complete but broken one keeps its JSON error."
   (should (string-match-p "JSON-Fehler"
                           (cdr (bcat-analysis-read "{\"segments\": [1 2], \"grammar\": \"g\"}")))))
 
+(ert-deftest bcat-analysis-parse-repairs-missing-bracket ()
+  "22.11., MSA XI.17 (kept answer of sent-036, 22 KB, complete): in the
+list of compounds the last entry was not closed —
+{\"word\": \"sat-kalpasya\", \"analysis\": \"…\" ], \"structure\": … —
+and the whole answer was lost („nicht lesbar“; the verse had no analysis
+and no PDF).  A `]' that comes while an object is open inside the array
+closes that object first; likewise a `}' while an array is open inside
+the object.  Valid JSON is left alone."
+  (let* ((answer (concat "{\"segments\": [{\"num\": 160, \"compounds\": [\n"
+                         "        {\"word\": \"āśraya-parāvṛttau\", \"analysis\": \"ṣaṣṭhī tatpuruṣa\"},\n"
+                         "        {\"word\": \"sat-kalpasya\", \"analysis\": \"karmadhāraya (abhūtaparikalpa)\"\n"
+                         "      ],\n      \"structure\": \"/tathā/ [adv.]\"}], \"grammar\": \"g\"}"))
+         (parsed (bcat-analysis-parse answer))
+         (seg (car (alist-get 'segments parsed))))
+    (should parsed)
+    (should (equal '("āśraya-parāvṛttau" "sat-kalpasya")
+                   (mapcar (lambda (c) (alist-get 'word c)) (alist-get 'compounds seg))))
+    (should (equal "karmadhāraya (abhūtaparikalpa)" (alist-get 'analysis (cadr (alist-get 'compounds seg)))))
+    (should (equal "/tathā/ [adv.]" (alist-get 'structure seg)))
+    (should (equal "g" (alist-get 'grammar parsed))))
+  ;; the other way round: an array left open inside an object
+  (let ((parsed (bcat-analysis-parse "{\"segments\": [{\"num\": 1, \"words\": [\"a\", \"b\"}], \"grammar\": \"g\"}")))
+    (should (equal '("a" "b") (alist-get 'words (car (alist-get 'segments parsed)))))
+    (should (equal "g" (alist-get 'grammar parsed))))
+  ;; a bracket inside a string is text
+  (let ((golden "{\"segments\": [{\"num\": 1, \"structure\": \"x ] y } z\"}]}"))
+    (should (equal golden (bcat-analysis--repair-json golden)))))
+
 (ert-deftest bcat-analysis-parse-repairs-copied-text ()
   "The prompt asks for the reference translations verbatim inside JSON
 strings — Lindtner's verse 9 with its note (a paragraph break; Eimer
