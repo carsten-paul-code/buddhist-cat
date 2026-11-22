@@ -222,6 +222,47 @@ sentence a jump target; IX.16 the Section on the pair alone."
       (should (string-match-p "^\\*IX\\.15–16 sgyu ma'i mtshan nyid\\*$" text))
       (should (bcat-dossier-test--links-resolve text)))))
 
+(ert-deftest bcat-dossier-pdf-tibetan-analysis ()
+  "Carsten 22.11. (MSA XI on the reMarkable: „Das Tibetische … fehlen
+mir da“ — asked what of it: the full analysis of the Tibetan verse).
+The dossier is led by the Sanskrit file; of the Tibetan verse it had
+the tables (under Segments) and the differences, not what the Tibetan
+file itself says: the note on each segment, its concepts, its
+discussion.  Now the PDF has the part „Tibetan“ after the Sanskrit
+Grammar — the Tibetan file's Grammar, Concepts and Discussion one level
+down, their jump targets apart („tibetan-…“) —, and the table of a
+Tibetan segment jumps to its note.  Reading and tables are not there
+twice."
+  (bcat-commentary-test--with-msa
+    (bcat-sentence-test--with-stubs
+        (lambda (kind)
+          (if (equal kind "bcat-tibetan")
+              (replace-regexp-in-string
+               (regexp-quote "\"translation\": \"Just as, when\"")
+               "\"translation\": \"Just as, when\", \"structure\": \"/ji ltar/ [comparative ADV] → protasis\""
+               bcat-commentary-test--verse-answer-bo t t)
+            (bcat-commentary-test--answers kind)))
+      (bcat-sentence-test--fetch-n src 36))
+    (let* ((text (plist-get (bcat-dossier-pdf-text (tibetan-sentence--filepath 36 folder src)) :text))
+           (parts (bcat-dossier-test--parts text))
+           (at (cl-position "Tibetan" parts :test #'equal)))
+      (should at)
+      (should (equal "Grammar" (nth (1- at) parts)))
+      (should (string-match-p
+               (regexp-quote (concat "* Tibetan\n:PROPERTIES:\n:CUSTOM_ID: tibetan\n:END:\n"
+                                     "** Grammar\n:PROPERTIES:\n:CUSTOM_ID: tibetan-grammar\n:END:\n"))
+               text))
+      (should (string-match-p "^\\*\\*\\* ⟦139⟧\n:PROPERTIES:\n:CUSTOM_ID: tibetan-grammar-139\n:END:$" text))
+      (should (string-match-p (regexp-quote "*Structure:* /ji ltar/ [comparative ADV] → protasis") text))
+      ;; from the table of the segment to its note
+      (should (string-match-p (regexp-quote "⟦139⟧ · [[skt-92][Skt. 92]] · [[#tibetan-grammar-139][Grammar]]") text))
+      ;; a segment without a note: no jump into nothing
+      (should-not (string-match-p (regexp-quote "[[#tibetan-grammar-141]") text))
+      ;; nothing twice
+      (should-not (string-match-p ":CUSTOM_ID: tibetan-\\(?:reading\\|segments\\|commentary\\)$" text))
+      (should (= 1 (cl-count "Reading" parts :test #'equal)))
+      (should (bcat-dossier-test--links-resolve text)))))
+
 (ert-deftest bcat-dossier-folio-of-a-manuscript ()
   "22.11., Phywa pa: his folios are given as „Ms 82b4“ (a manuscript,
 counted after the scan), not as one word like „D105b4“ — the reading

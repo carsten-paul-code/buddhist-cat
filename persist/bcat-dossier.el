@@ -447,6 +447,23 @@ a line with the title of its Section."
                            (bcat-dossier--split-parts text) ""))))
            docs "")))
 
+(defun bcat-dossier--tibetan-jumps (segments tibetan)
+  "SEGMENTS, the part of the verse's view with the tables — those of the
+Tibetan segments under „⟦N⟧ · Skt. M“ —, each such line with a jump to
+the note on that segment in TIBETAN, the dossier's part of the Tibetan
+file (`tibetan-grammar-N'), when it has one.  Without TIBETAN as it
+is."
+  (if (not tibetan)
+      segments
+    (replace-regexp-in-string
+     "^\\(<<tib-\\([0-9]+\\)>>⟦[0-9]+⟧ · \\[\\[skt-[0-9]+\\]\\[[^]\n]*\\]\\]\\)[ \t]*$"
+     (lambda (m)
+       (let ((n (match-string 2 m)) (line (match-string 1 m)))
+         (if (string-match-p (format "^:CUSTOM_ID: tibetan-grammar-%s$" n) tibetan)
+             (format "%s · [[#tibetan-grammar-%s][Grammar]]" line n)
+           line)))
+     segments t t)))
+
 (defun bcat-dossier--overview-text (lead bhasya)
   "The document „Worum es geht“ of a dossier from those of its sentence
 files (`bcat-export-views', :overview — org text or nil): LEAD, the
@@ -476,7 +493,10 @@ document the first verse of its #+CAT_VERSE, else FILE."
   "The PDFs of the dossier FILE belongs to (Carsten 5.11.): (:lead LEAD
 :text ORG :overview ORG-or-nil).  :text — the reading page (the layers
 as in the dossier, each with its jump into the analysis), then the
-verse's Segments and Grammar, the bhāṣya sentence's analysis (AS), the
+verse's Segments and Grammar, the Tibetan verse file's own analysis
+\(22.11.: the part „Tibetan“ — its Grammar, Concepts and Discussion —,
+the tables of the Tibetan segments jumping to their notes there), the
+bhāṣya sentence's analysis (AS), the
 commentary's sentences, the verse's Concepts, Discussion, Further
 Reading, Notes; the dossier's notes at the end.  :overview — „Worum es
 geht“ as a document of its own, as a sentence file's (Carsten 19.11.:
@@ -509,6 +529,16 @@ its own view (`bcat-export-views')."
              (bh (and (plist-get bh-views :view)
                       (bcat-dossier--nest-view (plist-get bh-views :view) "Bhāṣya" "bhasya"
                                                '("segments" "grammar" "concepts" "discussion"))))
+             ;; 22.11. (Carsten: „Das Tibetische … fehlen mir da“ — the
+             ;; full analysis of the Tibetan verse): what the Tibetan
+             ;; file of the pair says itself, as a part of its own
+             (partner (bcat-sentence-partner-file (plist-get files :sent-num) source))
+             (tib-view (and partner (file-exists-p partner)
+                            (plist-get (ignore-errors (bcat-export-views partner)) :view)))
+             (tib (and tib-view
+                       (bcat-dossier--nest-view tib-view "Tibetan" "tibetan"
+                                                '("grammar" "concepts" "discussion"))))
+             (tib (and tib (string-match-p "^\\*\\* " tib) tib))
              (docs (alist-get 'commentary-docs ctx))
              (notes (bcat-dossier--filled (bcat-dossier--keep-notes (alist-get 'path ctx)))))
         (list :lead lead
@@ -518,7 +548,9 @@ its own view (`bcat-export-views')."
                      (format "#+TITLE: %s — Lesedossier\n#+OPTIONS: toc:nil num:nil title:nil author:nil date:nil\n\n"
                              (alist-get 'label ctx))
                      "* Reading\n:PROPERTIES:\n:CUSTOM_ID: reading\n:END:\n" reading
-                     (funcall part "segments") (funcall part "grammar")
+                     (bcat-dossier--tibetan-jumps (funcall part "segments") tib)
+                     (funcall part "grammar")
+                     (or tib "")
                      (or bh "")
                      (if docs (bcat-dossier--commentary-part docs (alist-get 'commentary-author ctx)) "")
                      (funcall part "concepts") (funcall part "discussion")
