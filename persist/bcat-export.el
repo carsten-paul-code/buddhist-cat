@@ -412,11 +412,17 @@ first, the bracket with the last."
 
 (defun bcat-export--verse-lines (latex)
   "LATEX with each glossed verse line made of \\mbox units (see
-`bcat-export--verse-units')."
+`bcat-export--verse-units') — not a line in the original script: what
+stands in brackets there is no gloss."
   (mapconcat
    (lambda (line)
      (if (or (not (string-match-p "]" line))
-             (string-prefix-p "\\" line))
+             (string-prefix-p "\\" line)
+             ;; 22.11.: a bracket in a line of the original script is an
+             ;; editor's („यन्त्र [मन्त्र]“, „[?]“), no gloss — the line
+             ;; stays whole and gets its font (`bcat-export--verse-scripts')
+             (bcat-export--script-of
+              (replace-regexp-in-string "\\\\\\\\[ \t]*\\'" "" line)))
          line
        (let* ((end (if (string-match "\\\\\\\\[ \t]*\\'" line)
                        (match-beginning 0)

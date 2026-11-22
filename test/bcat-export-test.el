@@ -542,6 +542,31 @@ Wylie at the top of the next) — `\\\\*' after the script line."
   (let ((roman "\\begin{verse}\nbrjod du/ /\\\\\n\\end{verse}\n"))
     (should (equal roman (bcat-export--verse-scripts roman)))))
 
+(ert-deftest bcat-export-verse-script-line-with-brackets ()
+  "22.11., MSA XI.15 (bhāṣya: „yantra [mantra]parigṛhītaṃ“, Devanāgarī
+„यन्त्र [मन्त्र]“) and XI.20 („na [?]bhāvaḥ“), Phywa pa („རྟེན་ནི་[?]རྡོ་“): a
+line in the original script that has an editor's bracket came out small
+and without its conjuncts — it was taken for a glossed line (a „]“),
+made of \\mbox units, and a line that begins with a command is not set
+in the script's font.  A bracket in a line of the original script is no
+gloss: the line stays whole and gets its font, as every other."
+  (should (equal (concat "\\begin{verse}\n"
+                         ;; (the IAST line has a bracket too: ragged right)
+                         "\\rightskip=0pt plus 1fil\\relax%\n"
+                         "{\\bcatdeva\\large यथा माया यन्त्र [मन्त्र]परिगृहीतं ।}\\\\*\n"
+                         "\\mbox{yathā māyā yantra \\bcatg{[mantra]}}parigṛhītaṃ~/\\\\[1ex]\n"
+                         "{\\bcattib\\large རྟེན་ནི་[?]རྡོ་ལ་སོགས་པའོ། །}\\\\*\n"
+                         "rten ni rdo la sogs pa'o/ /\\\\[1ex]\n"
+                         "\\end{verse}\n")
+                 (bcat-export--verse-filter
+                  (concat "\\begin{verse}\n"
+                          "यथा माया यन्त्र [मन्त्र]परिगृहीतं ।\\\\\n"
+                          "yathā māyā yantra [mantra]parigṛhītaṃ /\\\\\n"
+                          "རྟེན་ནི་[?]རྡོ་ལ་སོགས་པའོ། །\\\\\n"
+                          "rten ni rdo la sogs pa'o/ /\\\\\n"
+                          "\\end{verse}\n")
+                  'latex nil))))
+
 (ert-deftest bcat-export-drops-word-analysis ()
   "A Sanskrit sentence file keeps its `** Word Analysis' (surface →
 lemma, read by the zettel highlighting, the discussion and the
