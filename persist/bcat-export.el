@@ -32,6 +32,8 @@
 (declare-function bcat-commentary-doc-text "bcat-commentary" (doc))
 (declare-function bcat-survey-pdf-text "bcat-survey" (file))
 (declare-function bcat-commentary-sources "bcat-commentary" (source-file))
+(declare-function bcat-commentary-sections "bcat-commentary" (label lead commentary-source))
+(declare-function tibetan-discussion-paper--doc-name "tibetan-discussion-paper" (name))
 (declare-function bcat-commentary-documents "bcat-commentary" (sent-num source-file))
 (declare-function bcat-commentary--l1-sections "bcat-commentary" (text))
 (declare-function tibetan-analysis-make-short-name "tibetan-analysis-persist" (source-file))
@@ -148,6 +150,34 @@ anything else but letters, digits and dots a hyphen; nil without SOURCE."
                             (expand-file-name own (file-name-directory source))
                           (expand-file-name "handouts" (bcat-export--text-folder source)))))))
 
+(defun bcat-export--verse-folder (flat verse)
+  "The folder on the reMarkable of the documents of VERSE („MSA
+XI.15“): its own, below FLAT, the folder of its source
+\(`bcat-export--device-folder') — Carsten 22.11., with 32 documents for
+six verses in one folder: „Und jetzt wären wahrscheinlich doch
+Unterordner je Vers auf dem Remarkable besser.“  The name as the device
+takes it (`tibetan-discussion-paper--doc-name').  FLAT itself without
+VERSE; nil without FLAT."
+  (require 'tibetan-discussion-paper)
+  (if (and flat verse)
+      (concat flat "/" (tibetan-discussion-paper--doc-name verse))
+    flat))
+
+(defun bcat-export--documents-p (sent-num source)
+  "Non-nil when the verse SENT-NUM of SOURCE has documents of their own
+beside its sentence file: a commentary named for SOURCE — the bhāṣya,
+a commentator (`bcat-commentary-sources') — has a Section that covers
+it.  Only such a verse gets a folder of its own on the device (Carsten
+22.11.: „Nur mit Kommentar-PDFs“); every other source stays flat."
+  (require 'bcat-commentary)
+  (let* ((sources (and source (ignore-errors (bcat-commentary-sources source))))
+         (sentence (and sources (bcat-sentence--sentence sent-num source)))
+         (label (plist-get sentence :section-label)))
+    (and label (plist-get sentence :verse)
+         (cl-some (lambda (commentary)
+                    (ignore-errors (bcat-commentary-sections label source commentary)))
+                  sources))))
+
 (defun bcat-export--commentary-info (file)
   "`bcat-export-info' for the commentary document FILE: the folder of
 the commentary source, the work of the verses it comments on (beside
@@ -169,8 +199,10 @@ Phywa pa“); on disk beside the verses' PDFs too, under the same name
     (list :source src
           :folder (and src (file-name-nondirectory
                             (directory-file-name (file-name-directory src))))
-          ;; 19.11.: on the device beside the verses, in their folder
-          :device-folder (bcat-export--device-folder (or lead src))
+          ;; 19.11.: on the device beside the verses, in their folder;
+          ;; 22.11.: in the folder of the first verse it covers
+          :device-folder (bcat-export--verse-folder (bcat-export--device-folder (or lead src)) (car verses))
+          :device-flat (bcat-export--device-folder (or lead src))
           :work (or (bcat-export--title lead) (and lead (file-name-base lead)) (file-name-base file))
           :sent-num nil
           :verse (and verses (string-join verses ", "))
@@ -190,11 +222,14 @@ Phywa pa“); on disk beside the verses' PDFs too, under the same name
 
 (defun bcat-export-info (file)
   "What the PDF of the sentence FILE is labelled with: (:source :folder
-:device-folder :work :sent-num :verse :label :handout) — folder and work
-title from the source \(its #+TITLE before „ — “), the verse from its
-:VERSE:; LABEL the name on the reMarkable (the verse, else „Satz N“) in
-DEVICE-FOLDER (`bcat-export--device-folder'), HANDOUT the copy in the
-source's handouts/ (`bcat-export--handout').  A commentary
+:device-folder :device-flat :work :sent-num :verse :label :handout) —
+folder and work title from the source \(its #+TITLE before „ — “), the
+verse from its :VERSE:; LABEL the name on the reMarkable (the verse,
+else „Satz N“) in DEVICE-FOLDER (`bcat-export--device-folder'; 22.11.:
+for a verse with commentary documents its own folder in it,
+`bcat-export--verse-folder' — DEVICE-FLAT is the source's, where an
+earlier version may lie), HANDOUT the copy in the source's handouts/
+\(`bcat-export--handout').  A commentary
 document: `bcat-export--commentary-info'."
   (if (equal (bcat-sentence-file-p file) "commentary")
       (bcat-export--commentary-info file)
@@ -218,8 +253,14 @@ document: `bcat-export--commentary-info'."
     (list :source src
           :folder (and src (file-name-nondirectory
                             (directory-file-name (file-name-directory src))))
-          ;; 19.11.: the folder on the device, as in the Finder
-          :device-folder (bcat-export--device-folder src)
+          ;; 19.11.: the folder on the device, as in the Finder; 22.11.:
+          ;; a verse with commentary documents of its own has a folder
+          ;; of its own in it
+          :device-folder (let ((flat (bcat-export--device-folder src)))
+                           (if (and verse (bcat-export--documents-p n src))
+                               (bcat-export--verse-folder flat verse)
+                             flat))
+          :device-flat (bcat-export--device-folder src)
           :work (or title (and src (file-name-base src)) (file-name-base file))
           :sent-num n
           :verse verse
@@ -1437,8 +1478,10 @@ names the folder, as before."
 
 (defconst bcat-export--device-index ".bcat-remarkable.eld"
   "The file in a folder of PDFs (handouts/) that remembers what C-c u H
-has put on the reMarkable: ((PDF-NAME MD5 STAMP) …) — MD5 of the text
-the PDF was set from, STAMP when it was sent („2026-11-19 0632“).  A
+has put on the reMarkable: ((PDF-NAME MD5 STAMP [FOLDER]) …) — MD5 of
+the text the PDF was set from, STAMP when it was sent („2026-11-19
+0632“), FOLDER where on the device (since 22.11.; without it: the
+folder of the source).  A
 PDF set from the same text is not sent again
 \(`bcat-export--on-device-p'); the STAMP dates the version there when a
 new one takes its place (`bcat-export--device-stamp').")
@@ -1468,11 +1511,22 @@ reMarkable („2026-11-19 0632“), or nil — its name in the archive when a
 new version takes its place."
   (nth 2 (bcat-export--device-entry pdf)))
 
-(defun bcat-export--note-on-device (pdf hash)
+(defun bcat-export--device-place (pdf flat)
+  "The folder on the reMarkable in which C-c u H put PDF: the one its
+index entry names, else — an entry from before 22.11., when everything
+of a source lay in one folder — FLAT.  nil when PDF was never put
+there."
+  (let ((entry (bcat-export--device-entry pdf)))
+    (and entry (or (nth 3 entry) flat))))
+
+(defun bcat-export--note-on-device (pdf hash &optional folder)
   "Remember that PDF, set from the text with HASH, is on the reMarkable
-since now.  Never signals: remembering is no reason to spoil an export."
+since now — in FOLDER, when given (22.11.: a verse's own folder; the
+entry's fourth element, `bcat-export--device-place').  Never signals:
+remembering is no reason to spoil an export."
   (condition-case err
-      (let ((entries (cons (list (file-name-nondirectory pdf) hash (format-time-string "%Y-%m-%d %H%M"))
+      (let ((entries (cons (append (list (file-name-nondirectory pdf) hash (format-time-string "%Y-%m-%d %H%M"))
+                                   (and folder (list folder)))
                            (cl-remove (file-name-nondirectory pdf) (bcat-export--device-entries pdf)
                                       :key #'car :test #'equal)))
             (coding-system-for-write 'utf-8-unix)
@@ -1522,30 +1576,38 @@ TEXT or TARGET."
                   (cons out hash)))
             (when (file-exists-p src) (delete-file src))))))))
 
-(defun bcat-export--upload-row (status-file title folder done row)
+(defun bcat-export--upload-row (status-file title folder done row &optional flat)
   "Put the documents ROW on the reMarkable one after the other — rmapi
 one at a time: each (PDF LABEL TAG HASH), LABEL its name in FOLDER (the
-path as in the Finder, `bcat-export--device-folder'; nil: the folder of
-TITLE), HASH noted when it is there (`bcat-export--note-on-device').
-The document that is there under that name goes into the archive with
-the date it was sent (`bcat-export--device-stamp').  DONE is the status
-of STATUS-FILE so far; the PDF of the file (TAG nil) writes „reMarkable
+path as in the Finder, `bcat-export--device-folder', or a verse's own
+folder in it; nil: the folder of TITLE), HASH noted when it is there
+\(`bcat-export--note-on-device', with FOLDER).  The document that is
+there under that name goes into the archive with the date it was sent
+\(`bcat-export--device-stamp') — also when it lies in another folder
+than FOLDER (`bcat-export--device-place', by default FLAT, the folder
+of the source: 22.11., the verses' own folders): the upload is told
+where, and moves it out of the way there.  DONE is the status of
+STATUS-FILE so far; the PDF of the file (TAG nil) writes „reMarkable
 ✓ …“, another „ · TAG ✓“.  A failure ends the row: after a refusal
 nothing follows — what did not get there goes with the next export."
   (when row
     (pcase-let ((`(,pdf ,label ,tag ,hash) (car row)))
-      (tibetan-discussion-paper--upload
-       pdf title label
-       (lambda (ok what)
-         (let ((done (cond ((and tag ok) (format "%s · %s ✓" done tag))
-                           (tag (format "%s · %s: Fehler — %s" done tag what))
-                           (ok (concat "reMarkable ✓ " what))
-                           (t (concat "reMarkable: Fehler — " what)))))
-           (bcat-status-step status-file :upload done)
-           (when ok
-             (bcat-export--note-on-device pdf hash)
-             (bcat-export--upload-row status-file title folder done (cdr row)))))
-       folder (bcat-export--device-stamp pdf)))))
+      (let* ((was (bcat-export--device-place pdf flat))
+             (from (and was folder (not (equal was folder)) was)))
+        (apply #'tibetan-discussion-paper--upload
+               pdf title label
+               (lambda (ok what)
+                 (let ((done (cond ((and tag ok) (format "%s · %s ✓" done tag))
+                                   (tag (format "%s · %s: Fehler — %s" done tag what))
+                                   (ok (concat "reMarkable ✓ " what))
+                                   (t (concat "reMarkable: Fehler — " what)))))
+                   (bcat-status-step status-file :upload done)
+                   (when ok
+                     (bcat-export--note-on-device pdf hash folder)
+                     (bcat-export--upload-row status-file title folder done (cdr row) flat))))
+               folder (bcat-export--device-stamp pdf)
+               ;; only when there is one: the upload of before takes six
+               (and from (list from)))))))
 
 (defun bcat-export-file (file)
   "C-c u H for the sentence FILE: PDF with running head, moved into the
@@ -1666,7 +1728,7 @@ the PDF path (the first's)."
           (require 'tibetan-discussion-paper)
           (bcat-status-step status-file :upload (if first "reMarkable …" "reMarkable: unverändert"))
           (bcat-export--upload-row status-file (plist-get info :work) (plist-get info :device-folder)
-                                   "reMarkable: unverändert" row))
+                                   "reMarkable: unverändert" row (plist-get info :device-flat)))
       (message "PDF: %s" pdf))
     pdf))
 

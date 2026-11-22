@@ -1529,6 +1529,82 @@ unchanged is not set again (C-u C-c u H sets and sends everything)."
         (funcall press '(4))
         (should (equal '("msa-IX.16.pdf" "msa-IX.16-17-Sthiramati.pdf") (reverse (mapcar #'car uploaded))))))))
 
+(ert-deftest bcat-commentary-device-folder-per-verse ()
+  "Carsten 22.11., with 32 documents for six verses in one folder: „Und
+jetzt wären wahrscheinlich doch Unterordner je Vers auf dem Remarkable
+besser.“  A verse that has documents of their own for its bhāṣya or
+commentators gets a folder of its own below that of its source, named
+as the verse; its dossier, „Worum es geht“ and the commentary documents
+go there.  A document that covers several verses (Phywa pa's pair, his
+introduction to a group) lies in the folder of the FIRST verse it
+covers — no copies: notes on the device would be divided.  A source
+without commentaries stays flat."
+  (let ((bcat-export-semester-regexp "\\`bcat-msa-"))
+    (bcat-commentary-test--with-phywa
+      (let ((base (concat (file-name-nondirectory (directory-file-name dir)) "/Sanskrit"))
+            (folder-of (lambda (file) (plist-get (bcat-export-info file) :device-folder))))
+        ;; the verses
+        (should (equal (concat base "/MSA IX.15") (funcall folder-of (bcat-sentence-ensure-file 34 src))))
+        (should (equal (concat base "/MSA IX.16") (funcall folder-of (bcat-sentence-ensure-file 36 src))))
+        ;; the flat folder of the source: where an earlier version may lie
+        (should (equal base (plist-get (bcat-export-info (bcat-sentence-ensure-file 36 src)) :device-flat)))
+        ;; Phywa pa: the pair and the introduction with the first verse
+        (should (equal (concat base "/MSA IX.15")
+                       (funcall folder-of (bcat-commentary-create "Section IX.15–16 sgyu ma'i mtshan nyid" psrc))))
+        (should (equal (concat base "/MSA IX.15")
+                       (funcall folder-of (bcat-commentary-create "Section IX.15–17 Einleitung" psrc))))
+        (should (equal (concat base "/MSA IX.17")
+                       (funcall folder-of (bcat-commentary-create "Section IX.17 dpe dang sbyar ba" psrc))))
+        (should (equal base (plist-get (bcat-export-info (bcat-commentary-create "Section IX.17 dpe dang sbyar ba" psrc))
+                                       :device-flat))))))
+  ;; no commentaries: as before
+  (let ((bcat-export-semester-regexp "\\`bcat-"))
+    (bcat-sentence-test--with-source
+      (bcat-sentence-test--create src)
+      (let ((info (bcat-export-info (tibetan-sentence--filepath 9 folder src))))
+        (should (plist-get info :device-folder))
+        (should (equal (plist-get info :device-folder) (plist-get info :device-flat)))))))
+
+(ert-deftest bcat-commentary-upload-into-the-verse-folder ()
+  "The upload of a verse with commentaries goes into the verse's folder
+\(22.11.) — and what C-c u H put on the device before, flat in the
+folder of the source, is moved out of the way: the upload is told that
+folder (FROM), and the device index remembers where each PDF lies
+since.  A PDF put into the verse's folder before needs no FROM."
+  (let ((bcat-export-semester-regexp "\\`bcat-msa-"))
+    (bcat-commentary-test--with-msa
+      (bcat-sentence-test--with-stubs #'bcat-commentary-test--answers
+        (bcat-sentence-test--fetch-n src 36))
+      (let* ((file (tibetan-sentence--filepath 36 folder src))
+             (base (concat (file-name-nondirectory (directory-file-name dir)) "/Sanskrit"))
+             (index (expand-file-name "Sanskrit/handouts/.bcat-remarkable.eld" dir))
+             (calls '()))
+        (cl-letf (((symbol-function 'bcat-export-pdf)
+                   (lambda (f &rest _)
+                     (let ((pdf (concat (file-name-sans-extension f) ".pdf")))
+                       (with-temp-file pdf (insert "PDF")) pdf)))
+                  ((symbol-function 'tibetan-discussion-paper--upload)
+                   (lambda (pdf _title label &optional done folder stamp from)
+                     (push (list (file-name-nondirectory pdf) label folder stamp from) calls)
+                     (when done (funcall done t label)) t)))
+          (let ((bcat-export-upload t))
+            ;; as C-c u H left it until 22.11.: on the device, flat
+            (make-directory (file-name-directory index) t)
+            (with-temp-file index
+              (insert "((\"msa-IX.16.pdf\" \"0123\" \"2026-11-14 0910\"))\n"))
+            (bcat-export-file file)
+            (should (equal (list (list "msa-IX.16.pdf" "MSA IX.16" (concat base "/MSA IX.16") "2026-11-14 0910" base))
+                           calls))
+            ;; the index knows the folder now
+            (should (equal (concat base "/MSA IX.16")
+                           (nth 3 (bcat-export--device-entry (expand-file-name "Sanskrit/handouts/msa-IX.16.pdf" dir)))))
+            ;; again, everything asked for: from its own folder, no FROM
+            (setq calls '())
+            (let ((bcat-export-force-upload t))
+              (bcat-export-file file))
+            (should (equal (concat base "/MSA IX.16") (nth 2 (car calls))))
+            (should-not (nth 4 (car calls)))))))))
+
 (ert-deftest bcat-commentary-verse-export-names ()
   "The verse's PDF: „MSA IX.16“ on the reMarkable, msa-IX.16.pdf in the
 handouts of the Sanskrit source (Carsten 30.10.: „...IX.60.pdf“)."

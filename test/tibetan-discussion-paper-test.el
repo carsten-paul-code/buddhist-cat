@@ -302,6 +302,50 @@ reported; without rmapi a message, no error, nil."
         (should-not (tibetan-discussion-paper--upload pdf "Rgyan" "Satz 1")))
       (delete-file pdf))))
 
+(ert-deftest tibetan-discussion-paper-upload-from-another-folder ()
+  "22.11. (Carsten: „Und jetzt wären wahrscheinlich doch Unterordner je
+Vers auf dem Remarkable besser“): a document whose place on the device
+changes — from the folder of the chapter into that of its verse — must
+not stay behind in the old folder beside the new one.  With FROM, the
+folder its earlier version lies in, the session first moves that one
+into the archive of FROM under its date, then puts the new one into its
+folder.  Without FROM, or with the same folder, as before."
+  (let ((sessions '()) (reply "uploading: [x]...\nOK\n")
+        (pdf (make-temp-file "paper-" nil ".pdf")))
+    (unwind-protect
+        (cl-letf (((symbol-function 'tibetan-discussion-paper--rmapi-session)
+                   (lambda (commands cb)
+                     (push (mapcar (lambda (c)
+                                     (if (equal (car c) "put")
+                                         (list "put" (file-name-nondirectory (cadr c)) (caddr c))
+                                       c))
+                                   commands)
+                           sessions)
+                     (funcall cb 0 reply) t))
+                  ((symbol-function 'executable-find)
+                   (lambda (name &rest _) (and (equal name "rmapi") "/usr/bin/rmapi"))))
+          (let ((tibetan-discussion-paper-remarkable-folder "Reading"))
+            (should (tibetan-discussion-paper--upload pdf "MSA" "MSA IX.60" nil
+                                                      "WS26-27/MSA/Sanskrit-9/MSA IX.60" "2026-11-14 0910"
+                                                      "WS26-27/MSA/Sanskrit-9"))
+            (should (equal '((("mkdir" "/Reading/WS26-27/MSA/Sanskrit-9/Archiv")
+                              ("mv" "/Reading/WS26-27/MSA/Sanskrit-9/MSA IX.60"
+                               "/Reading/WS26-27/MSA/Sanskrit-9/Archiv/MSA IX.60 2026-11-14 0910")
+                              ("mkdir" "/Reading")
+                              ("mkdir" "/Reading/WS26-27")
+                              ("mkdir" "/Reading/WS26-27/MSA")
+                              ("mkdir" "/Reading/WS26-27/MSA/Sanskrit-9")
+                              ("mkdir" "/Reading/WS26-27/MSA/Sanskrit-9/MSA IX.60")
+                              ("put" "MSA IX.60.pdf" "/Reading/WS26-27/MSA/Sanskrit-9/MSA IX.60")))
+                           sessions))
+            ;; the same folder: nothing to move out first
+            (setq sessions '())
+            (should (tibetan-discussion-paper--upload pdf "MSA" "MSA IX.60" nil
+                                                      "WS26-27/MSA/Sanskrit-9" nil "WS26-27/MSA/Sanskrit-9"))
+            (should (equal "mkdir" (car (car (car sessions)))))
+            (should (equal "/Reading" (cadr (car (car sessions)))))))
+      (delete-file pdf))))
+
 (ert-deftest tibetan-discussion-paper-upload-reports-done ()
   "§5.74, 29.10.: the status of C-c u G shows the upload's outcome —
 the optional DONE gets (t NAME) for the document as placed (19.11.:

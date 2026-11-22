@@ -470,7 +470,7 @@ its archive as „DOCNAME STAMP“ and put TMP in its place."
           (list "mv" (concat folder "/" docname) (format "%s/%s %s" archive docname stamp))
           (list "put" tmp folder))))
 
-(defun tibetan-discussion-paper--upload (pdf title label &optional done folder stamp)
+(defun tibetan-discussion-paper--upload (pdf title label &optional done folder stamp from)
   "Upload PDF to the reMarkable with rmapi, as the document LABEL (the
 sentence or § — \"Satz 28\", \"Saetze 24-28\"; names ASCII-only,
 `--doc-name') — into FOLDER below
@@ -483,6 +483,11 @@ into the folder's Archiv as „LABEL STAMP“ (STAMP: the date of that
 version, by default now) and puts PDF under the plain name (Carsten
 19.11.: the new version without a date, the date on the one there) —
 notes written on the earlier one stay with it, never overwritten.
+FROM (22.11., the verses' own folders): the folder, given like FOLDER,
+in which an earlier version of the document lies when that is another
+one than FOLDER — the first session moves it into the archive of FROM
+\(„LABEL STAMP“) before it puts PDF into FOLDER, so that the document
+does not lie in two places.
 Asynchronous; the result is reported as a message and to DONE, when
 given: (t PATH) with the document as placed, or (nil REASON) — the
 status of C-c u G (§5.74).  Returns non-nil when the upload was
@@ -505,6 +510,15 @@ started, nil (with a message) when rmapi is not installed."
            (stamp (or stamp (format-time-string "%Y-%m-%d %H%M")))
            (dir (make-temp-file "rm-paper-" t))
            (tmp (expand-file-name (concat name ".pdf") dir))
+           ;; an earlier version in another folder: out of the way first
+           (from-path (and from folder
+                           (not (equal (string-trim from "/+" "/+") (string-trim folder "/+" "/+")))
+                           (concat base "/" (string-trim from "/+" "/+"))))
+           (move-out (and from-path
+                          (let ((archive (concat from-path "/" tibetan-discussion-paper--archive-folder)))
+                            (list (list "mkdir" archive)
+                                  (list "mv" (concat from-path "/" name)
+                                        (format "%s/%s %s" archive name stamp))))))
            (finish (lambda (ok what)
                      (ignore-errors (delete-directory dir t))
                      (if ok
@@ -516,7 +530,7 @@ started, nil (with a message) when rmapi is not installed."
                      (string-trim (replace-regexp-in-string "\\[/[^]]*\\]>[ \t]*" "" out)))))
       (copy-file pdf tmp t)
       (tibetan-discussion-paper--rmapi-session
-       (tibetan-discussion-paper--upload-commands levels tmp)
+       (append move-out (tibetan-discussion-paper--upload-commands levels tmp))
        (lambda (_code out)
          (pcase (tibetan-discussion-paper--put-result out name)
            ('ok (funcall finish t (format "%s/%s" target name)))
