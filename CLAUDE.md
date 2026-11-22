@@ -32,6 +32,9 @@ Zeile „Ort im Ganzen“ in den Satzdateien, Ort + Nachbarzeilen im Abruf
 Antworten bleiben, von Hand Bearbeitetes wird nie überschrieben); seit
 22.11. auch das LESEDOSSIER (AS/MSA) als zwei PDFs — ab Reading +
 „Worum es geht“ —, fehlende Klammer im JSON einer Antwort wird ergänzt;
+MEHRERE KOMMENTARE JE VERS (MSA XI: Bhāṣya der tibetischen Quelle als
+analysierter Kommentar + Phywa pa mit Abschnitten über Vers-Bereiche),
+Teil „Tibetan“ im Dossier;
 offen: Philologie-Teil weiter gliedern, Kompositum-Auflösung straffen).
 Before that 2026-10-28 (§5.74: SATZDATEIEN
 NACH VORLAGE — Reading-Klassen, Tibetisch: `#+CAT_TEMPLATE: tibetan' im
@@ -5908,6 +5911,77 @@ dem Remarkable noch nicht die neue Struktur an.“).
   (bzw. mit seinem C-c u H / C-c u G).  Die aufbewahrte Antwort von
   sent-036 liegt nur im Temp-Ordner (bcat-responses/).
   ERT 3003 / 3001 erwartet / 0 unerwartet / 2 übersprungen, BDD 251.
+
+22.11.2026 vormittags, MSA XI NEU SPEZIFIZIERT: MEHRERE KOMMENTARE JE
+VERS (`4a4dfa3', `8391cf5', `846821c', `c7f9463', `8443276', `ad0ad16';
+Carsten, als XI.15 in neuer Form auf dem Gerät lag: „Das Tibetische und
+vor allem Phya Pa fehlen mir da.  Ich glaube, das müssen wir neu
+spezifizieren.“ — seine Festlegungen: am Tibetischen die volle Analyse
+des Verses UND das Bhāṣya analysiert; Dossier weiter je Vers; Phywa pa
+Satz für Satz als Schicht mit eigenem Analyse-Teil; gleich richtig;
+erst alles umbauen; „Es sollte eigentlich so wie bei IX sein + Phya
+Pa“.  Damit ist die Kommentar-Maschinerie freigegeben — vorher „nicht
+anfassen“).
+- ABSCHNITTE MIT BEREICH: der Titel eines Kommentar-Abschnitts darf mit
+  einem Vers-Abschnitt oder einem Bereich beginnen („XI.15–16 sgyu ma'i
+  mtshan nyid“, „XI.15–20 Einleitung“; Ende voll oder nur als Zahl) und
+  deckt dann diese Verse ab (`bcat-commentary--range', `--coverage').
+  Ein Abschnitt, der wie ein Vers-Abschnitt heißt, deckt wie bisher ihn
+  und die folgenden ohne eigenen ab (Sthiramatis IX.2 → IX.3).
+- MEHRERE ABSCHNITTE JE VERS (`bcat-commentary-sections'): alle, die
+  ihn abdecken; ein weiterer, wenn ein engerer ihn auch abdeckt, ist
+  eine EINLEITUNG und steht nur beim ersten Vers seines Bereichs.
+  `bcat-commentary-section' = der engste.
+- WURZELVERSE in der Kommentar-Quelle (Sätze mit :VERSE:, Phywa pa)
+  sind kein Kommentar (`bcat-commentary--sentences').
+- MEHRERE KOMMENTARE (`bcat-commentary-sources'): jede Zeile
+  #+CAT_COMMENTARY der Sanskrit-Quelle.  Ist eine davon die TIBETISCHE
+  QUELLE DES PAARS selbst (`bcat-commentary-bhasya-p'), wird das BHĀṢYA
+  als Kommentar analysiert: ihre Sätze ohne :VERSE:, je Vers-Abschnitt
+  nur für diesen Vers; Dokument comm-XI.15-mdo.org neben der
+  tibetischen Quelle, Titel „Bhāṣya zu MSA XI.15“; die Anfrage bekommt
+  das Sanskrit der Passage dazu.  `bcat-commentary-source' bleibt „der“
+  Kommentar (der erste, der kein Bhāṣya ist): ihm gelten die
+  Lemma-Zeilen der Versdateien.  OPT-IN — ohne die Zeile wie bisher
+  (IX: erst auf Carstens Wort).
+- ABRUF: zu jedem Vers die offenen Abschnitte aller Kommentare, jeder
+  einmal; Reihenfolge: erst notieren, worauf jeder Vers wartet, dann
+  die Verse senden, dann die Kommentare.
+- EIN PDF JE VERS: `bcat-dossier--awaiting' hält je Vers eine LISTE;
+  `bcat-dossier-landed' nimmt ein Dokument von allen Versen;
+  `bcat-dossier-export-files' nennt nach einer Landung die Dateien,
+  deren Dossier jetzt fertig ist — nach einem Kommentardokument ALLE
+  Verse, die darauf gewartet haben (vorher nur der erste: der zweite
+  Vers eines Paars hätte nie ein PDF bekommen).
+- DOSSIER/PDF: Reading mit 01 Vers / 02 Bhāṣya (Sprung in die Analyse,
+  wenn das Bhāṣya analysiert ist) / 03 Kommentator (Sätze aller seiner
+  Abschnitte); Teile: Reading · Segments · Grammar · TIBETAN (Grammar,
+  Concepts, Discussion der tibetischen Satzdatei, Sprungziele
+  tibetan-…; die Tabelle eines tibetischen Segments springt zu seiner
+  Notiz) · BHĀṢYA (Sätze des Bhāṣya-Dokuments, bh-N) · Kommentator
+  (comm-N; mehrere Dokumente je unter dem Titel ihres Abschnitts; ein
+  zweiter Kommentator: commentary-2 / comm2-N) · Concepts · Discussion.
+  Kontextfelder: `bhasya-docs', `commentaries' ((Autor ID Präfix
+  Dokumente …) …), `commentary-docs' (alle).  Blattangaben ganz
+  („Ms 82b4“).
+- STAND: an einer Kopie von XI geprüft (Zuordnung, Rumpfdokumente,
+  PDF mit echtem LaTeX: 31 S. ohne Analysen), OHNE Abruf und ohne
+  Upload.  In den echten Quellen fehlen noch die Kopfzeilen:
+  Sanskrit-11: „#+CAT_COMMENTARY: ../Tibetisch-11/mdo-sde-rgyan-11-cat.org“
+  und „#+CAT_COMMENTARY: ../Phywapa-11/phywa-11-cat.org“; Phywapa-11:
+  „#+CAT_TEMPLATE: commentary“ (statt tibetan) und „#+CAT_COMMENTS_ON:
+  ../Sanskrit-11/msa-11-cat.org“.  Die 19 Rumpf-Satzdateien
+  Phywapa-11/analysis/sent-…-phywa.org (Vorlage tibetan, 20.11.) werden
+  damit nicht mehr gebraucht — liegen lassen, nicht löschen.  Abruf für
+  XI.15–20 dann: 6 Bhāṣya-Dokumente + 4 Phywa-pa-Abschnitte + XI.17
+  (2) = 12 Claude-Abrufe; alles erst auf Carstens Wort.
+- OFFEN: „Worum es geht“ der Kommentardokumente steht weiter in ihrem
+  Teil (nicht im eigenen PDF); auf der Reading-Seite zeigt 02 Bhāṣya
+  den Text wie bisher (nicht Satz für Satz mit Übersetzung wie der
+  Kommentator); Lemma-Zeilen des Bhāṣya in den Versdateien gibt es
+  nicht; das Sanskrit-Bhāṣya wird nicht eigens analysiert; MSA IX
+  bekommt das Bhāṣya erst, wenn Carsten die Kopfzeile dort will.
+  ERT 3012 / 3010 erwartet / 0 unerwartet / 2 übersprungen, BDD 251.
 
 #### Offen
 
