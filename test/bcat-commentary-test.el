@@ -598,9 +598,9 @@ commentary came with IX.15."
       (should (file-exists-p pair))
       (should-not (file-exists-p rest))
       (let ((text (bcat-sentence-test--text-of pair)))
-        (should (string-match-p "^\\* Sentence 2003$" text))
-        (should (string-match-p "^\\* Sentence 2004$" text))
-        (should-not (string-match-p "^\\* Sentence 1[56]$" text))
+        (should (string-match-p "^\\*\\* Sentence 2003$" text))
+        (should (string-match-p "^\\*\\* Sentence 2004$" text))
+        (should-not (string-match-p "^\\*+ Sentence 1[56]$" text))
         (should (string-match-p "Phywa pa 21\\." text))
         (should-not (bcat-commentary-incomplete-p "Section IX.15–16 sgyu ma'i mtshan nyid" psrc)))
       (should (string-match-p "Phywa pa 1\\." (bcat-sentence-test--text-of intro)))
@@ -698,8 +698,8 @@ commentary is not).  One PDF for the verse, when all three are in."
       (should (file-exists-p bhasya))
       (let ((text (bcat-sentence-test--text-of bhasya)))
         (should (string-match-p "^#\\+TITLE: Bhāṣya zu MSA IX\\.16$" text))
-        (should (string-match-p "^\\* Sentence 65$" text))
-        (should-not (string-match-p "^\\* Sentence 64$" text))
+        (should (string-match-p "^\\*\\* Sentence 65$" text))
+        (should-not (string-match-p "^\\*+ Sentence 64$" text))
         (should (string-match-p "^⟦143⟧ \\*Translation:\\* By this fifth verse he proves by an example" text))
         (should-not (bcat-commentary-incomplete-p "Section IX.16" tsrc)))
       (should (equal (list (tibetan-sentence--filepath 36 folder src)) exports)))))
@@ -718,10 +718,10 @@ quotes and how he reads it.  A second C-c u A never overwrites it."
       (should (string-match-p "^#\\+CAT_TEMPLATE: commentary$" text))
       (should (string-match-p (regexp-quote "#+CAT_VERSE: [[file:../../Sanskrit/analysis/sent-036-msa.org][MSA IX.16]]") text))
       (should (string-match-p "^#\\+SENTENCES: 258, 259, 260, 261, 262, 263$" text))
-      (should (string-match-p (regexp-quote "* Verse\n#+begin_verse\nཇི་ལྟར་ཆུ་ཡི་སྣོད་ཆག་ན། །\nji ltar chu yi snod chag na/ /") text))
+      (should (string-match-p (regexp-quote "** Verse\n#+begin_verse\nཇི་ལྟར་ཆུ་ཡི་སྣོད་ཆག་ན། །\nji ltar chu yi snod chag na/ /") text))
       (should (string-match-p (regexp-quote "སྐྱེ་མཆེད་བཅུ་གཉིས། །") text))
-      (should (string-match-p "^\\* Sentence 258$" text))
-      (should (string-match-p "^\\*\\* Segment 627$" text))
+      (should (string-match-p "^\\*\\* Sentence 258$" text))
+      (should (string-match-p "^\\*\\*\\* Segment 627$" text))
       (should (string-match-p (regexp-quote "*Lemma:* verse, [[file:../../Tibetisch/analysis/sent-064-mdo.org::Segment 139][Tib. 139]] — verbatim") text))
       (should (string-match-p (regexp-quote "[Tib. 140]] — Sthiramati reads /bzhin/ for /ba/") text))
       (should (string-match-p (regexp-quote "[Tib. 142]] — Sthiramati reads /ni/ for /kyang/") text))
@@ -731,6 +731,148 @@ quotes and how he reads it.  A second C-c u A never overwrites it."
       (tibetan-cascade--ensure-files csrc (list (list :sent-num 260 :segs '((629 . "x")))))
       (should (string-match-p "^\\* My Notes\nNotiz zum Kommentar\\.$" (bcat-sentence-test--text-of file)))
       (should-not (directory-files cfolder nil "\\`sent-")))))
+
+(defun bcat-commentary-test--l1 (text)
+  "The headings of level 1 of TEXT."
+  (let ((out '()) (pos 0))
+    (while (string-match "^\\* \\(.+\\)$" text pos)
+      (push (match-string 1 text) out)
+      (setq pos (match-end 0)))
+    (nreverse out)))
+
+(defun bcat-commentary-test--part (text title)
+  "The L1 section TITLE of TEXT, from its heading to the next L1."
+  (when (string-match (format "^\\* %s[ \t]*\n" (regexp-quote title)) text)
+    (let ((start (match-beginning 0)))
+      (substring text start (if (string-match "^\\* " text (match-end 0)) (match-beginning 0) (length text))))))
+
+(ert-deftest bcat-commentary-document-in-three-parts ()
+  "Carsten 22.11.: „Ich denke, dass bhasya, Phya Pa und Sthiramati eigene
+Dateien, auch untergliedert in Philologie und worum es geht sein
+sollten.“  A commentary document has the three parts of a sentence
+file: * Text — the verse commented on, the commentary sentence by
+sentence (Uchen over Wylie, its translation), the translation of the
+whole closing it; * Philology — per sentence its grammar and its
+segments (folded: table, structure, note, lemma, the ⟦N⟧ translation);
+* Worum es geht — after them.  The user's sections follow."
+  (bcat-commentary-test--with-msa
+    ;; without AI
+    (let* ((file (bcat-commentary-create "Section IX.16" csrc))
+           (text (bcat-sentence-test--text-of file)))
+      (should (equal '("Text" "Philology" "Working Translation" "My Notes" "Footnotes")
+                     (bcat-commentary-test--l1 text)))
+      (let ((part (bcat-commentary-test--part text "Text")))
+        (should (string-match-p "\\`\\* Text\n\\*\\* Verse\n#\\+begin_verse\n" part))
+        (should (string-match-p "^\\*\\* Sentence 258\n#\\+begin_verse\nདཔེ་བསྟན་པའི་ཕྱིར།\ndpe bstan pa'i phyir/$" part))
+        (should (string-match-p "^\\*\\* Translation$" part))
+        (should-not (string-match-p "^\\*\\*\\* Segment" part)))
+      (let ((part (bcat-commentary-test--part text "Philology")))
+        (should (string-match-p "^\\*\\* Sentence 258$" part))
+        (should (string-match-p "^\\*\\*\\* Segment 626\n:PROPERTIES:\n:VISIBILITY: folded\n:END:$" part))
+        (should (string-match-p "^\\*Lemma:\\* verse, " part))))
+    ;; analysed
+    (bcat-sentence-test--with-stubs #'bcat-commentary-test--answers
+      (bcat-sentence-test--fetch-n src 36))
+    (let* ((doc (expand-file-name "comm-IX.16-savbh.org" cfolder))
+           (text (bcat-sentence-test--text-of doc))
+           (first (bcat-commentary-test--part text "Text"))
+           (second (bcat-commentary-test--part text "Philology")))
+      (should (string-match-p "^\\*\\* Sentence 258\n\\(?:.*\n\\)*?\\*Translation:\\* To show the example: „Just as, when a vessel of water is broken,$"
+                              first))
+      (should (string-match-p "^\\*\\* Translation\nTo show the example: „Just as, when" first))
+      (should-not (string-match-p "^⟦627⟧" first))
+      (should (string-match-p "^⟦627⟧ \\*Translation:\\* „Just as, when a vessel of water is broken," second))
+      (should (string-match-p "^\\*\\* Sentence 258\n\\(?:.*\n\\)*?\\*Grammar:\\* /dpe bstan pa'i phyir/ introduces the lemma\\.$" second))
+      (should-not (bcat-commentary-incomplete-p "Section IX.16" csrc))
+      (should (equal '((627 139) (628 140) (630 140) (632 141) (633 142))
+                     (bcat-commentary--doc-lemmata doc csrc))))))
+
+(defconst bcat-commentary-test--old-document
+  (concat "#+TITLE: Sthiramati zu MSA IX.16\n#+OPTIONS: toc:nil\n#+CAT_TEMPLATE: commentary\n"
+          "#+SOURCE: [[file:../savbh-cat.org::*Section IX.16][savbh-cat.org / Section IX.16]]\n"
+          "#+SENTENCES: 258, 259\n#+SEGMENTS: 626, 627, 628\n\n"
+          "* Worum es geht\n:PROPERTIES:\n:GENERATED_HASH: abc\n:END:\n*Erklärt wird:* der Vergleich.\n\n"
+          "* Verse\n#+begin_verse\nཇི་ལྟར་ཆུ་ཡི་སྣོད་ཆག་ན། །\nji ltar chu yi snod chag na/ /\n#+end_verse\n\n"
+          "Verse: [[file:../../Sanskrit/analysis/sent-036-msa.org][MSA IX.16]]\n\n"
+          "* Sentence 258\n#+begin_verse\nདཔེ་བསྟན་པའི་ཕྱིར།\ndpe bstan pa'i phyir/\nཇི་ལྟར་ཆུ་ཡི་སྣོད་ཆག་ན། །\nji ltar chu yi snod chag na/ /\n#+end_verse\n\n"
+          "#+begin_verse\ndpe [example] bstan pa'i [showing] phyir [in order to]\n#+end_verse\n\n"
+          "*Translation:* To show the example: „Just as, when a vessel of water is broken,\n\n"
+          "** Segment 626\n| དཔེ | བསྟན་པའི | ཕྱིར |\n| dpe | bstan pa'i | phyir |\n\n"
+          "*Structure:* /dpe/ [object] bstan pa =yi= phyir\n\n"
+          "⟦626⟧ *Translation:* To show the example: \\\\\n*DharmaMitra:* In order to show an example,\n\n"
+          "** Segment 627\n| ཇི་ལྟར | ཆུ་ཡི |\n| ji ltar | chu yi |\n\n"
+          "*Lemma:* verse, [[file:../../Tibetisch/analysis/sent-064-mdo.org::Segment 139][Tib. 139]] — verbatim\n\n"
+          "⟦627⟧ *Translation:* „Just as, when a vessel of water is broken,\n\n"
+          "*Grammar:* /dpe bstan pa'i phyir/ introduces the lemma.\n\n"
+          "* Sentence 259\n#+begin_verse\nཟླ་བའི་གཟུགས་བརྙན་མི་སྣང་བཞིན། །\nzla ba'i gzugs brnyan mi snang bzhin/ /\n#+end_verse\n\n"
+          "*Translation:* the reflection of the moon does not appear“ —\n\n"
+          "** Segment 628\n| ཟླ་བའི | གཟུགས་བརྙན |\n| zla ba'i | gzugs brnyan |\n\n"
+          "⟦628⟧ *Translation:* the reflection of the moon does not appear“ —\n\n"
+          "* Commentary\n** Translation\nTo show the example: „Just as, when a vessel of water is broken, the reflection of the moon does not appear“ —\n\n"
+          "* Working Translation\nMeine Fassung.\n\n* My Notes\nNotiz.\n\n* Footnotes\n")
+  "A commentary document as written before 22.11.: „Worum es geht“ in
+front, a Section per sentence with its segments below, the whole
+translation under * Commentary.")
+
+(ert-deftest bcat-commentary-reads-the-old-layout ()
+  "The commentary documents fetched before 22.11. (MSA IX.60–63 with
+Sthiramati; XI.15–20 from the morning of that day) stay as they are
+until they are set anew — and are read as if they had the three parts
+\(`bcat-commentary-legacy-text'): nothing of them is lost, the user's
+sections stand, a document in three parts comes back as it is."
+  (let* ((new (bcat-commentary-legacy-text bcat-commentary-test--old-document))
+         (first (bcat-commentary-test--part new "Text"))
+         (second (bcat-commentary-test--part new "Philology")))
+    (should (equal '("Text" "Philology" "Worum es geht" "Working Translation" "My Notes" "Footnotes")
+                   (bcat-commentary-test--l1 new)))
+    (should (string-prefix-p "#+TITLE: Sthiramati zu MSA IX.16\n" new))
+    ;; * Text: the verse, each sentence with its lines and translation, the whole
+    (should (string-match-p "\\`\\* Text\n\\*\\* Verse\n#\\+begin_verse\nཇི་ལྟར་ཆུ་ཡི་སྣོད་ཆག་ན། །\n" first))
+    (should (string-match-p (regexp-quote "Verse: [[file:../../Sanskrit/analysis/sent-036-msa.org][MSA IX.16]]") first))
+    (should (string-match-p (regexp-quote (concat "** Sentence 258\n#+begin_verse\nདཔེ་བསྟན་པའི་ཕྱིར།\ndpe bstan pa'i phyir/\n"
+                                                  "ཇི་ལྟར་ཆུ་ཡི་སྣོད་ཆག་ན། །\nji ltar chu yi snod chag na/ /\n#+end_verse\n\n"
+                                                  "*Translation:* To show the example: „Just as, when a vessel of water is broken,\n"))
+                            first))
+    (should (string-match-p "^\\*\\* Sentence 259\n" first))
+    (should (string-match-p "^\\*\\* Translation\nTo show the example: „Just as, when a vessel of water is broken, the reflection" first))
+    (should-not (string-match-p "Segment\\|Grammar\\|dpe \\[example\\]" first))
+    ;; * Philology: per sentence the glossed line, the grammar, the segments folded
+    (should (string-match-p (regexp-quote (concat "** Sentence 258\n#+begin_verse\ndpe [example] bstan pa'i [showing] phyir [in order to]\n#+end_verse\n\n"
+                                                  "*Grammar:* /dpe bstan pa'i phyir/ introduces the lemma.\n\n"
+                                                  "*** Segment 626\n:PROPERTIES:\n:VISIBILITY: folded\n:END:\n| དཔེ | བསྟན་པའི | ཕྱིར |\n"))
+                            second))
+    (should (string-match-p (regexp-quote "*** Segment 627\n:PROPERTIES:\n:VISIBILITY: folded\n:END:\n") second))
+    (should (string-match-p "^⟦627⟧ \\*Translation:\\* „Just as, when a vessel of water is broken,$" second))
+    (should (string-match-p "^\\*\\* Sentence 259\n\\*\\*\\* Segment 628\n" second))
+    (should (= 1 (with-temp-buffer (insert second) (how-many "^\\*Grammar:\\*" (point-min) (point-max)))))
+    ;; the rest as it was
+    (should (string-match-p (regexp-quote "* Worum es geht\n:PROPERTIES:\n:GENERATED_HASH: abc\n:END:\n*Erklärt wird:* der Vergleich.\n") new))
+    (should (string-match-p "^\\* Working Translation\nMeine Fassung\\.$" new))
+    (should (string-match-p "^\\* My Notes\nNotiz\\.$" new))
+    (should-not (string-match-p "^\\* Commentary$\\|^\\* Verse$\\|^\\* Sentence " new))
+    ;; once is enough
+    (should (equal new (bcat-commentary-legacy-text new))))
+  ;; the readers take either layout
+  (let ((old (make-temp-file "comm-IX.16-" nil ".org"))
+        (new (make-temp-file "comm-IX.16-" nil ".org")))
+    (unwind-protect
+        (progn
+          (with-temp-file old (insert bcat-commentary-test--old-document))
+          (with-temp-file new (insert (bcat-commentary-legacy-text bcat-commentary-test--old-document)))
+          (should (equal '((627 139)) (bcat-commentary--doc-lemmata old nil)))
+          (should (equal '((627 139)) (bcat-commentary--doc-lemmata new nil)))
+          (let ((items (lambda (file)
+                         (mapcar (lambda (i) (list (alist-get 'head i) (alist-get 'lines i)
+                                                   (alist-get 'item-translation i)))
+                                 (bcat-dossier-commentary-items file (make-hash-table)
+                                                                (file-name-directory file))))))
+            (should (equal (funcall items old) (funcall items new)))
+            (should (equal '("258" "259") (mapcar #'car (funcall items new))))
+            ;; the line of the segment that takes up the verse: bold
+            (should (string-match-p (regexp-quote "\n*ཇི་ལྟར་ཆུ་ཡི་སྣོད་ཆག་ན། །*\n") (nth 1 (car (funcall items new)))))
+            (should (equal "To show the example: „Just as, when a vessel of water is broken,"
+                           (nth 2 (car (funcall items new)))))))
+      (delete-file old) (delete-file new))))
 
 (ert-deftest bcat-commentary-verse-links ()
   "The verse files link the commentary: in the header, and per segment
@@ -824,17 +966,19 @@ reMarkable (the hook runs for the verse file and the commentary)."
         (should (= 2 (with-temp-buffer (insert text) (how-many "\\*Sthiramati:\\* lemmata" (point-min) (point-max)))))))))
 
 (ert-deftest bcat-commentary-fetch-keeps-overview ()
-  "16.11.: a commentary document's „Worum es geht“, written by hand
-before the verse, survives C-c u G where it stands."
+  "16.11.: a commentary document's „Worum es geht“, written by hand,
+survives C-c u G word for word — since 22.11. as the third part, after
+* Philology, as in a sentence file."
   (bcat-commentary-test--with-msa
     (let ((doc (bcat-commentary-ensure-file 258 csrc)))
-      (bcat-sentence-test--put-overview doc "* Verse")
+      (bcat-sentence-test--put-overview doc "* Text")
       (bcat-sentence-test--with-stubs #'bcat-commentary-test--answers
         (bcat-sentence-test--fetch-n src 36))
       (let ((text (bcat-sentence-test--text-of doc)))
         (should (string-match-p "^⟦627⟧ \\*Translation:\\*" text))
         (should (string-match-p
-                 (regexp-quote (concat "\n\n* Worum es geht\n" bcat-sentence-test--overview "\n\n* Verse\n"))
+                 (regexp-quote (concat "\n\n* Worum es geht\n" bcat-sentence-test--overview
+                                       "\n\n* Working Translation\n"))
                  text))
         (should (= 1 (bcat-sentence-test--overview-count text)))))))
 
@@ -858,7 +1002,8 @@ not show it (22.11.)."
       (should (equal (concat "* Worum es geht\n:PROPERTIES:\n:GENERATED_HASH: "
                              (bcat-analysis-overview-hash generated) "\n:END:\n" generated "\n\n")
                      (bcat-sentence-test--section text)))
-      (should (string-match-p "\n\n\\* Worum es geht\n\\(?:.\\|\n\\)*?\n\n\\* Verse\n" text))
+      (should (string-match-p "^\\* Philology\n\\(?:.\\|\n\\)*?\n\n\\* Worum es geht\n\\(?:.\\|\n\\)*?\n\n\\* Working Translation\n"
+                              text))
       ;; 22.11.: not in the PDF of the verse — the commentary is a file
       ;; of its own, with its own „Worum es geht“
       (let ((pdf (bcat-dossier-pdf-text doc)))
@@ -1165,12 +1310,12 @@ the other source (verse ↔ the commentary's Section)."
           (tib (bcat-sentence-partner-file 36 src)))
       (unwind-protect
           (progn
-            (should (equal (cons doc "** Segment 627")
+            (should (equal (cons doc "*** Segment 627")
                            (bcat-commentary-test--jump-from skt "^\\*\\* Segment 92")))
-            (should (equal (cons doc "** Segment 628")
+            (should (equal (cons doc "*** Segment 628")
                            (bcat-commentary-test--jump-from tib "^\\*\\* Segment 140")))
             (should (equal (cons tib "** Segment 142 · Skt. 93")
-                           (bcat-commentary-test--jump-from doc "^\\*\\* Segment 633")))
+                           (bcat-commentary-test--jump-from doc "^\\*\\*\\* Segment 633")))
             (should (equal (car (bcat-commentary-test--jump-from doc nil)) skt))
             (should (equal (cons csrc "** Section IX.16")
                            (bcat-commentary-test--jump-from src "^\\*\\*\\*\\* Segment 93")))

@@ -1336,9 +1336,9 @@ block."
 (ert-deftest bcat-sentence-templates-overview-first ()
   "Every template of a sentence file and of a commentary document has
 the section „Worum es geht“ with the field `overview', none without.
-In a sentence file it is the third part since 18.11., right after
-* Philology (Carsten: read first when preparing, not needed in the
-reading); in a commentary document still the first section."
+It is the third part, right after * Philology (Carsten: read first
+when preparing, not needed in the reading) — in a sentence file since
+18.11., in a commentary document since 22.11."
   (let ((bcat-template-directory
          (expand-file-name "../Templates/analysis"
                            (file-name-directory (locate-library "bcat-sentence-test")))))
@@ -1351,11 +1351,11 @@ reading); in a commentary document still the first section."
                      (setq pos (match-end 0)))
                    (nreverse out))))
         (ert-info ((format "Vorlage %s" name))
-          (if (equal name "commentary")
-              (should (equal "Worum es geht" (car l1)))
-            (should (equal '("Philology" "Worum es geht" "Working Translation")
-                           (seq-take (member "Philology" l1) 3))))
-          (should (string-match-p "\n\n\\* Worum es geht\nErste Zeile\\.\n\n- Frage\\?\n\n\\* " with))
+          (should (equal '("Philology" "Worum es geht" "Working Translation")
+                         (seq-take (member "Philology" l1) 3)))
+          ;; (an empty * Philology — no sentences in this context —
+          ;; leaves no blank line before it in the commentary's)
+          (should (string-match-p "\n\n?\\* Worum es geht\nErste Zeile\\.\n\n- Frage\\?\n\n\\* " with))
           (should-not (string-match-p "Worum es geht" without)))))))
 
 (ert-deftest bcat-sentence-fetch-keeps-reference-text ()

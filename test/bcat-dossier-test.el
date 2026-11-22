@@ -349,7 +349,7 @@ the section there is no such document (bcat-dossier-pdf-msa)."
     (let ((file (tibetan-sentence--filepath 36 folder src))
           (doc (expand-file-name "comm-IX.16-savbh.org" cfolder)))
       (bcat-sentence-test--put-overview file "* Text")
-      (bcat-sentence-test--put-overview doc "* Verse" "*Erklärt wird:* Vers IX.16, Pāda für Pāda.")
+      (bcat-sentence-test--put-overview doc "* Text" "*Erklärt wird:* Vers IX.16, Pāda für Pāda.")
       (let* ((pdf (bcat-dossier-pdf-text file))
              (text (plist-get pdf :text))
              (overview (plist-get pdf :overview))

@@ -1207,7 +1207,9 @@ segments under `* Sentence N')."
    ((string-match "^\\* Philology[ \t]*\n" text)
     (let* ((start (match-end 0))
            (end (if (string-match "^\\* " text start) (match-beginning 0) (length text)))
-           (first (and (string-match "^\\*\\* Segment [0-9]" text start)
+           ;; 22.11.: in a commentary document a level deeper, under
+           ;; ** Sentence N
+           (first (and (string-match "^\\*\\*\\*? Segment [0-9]" text start)
                        (< (match-beginning 0) end)
                        (match-beginning 0))))
       (if first (substring text first end) "")))
@@ -1221,7 +1223,7 @@ Returns non-nil when found; point at the start of the buffer before."
   (goto-char (point-min))
   (or (re-search-forward "^\\* Segments$" nil t)
       (and (re-search-forward "^\\* Philology$" nil t)
-           (re-search-forward "^\\*\\* Segment [0-9]" nil t))))
+           (re-search-forward "^\\*\\*\\*? Segment [0-9]" nil t))))
 
 (defun bcat-sentence--unaligned (file)
   "References under Translations compared of FILE that no segment shows

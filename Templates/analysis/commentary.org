@@ -27,6 +27,17 @@ Sonst füllt ihn C-c u G aus dem Feld overview der Antwort; der Drawer
 :GENERATED_HASH: (overview-hash) kennzeichnet den erzeugten Text —
 nur ein unveränderter erzeugter Abschnitt wird beim nächsten Abruf
 ersetzt (`bcat-analysis-overview-fields').
+22.11. (Carsten: „Ich denke, dass bhasya, Phya Pa und Sthiramati eigene
+Dateien, auch untergliedert in Philologie und worum es geht sein
+sollten“): die drei Oberabschnitte der Satzdateien — * Text (der
+kommentierte Vers, der Kommentar Satz für Satz mit Übersetzung, am Ende
+die Übersetzung des Ganzen), * Philology (je Satz die Grammatik und
+seine Segmente, eingeklappt), * Worum es geht (danach).  Ein Dokument
+gibt es je Abschnitt des Bhāṣya (der tibetischen Quelle des Paars),
+Phywa pas, Sthiramatis.  Dokumente in der alten Ordnung („Worum es
+geht“ vorn, * Verse, * Sentence N, * Commentary) werden gelesen, als
+hätten sie die neue (`bcat-commentary-legacy-text'); C-c u L setzt sie
+ohne Abruf um.
 #+end_comment
 #+TITLE: {{title}}
 #+STARTUP: showall
@@ -40,17 +51,8 @@ ersetzt (`bcat-analysis-overview-fields').
 #+CREATED: {{created}}
 #+LAST_ANALYZED: {{last-analyzed}}
 
-{{#overview}}
-* Worum es geht
-{{#overview-hash}}
-:PROPERTIES:
-:GENERATED_HASH: {{overview-hash}}
-:END:
-{{/overview-hash}}
-{{overview}}
-
-{{/overview}}
-* Verse
+* Text
+** Verse
 #+begin_verse
 {{#verse}}
 {{uchen}}
@@ -61,26 +63,38 @@ ersetzt (`bcat-analysis-overview-fields').
 {{verse-note}}
 
 {{#sentences}}
-* Sentence {{num}}
+** Sentence {{num}}
 #+begin_verse
 {{#segments}}
 {{uchen}}
 {{wylie}}
 {{/segments}}
 #+end_verse
-{{#glosses}}
 
+*Translation:* {{translation}}
+
+{{/sentences}}
+** Translation
+{{translation-all}}
+
+* Philology
+{{#sentences}}
+** Sentence {{num}}
+{{#glosses}}
 #+begin_verse
 {{#segments}}
 {{glossed}}
 {{/segments}}
 #+end_verse
-{{/glosses}}
 
-*Translation:* {{translation}}
+{{/glosses}}
+*Grammar:* {{grammar}}
 
 {{#segments}}
-** Segment {{num}}
+*** Segment {{num}}
+:PROPERTIES:
+:VISIBILITY: folded
+:END:
 {{gloss-table}}
 
 *Structure:* {{structure}}
@@ -94,13 +108,17 @@ ersetzt (`bcat-analysis-overview-fields').
 {{translations}}
 
 {{/segments}}
-*Grammar:* {{grammar}}
-
 {{/sentences}}
-* Commentary
-** Translation
-{{translation-all}}
+{{#overview}}
+* Worum es geht
+{{#overview-hash}}
+:PROPERTIES:
+:GENERATED_HASH: {{overview-hash}}
+:END:
+{{/overview-hash}}
+{{overview}}
 
+{{/overview}}
 * Working Translation
 {{working-translation}}
 

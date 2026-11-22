@@ -479,6 +479,110 @@ Phywa pa Einleitung“).  Without verses the commentator and the Section."
                      " ")
       (format "%s %s" author (bcat-commentary--bare section)))))
 
+(defconst bcat-commentary--fold "\n:PROPERTIES:\n:VISIBILITY: folded\n:END:"
+  "What follows the heading of a segment in a commentary document: it
+opens folded, as in the sentence files (19.11.).")
+
+(defun bcat-commentary--l1-sections (text)
+  "TEXT (org) as (HEAD (TITLE . BODY) …): what stands before its first
+heading of level 1, then each such heading's title and what follows its
+line, up to the next."
+  (let ((first (or (string-match "^\\* " text) (length text)))
+        (pos 0) (out '()))
+    (setq pos first)
+    (while (string-match "^\\* \\(.*\\)\n?" text pos)
+      (let* ((title (string-trim (match-string 1 text)))
+             (start (match-end 0))
+             (end (if (string-match "^\\* " text start) (match-beginning 0) (length text))))
+        (push (cons title (substring text start end)) out)
+        (setq pos end)))
+    (cons (substring text 0 first) (nreverse out))))
+
+(defun bcat-commentary-legacy-text (text)
+  "TEXT of a commentary document in its three parts (22.11.: * Text /
+* Philology / * Worum es geht, as the sentence files) — as it is when
+it has them; for a document of 30.10.–22.11. („Worum es geht“ in front,
+* Verse, a Section per sentence with its segments below, the whole
+translation under * Commentary) the same content in the new order:
+under * Text the verse, each sentence with its lines and translation,
+the translation of the whole; under * Philology each sentence with its
+glossed line, its grammar and its segments (folded); „Worum es geht“
+after them; every other Section where it stood.  Nothing is added or
+dropped.  A text that is no commentary document comes back as it is."
+  (if (or (string-match-p "^\\* Text[ \t]*$" text)
+          (not (string-match-p "^\\* Sentence [0-9]" text)))
+      text
+    (let* ((parts (bcat-commentary--l1-sections text))
+           (head (car parts))
+           (sections (cdr parts))
+           (body-of (lambda (title) (cdr (assoc title sections))))
+           (trim (lambda (s) (string-trim (or s ""))))
+           (first '()) (second '()))
+      (dolist (section sections)
+        (when (string-match "\\`Sentence \\([0-9]+\\)\\'" (car section))
+          (let* ((num (match-string 1 (car section)))
+                 (body (cdr section))
+                 (at (or (string-match "^\\*\\* Segment " body) (length body)))
+                 (pre (substring body 0 at))
+                 (post (substring body at))
+                 (blocks (let ((p 0) (out '()))
+                           (while (string-match "^#\\+begin_verse\n\\(?:.*\n\\)*?#\\+end_verse" pre p)
+                             (push (match-string 0 pre) out)
+                             (setq p (match-end 0)))
+                           (nreverse out)))
+                 (translation (and (string-match "^\\*Translation:\\*.*$" pre) (match-string 0 pre)))
+                 ;; the grammar of the sentence stood after its last segment
+                 (grammar (let ((p 0) (found nil))
+                            (while (string-match "^\\*Grammar:\\*.*$" body p)
+                              (setq found (cons (match-beginning 0) (match-end 0)) p (match-end 0)))
+                            found))
+                 (grammar-line (and grammar (substring body (car grammar) (cdr grammar))))
+                 (segments (replace-regexp-in-string
+                            "^\\*\\* \\(Segment [0-9]+[^\n]*\\)$"
+                            (concat "*** \\1" bcat-commentary--fold)
+                            (funcall trim (if (and grammar (>= (car grammar) at))
+                                              (concat (substring body at (car grammar))
+                                                      (substring body (cdr grammar)))
+                                            post))
+                            t)))
+            (push (concat "** Sentence " num "\n"
+                          (or (car blocks) "")
+                          (if translation (concat "\n\n" translation) "")
+                          "\n\n")
+                  first)
+            (push (concat "** Sentence " num "\n"
+                          (if (cadr blocks) (concat (cadr blocks) "\n\n") "")
+                          (if grammar-line (concat grammar-line "\n\n") "")
+                          (if (string-empty-p segments) "" (concat segments "\n\n")))
+                  second))))
+      (concat
+       head
+       "* Text\n"
+       "** Verse\n" (funcall trim (funcall body-of "Verse")) "\n\n"
+       (apply #'concat (nreverse first))
+       "** Translation\n"
+       (let ((whole (funcall body-of "Commentary")))
+         (funcall trim (if (and whole (string-match "^\\*\\* Translation[ \t]*\n" whole))
+                           (substring whole (match-end 0))
+                         "")))
+       "\n\n"
+       "* Philology\n"
+       (apply #'concat (nreverse second))
+       (let ((overview (assoc "Worum es geht" sections)))
+         (if overview (concat "* Worum es geht\n" (cdr overview)) ""))
+       (mapconcat (lambda (section)
+                    (if (or (member (car section) '("Worum es geht" "Verse" "Commentary"))
+                            (string-match-p "\\`Sentence [0-9]+\\'" (car section)))
+                        ""
+                      (concat "* " (car section) "\n" (cdr section))))
+                  sections "")))))
+
+(defun bcat-commentary-doc-text (doc)
+  "The text of the commentary document DOC in its three parts
+\(`bcat-commentary-legacy-text') — what every reader of such a document
+takes, whatever order the file still has."
+  (bcat-commentary-legacy-text (bcat-sentence--text doc)))
+
 (defun bcat-commentary--author (commentary-source)
   "The commentator: COMMENTARY-SOURCE's #+TITLE up to the first comma;
 „Bhāṣya“ for the bhāṣya of a pair's Tibetan source
@@ -573,12 +677,12 @@ COMMENTARY-SOURCE, created (no AI) when missing, never overwritten."
   "The lemmata a commentary document DOC carries: ((SEG PADA) …) from
 its *Lemma:* lines — after C-c u G Claude's, which also catch
 quotations in the commentator's own wording."
-  (let ((text (bcat-sentence--text doc)) (pos 0) (out '()))
+  (let ((text (bcat-commentary-doc-text doc)) (pos 0) (out '()))
     (ignore commentary-source)
-    (while (string-match "^\\*\\* Segment \\([0-9]+\\)$" text pos)
+    (while (string-match "^\\*\\*\\* Segment \\([0-9]+\\)$" text pos)
       (let* ((seg (string-to-number (match-string 1 text)))
              (start (match-end 0))
-             (end (if (string-match "^\\*\\{1,2\\} " text start) (match-beginning 0) (length text)))
+             (end (if (string-match "^\\*\\{1,3\\} " text start) (match-beginning 0) (length text)))
              (block (substring text start end)))
         (when (string-match "^\\*Lemma:\\* verse, \\(?:\\[\\[[^]]*\\]\\[\\)?Tib\\. \\([0-9]+\\)" block)
           (push (list seg (string-to-number (match-string 1 block))) out))
@@ -1082,16 +1186,18 @@ PATH relative to FROM's folder: (FILE . OPT), OPT nil when absent."
           (match-string 2 link))))
 
 (defun bcat-commentary--block-at-point ()
-  "The `** Segment N' block point is in as (N . TEXT), or nil."
+  "The block of the segment point is in as (N . TEXT), or nil: `**
+Segment N' in a verse file, `*** Segment N' (under its sentence, 22.11.)
+in a commentary document."
   (save-excursion
     (end-of-line)
-    (when (and (re-search-backward "^\\*\\{1,2\\} " nil t)
-               (looking-at "^\\*\\* Segment \\([0-9]+\\)\\b"))
+    (when (and (re-search-backward "^\\*\\{1,3\\} " nil t)
+               (looking-at "^\\*\\*\\*? Segment \\([0-9]+\\)\\b"))
       (let ((n (string-to-number (match-string 1)))
             (start (point)))
         (forward-line 1)
         (cons n (buffer-substring-no-properties
-                 start (if (re-search-forward "^\\*\\{1,2\\} " nil t) (match-beginning 0) (point-max))))))))
+                 start (if (re-search-forward "^\\*\\{1,3\\} " nil t) (match-beginning 0) (point-max))))))))
 
 (defun bcat-commentary--visit-lemma (doc seg tibetan)
   "Show the commentary document DOC at the first segment whose lemma is
@@ -1104,7 +1210,7 @@ segment), or at its top."
                   (format "^\\*Lemma:\\* verse, .*\\]\\[Tib\\. %d\\]\\]" seg)
                 (format "^\\*Lemma:\\* verse, .*(Skt\\. \\[\\[[^]]*\\]\\[%d\\]\\])" seg))
               nil t)
-             (re-search-backward "^\\*\\* Segment " nil t))
+             (re-search-backward "^\\*+ Segment " nil t))
     (beginning-of-line)
     (when (fboundp 'org-reveal) (ignore-errors (org-reveal)))))
 
