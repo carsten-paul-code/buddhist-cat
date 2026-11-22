@@ -583,6 +583,44 @@ dropped.  A text that is no commentary document comes back as it is."
 takes, whatever order the file still has."
   (bcat-commentary-legacy-text (bcat-sentence--text doc)))
 
+(defun bcat-commentary-relayout-file (doc)
+  "Set the commentary document DOC anew in its three parts, without a
+fetch (Carsten 22.11.: „Ohne neuen Abruf umsetzen“) — in place: what
+`bcat-commentary-legacy-text' makes of its text; header, „Worum es
+geht“ and the user's sections word for word.  A document that has the
+parts is not written.  Returns DOC."
+  (bcat-sentence--save-visit doc)
+  (let* ((text (bcat-sentence--text doc))
+         (new (bcat-commentary-legacy-text text)))
+    (unless (equal new text)
+      (bcat-sentence--write doc new))
+    doc))
+
+(defun bcat-commentary-documents (sent-num source-file)
+  "The commentary documents that go with sentence SENT-NUM of
+SOURCE-FILE, those that exist: in a commentary source the document of
+the sentence's Section; in a verse source — or the Tibetan source of
+its pair — the documents of every commentary named for the verse
+\(`bcat-commentary-sources': the bhāṣya, the commentators), each
+Section that covers it."
+  (cl-remove-if-not
+   #'file-exists-p
+   (if (equal (bcat-sentence-template-name source-file) "commentary")
+       (let ((section (plist-get (bcat-sentence--sentence sent-num source-file) :section-label)))
+         (and section (list (bcat-commentary-file section source-file))))
+     (let* ((own (bcat-commentary-sources source-file))
+            (lead (if own source-file (bcat-sentence-parallel-source source-file)))
+            (verse (if own
+                       (bcat-sentence-owner sent-num source-file)
+                     (and lead (bcat-sentence--parallel-sentence
+                                (or (plist-get (bcat-sentence-owner sent-num source-file) :sent-num) sent-num)
+                                source-file))))
+            (label (plist-get verse :section-label)))
+       (and lead label
+            (cl-loop for commentary in (if own own (bcat-commentary-sources lead))
+                     append (mapcar (lambda (section) (bcat-commentary-file section commentary))
+                                    (bcat-commentary-sections label lead commentary))))))))
+
 (defun bcat-commentary--author (commentary-source)
   "The commentator: COMMENTARY-SOURCE's #+TITLE up to the first comma;
 „Bhāṣya“ for the bhāṣya of a pair's Tibetan source

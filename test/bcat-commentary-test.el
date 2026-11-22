@@ -874,6 +874,79 @@ sections stand, a document in three parts comes back as it is."
                            (nth 2 (car (funcall items new)))))))
       (delete-file old) (delete-file new))))
 
+(ert-deftest bcat-commentary-relayout-sets-the-document-anew ()
+  "Carsten 22.11. („Ohne neuen Abruf umsetzen“): C-c u L brings a
+commentary document of the old order into the three parts, in place and
+without a request — header, „Worum es geht“ and the user's sections
+stay word for word, the tool's stamp is that of the new text (the
+document does not count as edited by hand); a second pass leaves the
+file as it is."
+  (bcat-commentary-test--with-msa
+    (make-directory cfolder t)
+    (let ((doc (expand-file-name "comm-IX.16-savbh.org" cfolder))
+          (fired nil))
+      (with-temp-file doc (insert bcat-commentary-test--old-document))
+      (cl-letf (((symbol-function 'tibetan-discussion--submit) (lambda (&rest _) (setq fired t))))
+        (should (equal doc (bcat-relayout-file doc)))
+        (let ((text (bcat-sentence-test--text-of doc)))
+          (should-not fired)
+          (should (equal '("Text" "Philology" "Worum es geht" "Working Translation" "My Notes" "Footnotes")
+                         (bcat-commentary-test--l1 text)))
+          (should (string-prefix-p "#+TITLE: Sthiramati zu MSA IX.16\n" text))
+          (should (string-match-p "^#\\+SENTENCES: 258, 259$" text))
+          (should (string-match-p (regexp-quote "* Worum es geht\n:PROPERTIES:\n:GENERATED_HASH: abc\n:END:\n*Erklärt wird:* der Vergleich.\n") text))
+          (should (string-match-p "^\\* Working Translation\nMeine Fassung\\.$" text))
+          (should (string-match-p "^\\* My Notes\nNotiz\\.$" text))
+          (should (string-match-p "^\\*\\*\\* Segment 627\n:PROPERTIES:\n:VISIBILITY: folded\n:END:$" text))
+          ;; the stamp of what stands there: not reviewed, not edited
+          (should (equal (bcat-sentence--body-hash text) (bcat-sentence--text-header text "CAT_WRITTEN")))
+          (should-not (bcat-sentence-reviewed doc))
+          ;; once is enough
+          (should (equal doc (bcat-relayout-file doc)))
+          (should (equal text (bcat-sentence-test--text-of doc))))))))
+
+(ert-deftest bcat-commentary-relayout-from-document-and-sources ()
+  "C-c u L, where it is pressed: in a commentary document — that
+document, nothing else (not the verse files its sentences belong to);
+on a Section of the commentary source — the document of that Section;
+on a verse of the Sanskrit source — the verse's files and the
+commentary documents that cover it."
+  (bcat-commentary-test--with-msa
+    (bcat-sentence-test--with-stubs #'bcat-commentary-test--answers
+      (bcat-sentence-test--fetch-n src 36))
+    (let* ((doc (expand-file-name "comm-IX.16-savbh.org" cfolder))
+           (verse (tibetan-sentence--filepath 36 folder src))
+           (old (concat (replace-regexp-in-string
+                         "\\`\\(?:.*\n\\)*?\n" ""
+                         bcat-commentary-test--old-document)))
+           (head (let ((text (bcat-sentence-test--text-of doc)))
+                   (substring text 0 (string-match "^\\* " text))))
+           (reset (lambda () (with-temp-file doc (insert head old))))
+           (three (lambda () (equal "Text" (car (bcat-commentary-test--l1 (bcat-sentence-test--text-of doc))))))
+           (press (lambda (file heading)
+                    (with-current-buffer (find-file-noselect file)
+                      (unwind-protect
+                          (progn
+                            (goto-char (point-min))
+                            (when heading (re-search-forward heading))
+                            (bcat-relayout))
+                        (kill-buffer))))))
+      ;; in the document: it alone
+      (funcall reset)
+      (should-not (funcall three))
+      (should (equal (list doc) (funcall press doc nil)))
+      (should (funcall three))
+      ;; on its Section in the commentary source
+      (funcall reset)
+      (should (equal (list doc) (funcall press csrc "^\\*\\* Section IX\\.16")))
+      (should (funcall three))
+      ;; on the verse in the Sanskrit source: the verse's files and the document
+      (funcall reset)
+      (let ((done (funcall press src "^\\*\\*\\* Sentence 36")))
+        (should (member verse done))
+        (should (member doc done)))
+      (should (funcall three)))))
+
 (ert-deftest bcat-commentary-verse-links ()
   "The verse files link the commentary: in the header, and per segment
 the Sthiramati sentences with the lemmata of its pādas — known once the

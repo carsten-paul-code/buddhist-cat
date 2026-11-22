@@ -19,6 +19,9 @@
 (require 'bcat-sentence)
 
 (declare-function tibetan-cascade--scope-at-point "tibetan-cascade" ())
+(declare-function bcat-commentary-relayout-file "bcat-commentary" (doc))
+(declare-function bcat-commentary-documents "bcat-commentary" (sent-num source-file))
+(declare-function bcat-commentary-sources "bcat-commentary" (source-file))
 (declare-function tibetan-sentence--filepath "tibetan-sentence-persist" (sent-num &optional folder source-file))
 (declare-function tibetan-sentence--sent-id-from-filename "tibetan-sentence-persist" (filepath))
 (declare-function tibetan-sentence--source-file-from-analysis "tibetan-sentence-persist" (analysis-file))
@@ -739,14 +742,18 @@ no sentence file of a template, or its source has another template now
 fetch (`bcat-relayout-file-context'): user slots, the file's own
 sections, #+CREATED and #+LAST_ANALYZED stay.  Returns FILE, or nil
 \(with a message) when its source has another template now — C-c u G
-rebuilds it."
-  (let ((read (bcat-relayout-file-context file)))
-    (if (plist-get read :error)
-        (progn (message "C-c u L: %s" (plist-get read :error)) nil)
-      (bcat-sentence--write file (bcat-sentence--render (plist-get read :template)
-                                                        (plist-get read :context)
-                                                        (plist-get read :source)))
-      file)))
+rebuilds it.  A commentary document (comm-…, 22.11.) is brought into
+its three parts in place (`bcat-commentary-relayout-file')."
+  (if (equal (bcat-sentence-file-p file) "commentary")
+      (progn (require 'bcat-commentary)
+             (bcat-commentary-relayout-file file))
+    (let ((read (bcat-relayout-file-context file)))
+      (if (plist-get read :error)
+          (progn (message "C-c u L: %s" (plist-get read :error)) nil)
+        (bcat-sentence--write file (bcat-sentence--render (plist-get read :template)
+                                                          (plist-get read :context)
+                                                          (plist-get read :source)))
+        file))))
 
 ;;;###autoload
 (defun bcat-relayout ()
@@ -755,22 +762,39 @@ fetch (Carsten 31.10.: „Ohne Abruf umbauen“) — after a change of the
 template, the files analysed before it.  In a sentence file: that file
 \(in a bilingual pair its partner too); in a source: every existing
 file of the sentence at point or of the sentences under the heading at
-point."
+point.  22.11.: in a commentary document — that document alone; in a
+commentary source the documents of the Sections at point; on a verse
+its commentary documents with it (`bcat-commentary-documents')."
   (interactive)
   (require 'tibetan-cascade)
-  (let* ((scope (tibetan-cascade--scope-at-point))
+  (require 'bcat-commentary)
+  (let* ((here (buffer-file-name))
+         (document (and here (equal (bcat-sentence-file-p here) "commentary") here))
+         (scope (and (not document) (tibetan-cascade--scope-at-point)))
          (source (plist-get scope :source))
-         (folder (file-name-as-directory (expand-file-name "analysis" (file-name-directory source))))
-         (files '()))
+         (commentary (and source (equal (bcat-sentence-template-name source) "commentary")))
+         ;; commentary documents only where a source names commentaries
+         (documents (and source
+                         (or commentary
+                             (bcat-commentary-sources source)
+                             (let ((other (bcat-sentence-parallel-source source)))
+                               (and other (bcat-commentary-sources other))))))
+         (folder (and source (file-name-as-directory
+                              (expand-file-name "analysis" (file-name-directory source)))))
+         (files (and document (list document))))
     (dolist (n (plist-get scope :sent-nums))
-      (let* ((s (or (bcat-sentence-owner n source) (list :sent-num n)))
-             (file (tibetan-sentence--filepath (plist-get s :sent-num) folder source))
-             (partner (and (bcat-sentence--paired-p source)
-                           (bcat-sentence-partner-file (plist-get s :sent-num) source))))
-        (dolist (f (list file partner))
-          (when (and f (file-exists-p f) (bcat-sentence-file-p f))
-            (push f files)))))
-    (setq files (delete-dups (nreverse files)))
+      (unless commentary
+        (let* ((s (or (bcat-sentence-owner n source) (list :sent-num n)))
+               (file (tibetan-sentence--filepath (plist-get s :sent-num) folder source))
+               (partner (and (bcat-sentence--paired-p source)
+                             (bcat-sentence-partner-file (plist-get s :sent-num) source))))
+          (dolist (f (list file partner))
+            (when (and f (file-exists-p f) (bcat-sentence-file-p f))
+              (push f files)))))
+      (when documents
+        (dolist (doc (bcat-commentary-documents n source))
+          (push doc files))))
+    (setq files (delete-dups (if document files (nreverse files))))
     (let ((done (delq nil (mapcar #'bcat-relayout-file files))))
       (message "C-c u L: %d Datei(en) neu gesetzt%s" (length done)
                (if (= (length done) (length files)) ""
