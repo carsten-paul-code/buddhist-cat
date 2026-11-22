@@ -1398,9 +1398,12 @@ the ((PDF-NAME . LABEL) …) sent (latest first)."
 untergliedert in Philologie und worum es geht“; on the reMarkable
 „Gleicher Ordner, Name mit Zusatz“.  C-c u H in a commentary document
 exports the document itself — no longer the dossier of its verse —, as
-two PDFs like a sentence file's: the reading PDF (parts Text and
-Philology, a sentence of the text jumping to its analysis and back)
-under the document's name, and „<name> Worum es geht“."
+two PDFs: the reading PDF (parts Text and Philology, a sentence of the
+text jumping to its analysis and back) under the document's name — and,
+since Carsten's „4x worum es geht“ (22.11.), its section „Worum es
+geht“ not as a PDF of its own but in the one condensed document of its
+verse („MSA IX.16 condensed“, in the verse's folder).  Carsten: „Ein
+Dokument je Vers“, named „condensed“."
   (bcat-commentary-test--with-msa
     (bcat-sentence-test--with-stubs #'bcat-commentary-test--answers
       (bcat-sentence-test--fetch-n src 36))
@@ -1409,11 +1412,11 @@ under the document's name, and „<name> Worum es geht“."
       (bcat-commentary-test--with-export-stubs
         (bcat-export-file doc)
         (should (equal '(("msa-IX.16-17-Sthiramati.pdf" . "MSA IX.16–17 Sthiramati")
-                         ("msa-IX.16-17-Sthiramati-worum-es-geht.pdf" . "MSA IX.16–17 Sthiramati Worum es geht"))
+                         ("msa-IX.16-condensed.pdf" . "MSA IX.16 condensed"))
                        (reverse uploaded)))
         (should (= 2 (length exported)))
-        (let ((reading (cdr (cl-find-if-not (lambda (e) (string-match-p "worum-es-geht" (car e))) exported)))
-              (overview (cdr (cl-find-if (lambda (e) (string-match-p "worum-es-geht" (car e))) exported))))
+        (let ((reading (cdr (cl-find-if-not (lambda (e) (string-match-p "condensed" (car e))) exported)))
+              (overview (cdr (cl-find-if (lambda (e) (string-match-p "condensed" (car e))) exported))))
           ;; the document, not the dossier of the verse
           (should-not (string-match-p "^\\* Reading$\\|Lesedossier" reading))
           (should (string-match-p "\\`#\\+TITLE: MSA IX\\.16–17 Sthiramati\n" reading))
@@ -1427,14 +1430,96 @@ under the document's name, and „<name> Worum es geht“."
                                   reading))
           (should (string-match-p "^\\*\\*\\* Segment 627$" reading))
           (should (string-match-p "^⟦627⟧ \\*Translation:\\* „Just as, when a vessel of water is broken,$" reading))
-          ;; „Worum es geht“: a document of its own, without the mark's drawer
-          (should (string-match-p "\\`#\\+TITLE: MSA IX\\.16–17 Sthiramati — Worum es geht\n" overview))
-          (should (string-match-p "^\\* Worum es geht\n:PROPERTIES:\n:CUSTOM_ID: overview\n:END:\n" overview))
+          ;; its „Worum es geht“: a part of the verse's condensed, without the mark's drawer
+          (should (string-match-p "\\`#\\+TITLE: MSA IX\\.16 — condensed\n" overview))
+          (should (string-match-p "^\\* Sthiramati (IX\\.16–17)\n:PROPERTIES:\n:CUSTOM_ID: condensed-1\n:END:\n" overview))
           (should-not (string-match-p "GENERATED_HASH\\|^\\* Text$\\|^\\* Philology$" overview)))
         ;; beside the verse's PDFs
         (should (file-exists-p (expand-file-name "Sanskrit/handouts/msa-IX.16-17-Sthiramati.pdf" dir)))
-        (should (file-exists-p (expand-file-name "Sanskrit/handouts/msa-IX.16-17-Sthiramati-worum-es-geht.pdf" dir)))
+        (should (file-exists-p (expand-file-name "Sanskrit/handouts/msa-IX.16-condensed.pdf" dir)))
+        (should-not (file-exists-p (expand-file-name "Sanskrit/handouts/msa-IX.16-17-Sthiramati-worum-es-geht.pdf" dir)))
         (should-not (directory-files cfolder nil "\\.pdf\\'\\|\\`pdfview-"))))))
+
+(ert-deftest bcat-commentary-condensed-one-per-verse ()
+  "Carsten 22.11., with four „Worum es geht“ in the folder „MSA XI.15“
+\(verse, bhāṣya, Phywa pa's pair, his introduction): „Ein Dokument je
+Vers“, named „condensed“ (his word).  The section „Worum es geht“ of
+the verse and of every commentary document that covers it stand in ONE
+PDF „<Vers> condensed“ in the verse's folder, each a part of its own:
+„Vers“, then the documents by their commentator (with the verses they
+cover when more than this one).  The documents named „… Worum es geht“
+that C-c u H put there before go into the archive of the folder they
+lie in, in the same session, and the device index forgets them.  In one
+run the condensed of a verse is set once, however many of its files
+are exported."
+  (let ((bcat-export-semester-regexp "\\`bcat-msa-"))
+    (bcat-commentary-test--with-bhasya
+      (bcat-commentary-test--with-file-stubs #'bcat-commentary-test--bhasya-answer
+        (bcat-sentence-test--fetch-n src 36))
+      (let* ((verse (tibetan-sentence--filepath 36 folder src))
+             (bhasya (expand-file-name "comm-IX.16-mdo.org" tfolder))
+             (sthiramati (expand-file-name "comm-IX.16-savbh.org" cfolder))
+             (base (concat (file-name-nondirectory (directory-file-name dir)) "/Sanskrit"))
+             (here (concat base "/MSA IX.16"))
+             (index (expand-file-name "Sanskrit/handouts/.bcat-remarkable.eld" dir))
+             (exported '()) (calls '()))
+        (bcat-sentence-test--put-overview verse "* Text" "*Erklärt wird:* der Vers.")
+        (bcat-sentence-test--put-overview bhasya "* Working Translation" "*Erklärt wird:* das Bhāṣya.")
+        (bcat-sentence-test--put-overview sthiramati "* Working Translation" "*Erklärt wird:* Sthiramati.")
+        (make-directory (file-name-directory index) t)
+        (with-temp-file index
+          (insert (format "((\"msa-IX.16-17-Sthiramati-worum-es-geht.pdf\" \"c\" \"2026-11-22 1305\") (\"msa-IX.16-Bhasya-worum-es-geht.pdf\" \"b\" \"2026-11-22 1304\" %S) (\"msa-IX.16-worum-es-geht.pdf\" \"a\" \"2026-11-22 1304\"))\n"
+                          here)))
+        (cl-letf (((symbol-function 'bcat-export-pdf)
+                   (lambda (f &rest _)
+                     (push (cons (file-name-nondirectory f)
+                                 (with-temp-buffer (insert-file-contents f) (buffer-string)))
+                           exported)
+                     (let ((pdf (concat (file-name-sans-extension f) ".pdf")))
+                       (with-temp-file pdf (insert "PDF")) pdf)))
+                  ((symbol-function 'tibetan-discussion-paper--upload)
+                   (lambda (pdf _title label &optional done folder stamp from)
+                     (push (list (file-name-nondirectory pdf) label folder stamp from) calls)
+                     (when done (funcall done t label)) t)))
+          (let ((bcat-export-upload t))
+            (bcat-export-file verse)
+            (let ((condensed (assoc "msa-IX.16-condensed.pdf" calls))
+                  (text (cdr (cl-find-if (lambda (e) (string-match-p "condensed" (car e))) exported))))
+              ;; one document, in the verse's folder, the earlier ones out of the way
+              (should (equal (list "msa-IX.16-condensed.pdf" "MSA IX.16 condensed" here nil
+                                   (list (list base "MSA IX.16 Worum es geht" "2026-11-22 1304")
+                                         (list here "MSA IX.16 Bhāṣya Worum es geht" "2026-11-22 1304")
+                                         (list base "MSA IX.16–17 Sthiramati Worum es geht" "2026-11-22 1305")))
+                             condensed))
+              (should-not (cl-find-if (lambda (c) (string-match-p "worum-es-geht" (car c))) calls))
+              ;; its parts
+              (should (string-match-p "\\`#\\+TITLE: MSA IX\\.16 — condensed\n" text))
+              (should (equal '("Vers" "Bhāṣya" "Sthiramati (IX.16–17)")
+                             (let ((pos 0) (out '()))
+                               (while (string-match "^\\* \\(.+\\)$" text pos)
+                                 (push (match-string 1 text) out)
+                                 (setq pos (match-end 0)))
+                               (nreverse out))))
+              (should (string-match-p "^\\* Bhāṣya\n:PROPERTIES:\n:CUSTOM_ID: condensed-1\n:END:\n\\*Erklärt wird:\\* das Bhāṣya\\.$" text))
+              (should-not (string-match-p "GENERATED_HASH" text)))
+            ;; the index: the condensed with its folder, the earlier ones gone
+            (let ((entries (with-temp-buffer (insert-file-contents index) (read (current-buffer)))))
+              (should (equal here (nth 3 (assoc "msa-IX.16-condensed.pdf" entries))))
+              (should-not (cl-find-if (lambda (e) (string-match-p "worum-es-geht" (car e))) entries)))
+            ;; C-c u H in a document: its reading PDF; the condensed of its
+            ;; verse is on the device as it is — not set again
+            (setq exported '() calls '())
+            (bcat-export-file sthiramati)
+            (should (equal '("msa-IX.16-17-Sthiramati.pdf") (mapcar #'car calls)))
+            (should-not (cl-find-if (lambda (e) (string-match-p "condensed" (car e))) exported))
+            ;; one run, everything asked for: the condensed once
+            (setq exported '() calls '())
+            (let ((bcat-export--condensed-done '())
+                  (bcat-export-force-upload t))
+              (bcat-export-file verse)
+              (bcat-export-file bhasya)
+              (bcat-export-file sthiramati))
+            (should (= 1 (cl-count-if (lambda (e) (string-match-p "condensed" (car e))) exported)))))))))
 
 (ert-deftest bcat-commentary-export-notes-and-old-layout ()
   "The PDF of a commentary document: its notes (Working Translation, My
@@ -1593,7 +1678,8 @@ since.  A PDF put into the verse's folder before needs no FROM."
             (with-temp-file index
               (insert "((\"msa-IX.16.pdf\" \"0123\" \"2026-11-14 0910\"))\n"))
             (bcat-export-file file)
-            (should (equal (list (list "msa-IX.16.pdf" "MSA IX.16" (concat base "/MSA IX.16") "2026-11-14 0910" base))
+            (should (equal (list (list "msa-IX.16.pdf" "MSA IX.16" (concat base "/MSA IX.16") "2026-11-14 0910"
+                                       (list (list base "MSA IX.16" "2026-11-14 0910"))))
                            calls))
             ;; the index knows the folder now
             (should (equal (concat base "/MSA IX.16")

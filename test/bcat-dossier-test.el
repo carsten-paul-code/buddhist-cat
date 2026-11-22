@@ -533,8 +533,10 @@ since 22.11. it has PDFs of its own — bcat-commentary-export-own-pdfs.)"
   "Carsten 22.11. (MSA XI.15–20 analysed; on the reMarkable one document
 „MSA XI.15“ each, beginning with „Worum es geht“): C-c u H of a verse
 with layers puts two documents there, as for a sentence file — the
-dossier from the reading page on under the verse's name, and „<Vers>
-Worum es geht“ (msa-IX.16-worum-es-geht.pdf beside msa-IX.16.pdf)."
+dossier from the reading page on under the verse's name, and the
+section „Worum es geht“ as a document of its own; since the same day
+named „<Vers> condensed“ (msa-IX.16-condensed.pdf beside msa-IX.16.pdf),
+for a verse with commentary documents with their sections in it."
   (bcat-commentary-test--with-msa
     (bcat-sentence-test--with-stubs #'bcat-commentary-test--answers
       (bcat-sentence-test--fetch-n src 36))
@@ -555,16 +557,17 @@ Worum es geht“ (msa-IX.16-worum-es-geht.pdf beside msa-IX.16.pdf)."
         (let ((bcat-export-upload t))
           (bcat-export-file file)
           (should (equal '(("msa-IX.16.pdf" . "MSA IX.16")
-                           ("msa-IX.16-worum-es-geht.pdf" . "MSA IX.16 Worum es geht"))
+                           ("msa-IX.16-condensed.pdf" . "MSA IX.16 condensed"))
                          (reverse uploaded)))
-          (let ((dossier (cdr (cl-find-if-not (lambda (e) (string-match-p "worum-es-geht" (car e))) exported)))
-                (overview (cdr (cl-find-if (lambda (e) (string-match-p "worum-es-geht" (car e))) exported))))
+          (let ((dossier (cdr (cl-find-if-not (lambda (e) (string-match-p "condensed" (car e))) exported)))
+                (overview (cdr (cl-find-if (lambda (e) (string-match-p "condensed" (car e))) exported))))
             (should (= 2 (length exported)))
             (should (string-match-p "^\\* Reading$" dossier))
             (should (string-match-p "^\\*\\* 03 Sthiramati" dossier))
             (should-not (string-match-p "^\\* Sthiramati$" dossier))
             (should-not (string-match-p "^\\* Worum es geht$" dossier))
-            (should (string-match-p "^\\* Worum es geht$" overview))
+            ;; the verse's section, as the part „Vers“
+            (should (string-match-p "^\\* Vers\n:PROPERTIES:\n:CUSTOM_ID: condensed-verse\n:END:\n" overview))
             (should-not (string-match-p "^\\* Reading$" overview))))))))
 
 (ert-deftest bcat-dossier-one-upload ()

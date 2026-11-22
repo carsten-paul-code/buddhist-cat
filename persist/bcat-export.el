@@ -35,6 +35,7 @@
 (declare-function bcat-commentary-sections "bcat-commentary" (label lead commentary-source))
 (declare-function tibetan-discussion-paper--doc-name "tibetan-discussion-paper" (name))
 (declare-function bcat-commentary-documents "bcat-commentary" (sent-num source-file))
+(declare-function bcat-sentence--overview "bcat-sentence" (text))
 (declare-function bcat-commentary--l1-sections "bcat-commentary" (text))
 (declare-function tibetan-analysis-make-short-name "tibetan-analysis-persist" (source-file))
 (declare-function tibetan-cascade--scope-at-point "tibetan-cascade" ())
@@ -1519,28 +1520,195 @@ there."
   (let ((entry (bcat-export--device-entry pdf)))
     (and entry (or (nth 3 entry) flat))))
 
+(defun bcat-export--write-device-entries (pdf entries)
+  "Write ENTRIES as the index `bcat-export--device-index' in the folder
+of PDF."
+  (let ((coding-system-for-write 'utf-8-unix)
+        (print-length nil) (print-level nil))
+    (with-temp-file (expand-file-name bcat-export--device-index (file-name-directory pdf))
+      (insert ";; -*- mode: lisp-data; coding: utf-8 -*-\n"
+              ";; Buddhist CAT: was C-c u H aufs reMarkable gelegt hat (PDF, MD5 des Texts, wann).\n")
+      (prin1 (sort entries (lambda (a b) (string< (car a) (car b)))) (current-buffer))
+      (insert "\n"))))
+
 (defun bcat-export--note-on-device (pdf hash &optional folder)
   "Remember that PDF, set from the text with HASH, is on the reMarkable
 since now — in FOLDER, when given (22.11.: a verse's own folder; the
 entry's fourth element, `bcat-export--device-place').  Never signals:
 remembering is no reason to spoil an export."
   (condition-case err
-      (let ((entries (cons (append (list (file-name-nondirectory pdf) hash (format-time-string "%Y-%m-%d %H%M"))
-                                   (and folder (list folder)))
-                           (cl-remove (file-name-nondirectory pdf) (bcat-export--device-entries pdf)
-                                      :key #'car :test #'equal)))
-            (coding-system-for-write 'utf-8-unix)
-            (print-length nil) (print-level nil))
-        (with-temp-file (expand-file-name bcat-export--device-index (file-name-directory pdf))
-          (insert ";; -*- mode: lisp-data; coding: utf-8 -*-\n"
-                  ";; Buddhist CAT: was C-c u H aufs reMarkable gelegt hat (PDF, MD5 des Texts, wann).\n")
-          (prin1 (sort entries (lambda (a b) (string< (car a) (car b)))) (current-buffer))
-          (insert "\n")))
+      (bcat-export--write-device-entries
+       pdf (cons (append (list (file-name-nondirectory pdf) hash (format-time-string "%Y-%m-%d %H%M"))
+                         (and folder (list folder)))
+                 (cl-remove (file-name-nondirectory pdf) (bcat-export--device-entries pdf)
+                            :key #'car :test #'equal)))
     (error (message "reMarkable-Stand nicht vermerkt (%s): %s"
                     (file-name-nondirectory pdf) (error-message-string err)))))
 
-(defconst bcat-export--overview-suffix "-worum-es-geht"
-  "What the name of the PDF of „Worum es geht“ adds to that of its file's.")
+(defun bcat-export--forget-on-device (pdf)
+  "Forget PDF in the index of its folder: the document is no longer on
+the reMarkable under its name (22.11.: moved into the archive when the
+„condensed“ took its place).  Never signals."
+  (condition-case err
+      (let ((entries (bcat-export--device-entries pdf)))
+        (when (assoc (file-name-nondirectory pdf) entries)
+          (bcat-export--write-device-entries
+           pdf (cl-remove (file-name-nondirectory pdf) entries :key #'car :test #'equal))))
+    (error (message "reMarkable-Stand nicht vermerkt (%s): %s"
+                    (file-name-nondirectory pdf) (error-message-string err)))))
+
+(defcustom bcat-export-overview-name "condensed"
+  "The name of the PDF of the section „Worum es geht“ on the reMarkable:
+„<label> condensed“ (Carsten 22.11., with four „Worum es geht“ in one
+folder: „Vielleicht wäre auch eine andere Bezeichnung wie z.B.
+condensed oder so gut“).  The section in the files keeps its name."
+  :type 'string
+  :group 'buddhist-cat)
+
+(defconst bcat-export--overview-suffix "-condensed"
+  "What the name of the PDF of the section „Worum es geht“ adds to that
+of its file's (`bcat-export-overview-name').")
+
+(defconst bcat-export--overview-old-suffix "-worum-es-geht"
+  "What the name of the PDF of the section added until 22.11. — the
+documents of that name on the reMarkable go out of the way when the
+„condensed“ takes their place (`bcat-export--earlier-overviews').")
+
+(defconst bcat-export--overview-old-name "Worum es geht"
+  "The name the PDF of the section had on the reMarkable until 22.11.")
+
+(defvar bcat-export--condensed-done t
+  "The verse files whose condensed was set in this run of C-c u H or
+of a fetch's export, so that it is set once however many of its files
+are exported — or t: not counted (a single export).")
+
+(defvar bcat-export--doc-condensed t
+  "Non-nil: the export of a commentary document sets the condensed of
+the verses it covers too (`bcat-export-condensed').  nil while a
+fetch's export leaves that to the verses that are complete.")
+
+(defun bcat-export--claim-condensed (lead)
+  "Non-nil when the condensed of the verse file LEAD is to be set in
+this run (`bcat-export--condensed-done'), noting it."
+  (let ((key (expand-file-name lead)))
+    (cond ((not (listp bcat-export--condensed-done)) t)
+          ((member key bcat-export--condensed-done) nil)
+          (t (push key bcat-export--condensed-done) t))))
+
+(defun bcat-export--verse-documents (lead)
+  "The commentary documents whose section „Worum es geht“ goes into the
+condensed of the verse file LEAD (Carsten 22.11.: „Ein Dokument je
+Vers“), or nil — also when the verse has none, which
+`bcat-export--verse-with-documents-p' tells apart."
+  (let ((src (tibetan-sentence--source-file-from-analysis lead))
+        (n (tibetan-sentence--sent-id-from-filename lead)))
+    (and src n (bcat-export--documents-p n src)
+         (bcat-commentary-documents n src))))
+
+(defun bcat-export--verse-with-documents-p (lead)
+  "Non-nil when the verse file LEAD has commentary documents of its own
+\(`bcat-export--documents-p'): its condensed takes their sections."
+  (let ((src (tibetan-sentence--source-file-from-analysis lead))
+        (n (tibetan-sentence--sent-id-from-filename lead)))
+    (and src n (bcat-export--documents-p n src))))
+
+(defun bcat-export--condensed-part-title (doc verse)
+  "The title of the part of the commentary document DOC in the condensed
+of the verse labelled VERSE („MSA XI.15“): its commentator, and the
+verses it covers when they are more than this one — „Bhāṣya“, „Phywa
+pa (XI.15–16)“, „Phywa pa Einleitung (XI.15–20)“."
+  (let* ((words (split-string (plist-get (bcat-export-info doc) :label)))
+         (range (nth 1 words))
+         (author (string-join (nthcdr 2 words) " ")))
+    (if (equal range (nth 1 (split-string verse)))
+        author
+      (format "%s (%s)" author range))))
+
+(defun bcat-export--condensed-text (lead)
+  "The condensed of the verse file LEAD as org text (Carsten 22.11.:
+„Ein Dokument je Vers“, „condensed“): the section „Worum es geht“ of
+the verse (part „Vers“) and of each of its commentary documents
+\(`bcat-export--verse-documents', a part titled by
+`bcat-export--condensed-part-title'), each a part with a jump target —
+the bar at the foot of the PDF.  The sections without the drawer of a
+generated one's mark.  nil when none of them has one."
+  (let* ((label (plist-get (bcat-export-info lead) :label))
+         (own (bcat-sentence--overview (bcat-sentence--text lead)))
+         (parts (append
+                 (and own (list (list "Vers" "condensed-verse" (car own))))
+                 (cl-loop for doc in (bcat-export--verse-documents lead)
+                          for overview = (bcat-sentence--overview (bcat-commentary-doc-text doc))
+                          for i from 1
+                          when overview
+                          collect (list (bcat-export--condensed-part-title doc label)
+                                        (format "condensed-%d" i) (car overview))))))
+    (and parts
+         (concat (format "#+TITLE: %s — %s\n" label bcat-export-overview-name)
+                 "#+OPTIONS: toc:nil num:nil title:nil author:nil date:nil\n\n"
+                 (mapconcat (lambda (p)
+                              (format "* %s\n:PROPERTIES:\n:CUSTOM_ID: %s\n:END:\n%s\n\n"
+                                      (nth 0 p) (nth 1 p) (string-trim (nth 2 p))))
+                            parts "")))))
+
+(defun bcat-export--earlier-overviews (file target flat)
+  "The documents of the old name („<label> Worum es geht“) that C-c u H
+put on the reMarkable for the section of FILE — its own (TARGET with
+`bcat-export--overview-old-suffix') and, for a verse, those of its
+commentary documents — as ((FOLDER LABEL STAMP OLD-PDF) …): FOLDER
+where it lies (`bcat-export--device-place', by default FLAT), LABEL its
+name there, STAMP when it was sent.  They go into the archive when the
+condensed takes their place."
+  (let* ((old (lambda (pdf label)
+                (let ((e (and pdf (bcat-export--device-entry
+                                   (concat (file-name-sans-extension pdf) bcat-export--overview-old-suffix ".pdf")))))
+                  (and e (list (or (nth 3 e) flat)
+                               (format "%s %s" label bcat-export--overview-old-name)
+                               (nth 2 e)
+                               (concat (file-name-sans-extension pdf) bcat-export--overview-old-suffix ".pdf")))))))
+    (delq nil
+          (cons (funcall old target (plist-get (bcat-export-info file) :label))
+                (mapcar (lambda (doc)
+                          (let ((info (bcat-export-info doc)))
+                            (funcall old (plist-get info :handout) (plist-get info :label))))
+                        (bcat-export--verse-documents file))))))
+
+(defun bcat-export--doc-verses (doc)
+  "The verse files the commentary document DOC covers, as its #+CAT_VERSE
+links them (those that exist)."
+  (let ((line (bcat-sentence--header-value doc "CAT_VERSE")) (pos 0) (out '()))
+    (while (and line (string-match "\\[\\[file:\\([^]:]+\\)" line pos))
+      (let ((f (expand-file-name (match-string 1 line) (file-name-directory doc))))
+        (when (file-exists-p f) (push f out)))
+      (setq pos (match-end 0)))
+    (nreverse out)))
+
+(defun bcat-export-condensed (lead &optional status-file)
+  "Set the condensed of the verse file LEAD (`bcat-export--condensed-text')
+and put it on the reMarkable into the verse's folder when the device
+does not have it as it is — the documents of the old name out of the
+way (`bcat-export--earlier-overviews').  Once per run
+\(`bcat-export--claim-condensed').  STATUS-FILE: whose status line
+reports it.  Returns the PDF, or nil when nothing was set."
+  (when (and (file-exists-p lead) (bcat-export--claim-condensed lead))
+    (let* ((info (bcat-export-info lead))
+           (head (bcat-export-head-lines (plist-get info :folder) (plist-get info :work)
+                                         (plist-get info :sent-num) (plist-get info :verse)))
+           (target (or (plist-get info :handout) (concat (file-name-sans-extension lead) ".pdf")))
+           (text (bcat-export--condensed-text lead))
+           (second (and text (bcat-export--second-pdf lead text head target bcat-export--overview-suffix))))
+      (when second
+        (if bcat-export-upload
+            (progn
+              (require 'tibetan-discussion-paper)
+              (bcat-export--upload-row
+               (or status-file lead) (plist-get info :work) (plist-get info :device-folder)
+               "reMarkable" (list (list (car second)
+                                        (format "%s %s" (plist-get info :label) bcat-export-overview-name)
+                                        bcat-export-overview-name (cdr second)
+                                        (bcat-export--earlier-overviews lead target (plist-get info :device-flat))))
+               (plist-get info :device-flat)))
+          (message "PDF: %s" (car second))))
+      (car second))))
 
 (defconst bcat-export--survey-suffix "-ueberblick"
   "What the name of the PDF of the survey of a passage („Überblick“,
@@ -1578,22 +1746,29 @@ TEXT or TARGET."
 
 (defun bcat-export--upload-row (status-file title folder done row &optional flat)
   "Put the documents ROW on the reMarkable one after the other — rmapi
-one at a time: each (PDF LABEL TAG HASH), LABEL its name in FOLDER (the
-path as in the Finder, `bcat-export--device-folder', or a verse's own
-folder in it; nil: the folder of TITLE), HASH noted when it is there
+one at a time: each (PDF LABEL TAG HASH [EARLIER]), LABEL its name in
+FOLDER (the path as in the Finder, `bcat-export--device-folder', or a
+verse's own folder in it; nil: the folder of TITLE), HASH noted when it is there
 \(`bcat-export--note-on-device', with FOLDER).  The document that is
 there under that name goes into the archive with the date it was sent
 \(`bcat-export--device-stamp') — also when it lies in another folder
 than FOLDER (`bcat-export--device-place', by default FLAT, the folder
 of the source: 22.11., the verses' own folders): the upload is told
-where, and moves it out of the way there.  DONE is the status of
+where, and moves it out of the way there; so too EARLIER, documents
+of an old name ((FOLDER LABEL STAMP OLD-PDF) …,
+`bcat-export--earlier-overviews'), which the index forgets once the
+new one is there.  DONE is the status of
 STATUS-FILE so far; the PDF of the file (TAG nil) writes „reMarkable
 ✓ …“, another „ · TAG ✓“.  A failure ends the row: after a refusal
 nothing follows — what did not get there goes with the next export."
   (when row
-    (pcase-let ((`(,pdf ,label ,tag ,hash) (car row)))
+    (pcase-let ((`(,pdf ,label ,tag ,hash ,earlier) (car row)))
       (let* ((was (bcat-export--device-place pdf flat))
-             (from (and was folder (not (equal was folder)) was)))
+             (from (and was folder (not (equal was folder)) was))
+             ;; 22.11.: what goes out of the way first — the earlier
+             ;; version in another folder, the documents of an old name
+             (moves (append (and from (list (list from label (bcat-export--device-stamp pdf))))
+                            (mapcar (lambda (e) (seq-take e 3)) earlier))))
         (apply #'tibetan-discussion-paper--upload
                pdf title label
                (lambda (ok what)
@@ -1604,10 +1779,11 @@ nothing follows — what did not get there goes with the next export."
                    (bcat-status-step status-file :upload done)
                    (when ok
                      (bcat-export--note-on-device pdf hash folder)
+                     (dolist (e earlier) (bcat-export--forget-on-device (nth 3 e)))
                      (bcat-export--upload-row status-file title folder done (cdr row) flat))))
                folder (bcat-export--device-stamp pdf)
                ;; only when there is one: the upload of before takes six
-               (and from (list from)))))))
+               (and moves (list moves)))))))
 
 (defun bcat-export-file (file)
   "C-c u H for the sentence FILE: PDF with running head, moved into the
@@ -1659,12 +1835,19 @@ the PDF path (the first's)."
          (view (or (plist-get dossier :text) (plist-get views :view)))
          ;; 19.11.: „Worum es geht“ as a PDF of its own — beside the
          ;; file's, in handouts/ or (without that folder) beside the file;
-         ;; 22.11.: a dossier's too (`bcat-dossier-pdf-text', :overview)
-         (overview (and view
-                        (bcat-export--second-pdf
-                         file (if dossier (plist-get dossier :overview) (plist-get views :overview)) head
-                         (or (plist-get info :handout) (concat (file-name-sans-extension file) ".pdf"))
-                         bcat-export--overview-suffix)))
+         ;; 22.11.: a dossier's too (`bcat-dossier-pdf-text', :overview);
+         ;; named „condensed“, for a verse with commentary documents
+         ;; with their sections in it (one per verse), set once per run;
+         ;; a commentary document's goes into its verses'
+         (overview-target (or (plist-get info :handout) (concat (file-name-sans-extension file) ".pdf")))
+         (overview-text (cond (commentary nil)
+                              ((not (bcat-export--claim-condensed file)) nil)
+                              ((bcat-export--verse-with-documents-p file) (bcat-export--condensed-text file))
+                              (dossier (plist-get dossier :overview))
+                              (t (plist-get views :overview))))
+         (overview (and view overview-text
+                        (bcat-export--second-pdf file overview-text head overview-target
+                                                 bcat-export--overview-suffix)))
          ;; only what that export lacked — without it the variable holds
          ;; an earlier export's
          (overview-missing (and overview bcat-export--missing))
@@ -1720,8 +1903,10 @@ the PDF path (the first's)."
                                      (list (car lectures) (format "%s %s" label (plist-get views :lecturer))
                                            "Vortrag" (cdr lectures)))
                                 (and overview
-                                     (list (car overview) (format "%s Worum es geht" label)
-                                           "Worum es geht" (cdr overview)))
+                                     (list (car overview) (format "%s %s" label bcat-export-overview-name)
+                                           bcat-export-overview-name (cdr overview)
+                                           (bcat-export--earlier-overviews file overview-target
+                                                                           (plist-get info :device-flat))))
                                 (and survey
                                      (list (car survey) (format "%s Überblick" label)
                                            "Überblick" (cdr survey)))))))
@@ -1730,6 +1915,11 @@ the PDF path (the first's)."
           (bcat-export--upload-row status-file (plist-get info :work) (plist-get info :device-folder)
                                    "reMarkable: unverändert" row (plist-get info :device-flat)))
       (message "PDF: %s" pdf))
+    ;; 22.11.: a commentary document's section is in the condensed of
+    ;; the verses it covers — set anew, when it changed
+    (when (and commentary bcat-export--doc-condensed)
+      (dolist (verse (bcat-export--doc-verses file))
+        (bcat-export-condensed verse status-file)))
     pdf))
 
 (defun bcat-export-reading-document (file)
@@ -1778,21 +1968,16 @@ Returns the PDF."
 
 (defun bcat-export--commentary-due-p (doc)
   "Non-nil when C-c u H on a verse is to export its commentary document
-DOC too: the reMarkable does not have its reading PDF or its „Worum es
-geht“ as they are now (`bcat-export--on-device-p'), or everything is
-asked for (`bcat-export-force-upload')."
+DOC too: the reMarkable does not have its reading PDF as it is now
+\(`bcat-export--on-device-p'), or everything is asked for
+\(`bcat-export-force-upload').  (Its „Worum es geht“ is in the
+condensed of the verse since 22.11.)"
   (or bcat-export-force-upload
       (let* ((views (bcat-export-views doc))
-             (target (plist-get (bcat-export-info doc) :handout))
-             (there (lambda (pdf text)
-                      (and pdf (file-exists-p pdf)
-                           (bcat-export--on-device-p pdf (md5 text nil nil 'utf-8))))))
+             (target (plist-get (bcat-export-info doc) :handout)))
         (and (plist-get views :view)
-             (not (and (funcall there target (plist-get views :view))
-                       (or (not (plist-get views :overview))
-                           (funcall there (concat (file-name-sans-extension target)
-                                                  bcat-export--overview-suffix ".pdf")
-                                    (plist-get views :overview)))))))))
+             (not (and target (file-exists-p target)
+                       (bcat-export--on-device-p target (md5 (plist-get views :view) nil nil 'utf-8))))))))
 
 (defvar bcat-export-passage-complete-functions nil
   "Called with the sentence FILE of a passage when, after a fetch, all
@@ -1812,6 +1997,7 @@ rmapi failure must not spoil the landed analysis."
   (when (and bcat-export-auto
              (not (tibetan-discussion-paper--temp-source-p file)))
     (let* ((commentary (equal (bcat-sentence-file-p file) "commentary"))
+           (bcat-export--condensed-done '())
            (export (lambda (f)
                      (condition-case err
                          (bcat-export-file f)
@@ -1826,8 +2012,11 @@ rmapi failure must not spoil the landed analysis."
                                     (file-name-nondirectory file) (error-message-string err))
                            nil))))
       ;; 22.11.: a commentary document has PDFs of its own — they come
-      ;; when it lands, whatever its verses still wait for
-      (when commentary (funcall export file))
+      ;; when it lands, whatever its verses still wait for; the
+      ;; condensed of a verse comes with the verse, once it is complete
+      (when commentary
+        (let ((bcat-export--doc-condensed nil))
+          (funcall export file)))
       (cond
        (files
         ;; 22.11.: a commentary's Section may belong to several verses —
@@ -1876,6 +2065,7 @@ dossier, those the device does not have as they are
 \(`bcat-export--commentary-due-p')."
   (interactive)
   (let ((file (buffer-file-name))
+        (bcat-export--condensed-done '())
         (bcat-export-force-upload (or bcat-export-force-upload (and current-prefix-arg t))))
     (cond
      ((and file (bcat-sentence-file-p file))

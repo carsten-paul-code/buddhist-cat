@@ -487,7 +487,11 @@ FROM (22.11., the verses' own folders): the folder, given like FOLDER,
 in which an earlier version of the document lies when that is another
 one than FOLDER — the first session moves it into the archive of FROM
 \(„LABEL STAMP“) before it puts PDF into FOLDER, so that the document
-does not lie in two places.
+does not lie in two places.  Or a list of earlier documents ((FOLDER
+NAME STAMP) …) to move into the archives of their folders first
+\(22.11.: „condensed“ in place of „Worum es geht“ — the documents of
+the old name go out of the way); a STAMP nil is now.  A move that fails
+\(the document is no longer there) does not stop the upload.
 Asynchronous; the result is reported as a message and to DONE, when
 given: (t PATH) with the document as placed, or (nil REASON) — the
 status of C-c u G (§5.74).  Returns non-nil when the upload was
@@ -510,15 +514,22 @@ started, nil (with a message) when rmapi is not installed."
            (stamp (or stamp (format-time-string "%Y-%m-%d %H%M")))
            (dir (make-temp-file "rm-paper-" t))
            (tmp (expand-file-name (concat name ".pdf") dir))
-           ;; an earlier version in another folder: out of the way first
-           (from-path (and from folder
-                           (not (equal (string-trim from "/+" "/+") (string-trim folder "/+" "/+")))
-                           (concat base "/" (string-trim from "/+" "/+"))))
-           (move-out (and from-path
-                          (let ((archive (concat from-path "/" tibetan-discussion-paper--archive-folder)))
-                            (list (list "mkdir" archive)
-                                  (list "mv" (concat from-path "/" name)
-                                        (format "%s/%s %s" archive name stamp))))))
+           ;; earlier documents out of the way first: the one of this name
+           ;; in another folder (FROM a folder), or those FROM lists
+           (earlier (cond ((stringp from)
+                           (and folder
+                                (not (equal (string-trim from "/+" "/+") (string-trim folder "/+" "/+")))
+                                (list (list from label stamp))))
+                          ((consp from) from)))
+           (move-out (delete-dups
+                      (cl-loop for (f n st) in earlier
+                               for path = (concat base "/" (string-trim f "/+" "/+"))
+                               for archive = (concat path "/" tibetan-discussion-paper--archive-folder)
+                               for dn = (tibetan-discussion-paper--doc-name n)
+                               append (list (list "mkdir" archive)
+                                            (list "mv" (concat path "/" dn)
+                                                  (format "%s/%s %s" archive dn
+                                                          (or st (format-time-string "%Y-%m-%d %H%M"))))))))
            (finish (lambda (ok what)
                      (ignore-errors (delete-directory dir t))
                      (if ok

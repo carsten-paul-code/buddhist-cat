@@ -1,9 +1,9 @@
 #+TITLE: Function Reference — buddhist-cat
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-11-22T14:23:25
+#+DATE: 2026-11-22T15:35:03
 #+OPTIONS: toc:2 num:nil
 
-Source tree: ~/Users/cp/buddhist-cat~  ·  100 modules  ·  2649 forms
+Source tree: ~/Users/cp/buddhist-cat~  ·  100 modules  ·  2664 forms
 
 Regenerated automatically by:
 
@@ -65,7 +65,7 @@ python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/buddhist-c
   - [[#persist/bcat-analysis.el][persist/bcat-analysis.el]]  (189)
   - [[#persist/bcat-commentary.el][persist/bcat-commentary.el]]  (75)
   - [[#persist/bcat-dossier.el][persist/bcat-dossier.el]]  (42)
-  - [[#persist/bcat-export.el][persist/bcat-export.el]]  (107)
+  - [[#persist/bcat-export.el][persist/bcat-export.el]]  (122)
   - [[#persist/bcat-faces.el][persist/bcat-faces.el]]  (56)
   - [[#persist/bcat-outline-draft.el][persist/bcat-outline-draft.el]]  (53)
   - [[#persist/bcat-outline.el][persist/bcat-outline.el]]  (13)
@@ -16436,7 +16436,7 @@ export the dossier — whichever lands first (5.11.).
 ** ~bcat-export--latex-escape~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 80
+:LINE: 81
 :SIGNATURE: (bcat-export--latex-escape s)
 :END:
 
@@ -16445,7 +16445,7 @@ S with the LaTeX special characters escaped.
 ** ~bcat-export-head-lines~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 91
+:LINE: 92
 :SIGNATURE: (bcat-export-head-lines folder work sent-num verse)
 :END:
 
@@ -16456,7 +16456,7 @@ without SENT-NUM (a commentary document) no „Satz“.
 ** ~bcat-export--title~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 105
+:LINE: 106
 :SIGNATURE: (bcat-export--title file)
 :END:
 
@@ -16465,7 +16465,7 @@ FILE's #+TITLE up to „ — “, or nil.
 ** ~bcat-export--text-folder~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 116
+:LINE: 117
 :SIGNATURE: (bcat-export--text-folder source)
 :END:
 
@@ -16477,7 +16477,7 @@ Mahayanasutralamkara/; without a semester SOURCE's own folder.
 ** ~bcat-export--handout~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 133
+:LINE: 134
 :SIGNATURE: (bcat-export--handout source name)
 :END:
 
@@ -16491,7 +16491,7 @@ anything else but letters, digits and dots a hyphen; nil without SOURCE.
 ** ~bcat-export--verse-folder~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 153
+:LINE: 154
 :SIGNATURE: (bcat-export--verse-folder flat verse)
 :END:
 
@@ -16506,7 +16506,7 @@ VERSE; nil without FLAT.
 ** ~bcat-export--documents-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 166
+:LINE: 167
 :SIGNATURE: (bcat-export--documents-p sent-num source)
 :END:
 
@@ -16519,7 +16519,7 @@ it.  Only such a verse gets a folder of its own on the device (Carsten
 ** ~bcat-export--commentary-info~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 181
+:LINE: 182
 :SIGNATURE: (bcat-export--commentary-info file)
 :END:
 
@@ -16533,7 +16533,7 @@ Phywa pa“); on disk beside the verses' PDFs too, under the same name
 ** ~bcat-export-info~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 223
+:LINE: 224
 :SIGNATURE: (bcat-export-info file)
 :END:
 
@@ -16551,7 +16551,7 @@ document: `bcat-export--commentary-info'.
 ** ~bcat-export--sentence-info~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 238
+:LINE: 239
 :SIGNATURE: (bcat-export--sentence-info file)
 :END:
 
@@ -16560,7 +16560,7 @@ document: `bcat-export--commentary-info'.
 ** ~bcat-export--font-lines~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 317
+:LINE: 318
 :SIGNATURE: (bcat-export--font-lines)
 :END:
 
@@ -16575,7 +16575,7 @@ vergleich-ta1-1.org, `bcat-analysis--rating-colours').
 ** ~bcat-export--script-of~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 370
+:LINE: 371
 :SIGNATURE: (bcat-export--script-of line)
 :END:
 
@@ -16585,7 +16585,7 @@ Latin letters), else nil.
 ** ~bcat-export--foreign-signs~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 377
+:LINE: 378
 :SIGNATURE: (bcat-export--foreign-signs body script)
 :END:
 
@@ -16597,7 +16597,7 @@ and the PDF showed an empty box.
 ** ~bcat-export--verse-scripts~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 389
+:LINE: 390
 :SIGNATURE: (bcat-export--verse-scripts latex)
 :END:
 
@@ -16611,7 +16611,7 @@ they are.
 ** ~bcat-export--verse-units~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 421
+:LINE: 422
 :SIGNATURE: (bcat-export--verse-units latex)
 :END:
 
@@ -16626,7 +16626,7 @@ Lines without a gloss (or starting with a command) stay as they are.
 ** ~bcat-export--unit-boxes~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 443
+:LINE: 444
 :SIGNATURE: (bcat-export--unit-boxes unit)
 :END:
 
@@ -16637,7 +16637,7 @@ first, the bracket with the last.
 ** ~bcat-export--verse-lines~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 458
+:LINE: 459
 :SIGNATURE: (bcat-export--verse-lines latex)
 :END:
 
@@ -16648,7 +16648,7 @@ stands in brackets there is no gloss.
 ** ~bcat-export--verse-filter~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 490
+:LINE: 491
 :SIGNATURE: (bcat-export--verse-filter text backend _info)
 :END:
 
@@ -16659,7 +16659,7 @@ exporting to LaTeX (BACKEND).
 ** ~bcat-export--table-filter~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 498
+:LINE: 499
 :SIGNATURE: (bcat-export--table-filter text backend _info)
 :END:
 
@@ -16674,7 +16674,7 @@ its own, they stood in four sizes.
 ** ~bcat-export--table-scripts~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 518
+:LINE: 519
 :SIGNATURE: (bcat-export--table-scripts tabular)
 :END:
 
@@ -16685,7 +16685,7 @@ font has no Tibetan.
 ** ~bcat-export--metre-row-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 526
+:LINE: 527
 :SIGNATURE: (bcat-export--metre-row-p row)
 :END:
 
@@ -16694,7 +16694,7 @@ Non-nil when the LaTeX table ROW holds only metre signs (– ⏑ ¦).
 ** ~bcat-export--cells~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 530
+:LINE: 531
 :SIGNATURE: (bcat-export--cells row)
 :END:
 
@@ -16706,7 +16706,7 @@ the space-greedy separator ate the room before the second &.
 ** ~bcat-export--detail-rows~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 544
+:LINE: 545
 :SIGNATURE: (bcat-export--detail-rows tabular)
 :END:
 
@@ -16731,7 +16731,7 @@ like \hline (18.11.).
 ** ~bcat-export--missing-characters~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 638
+:LINE: 639
 :SIGNATURE: (bcat-export--missing-characters log)
 :END:
 
@@ -16742,7 +16742,7 @@ said „PDF ✓“.  The log quotes the font: in font "name:Times New Roman:…"
 ** ~bcat-export--missing-text~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 649
+:LINE: 650
 :SIGNATURE: (bcat-export--missing-text missing)
 :END:
 
@@ -16753,7 +16753,7 @@ by its code („U+009A“).
 ** ~bcat-export--wrap-wide-tables~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 681
+:LINE: 682
 :SIGNATURE: (bcat-export--wrap-wide-tables &rest _)
 :END:
 
@@ -16768,7 +16768,7 @@ stay as they are; the file is not touched.  For
 ** ~bcat-export--under-mark-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 722
+:LINE: 723
 :SIGNATURE: (bcat-export--under-mark-p)
 :END:
 
@@ -16782,7 +16782,7 @@ more, none was laid out for the page.
 ** ~bcat-export--gloss-run-start-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 740
+:LINE: 741
 :SIGNATURE: (bcat-export--gloss-run-start-p)
 :END:
 
@@ -16793,7 +16793,7 @@ is in Tibetan script (files without marks).
 ** ~bcat-export--rechunk-gloss-tables~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 747
+:LINE: 748
 :SIGNATURE: (bcat-export--rechunk-gloss-tables &rest _)
 :END:
 
@@ -16809,7 +16809,7 @@ the PDF keeps its width.  For `org-export-before-processing-functions'
 ** ~bcat-export--table-runs~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 785
+:LINE: 786
 :SIGNATURE: (bcat-export--table-runs &rest _)
 :END:
 
@@ -16829,7 +16829,7 @@ is the tables with only blank lines between.  For
 ** ~bcat-export--rechunk-header-tables~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 841
+:LINE: 842
 :SIGNATURE: (bcat-export--rechunk-header-tables &rest _)
 :END:
 
@@ -16847,7 +16847,7 @@ stays as it is; the file is not touched.  For
 ** ~bcat-export--marks-apart~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 883
+:LINE: 884
 :SIGNATURE: (bcat-export--marks-apart &rest _)
 :END:
 
@@ -16860,7 +16860,7 @@ it would sit beside the table (ad89035).  For
 ** ~bcat-export--plain-zettel-links~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 895
+:LINE: 896
 :SIGNATURE: (bcat-export--plain-zettel-links &rest _)
 :END:
 
@@ -16872,7 +16872,7 @@ cannot resolve.  For `org-export-before-processing-functions'.
 ** ~bcat-export--drop-machine-sections~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 905
+:LINE: 906
 :SIGNATURE: (bcat-export--drop-machine-sections &rest _)
 :END:
 
@@ -16886,7 +16886,7 @@ sentence files (Carsten 30.10.: not in the PDF).  For
 ** ~bcat-export-page-lines~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 963
+:LINE: 964
 :SIGNATURE: (bcat-export-page-lines)
 :END:
 
@@ -16897,7 +16897,7 @@ never the file.
 ** ~bcat-export--filled-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 972
+:LINE: 973
 :SIGNATURE: (bcat-export--filled-p value)
 :END:
 
@@ -16907,7 +16907,7 @@ other non-nil value.
 ** ~bcat-export--lecture-paragraphs~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 983
+:LINE: 984
 :SIGNATURE: (bcat-export--lecture-paragraphs body)
 :END:
 
@@ -16918,7 +16918,7 @@ time of the one before.
 ** ~bcat-export--lecture-excerpt~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 996
+:LINE: 997
 :SIGNATURE: (bcat-export--lecture-excerpt body name cited)
 :END:
 
@@ -16932,7 +16932,7 @@ not count.  Mechanical — the transcript goes to no one.
 ** ~bcat-export--tex~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1020
+:LINE: 1021
 :SIGNATURE: (bcat-export--tex s)
 :END:
 
@@ -16944,7 +16944,7 @@ not read.
 ** ~bcat-export--resolution-line-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1037
+:LINE: 1038
 :SIGNATURE: (bcat-export--resolution-line-p cell)
 :END:
 
@@ -16954,7 +16954,7 @@ Non-nil when CELL under a compound is a step of its resolution —
 ** ~bcat-export--sub-cell~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1042
+:LINE: 1043
 :SIGNATURE: (bcat-export--sub-cell cell)
 :END:
 
@@ -16967,7 +16967,7 @@ member black, the parts in \bcatg; „MEMBER: MEANING“ black.
 ** ~bcat-export--band-table~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1062
+:LINE: 1063
 :SIGNATURE: (bcat-export--band-table chunk cell-width)
 :END:
 
@@ -16979,7 +16979,7 @@ Not aligned — nobody reads the export copy.
 ** ~bcat-export-sanskrit-page-tables~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1077
+:LINE: 1078
 :SIGNATURE: (bcat-export-sanskrit-page-tables tables)
 :END:
 
@@ -16996,7 +16996,7 @@ anything under their words, or in another form, come back as they are:
 ** ~bcat-export--view-context~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1098
+:LINE: 1099
 :SIGNATURE: (bcat-export--view-context context &optional template)
 :END:
 
@@ -17012,7 +17012,7 @@ the tables of its Sanskrit segments are laid out for the page (18.11.).
 ** ~bcat-export-view~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1151
+:LINE: 1152
 :SIGNATURE: (bcat-export-view file)
 :END:
 
@@ -17026,7 +17026,7 @@ then exports the file itself.
 ** ~bcat-export-commentary-views~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1160
+:LINE: 1161
 :SIGNATURE: (bcat-export-commentary-views file)
 :END:
 
@@ -17045,7 +17045,7 @@ order gives the same.  nil for a text without * Text.
 ** ~bcat-export-views~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1226
+:LINE: 1227
 :SIGNATURE: (bcat-export-views file)
 :END:
 
@@ -17063,7 +17063,7 @@ a pdf template.  A commentary document: `bcat-export-commentary-views'.
 ** ~bcat-export--bar-labels~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1268
+:LINE: 1269
 :SIGNATURE: (bcat-export--bar-labels titles)
 :END:
 
@@ -17075,7 +17075,7 @@ eight titles over three lines) — for a numbered title its number
 ** ~bcat-export--parts-pages~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1281
+:LINE: 1282
 :SIGNATURE: (bcat-export--parts-pages &rest _)
 :END:
 
@@ -17090,7 +17090,7 @@ nothing changes.  For `org-export-before-processing-functions'.
 ** ~bcat-export--auto-parts~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1329
+:LINE: 1330
 :SIGNATURE: (bcat-export--auto-parts &rest _)
 :END:
 
@@ -17106,7 +17106,7 @@ make it too long.  For `org-export-before-processing-functions'.
 ** ~bcat-export-remove-tex~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1366
+:LINE: 1367
 :SIGNATURE: (bcat-export-remove-tex pdf)
 :END:
 
@@ -17117,7 +17117,7 @@ old handout, discussion paper).
 ** ~bcat-export-pdf~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1375
+:LINE: 1376
 :SIGNATURE: (bcat-export-pdf file &optional head)
 :END:
 
@@ -17132,7 +17132,7 @@ LuaLaTeX could not set land in `bcat-export--missing'.
 ** ~bcat-export--device-folder~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1459
+:LINE: 1460
 :SIGNATURE: (bcat-export--device-folder source)
 :END:
 
@@ -17151,7 +17151,7 @@ names the folder, as before.
 ** ~bcat-export--device-entries~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1489
+:LINE: 1490
 :SIGNATURE: (bcat-export--device-entries pdf)
 :END:
 
@@ -17160,7 +17160,7 @@ The entries of `bcat-export--device-index' in the folder of PDF, or nil.
 ** ~bcat-export--device-entry~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1499
+:LINE: 1500
 :SIGNATURE: (bcat-export--device-entry pdf)
 :END:
 
@@ -17169,7 +17169,7 @@ The entry (NAME MD5 STAMP) of PDF in its folder's index, or nil.
 ** ~bcat-export--on-device-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1503
+:LINE: 1504
 :SIGNATURE: (bcat-export--on-device-p pdf hash)
 :END:
 
@@ -17179,7 +17179,7 @@ C-c u H put it there (`bcat-export--note-on-device').
 ** ~bcat-export--device-stamp~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1508
+:LINE: 1509
 :SIGNATURE: (bcat-export--device-stamp pdf)
 :END:
 
@@ -17190,7 +17190,7 @@ new version takes its place.
 ** ~bcat-export--device-place~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1514
+:LINE: 1515
 :SIGNATURE: (bcat-export--device-place pdf flat)
 :END:
 
@@ -17199,10 +17199,20 @@ index entry names, else — an entry from before 22.11., when everything
 of a source lay in one folder — FLAT.  nil when PDF was never put
 there.
 
+** ~bcat-export--write-device-entries~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 1523
+:SIGNATURE: (bcat-export--write-device-entries pdf entries)
+:END:
+
+Write ENTRIES as the index `bcat-export--device-index' in the folder
+of PDF.
+
 ** ~bcat-export--note-on-device~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1522
+:LINE: 1534
 :SIGNATURE: (bcat-export--note-on-device pdf hash &optional folder)
 :END:
 
@@ -17211,10 +17221,119 @@ since now — in FOLDER, when given (22.11.: a verse's own folder; the
 entry's fourth element, `bcat-export--device-place').  Never signals:
 remembering is no reason to spoil an export.
 
+** ~bcat-export--forget-on-device~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 1548
+:SIGNATURE: (bcat-export--forget-on-device pdf)
+:END:
+
+Forget PDF in the index of its folder: the document is no longer on
+the reMarkable under its name (22.11.: moved into the archive when the
+„condensed“ took its place).  Never signals.
+
+** ~bcat-export--claim-condensed~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 1590
+:SIGNATURE: (bcat-export--claim-condensed lead)
+:END:
+
+Non-nil when the condensed of the verse file LEAD is to be set in
+this run (`bcat-export--condensed-done'), noting it.
+
+** ~bcat-export--verse-documents~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 1598
+:SIGNATURE: (bcat-export--verse-documents lead)
+:END:
+
+The commentary documents whose section „Worum es geht“ goes into the
+condensed of the verse file LEAD (Carsten 22.11.: „Ein Dokument je
+Vers“), or nil — also when the verse has none, which
+`bcat-export--verse-with-documents-p' tells apart.
+
+** ~bcat-export--verse-with-documents-p~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 1608
+:SIGNATURE: (bcat-export--verse-with-documents-p lead)
+:END:
+
+Non-nil when the verse file LEAD has commentary documents of its own
+(`bcat-export--documents-p'): its condensed takes their sections.
+
+** ~bcat-export--condensed-part-title~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 1615
+:SIGNATURE: (bcat-export--condensed-part-title doc verse)
+:END:
+
+The title of the part of the commentary document DOC in the condensed
+of the verse labelled VERSE („MSA XI.15“): its commentator, and the
+verses it covers when they are more than this one — „Bhāṣya“, „Phywa
+pa (XI.15–16)“, „Phywa pa Einleitung (XI.15–20)“.
+
+** ~bcat-export--condensed-text~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 1627
+:SIGNATURE: (bcat-export--condensed-text lead)
+:END:
+
+The condensed of the verse file LEAD as org text (Carsten 22.11.:
+„Ein Dokument je Vers“, „condensed“): the section „Worum es geht“ of
+the verse (part „Vers“) and of each of its commentary documents
+(`bcat-export--verse-documents', a part titled by
+`bcat-export--condensed-part-title'), each a part with a jump target —
+the bar at the foot of the PDF.  The sections without the drawer of a
+generated one's mark.  nil when none of them has one.
+
+** ~bcat-export--earlier-overviews~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 1653
+:SIGNATURE: (bcat-export--earlier-overviews file target flat)
+:END:
+
+The documents of the old name („<label> Worum es geht“) that C-c u H
+put on the reMarkable for the section of FILE — its own (TARGET with
+`bcat-export--overview-old-suffix') and, for a verse, those of its
+commentary documents — as ((FOLDER LABEL STAMP OLD-PDF) …): FOLDER
+where it lies (`bcat-export--device-place', by default FLAT), LABEL its
+name there, STAMP when it was sent.  They go into the archive when the
+condensed takes their place.
+
+** ~bcat-export--doc-verses~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 1675
+:SIGNATURE: (bcat-export--doc-verses doc)
+:END:
+
+The verse files the commentary document DOC covers, as its #+CAT_VERSE
+links them (those that exist).
+
+** ~bcat-export-condensed~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 1685
+:SIGNATURE: (bcat-export-condensed lead &optional status-file)
+:END:
+
+Set the condensed of the verse file LEAD (`bcat-export--condensed-text')
+and put it on the reMarkable into the verse's folder when the device
+does not have it as it is — the documents of the old name out of the
+way (`bcat-export--earlier-overviews').  Once per run
+(`bcat-export--claim-condensed').  STATUS-FILE: whose status line
+reports it.  Returns the PDF, or nil when nothing was set.
+
 ** ~bcat-export--second-pdf~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1549
+:LINE: 1717
 :SIGNATURE: (bcat-export--second-pdf file text head target suffix)
 :END:
 
@@ -17233,20 +17352,23 @@ TEXT or TARGET.
 ** ~bcat-export--upload-row~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1579
+:LINE: 1747
 :SIGNATURE: (bcat-export--upload-row status-file title folder done row &optional flat)
 :END:
 
 Put the documents ROW on the reMarkable one after the other — rmapi
-one at a time: each (PDF LABEL TAG HASH), LABEL its name in FOLDER (the
-path as in the Finder, `bcat-export--device-folder', or a verse's own
-folder in it; nil: the folder of TITLE), HASH noted when it is there
+one at a time: each (PDF LABEL TAG HASH [EARLIER]), LABEL its name in
+FOLDER (the path as in the Finder, `bcat-export--device-folder', or a
+verse's own folder in it; nil: the folder of TITLE), HASH noted when it is there
 (`bcat-export--note-on-device', with FOLDER).  The document that is
 there under that name goes into the archive with the date it was sent
 (`bcat-export--device-stamp') — also when it lies in another folder
 than FOLDER (`bcat-export--device-place', by default FLAT, the folder
 of the source: 22.11., the verses' own folders): the upload is told
-where, and moves it out of the way there.  DONE is the status of
+where, and moves it out of the way there; so too EARLIER, documents
+of an old name ((FOLDER LABEL STAMP OLD-PDF) …,
+`bcat-export--earlier-overviews'), which the index forgets once the
+new one is there.  DONE is the status of
 STATUS-FILE so far; the PDF of the file (TAG nil) writes „reMarkable
 ✓ …“, another „ · TAG ✓“.  A failure ends the row: after a refusal
 nothing follows — what did not get there goes with the next export.
@@ -17254,7 +17376,7 @@ nothing follows — what did not get there goes with the next export.
 ** ~bcat-export-file~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1612
+:LINE: 1788
 :SIGNATURE: (bcat-export-file file)
 :END:
 
@@ -17286,7 +17408,7 @@ the PDF path (the first's).
 ** ~bcat-export-reading-document~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1735
+:LINE: 1925
 :SIGNATURE: (bcat-export-reading-document file)
 :END:
 
@@ -17301,19 +17423,20 @@ Returns the PDF.
 ** ~bcat-export--commentary-due-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1779
+:LINE: 1969
 :SIGNATURE: (bcat-export--commentary-due-p doc)
 :END:
 
 Non-nil when C-c u H on a verse is to export its commentary document
-DOC too: the reMarkable does not have its reading PDF or its „Worum es
-geht“ as they are now (`bcat-export--on-device-p'), or everything is
-asked for (`bcat-export-force-upload').
+DOC too: the reMarkable does not have its reading PDF as it is now
+(`bcat-export--on-device-p'), or everything is asked for
+(`bcat-export-force-upload').  (Its „Worum es geht“ is in the
+condensed of the verse since 22.11.)
 
 ** ~bcat-export-after-fetch~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1802
+:LINE: 1987
 :SIGNATURE: (bcat-export-after-fetch file)
 :END:
 
@@ -17329,7 +17452,7 @@ rmapi failure must not spoil the landed analysis.
 ** ~bcat-export-after-survey~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1848
+:LINE: 2037
 :SIGNATURE: (bcat-export-after-survey lead _survey)
 :END:
 
@@ -17342,7 +17465,7 @@ signals.
 ** ~bcat-export~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 1865
+:LINE: 2054
 :SIGNATURE: (bcat-export)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -17363,7 +17486,7 @@ dossier, those the device does not have as they are
 ** ~bcat-export-auto~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 64
+:LINE: 65
 :TYPE: 'boolean
 :GROUP: buddhist-cat
 :DEFAULT: t
@@ -17375,7 +17498,7 @@ sentence file goes to PDF and onto the reMarkable.
 ** ~bcat-export-upload~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 70
+:LINE: 71
 :TYPE: 'boolean
 :GROUP: buddhist-cat
 :DEFAULT: t
@@ -17387,7 +17510,7 @@ document „Satz N“); nil only writes the PDF next to the file.
 ** ~bcat-export-semester-regexp~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 110
+:LINE: 111
 :TYPE: 'regexp
 :GROUP: buddhist-cat
 :DEFAULT: "\\`\\(?:WS\\|SS\\)[0-9]"
@@ -17399,7 +17522,7 @@ right below (`bcat-export--text-folder').
 ** ~bcat-export-tibetan-font~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 278
+:LINE: 279
 :TYPE: 'string
 :GROUP: buddhist-cat
 :DEFAULT: "Noto Serif Tibetan"
@@ -17411,7 +17534,7 @@ font of the old handout's Uchen line.
 ** ~bcat-export-devanagari-font~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 284
+:LINE: 285
 :TYPE: 'string
 :GROUP: buddhist-cat
 :DEFAULT: "Noto Sans Devanagari"
@@ -17424,7 +17547,7 @@ conjunct (29.10.: Arial Unicode MS).
 ** ~bcat-export-gloss-color~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 291
+:LINE: 292
 :TYPE: 'string
 :GROUP: buddhist-cat
 :DEFAULT: "1F4E9E"
@@ -17441,7 +17564,7 @@ words black, the rest blue.
 ** ~bcat-export-original-color~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 302
+:LINE: 303
 :TYPE: 'string
 :GROUP: buddhist-cat
 :DEFAULT: "8B1E1E"
@@ -17455,7 +17578,7 @@ the original bold, in the PDF in colour.
 ** ~bcat-export-translation-color~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 310
+:LINE: 311
 :TYPE: 'string
 :GROUP: buddhist-cat
 :DEFAULT: "1E6B3A"
@@ -17468,7 +17591,7 @@ italic (\bcattrans) — draft B (5.11.): „einzeilig, kursiv“, since
 ** ~bcat-export-unit-max~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 436
+:LINE: 437
 :TYPE: 'integer
 :GROUP: buddhist-cat
 :DEFAULT: 50
@@ -17481,7 +17604,7 @@ unbroken; a longer one may break between the words of its gloss —
 ** ~bcat-export-wide-table-width~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 671
+:LINE: 672
 :TYPE: 'integer
 :GROUP: buddhist-cat
 :DEFAULT: 120
@@ -17497,7 +17620,7 @@ into the margin.  5.11.: every language, its old name an alias.
 ** ~bcat-export-table-width~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 710
+:LINE: 711
 :TYPE: 'integer
 :GROUP: buddhist-cat
 :DEFAULT: 130
@@ -17515,7 +17638,7 @@ export lays the tables out anew (`bcat-export--rechunk-gloss-tables').
 ** ~bcat-export-paper~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 930
+:LINE: 931
 :TYPE: '(cons integer integer
 :GROUP: buddhist-cat
 :DEFAULT: '
@@ -17526,7 +17649,7 @@ export lays the tables out anew (`bcat-export--rechunk-gloss-tables').
 ** ~bcat-export-margins~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 938
+:LINE: 939
 :TYPE: 'string
 :GROUP: buddhist-cat
 :DEFAULT: "left=8mm,right=8mm,top=13mm,bottom=13mm,headsep=3mm,footskip=7mm"
@@ -17539,7 +17662,7 @@ bar of parts at the foot.
 ** ~bcat-export-font-size~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 945
+:LINE: 946
 :TYPE: 'integer
 :GROUP: buddhist-cat
 :DEFAULT: 10
@@ -17550,7 +17673,7 @@ Font size of the PDF in pt — the page is shown at its size.
 ** ~bcat-export-bar-width~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 1262
+:LINE: 1263
 :TYPE: 'integer
 :GROUP: buddhist-cat
 :DEFAULT: 90
@@ -17562,7 +17685,7 @@ shortened (`bcat-export--bar-labels') — one line at the foot.
 ** ~bcat-export-keep-tex~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 1358
+:LINE: 1359
 :TYPE: 'boolean
 :GROUP: buddhist-cat
 :DEFAULT: nil
@@ -17573,15 +17696,21 @@ Carsten 30.10.: „das .tex können wir an sich auch wegräumen, wenn das
 PDF erzeugt ist“; a failed run keeps it anyway (no PDF, nothing
 removed).
 
-** ~org-latex-compiler~  /variable/
+** ~bcat-export-overview-name~  /customize variable/
 :PROPERTIES:
-:KIND: defvar
-:LINE: 51
+:KIND: defcustom
+:LINE: 1560
+:TYPE: 'string
+:GROUP: buddhist-cat
+:DEFAULT: "condensed"
 :END:
 
-/(no docstring)/
+The name of the PDF of the section „Worum es geht“ on the reMarkable:
+„<label> condensed“ (Carsten 22.11., with four „Worum es geht“ in one
+folder: „Vielleicht wäre auch eine andere Bezeichnung wie z.B.
+condensed oder so gut“).  The section in the files keeps its name.
 
-** ~org-latex-remove-logfiles~  /variable/
+** ~org-latex-compiler~  /variable/
 :PROPERTIES:
 :KIND: defvar
 :LINE: 52
@@ -17589,7 +17718,7 @@ removed).
 
 /(no docstring)/
 
-** ~org-latex-logfiles-extensions~  /variable/
+** ~org-latex-remove-logfiles~  /variable/
 :PROPERTIES:
 :KIND: defvar
 :LINE: 53
@@ -17597,7 +17726,7 @@ removed).
 
 /(no docstring)/
 
-** ~org-latex-pdf-process~  /variable/
+** ~org-latex-logfiles-extensions~  /variable/
 :PROPERTIES:
 :KIND: defvar
 :LINE: 54
@@ -17605,7 +17734,7 @@ removed).
 
 /(no docstring)/
 
-** ~org-latex-tables-centered~  /variable/
+** ~org-latex-pdf-process~  /variable/
 :PROPERTIES:
 :KIND: defvar
 :LINE: 55
@@ -17613,7 +17742,7 @@ removed).
 
 /(no docstring)/
 
-** ~org-export-filter-table-functions~  /variable/
+** ~org-latex-tables-centered~  /variable/
 :PROPERTIES:
 :KIND: defvar
 :LINE: 56
@@ -17621,7 +17750,7 @@ removed).
 
 /(no docstring)/
 
-** ~org-export-filter-verse-block-functions~  /variable/
+** ~org-export-filter-table-functions~  /variable/
 :PROPERTIES:
 :KIND: defvar
 :LINE: 57
@@ -17629,7 +17758,7 @@ removed).
 
 /(no docstring)/
 
-** ~org-export-filter-paragraph-functions~  /variable/
+** ~org-export-filter-verse-block-functions~  /variable/
 :PROPERTIES:
 :KIND: defvar
 :LINE: 58
@@ -17637,7 +17766,7 @@ removed).
 
 /(no docstring)/
 
-** ~org-export-before-processing-functions~  /variable/
+** ~org-export-filter-paragraph-functions~  /variable/
 :PROPERTIES:
 :KIND: defvar
 :LINE: 59
@@ -17645,7 +17774,7 @@ removed).
 
 /(no docstring)/
 
-** ~org-export-headline-levels~  /variable/
+** ~org-export-before-processing-functions~  /variable/
 :PROPERTIES:
 :KIND: defvar
 :LINE: 60
@@ -17653,7 +17782,7 @@ removed).
 
 /(no docstring)/
 
-** ~org-latex-prefer-user-labels~  /variable/
+** ~org-export-headline-levels~  /variable/
 :PROPERTIES:
 :KIND: defvar
 :LINE: 61
@@ -17661,7 +17790,7 @@ removed).
 
 /(no docstring)/
 
-** ~tibetan-cascade-subtree-confirm-threshold~  /variable/
+** ~org-latex-prefer-user-labels~  /variable/
 :PROPERTIES:
 :KIND: defvar
 :LINE: 62
@@ -17669,10 +17798,18 @@ removed).
 
 /(no docstring)/
 
+** ~tibetan-cascade-subtree-confirm-threshold~  /variable/
+:PROPERTIES:
+:KIND: defvar
+:LINE: 63
+:END:
+
+/(no docstring)/
+
 ** ~bcat-export--missing~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 635
+:LINE: 636
 :DEFAULT: nil
 :END:
 
@@ -17681,7 +17818,7 @@ The missing characters of the last `bcat-export-pdf', ((CHAR . FONT) …).
 ** ~bcat-export-page~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 950
+:LINE: 951
 :DEFAULT: t
 :END:
 
@@ -17692,7 +17829,7 @@ Non-nil: `bcat-export-pdf' sets the page of the Paper Pro
 ** ~bcat-export--geometry~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 955
+:LINE: 956
 :DEFAULT: "\\usepackage{geometry}"
 :END:
 
@@ -17706,7 +17843,7 @@ the Paper Pro not set.
 ** ~bcat-export--detail-fields~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 977
+:LINE: 978
 :DEFAULT: '
 :END:
 
@@ -17715,7 +17852,7 @@ the Paper Pro not set.
 ** ~bcat-export-navbar-auto~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 1325
+:LINE: 1326
 :DEFAULT: nil
 :END:
 
@@ -17725,7 +17862,7 @@ its own the bar of links (as #+CAT_NAVBAR: t in the document does).
 ** ~bcat-export--copy-prefix~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 1446
+:LINE: 1447
 :DEFAULT: "pdfview-"
 :END:
 
@@ -17738,7 +17875,7 @@ for a sentence file.
 ** ~bcat-export-force-upload~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 1453
+:LINE: 1454
 :DEFAULT: nil
 :END:
 
@@ -17750,7 +17887,7 @@ into the archive like any earlier version.
 ** ~bcat-export--device-index~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 1479
+:LINE: 1480
 :DEFAULT: ".bcat-remarkable.eld"
 :END:
 
@@ -17766,16 +17903,59 @@ new one takes its place (`bcat-export--device-stamp').
 ** ~bcat-export--overview-suffix~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 1542
+:LINE: 1568
+:DEFAULT: "-condensed"
+:END:
+
+What the name of the PDF of the section „Worum es geht“ adds to that
+of its file's (`bcat-export-overview-name').
+
+** ~bcat-export--overview-old-suffix~  /constant/
+:PROPERTIES:
+:KIND: defconst
+:LINE: 1572
 :DEFAULT: "-worum-es-geht"
 :END:
 
-What the name of the PDF of „Worum es geht“ adds to that of its file's.
+What the name of the PDF of the section added until 22.11. — the
+documents of that name on the reMarkable go out of the way when the
+„condensed“ takes their place (`bcat-export--earlier-overviews').
+
+** ~bcat-export--overview-old-name~  /constant/
+:PROPERTIES:
+:KIND: defconst
+:LINE: 1577
+:DEFAULT: "Worum es geht"
+:END:
+
+The name the PDF of the section had on the reMarkable until 22.11.
+
+** ~bcat-export--condensed-done~  /variable/
+:PROPERTIES:
+:KIND: defvar
+:LINE: 1580
+:DEFAULT: t
+:END:
+
+The verse files whose condensed was set in this run of C-c u H or
+of a fetch's export, so that it is set once however many of its files
+are exported — or t: not counted (a single export).
+
+** ~bcat-export--doc-condensed~  /variable/
+:PROPERTIES:
+:KIND: defvar
+:LINE: 1585
+:DEFAULT: t
+:END:
+
+Non-nil: the export of a commentary document sets the condensed of
+the verses it covers too (`bcat-export-condensed').  nil while a
+fetch's export leaves that to the verses that are complete.
 
 ** ~bcat-export--survey-suffix~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 1545
+:LINE: 1713
 :DEFAULT: "-ueberblick"
 :END:
 
@@ -17785,7 +17965,7 @@ bcat-survey.el) adds to that of its file's.
 ** ~bcat-export-passage-complete-functions~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 1797
+:LINE: 1982
 :DEFAULT: nil
 :END:
 
@@ -17796,7 +17976,7 @@ survey of its sources follows (bcat-survey.el, 22.11.).
 ** ~bcat-survey-done-functions~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 1846
+:LINE: 2035
 :END:
 
 /(no docstring)/
@@ -21313,12 +21493,15 @@ translations, the lecturers.
 
 The system prompt of a survey — the same for every passage, so the
 prompt cache stays warm.  Its wording was laid before Carsten
-(22.11.2026); change it only on his word.
+(22.11.2026: „passt“); on his word since: `notable' (the survey comes
+with the fetch, „wenn es was gibt was beachtet werden sollte“) and the
+rule on the elements of an image (after the first real survey, MSA
+XI.15).  Change it only on his word.
 
 ** ~bcat-survey-user-prompt~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 271
+:LINE: 275
 :SIGNATURE: (bcat-survey-user-prompt material)
 :END:
 
@@ -21327,7 +21510,7 @@ The user prompt of the survey of MATERIAL (`bcat-survey-material').
 ** ~bcat-survey--read~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 294
+:LINE: 298
 :SIGNATURE: (bcat-survey--read response)
 :END:
 
@@ -21336,7 +21519,7 @@ The JSON object in Claude's RESPONSE as an alist, or nil.
 ** ~bcat-survey--field~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 302
+:LINE: 306
 :SIGNATURE: (bcat-survey--field alist key)
 :END:
 
@@ -21345,7 +21528,7 @@ The string under KEY in ALIST, trimmed; "" when missing.
 ** ~bcat-survey--cell~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 307
+:LINE: 311
 :SIGNATURE: (bcat-survey--cell text)
 :END:
 
@@ -21354,7 +21537,7 @@ TEXT as the cell of a table: one line, no bar.
 ** ~bcat-survey--list~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 311
+:LINE: 315
 :SIGNATURE: (bcat-survey--list value)
 :END:
 
@@ -21363,7 +21546,7 @@ VALUE of an answer as a list (a vector of JSON, a list, or nothing).
 ** ~bcat-survey--aligned~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 316
+:LINE: 320
 :SIGNATURE: (bcat-survey--aligned text)
 :END:
 
@@ -21372,7 +21555,7 @@ The org TEXT with its tables aligned.
 ** ~bcat-survey-untouched-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 325
+:LINE: 329
 :SIGNATURE: (bcat-survey-untouched-p text)
 :END:
 
@@ -21382,7 +21565,7 @@ changed since (`bcat-analysis-draft-untouched-p').
 ** ~bcat-survey-render~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 330
+:LINE: 334
 :SIGNATURE: (bcat-survey-render data material)
 :END:
 
@@ -21396,7 +21579,7 @@ part without content is left out.  Stamped as a draft
 ** ~bcat-survey--target~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 382
+:LINE: 386
 :SIGNATURE: (bcat-survey--target survey)
 :END:
 
@@ -21406,7 +21589,7 @@ that file was worked on by hand, <name>-Entwurf.org beside it.
 ** ~bcat-survey-pdf-text~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 390
+:LINE: 394
 :SIGNATURE: (bcat-survey-pdf-text file)
 :END:
 
@@ -21416,7 +21599,7 @@ PDF — without the tool's stamp —, or nil when there is none.
 ** ~bcat-survey--store~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 403
+:LINE: 407
 :SIGNATURE: (bcat-survey--store survey)
 :END:
 
@@ -21426,7 +21609,7 @@ analysis/.answers/<its name>.eld — with those of the sentence files.
 ** ~bcat-survey--stored~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 409
+:LINE: 413
 :SIGNATURE: (bcat-survey--stored survey)
 :END:
 
@@ -21435,7 +21618,7 @@ What is kept for SURVEY: (:key MD5 :answer OBJ), or nil.
 ** ~bcat-survey--keep~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 419
+:LINE: 423
 :SIGNATURE: (bcat-survey--keep survey key answer)
 :END:
 
@@ -21444,7 +21627,7 @@ Keep ANSWER, given for the material with KEY, for SURVEY.
 ** ~bcat-survey--key~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 430
+:LINE: 434
 :SIGNATURE: (bcat-survey--key material)
 :END:
 
@@ -21453,7 +21636,7 @@ What makes MATERIAL the same material again: its request.
 ** ~bcat-survey-pending-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 434
+:LINE: 438
 :SIGNATURE: (bcat-survey-pending-p file &optional fresh)
 :END:
 
@@ -21464,7 +21647,7 @@ one.
 ** ~bcat-survey--write~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 449
+:LINE: 453
 :SIGNATURE: (bcat-survey--write survey answer material)
 :END:
 
@@ -21474,7 +21657,7 @@ Write the survey SURVEY from ANSWER and MATERIAL
 ** ~bcat-survey-notable-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 469
+:LINE: 473
 :SIGNATURE: (bcat-survey-notable-p answer)
 :END:
 
@@ -21485,7 +21668,7 @@ the survey is shown.
 ** ~bcat-survey-fetch~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 477
+:LINE: 481
 :SIGNATURE: (bcat-survey-fetch file &optional fresh auto)
 :END:
 
@@ -21502,7 +21685,7 @@ under way.  A passage with one source only has no survey
 ** ~bcat-survey-after-fetch~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 523
+:LINE: 527
 :SIGNATURE: (bcat-survey-after-fetch file)
 :END:
 
@@ -21515,7 +21698,7 @@ reason to spoil a fetch.
 ** ~bcat-survey~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 542
+:LINE: 546
 :SIGNATURE: (bcat-survey &optional fresh)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -21595,7 +21778,7 @@ The JSON contract of a survey (`bcat-survey-system-prompt').
 ** ~bcat-export-passage-complete-functions~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 521
+:LINE: 525
 :END:
 
 /(no docstring)/
@@ -29754,7 +29937,11 @@ FROM (22.11., the verses' own folders): the folder, given like FOLDER,
 in which an earlier version of the document lies when that is another
 one than FOLDER — the first session moves it into the archive of FROM
 („LABEL STAMP“) before it puts PDF into FOLDER, so that the document
-does not lie in two places.
+does not lie in two places.  Or a list of earlier documents ((FOLDER
+NAME STAMP) …) to move into the archives of their folders first
+(22.11.: „condensed“ in place of „Worum es geht“ — the documents of
+the old name go out of the way); a STAMP nil is now.  A move that fails
+(the document is no longer there) does not stop the upload.
 Asynchronous; the result is reported as a message and to DONE, when
 given: (t PATH) with the document as placed, or (nil REASON) — the
 status of C-c u G (§5.74).  Returns non-nil when the upload was
@@ -29763,7 +29950,7 @@ started, nil (with a message) when rmapi is not installed.
 ** ~tibetan-discussion-paper-upload-many~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 549
+:LINE: 560
 :SIGNATURE: (tibetan-discussion-paper-upload-many items)
 :END:
 
@@ -29775,7 +29962,7 @@ session's command list, or nil without rmapi.
 ** ~tibetan-discussion-paper--generated-buffer-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 587
+:LINE: 598
 :SIGNATURE: (tibetan-discussion-paper--generated-buffer-p)
 :END:
 
@@ -29784,7 +29971,7 @@ Non-nil when the current buffer is a generated discussion paper.
 ** ~tibetan-discussion-paper--title-and-label~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 593
+:LINE: 604
 :SIGNATURE: (tibetan-discussion-paper--title-and-label org)
 :END:
 
@@ -29794,7 +29981,7 @@ Non-nil when the current buffer is a generated discussion paper.
 ** ~tibetan-discussion-paper--export-and-upload~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 603
+:LINE: 614
 :SIGNATURE: (tibetan-discussion-paper--export-and-upload org &optional no-open)
 :END:
 
@@ -29805,7 +29992,7 @@ return the PDF.
 ** ~tibetan-discussion-paper--sentence-scope~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 634
+:LINE: 645
 :SIGNATURE: (tibetan-discussion-paper--sentence-scope source-file sent-num)
 :END:
 
@@ -29814,7 +30001,7 @@ The one-sentence scope of SENT-NUM in SOURCE-FILE.
 ** ~tibetan-discussion-paper--complete-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 639
+:LINE: 650
 :SIGNATURE: (tibetan-discussion-paper--complete-p file)
 :END:
 
@@ -29826,7 +30013,7 @@ Section asks for one.
 ** ~tibetan-discussion-paper-auto-build~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 654
+:LINE: 665
 :SIGNATURE: (tibetan-discussion-paper-auto-build scope &optional date)
 :END:
 
@@ -29837,7 +30024,7 @@ nothing happens and nil is returned.  Returns the PDF otherwise.
 ** ~tibetan-discussion-paper--temp-source-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 670
+:LINE: 681
 :SIGNATURE: (tibetan-discussion-paper--temp-source-p file)
 :END:
 
@@ -29850,7 +30037,7 @@ to the device.
 ** ~tibetan-discussion-paper--after-fetch~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 680
+:LINE: 691
 :SIGNATURE: (tibetan-discussion-paper--after-fetch source-file sentences folder requested)
 :END:
 
@@ -29861,7 +30048,7 @@ remembered for `--maybe-build'.
 ** ~tibetan-discussion-paper--maybe-build~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 698
+:LINE: 709
 :SIGNATURE: (tibetan-discussion-paper--maybe-build file)
 :END:
 
@@ -29871,7 +30058,7 @@ build it once and forget it.
 ** ~tibetan-discussion-paper~  /function (cl)/  ⚡  ↗
 :PROPERTIES:
 :KIND: cl-defun
-:LINE: 721
+:LINE: 732
 :SIGNATURE: (tibetan-discussion-paper &optional org-only)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -29913,7 +30100,7 @@ with rmapi (`tibetan-discussion-paper-remarkable-folder').
 ** ~tibetan-discussion-paper-auto~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 620
+:LINE: 631
 :TYPE: 'boolean
 :GROUP: buddhist-cat
 :DEFAULT: t
@@ -29968,7 +30155,7 @@ verschieben“).
 ** ~tibetan-discussion-paper--pending~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 630
+:LINE: 641
 :DEFAULT: (make-hash-table :test #'equal)
 :END:
 

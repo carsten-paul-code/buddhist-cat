@@ -393,7 +393,7 @@ second PDF."
                  (lambda (f &rest _)
                    (let ((pdf (concat (file-name-sans-extension f) ".pdf")))
                      (setq bcat-export--missing
-                           (if (string-match-p "worum-es-geht" f)
+                           (if (string-match-p "condensed" f)
                                '(("⏑" . "Times New Roman") ("¦" . "Noto Sans Devanagari"))
                              '(("¦" . "Noto Sans Devanagari"))))
                      (with-temp-file pdf (insert "PDF")) pdf))))
@@ -1267,13 +1267,13 @@ drawer that marks it as generated (19.11.: in its own document)."
 (ert-deftest bcat-export-file-overview-document ()
   "19.11. (Carsten: one PDF with the philology, one with „Worum es
 geht“): C-c u H writes a second PDF beside the first in handouts/
-\(<name>-worum-es-geht.pdf) and puts it on the reMarkable after the
+\(<name>-condensed.pdf) and puts it on the reMarkable after the
 first and the lectures (rmapi one at a time), as „<label> Worum es
 geht“.  A file without the section: one PDF."
   (bcat-sentence-test--with-source
     (bcat-sentence-test--create src)
     (let* ((file (tibetan-sentence--filepath 9 folder src))
-           (overview (expand-file-name "handouts/bden-9-worum-es-geht.pdf" dir))
+           (overview (expand-file-name "handouts/bden-9-condensed.pdf" dir))
            (text "* Worum es geht\nW.\n")
            (uploaded '()))
       (cl-letf (((symbol-function 'bcat-export-views)
@@ -1289,7 +1289,7 @@ geht“.  A file without the section: one PDF."
         (let ((bcat-export-upload t))
           (bcat-export-file file)
           (should (file-exists-p overview))
-          (should (equal '(("bden-9.pdf" . "SDA 9") ("bden-9-worum-es-geht.pdf" . "SDA 9 Worum es geht"))
+          (should (equal '(("bden-9.pdf" . "SDA 9") ("bden-9-condensed.pdf" . "SDA 9 condensed"))
                          (reverse uploaded)))
           (should-not (directory-files folder nil "\\.pdf\\'\\|\\`pdfview"))))
       ;; no section: one PDF
@@ -1334,6 +1334,51 @@ the source: nil — the title names the folder, as before."
     (let ((info (bcat-export-info (tibetan-sentence--filepath 9 folder src))))
       (should (plist-member info :device-folder))
       (should-not (plist-get info :device-folder)))))
+
+(ert-deftest bcat-export-condensed-replaces-worum-es-geht ()
+  "Carsten 22.11.: on the reMarkable „condensed“ instead of „Worum es
+geht“ — for every sentence file, not only the verses with commentaries.
+The PDF of the section is <name>-condensed.pdf, „<label> condensed“ on
+the device; the document „<label> Worum es geht“ that C-c u H put there
+before goes into the archive of its folder in the same session (no
+second document of the same section beside it), and the index forgets
+it.  Where nothing was put there before, nothing is moved."
+  (bcat-sentence-test--with-source
+    (bcat-sentence-test--create src)
+    (let* ((file (tibetan-sentence--filepath 9 folder src))
+           (index (expand-file-name "handouts/.bcat-remarkable.eld" dir))
+           (calls '()))
+      (make-directory (file-name-directory index) t)
+      (with-temp-file index (insert "((\"bden-9-worum-es-geht.pdf\" \"x\" \"2026-11-19 0632\"))\n"))
+      (cl-letf (((symbol-function 'bcat-export--device-folder) (lambda (_s) "WS26-27/Tibetisch V/bden-gnyis-cat"))
+                ((symbol-function 'bcat-export-views)
+                 (lambda (_f) (list :view "* Reading\nR.\n" :overview "* Worum es geht\nW.\n")))
+                ((symbol-function 'bcat-export-pdf)
+                 (lambda (f &rest _)
+                   (let ((pdf (concat (file-name-sans-extension f) ".pdf")))
+                     (with-temp-file pdf (insert "PDF")) pdf)))
+                ((symbol-function 'tibetan-discussion-paper--upload)
+                 (lambda (pdf _title label &optional done folder stamp from)
+                   (push (list (file-name-nondirectory pdf) label folder stamp from) calls)
+                   (when done (funcall done t label)) t)))
+        (let ((bcat-export-upload t))
+          (bcat-export-file file)
+          (should (equal '(("bden-9.pdf" "SDA 9" "WS26-27/Tibetisch V/bden-gnyis-cat" nil nil)
+                           ("bden-9-condensed.pdf" "SDA 9 condensed" "WS26-27/Tibetisch V/bden-gnyis-cat" nil
+                            (("WS26-27/Tibetisch V/bden-gnyis-cat" "SDA 9 Worum es geht" "2026-11-19 0632"))))
+                         (reverse calls)))
+          (let ((entries (with-temp-buffer (insert-file-contents index) (read (current-buffer)))))
+            (should (assoc "bden-9-condensed.pdf" entries))
+            (should-not (assoc "bden-9-worum-es-geht.pdf" entries)))
+          ;; a new version: the condensed there goes into the archive as
+          ;; ever, nothing else is moved
+          (setq calls '())
+          (cl-letf (((symbol-function 'bcat-export-views)
+                     (lambda (_f) (list :view "* Reading\nR.\n" :overview "* Worum es geht\nW2.\n"))))
+            (bcat-export-file file))
+          (should (equal '(("bden-9-condensed.pdf" "SDA 9 condensed" "WS26-27/Tibetisch V/bden-gnyis-cat")) 
+                         (mapcar (lambda (c) (seq-take c 3)) calls)))
+          (should-not (nth 4 (car calls))))))))
 
 (ert-deftest bcat-export-file-new-versions ()
   "19.11. (Carsten: „Sollte eine neue Version dazukommen, dann diese
@@ -1386,11 +1431,11 @@ sent.  `bcat-export-force-upload' sends all the same."
           (bcat-status-begin "C-c u H" "Satz 9" (list (cons file "SDA 9")))
           ;; first time: both, into the folder as in the Finder, nothing to archive
           (bcat-export-file file)
-          (should (equal '("bden-9.pdf" "bden-9-worum-es-geht.pdf") (funcall names)))
+          (should (equal '("bden-9.pdf" "bden-9-condensed.pdf") (funcall names)))
           (should (equal '(("bden-9.pdf" "WS26-27/Tibetisch V/bden-gnyis-cat" nil)
-                           ("bden-9-worum-es-geht.pdf" "WS26-27/Tibetisch V/bden-gnyis-cat" nil))
+                           ("bden-9-condensed.pdf" "WS26-27/Tibetisch V/bden-gnyis-cat" nil))
                          (reverse args)))
-          (should (string-match-p "reMarkable ✓ SDA 9 · Worum es geht ✓\\'" (funcall status)))
+          (should (string-match-p "reMarkable ✓ SDA 9 · condensed ✓\\'" (funcall status)))
           ;; unchanged: nothing is sent; the PDF of the file is set all
           ;; the same, the second not even that
           (setq uploaded nil args nil exported nil)
@@ -1401,9 +1446,9 @@ sent.  `bcat-export-force-upload' sends all the same."
           ;; the section changed: it alone, with the date of the version there
           (setq uploaded nil args nil text (concat text "Mehr.\n"))
           (bcat-export-file file)
-          (should (equal '("bden-9-worum-es-geht.pdf") (funcall names)))
+          (should (equal '("bden-9-condensed.pdf") (funcall names)))
           (should (string-match-p stamp-re (nth 2 (car args))))
-          (should (string-match-p "reMarkable: unverändert · Worum es geht ✓\\'" (funcall status)))
+          (should (string-match-p "reMarkable: unverändert · condensed ✓\\'" (funcall status)))
           ;; the file changed: its PDF alone, with the date of the version there
           (setq uploaded nil args nil main (concat main "Neu.\n"))
           (bcat-export-file file)
@@ -1417,7 +1462,7 @@ sent.  `bcat-export-force-upload' sends all the same."
           (should (string-match-p "reMarkable: unverändert · Vortrag: Fehler — 429\\'" (funcall status)))
           (setq uploaded nil fail nil)
           (bcat-export-file file)
-          (should (equal '("bden-9-lectures.pdf" "bden-9-worum-es-geht.pdf") (funcall names)))
+          (should (equal '("bden-9-lectures.pdf" "bden-9-condensed.pdf") (funcall names)))
           ;; the first one failing: nothing after it
           (setq uploaded nil main (concat main "Wieder.\n") text (concat text "Weiter.\n") fail '("SDA 9"))
           (bcat-export-file file)
@@ -1425,7 +1470,7 @@ sent.  `bcat-export-force-upload' sends all the same."
           (should (string-match-p "reMarkable: Fehler — 429\\'" (funcall status)))
           (setq uploaded nil fail nil)
           (bcat-export-file file)
-          (should (equal '("bden-9.pdf" "bden-9-worum-es-geht.pdf") (funcall names)))
+          (should (equal '("bden-9.pdf" "bden-9-condensed.pdf") (funcall names)))
           ;; without upload nothing is remembered as sent
           (setq uploaded nil main (concat main "Und noch.\n"))
           (let ((bcat-export-upload nil)) (bcat-export-file file))
@@ -1435,7 +1480,7 @@ sent.  `bcat-export-force-upload' sends all the same."
           ;; on request all the same
           (setq uploaded nil)
           (let ((bcat-export-force-upload t)) (bcat-export-file file))
-          (should (equal '("bden-9.pdf" "bden-9-lectures.pdf" "bden-9-worum-es-geht.pdf") (funcall names)))
+          (should (equal '("bden-9.pdf" "bden-9-lectures.pdf" "bden-9-condensed.pdf") (funcall names)))
           (should-not (directory-files folder nil "\\.pdf\\'\\|\\`pdfview"))
           (kill-buffer bcat-status-buffer-name))))))
 
@@ -1889,7 +1934,7 @@ run (only where lualatex is installed), no error in the log."
   "19.11.: two PDFs from a file with „Worum es geht“ — a real LuaLaTeX
 run (only where lualatex is installed), no error in the log: the PDF of
 the file begins with the recitation, without the section; the section
-is the PDF <name>-worum-es-geht.pdf beside it (checked where pdftotext
+is the PDF <name>-condensed.pdf beside it (checked where pdftotext
 is installed).  (16.11.–19.11.: the section the first page of the one
 PDF.)"
   (skip-unless (executable-find "lualatex"))
@@ -1907,7 +1952,7 @@ PDF.)"
                                 (when fmt (push (apply #'format fmt args) said))
                                 (apply orig fmt args))))
                     (bcat-export-file (tibetan-sentence--filepath 1007 folder src))))
-             (overview (concat (file-name-sans-extension pdf) "-worum-es-geht.pdf")))
+             (overview (concat (file-name-sans-extension pdf) "-condensed.pdf")))
         (should (and pdf (file-exists-p pdf)))
         (should (file-exists-p overview))
         (should-not (cl-some (lambda (m) (string-match-p "with errors\\|wasn't produced" m)) said))
