@@ -1,9 +1,9 @@
 #+TITLE: Function Reference — buddhist-cat
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-11-22T15:35:03
+#+DATE: 2026-11-22T17:36:15
 #+OPTIONS: toc:2 num:nil
 
-Source tree: ~/Users/cp/buddhist-cat~  ·  100 modules  ·  2664 forms
+Source tree: ~/Users/cp/buddhist-cat~  ·  100 modules  ·  2665 forms
 
 Regenerated automatically by:
 
@@ -65,7 +65,7 @@ python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/buddhist-c
   - [[#persist/bcat-analysis.el][persist/bcat-analysis.el]]  (189)
   - [[#persist/bcat-commentary.el][persist/bcat-commentary.el]]  (75)
   - [[#persist/bcat-dossier.el][persist/bcat-dossier.el]]  (42)
-  - [[#persist/bcat-export.el][persist/bcat-export.el]]  (122)
+  - [[#persist/bcat-export.el][persist/bcat-export.el]]  (123)
   - [[#persist/bcat-faces.el][persist/bcat-faces.el]]  (56)
   - [[#persist/bcat-outline-draft.el][persist/bcat-outline-draft.el]]  (53)
   - [[#persist/bcat-outline.el][persist/bcat-outline.el]]  (13)
@@ -17405,10 +17405,24 @@ device does not have it as it is (`bcat-export--on-device-p',
 folder's Archiv under its date (`bcat-export--upload-row').  Returns
 the PDF path (the first's).
 
-** ~bcat-export-reading-document~  /function/
+** ~bcat-export--finder-name~  /function/
 :PROPERTIES:
 :KIND: defun
 :LINE: 1925
+:SIGNATURE: (bcat-export--finder-name file)
+:END:
+
+FILE's name on the reMarkable as the Finder shows it, readable
+(Carsten 22.11.: „Wie im Finder“ — the full title made „Abhidharma-
+samuccaya mit Bhasya, Heft 1 Laksanasamuccaya … - Gliederung“): its base
+name with each hyphen a space, except between two digits, where it is a
+range — Einfuehrung-MSA-9 → „Einfuehrung MSA 9“, msa-XI.15-20 →
+„msa XI.15-20“.
+
+** ~bcat-export-reading-document~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 1939
 :SIGNATURE: (bcat-export-reading-document file)
 :END:
 
@@ -17417,13 +17431,13 @@ nor a sentence file (Carsten 5.11.: Einführung, Schlüsselbegriffe —
 „nur die Dokumente für die Readings“): the PDF on its own page (A4 —
 „in Handouts A4 ist sehr fein“; `bcat-export-page' nil) with the bar of
 its headings (#+CAT_NAVBAR: t, in an export copy; FILE stays as it
-is) — into handouts/ of its text, onto the reMarkable under its title.
-Returns the PDF.
+is) — into handouts/ of its text, onto the reMarkable under its name in
+the Finder (`bcat-export--finder-name', 22.11.).  Returns the PDF.
 
 ** ~bcat-export--commentary-due-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1969
+:LINE: 1983
 :SIGNATURE: (bcat-export--commentary-due-p doc)
 :END:
 
@@ -17436,7 +17450,7 @@ condensed of the verse since 22.11.)
 ** ~bcat-export-after-fetch~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1987
+:LINE: 2001
 :SIGNATURE: (bcat-export-after-fetch file)
 :END:
 
@@ -17452,7 +17466,7 @@ rmapi failure must not spoil the landed analysis.
 ** ~bcat-export-after-survey~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 2037
+:LINE: 2051
 :SIGNATURE: (bcat-export-after-survey lead _survey)
 :END:
 
@@ -17465,7 +17479,7 @@ signals.
 ** ~bcat-export~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 2054
+:LINE: 2068
 :SIGNATURE: (bcat-export)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -17965,7 +17979,7 @@ bcat-survey.el) adds to that of its file's.
 ** ~bcat-export-passage-complete-functions~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 1982
+:LINE: 1996
 :DEFAULT: nil
 :END:
 
@@ -17976,7 +17990,7 @@ survey of its sources follows (bcat-survey.el, 22.11.).
 ** ~bcat-survey-done-functions~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 2035
+:LINE: 2049
 :END:
 
 /(no docstring)/

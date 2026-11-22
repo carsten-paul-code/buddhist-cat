@@ -1922,17 +1922,30 @@ the PDF path (the first's)."
         (bcat-export-condensed verse status-file)))
     pdf))
 
+(defun bcat-export--finder-name (file)
+  "FILE's name on the reMarkable as the Finder shows it, readable
+\(Carsten 22.11.: „Wie im Finder“ — the full title made „Abhidharma-
+samuccaya mit Bhasya, Heft 1 Laksanasamuccaya … - Gliederung“): its base
+name with each hyphen a space, except between two digits, where it is a
+range — Einfuehrung-MSA-9 → „Einfuehrung MSA 9“, msa-XI.15-20 →
+„msa XI.15-20“."
+  (replace-regexp-in-string
+   "\\([^0-9]\\)-\\|-\\([^0-9]\\)"
+   (lambda (m) (if (match-beginning 1)
+                   (concat (match-string 1 m) " ")
+                 (concat " " (match-string 2 m))))
+   (file-name-base file) t t))
+
 (defun bcat-export-reading-document (file)
   "C-c u H in a document of the readings that is neither a cascade source
 nor a sentence file (Carsten 5.11.: Einführung, Schlüsselbegriffe —
 „nur die Dokumente für die Readings“): the PDF on its own page (A4 —
 „in Handouts A4 ist sehr fein“; `bcat-export-page' nil) with the bar of
 its headings (#+CAT_NAVBAR: t, in an export copy; FILE stays as it
-is) — into handouts/ of its text, onto the reMarkable under its title.
-Returns the PDF."
+is) — into handouts/ of its text, onto the reMarkable under its name in
+the Finder (`bcat-export--finder-name', 22.11.).  Returns the PDF."
   (let* ((text (with-temp-buffer (insert-file-contents file) (buffer-string)))
          (title (or (bcat-export--title file) (file-name-base file)))
-         (full (or (bcat-sentence--header-value file "TITLE") title))
          (folder (file-name-nondirectory (directory-file-name (file-name-directory file))))
          (copy (expand-file-name (concat bcat-export--copy-prefix (file-name-nondirectory file)) (file-name-directory file)))
          (target (bcat-export--handout file (file-name-base file)))
@@ -1962,7 +1975,8 @@ Returns the PDF."
     (if bcat-export-upload
         (progn (require 'tibetan-discussion-paper)
                ;; 19.11.: into the folder of the document as in the Finder
-               (tibetan-discussion-paper--upload pdf folder full nil (bcat-export--device-folder file)))
+               (tibetan-discussion-paper--upload pdf folder (bcat-export--finder-name file)
+                                                 nil (bcat-export--device-folder file)))
       (message "PDF: %s" pdf))
     pdf))
 

@@ -1783,7 +1783,9 @@ numbered title shows its number, another its first word."
 no sentence file (Einführung-MSA-9.org): its own page — Carsten 5.11.:
 „in Handouts A4 ist sehr fein“, no Paper Pro page here —, the bar of
 its headings, into handouts/ beside the text, onto the reMarkable under
-its title; the file untouched."
+its name in the Finder (Carsten 22.11. — the full title was „Abhidharma-
+samuccaya mit Bhasya, Heft 1 Laksanasamuccaya … - Gliederung“ on the
+device); the file untouched."
   (let* ((dir (make-temp-file "bcat-reading-" t))
          (text-dir (expand-file-name "WS26-27/Mahayanasutralamkara" dir))
          (file (expand-file-name "Einfuehrung-MSA-9.org" text-dir))
@@ -1820,8 +1822,19 @@ its title; the file untouched."
           (should (string-match-p "libertinus" exported))
           (should (string-match-p "^#\\+CAT_NAVBAR: t$" exported))
           (should (equal (expand-file-name "handouts/Einfuehrung-MSA-9.pdf" text-dir) (car uploaded)))
-          (should (equal "Mahāyānasūtrālaṃkāra IX — Einführung" (cdr uploaded))))
+          (should (equal "Einfuehrung MSA 9" (cdr uploaded))))
       (delete-directory dir t))))
+
+(ert-deftest bcat-export-finder-name ()
+  "The name of a reading document on the reMarkable is its file name as
+the Finder shows it, readable (Carsten 22.11.: „Wie im Finder“): a
+hyphen is a space — but not between two digits, where it is a range."
+  (should (equal "Einfuehrung MSA 9" (bcat-export--finder-name "/x/Einfuehrung-MSA-9.org")))
+  (should (equal "Glossar TA1 bis V2" (bcat-export--finder-name "/x/Glossar-TA1-bis-V2.org")))
+  (should (equal "Schluesselbegriffe bDen gnyis bum"
+                 (bcat-export--finder-name "/x/y z/Schluesselbegriffe-bDen-gnyis-bum.org")))
+  (should (equal "msa XI.15-20" (bcat-export--finder-name "/x/handouts/msa-XI.15-20.pdf")))
+  (should (equal "tantraloka 1 padapatha" (bcat-export--finder-name "tantraloka-1-padapatha.pdf"))))
 
 (ert-deftest bcat-export-file-smoke ()
   "Bug (6.11., Carsten: „es gab PDF error“): C-c u H wrote the view as
