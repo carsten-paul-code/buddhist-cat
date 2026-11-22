@@ -3511,5 +3511,44 @@ per Tibetan segment `parallel' (\" · Skt. 17\") for its heading; the
        (assignment . ,assign))
      base)))
 
+;; ----------------------------------------------------------------------------
+;; Drafts of documents (the outline, 20.11.; the survey, 22.11.)
+;; ----------------------------------------------------------------------------
+
+(defun bcat-analysis-read-object (response)
+  "The JSON object in Claude's RESPONSE as an alist, or nil — from its
+first „{“ to its last „}“, a damaged one repaired where that is safe
+\(`bcat-analysis--repair-json')."
+  (when (and (stringp response) (string-match "{" response))
+    (let* ((start (match-beginning 0))
+           (end (string-match "}[^}]*\\'" response)))
+      (when (and end (> end start))
+        (let* ((json (substring response start (1+ end)))
+               (obj (or (ignore-errors (bcat-analysis--decode json))
+                        (ignore-errors (bcat-analysis--decode (bcat-analysis--repair-json json))))))
+          (and (consp obj) (bcat-analysis--close-quotes obj)))))))
+
+(defun bcat-analysis-draft-stamped (text keyword)
+  "TEXT of a drafted document with its stamp — „#+KEYWORD: <md5 of
+TEXT>“ — after the #+OPTIONS line (in front without one).  A document
+that still has its stamp is a draft nobody worked on
+\(`bcat-analysis-draft-untouched-p')."
+  (let ((line (format "#+%s: %s\n" keyword (md5 text nil nil 'utf-8))))
+    (if (string-match "^#\\+OPTIONS:.*\n" text)
+        (concat (substring text 0 (match-end 0)) line (substring text (match-end 0)))
+      (concat line text))))
+
+(defun bcat-analysis-draft-untouched-p (text keyword)
+  "Non-nil when TEXT is a draft of the tool that nobody changed since:
+it has the stamp KEYWORD (`bcat-analysis-draft-stamped'), and the stamp
+fits what stands there.  A document written or corrected by hand is not
+— a new draft never overwrites it."
+  (let ((re (format "^#\\+%s:[ \t]*\\([0-9a-f]+\\)[ \t]*\n" (regexp-quote keyword))))
+    (and (stringp text)
+         (string-match re text)
+         (let ((stamp (match-string 1 text)))
+           (equal stamp (md5 (concat (substring text 0 (match-beginning 0)) (substring text (match-end 0)))
+                             nil nil 'utf-8))))))
+
 (provide 'bcat-analysis)
 ;;; bcat-analysis.el ends here

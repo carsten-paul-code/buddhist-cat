@@ -33,9 +33,9 @@
 (declare-function bcat-sentence--references "bcat-sentence" (sent-num source-file))
 (declare-function bcat-sentence--text "bcat-sentence" (file))
 (declare-function bcat-sentence-template-name "bcat-sentence" (source-file))
-(declare-function bcat-analysis--decode "bcat-analysis" (json))
-(declare-function bcat-analysis--repair-json "bcat-analysis" (json))
-(declare-function bcat-analysis--close-quotes "bcat-analysis" (value))
+(declare-function bcat-analysis-read-object "bcat-analysis" (response))
+(declare-function bcat-analysis-draft-stamped "bcat-analysis" (text keyword))
+(declare-function bcat-analysis-draft-untouched-p "bcat-analysis" (text keyword))
 (declare-function tibetan-sentence--filepath "tibetan-sentence-persist" (sent-num &optional folder source-file))
 (declare-function tibetan-sentence--source-file-from-analysis "tibetan-sentence-persist" (analysis-file))
 (declare-function tibetan-analysis--read-source-metadata "tibetan-analysis-claude" (source-file))
@@ -286,16 +286,10 @@ work as a whole, and the large parts („groups“) the nodes fall into."
 ;; ----------------------------------------------------------------------------
 
 (defun bcat-outline-draft--read (response)
-  "The JSON object in Claude's RESPONSE as an alist, or nil."
+  "The JSON object in Claude's RESPONSE as an alist, or nil
+\(`bcat-analysis-read-object')."
   (require 'bcat-analysis)
-  (when (and (stringp response) (string-match "{" response))
-    (let* ((start (match-beginning 0))
-           (end (string-match "}[^}]*\\'" response)))
-      (when (and end (> end start))
-        (let* ((json (substring response start (1+ end)))
-               (obj (or (ignore-errors (bcat-analysis--decode json))
-                        (ignore-errors (bcat-analysis--decode (bcat-analysis--repair-json json))))))
-          (and (consp obj) (bcat-analysis--close-quotes obj)))))))
+  (bcat-analysis-read-object response))
 
 (defun bcat-outline-draft--number (value)
   "VALUE (a number, or digits as a string) as a number, or nil."
@@ -519,23 +513,18 @@ without that line.  An outline that still has its stamp is a draft
 nobody worked on (`bcat-outline-draft-untouched-p').")
 
 (defun bcat-outline-draft--stamped (text)
-  "TEXT of a drafted outline with its stamp after the #+OPTIONS line."
-  (let ((line (format "#+%s: %s\n" bcat-outline-draft--stamp (md5 text nil nil 'utf-8))))
-    (if (string-match "^#\\+OPTIONS:.*\n" text)
-        (concat (substring text 0 (match-end 0)) line (substring text (match-end 0)))
-      (concat line text))))
+  "TEXT of a drafted outline with its stamp after the #+OPTIONS line
+\(`bcat-analysis-draft-stamped')."
+  (require 'bcat-analysis)
+  (bcat-analysis-draft-stamped text bcat-outline-draft--stamp))
 
 (defun bcat-outline-draft-untouched-p (text)
   "Non-nil when the outline TEXT is a draft of the tool that nobody
 changed since: it has the stamp, and the stamp fits what stands there.
 An outline written or corrected by hand is not — a new draft never
 overwrites it."
-  (let ((re (format "^#\\+%s:[ \t]*\\([0-9a-f]+\\)[ \t]*\n" bcat-outline-draft--stamp)))
-    (and (stringp text)
-         (string-match re text)
-         (let ((stamp (match-string 1 text)))
-           (equal stamp (md5 (concat (substring text 0 (match-beginning 0)) (substring text (match-end 0)))
-                             nil nil 'utf-8))))))
+  (require 'bcat-analysis)
+  (bcat-analysis-draft-untouched-p text bcat-outline-draft--stamp))
 
 (defun bcat-outline-draft-render (data info items)
   "The outline of the document INFO as org text, from the answer DATA
