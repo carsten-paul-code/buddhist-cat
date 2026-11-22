@@ -120,13 +120,14 @@ else the note that it comes with the next fetch), the hint."
         (note . ,(bcat-dossier--filled (alist-get 'bhasya-hint context)))))))
 
 (defun bcat-dossier--folios (commentary-source)
-  "Hash: segment number → :FOLIO: of COMMENTARY-SOURCE."
+  "Hash: segment number → :FOLIO: of COMMENTARY-SOURCE — the whole
+value („D105b4“; „Ms 82b4“ for a manuscript)."
   (let ((table (make-hash-table)))
     (when (and commentary-source (file-readable-p commentary-source))
       (with-temp-buffer
         (insert-file-contents commentary-source)
         (goto-char (point-min))
-        (while (re-search-forward "^\\*+ Segment \\([0-9]+\\)[ \t]*\n[ \t]*:PROPERTIES:[ \t]*\n\\(?:[ \t]*:[^\n]*\n\\)*?[ \t]*:FOLIO:[ \t]*\\(\\S-+\\)" nil t)
+        (while (re-search-forward "^\\*+ Segment \\([0-9]+\\)[ \t]*\n[ \t]*:PROPERTIES:[ \t]*\n\\(?:[ \t]*:[^\n]*\n\\)*?[ \t]*:FOLIO:[ \t]*\\([^\n]*[^ \t\n]\\)" nil t)
           (puthash (string-to-number (match-string 1)) (match-string 2) table))))
     table))
 

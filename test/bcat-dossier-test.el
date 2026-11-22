@@ -222,6 +222,22 @@ sentence a jump target; IX.16 the Section on the pair alone."
       (should (string-match-p "^\\*IX\\.15–16 sgyu ma'i mtshan nyid\\*$" text))
       (should (bcat-dossier-test--links-resolve text)))))
 
+(ert-deftest bcat-dossier-folio-of-a-manuscript ()
+  "22.11., Phywa pa: his folios are given as „Ms 82b4“ (a manuscript,
+counted after the scan), not as one word like „D105b4“ — the reading
+page said „2001 · Ms“.  The whole value of :FOLIO: is the folio."
+  (let ((file (make-temp-file "bcat-folio-" nil ".org")))
+    (unwind-protect
+        (progn
+          (with-temp-file file
+            (insert "* Text\n** Section XI.15\n*** Sentence 2001\n"
+                    "**** Segment 1\n:PROPERTIES:\n:FOLIO: Ms 82b4\n:END:\nདོན་བཅུ་ལས།\n"
+                    "**** Segment 2\n:PROPERTIES:\n:NOTE: unsicher\n:FOLIO:    D105b4  \n:END:\nཞེས་སོ། །\n"))
+          (let ((folios (bcat-dossier--folios file)))
+            (should (equal "Ms 82b4" (gethash 1 folios)))
+            (should (equal "D105b4" (gethash 2 folios)))))
+      (delete-file file))))
+
 (ert-deftest bcat-dossier-split-parts-in-any-buffer ()
   "18.11.: the CUSTOM_ID of a part is read the same whatever buffer is
 current — in a Lisp buffer (*scratch*: batch runs, emacsclient) a line
