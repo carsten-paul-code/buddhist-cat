@@ -38,7 +38,10 @@ Teil „Tibetan“ im Dossier; seit 22.11. mittags BHĀṢYA / PHYWA PA /
 STHIRAMATI ALS EIGENE DATEIEN in drei Teilen (Text / Philology / Worum
 es geht) mit eigenen PDFs („MSA XI.15 Bhāṣya“, „MSA XI.15–16 Phywa
 pa“), das Vers-Dossier analysiert nur noch den Vers, C-c u L setzt
-alte Kommentardokumente ohne Abruf um (XI umgesetzt, IX auf sein Wort);
+alte Kommentardokumente ohne Abruf um (XI umgesetzt, IX auf sein Wort),
+Bhāṣya auf der Reading-Seite Satz für Satz; ÜBERBLICK ÜBER DIE QUELLEN
+EINER STELLE (C-c u Q, bcat-survey.el) gebaut, Prompt wartet auf sein
+Wort — noch nichts abgerufen;
 offen: Philologie-Teil weiter gliedern, Kompositum-Auflösung straffen).
 Before that 2026-10-28 (§5.74: SATZDATEIEN
 NACH VORLAGE — Reading-Klassen, Tibetisch: `#+CAT_TEMPLATE: tibetan' im
@@ -6069,17 +6072,81 @@ Abruf umsetzen — XI gleich, IX erst auf sein Wort).
 - STAND (22.11., mittags): die zehn XI-Dokumente (6 Bhāṣya, 4 Phywa pa)
   sind ohne Abruf umgesetzt — verglichen mit einer Kopie: keine Zeile
   verloren, keine hinzu.  An einer Kopie mit echtem LaTeX gebaut: 20
-  PDFs, keine fehlenden Zeichen.  NICHT hochgeladen — auf dem Gerät
-  liegen noch die Dossiers von 10:39–10:48 (mit Bhāṣya- und
-  Phywa-pa-Teil); neu aufs Gerät erst auf Carstens Wort.  MSA IX
+  PDFs, keine fehlenden Zeichen.  Hochgeladen auf Carstens Wort ab
+  13:05 (siehe unten „AUF DEM GERÄT“).  MSA IX
   (Sthiramati, comm-IX.60…63-savbh.org) steht in der alten Ordnung und
   wird so gelesen; umsetzen (C-c u L) erst auf sein Wort.
-- OFFEN: 02 Bhāṣya auf der Reading-Seite zeigt den Text wie bisher
-  (nicht Satz für Satz mit Übersetzung); landet ein Kommentar allein
-  und deckt mehrere Verse, wird nur das Dossier des ersten neu
-  exportiert (`bcat-dossier-export-files'); Sanskrit-Bhāṣya nicht
-  eigens analysiert; DharmaMitra-Staffelung wie oben.
-  ERT 3024 / 3022 erwartet / 0 unerwartet / 2 übersprungen, BDD 251.
+- BHĀṢYA SATZ FÜR SATZ (`53033d4', Carsten 22.11.: „Bhasya bitte
+  machen“): ist das Bhāṣya analysiert, zeigt „02 Bhāṣya“ auf der
+  Reading-Seite seine Sätze wie die des Kommentators — Nummer · Blatt,
+  das zugehörige Sanskrit (Devanāgarī über IAST) über dem Tibetischen
+  (Uchen über Wylie), → Übersetzung aus der Analyse, Lemma; davor der
+  Hinweis (*Hint:*) aus der Vers-Analyse
+  (`bcat-dossier-bhasya-sentences').  Zuordnung des Sanskrit:
+  `bcat-dossier--spread' verteilt die Daṇḍa-Einheiten in der
+  Reihenfolge auf die tibetischen Sätze — gleiche Zahl: eins zu eins;
+  mehr Einheiten: aufeinanderfolgende Gruppen, geschnitten nach dem
+  laufenden Längenanteil (XI.20: 171/172/173/174+175 zu
+  136/137/138/139, geprüft); weniger Einheiten als Sätze: das Sanskrit
+  als Block davor (nichts geraten).  Die Übersetzung des ganzen
+  Sanskrit-Bhāṣya steht nur noch in der Versdatei (*** Bhāṣya).  Ohne
+  Analyse (IX) wie bisher.
+- BUG PDF (`0555583'): eine Zeile in Originalschrift mit eckiger
+  Klammer („यन्त्र [मन्त्र]“, „[?]“) kam klein und ohne Ligaturen —
+  `bcat-export--verse-lines' hielt sie für glossiert (\mbox-Einheiten),
+  und eine Zeile, die mit einem Befehl beginnt, bekommt ihre Schrift
+  nicht.  Jetzt bleibt eine Zeile in Originalschrift dort ganz.
+- AUF DEM GERÄT (22.11., 13:05–13:20, mit `rmapi ls' gegengeprüft):
+  XI.15–20 vollständig, 32 Dokumente — je Vers das Dossier als neue
+  Fassung (die vom Vormittag im Archiv), sein „Worum es geht“
+  (unverändert, nicht neu geschickt), das Bhāṣya und Phywa pas
+  Abschnitte je mit Lese-PDF und „Worum es geht“.  Namen auf dem Gerät
+  ohne Diakritika („MSA XI.15 Bhasya“, „MSA XI.15-16 Phywa pa“).
+  DROSSELUNG: beim ersten Zug (26 PDFs, 16 Dateien in 90 s) kam nach 19
+  Dokumenten und drei Archiv-Verschiebungen 429, die übrigen Aufträge
+  der Warteschlange scheiterten sofort hintereinander.  Nach 11 Minuten
+  Datei für Datei mit 25 s Pause nachgeschickt — ohne Fehler.  Dass die
+  Warteschlange nach einem 429 von selbst pausiert, ist als Aufgabe
+  vorgeschlagen, nicht gebaut.
+- ÜBERBLICK ÜBER DIE QUELLEN EINER STELLE (`e78bc64', `eb57418';
+  Carsten 22.11.: „Wenn es mehrere Quellen gibt wäre so ein
+  Übersichtsdokument noch gut.  Was verschiebt sich z.B. im bhasya, bei
+  Sthiramamti usw.  Welche unterschiedlichen Gesichtspunkte betrachten
+  die Übersetzungen“; generisch — „im Tantraloka z.B. auch Sanderson
+  betont mehr das, Dyzkowki das“; dazu „das Tibetische könnte, im
+  Gegensatz zum Sanskrit, die Übersetzung/Interpretation zu lassen“.
+  Ein von Hand geschriebenes Muster für XI.15 hat er bestätigt:
+  „Überblick ist genau das was ich meinte.“).  bcat-survey.el:
+  C-c u Q (`bcat-survey', Q wie Quellen) — EIN Abruf je Stelle, der nur
+  liest, was schon analysiert ist (`bcat-survey-material': die
+  Schichten wie auf der Reading-Seite des Dossiers, die Notiz zur
+  tibetischen Wiedergabe, die veröffentlichten Übersetzungen wörtlich,
+  Vortragsauszüge; nur Umschrift).  Antwort (JSON) → Vorlage survey.org
+  → analysis/survey-<N>-<Quelle>.org neben der Satzdatei: Stelle in
+  einem Satz · Schichten (Stichwort-Tabelle + je Schicht „sagt“ /
+  „verschiebt sich“) · Sanskrit und Tibetisch · Stimmen (Tabelle + je
+  Stimme) · Fragen · wo es steht.  Antwort bleibt in
+  analysis/.answers/ (gleiches Material → neu setzen ohne Abruf; C-u
+  ruft neu ab); Datei mit Stempel #+CAT_SURVEY_WRITTEN, von Hand
+  Bearbeitetes wird nie überschrieben (Entwurf daneben).  PDF: C-c u H
+  des Verses legt „<Vers> Überblick“ (…-ueberblick.pdf) neben die
+  anderen; C-c u Q endet damit.  Gemeinsame Helfer in bcat-analysis.el:
+  `bcat-analysis-read-object', `bcat-analysis-draft-stamped',
+  `-draft-untouched-p' (auch vom Gliederungs-Entwurf benutzt).
+  STAND: gebaut und getestet, NICHTS ABGERUFEN.  Der Wortlaut des
+  Prompts (`bcat-survey-system-prompt') ist Carsten vorgelegt; der erste
+  Abruf (XI.15) erst auf sein Wort.  Seine noch offenen Festlegungen —
+  von mir vorläufig so angenommen: je Vers/Satz (nicht je Gruppe), auf
+  Zuruf (nicht mit C-c u G).  Offen: im Tantrāloka sind die
+  Viveka-Sätze eigene Sätze derselben Quelle und noch keine „Schicht“
+  des Verses (dort gäbe es vorerst nur „Stimmen“: Dyczkowski,
+  Sanderson).
+- OFFEN: landet ein Kommentar allein und deckt mehrere Verse, wird nur
+  das Dossier des ersten neu exportiert (`bcat-dossier-export-files');
+  Sanskrit-Bhāṣya nicht eigens analysiert; die geprüfte Fassung eines
+  Kommentardokuments geht beim Abruf nicht mit in die Anfrage;
+  DharmaMitra-Staffelung wie oben.
+  ERT 3033 / 3031 erwartet / 0 unerwartet / 2 übersprungen, BDD 251.
 
 #### Offen
 
