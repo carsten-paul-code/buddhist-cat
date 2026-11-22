@@ -6138,6 +6138,32 @@ Abruf umsetzen — XI gleich, IX erst auf sein Wort).
   (handouts/.bcat-remarkable.eld) trägt für alle 32 den Ordner.  Von MSA
   IX liegt nichts auf dem Gerät (seit dem Leeren am 19.11.): dort
   entstehen die Versordner beim nächsten Export.
+- „CONDENSED“ STATT „WORUM ES GEHT“, EIN DOKUMENT JE VERS (`1feaed9';
+  Carsten 22.11.: „Ich habe jetzt 4x worum es geht auf dem Remarkable.
+  Vielleicht wäre auch eine andere Bezeichnung wie z.B. condensed oder
+  so gut.“ — seine Festlegungen: ein Dokument je Vers, Name „condensed“,
+  der Ordner Sanskrit-11 bleibt („es stellt ja die Struktur im CAT
+  dar“)).  Das PDF des Abschnitts heißt auf dem Gerät „<label>
+  condensed“ (<name>-condensed.pdf, `bcat-export-overview-name') — für
+  JEDE Satzdatei; der Abschnitt „* Worum es geht“ in den Dateien bleibt.
+  Für einen Vers mit Kommentar-Dokumenten EIN PDF
+  (`bcat-export--condensed-text'): Teil „Vers“, dann je Dokument, das
+  ihn deckt, ein Teil nach dem Kommentator („Bhāṣya“, „Phywa pa
+  Einleitung (XI.15–20)“, „Phywa pa (XI.15–16)“); Kommentar-Dokumente
+  schicken keins mehr, C-c u H im Dokument setzt das condensed seiner
+  Verse neu (`bcat-export-condensed').  Einmal je Lauf
+  (`bcat-export--condensed-done').  Die Dokumente des alten Namens gehen
+  beim ersten Upload in derselben Sitzung ins Archiv ihres Ordners
+  (`bcat-export--earlier-overviews'; FROM des Uploads auch als Liste),
+  der Index vergisst sie.  In anderen Klassen (Tantrāloka …) geschieht
+  das bei ihrem nächsten Export von selbst.
+  AUF DEM GERÄT (22.11., 15:35–15:42, gegengeprüft): je Versordner XI.15
+  … XI.20 ein „MSA XI.N condensed“ (XI.15: 8 S., vier Teile mit
+  Sprungleiste); die 18 „… Worum es geht“ in den Archiven der
+  Versordner (Phywa pas Paar-Abschnitte im Archiv des ersten Verses);
+  im Index kein „worum-es-geht“ mehr.  Je Vers eine Sitzung, 60 s
+  Pause, kein Fehler.  Die alten PDFs in handouts/ (…-worum-es-geht.pdf)
+  liegen noch dort, unbenutzt.
 - ÜBERBLICK ÜBER DIE QUELLEN EINER STELLE (`e78bc64', `eb57418';
   Carsten 22.11.: „Wenn es mehrere Quellen gibt wäre so ein
   Übersichtsdokument noch gut.  Was verschiebt sich z.B. im bhasya, bei
