@@ -5607,8 +5607,14 @@ Prompt-Änderung: „ja“).
   ~/buddhist-studies (fff01b11 u. früher, die 31 waren sauber
   eingecheckt).  Die geprüften Kopien in .reviewed/ sind noch im alten
   Aufbau — C-c u d zeigt dort jetzt die Neusetzung.  Die PDFs von
-  Kadam 2001–2005 auf dem Gerät sind die vom 22.11. (mit dem alten
-  Vergleich), nicht neu exportiert.  Noch im Aufbau VOR dem 16.11.
+  Kadam 2001–2005: auf Carstens Wort neu exportiert — der Text der
+  Ansicht (`bcat-export-views') war gleich dem vom 22.11. (Index-Marke
+  unverändert), also nichts geschickt.  Die Ansicht wird aus dem
+  Kontext nach heutiger Vorlage gerendert, nicht aus dem Dateitext: der
+  alte Vergleich und das alte „Worum es geht“ waren schon in den PDFs
+  vom 22.11. nicht mehr drin.  Lehre: wer wissen will, ob ein PDF auf
+  dem Gerät sich durch C-c u L ändert, vergleicht die Marke der Ansicht
+  (`bcat-export--on-device-p'), nicht den Dateitext.  Noch im Aufbau VOR dem 16.11.
   (ohne „Worum es geht“): TĀ 1000, 1002–1008 — nicht angefasst.
 - PDF: die Diskussionspunkte erscheinen im Teil Discussion; die Zeilen
   am Segment nicht (Carsten: erst das .org).
