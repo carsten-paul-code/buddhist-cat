@@ -5591,6 +5591,25 @@ Prompt-Änderung: „ja“).
 - Lehre: Tabellen, die eine andere Sitzung bewusst NICHT neu ausrichtet
   („Tabellen nicht neu ausgerichtet“), nicht mit C-c u L überschreiben,
   ohne es abzusprechen — 1012 wurde zurückgesetzt.
+- 23.11.: 31 Dateien mit „Worum es geht“ noch vorn (TĀ 1, 1009–1011,
+  1013–1016, 1019, 1024–1040 — alle #+CAT_REVIEWED — und Kadam
+  2001–2005) auf Carstens Wort mit vollem C-c u L umgestellt („Volles
+  C-c u L“, NACHDEM er auf Tabellen-Neusatz, geschrumpfte Vergleiche und
+  die Lehre von 1012 hingewiesen wurde; die schonende Alternative „nur
+  verschieben“ hat er nicht gewählt).  Probe an Kopien vorher, Ergebnis
+  Zeichen für Zeichen gleich der Probe.  Befund: die 25 Handtexte
+  „Worum es geht“ wortgleich, die 6 erzeugten (001, 2001–2005) mit
+  „*Der Gedankengang:*“ und gültiger Marke neu; Tabellen im Format seit
+  18.11. (Wortbildung als Zeilen); in 12 Dateien schrumpfte der alte
+  bewertete Vergleich (Finding/Weight/Grammar) auf Diskussionspunkte,
+  in Kadam 2001–2005 fiel der Vergleich Translation ↔ DharmaMitra ganz
+  weg (DharmaMitra keine Referenz).  Die alten Fassungen: git HEAD in
+  ~/buddhist-studies (fff01b11 u. früher, die 31 waren sauber
+  eingecheckt).  Die geprüften Kopien in .reviewed/ sind noch im alten
+  Aufbau — C-c u d zeigt dort jetzt die Neusetzung.  Die PDFs von
+  Kadam 2001–2005 auf dem Gerät sind die vom 22.11. (mit dem alten
+  Vergleich), nicht neu exportiert.  Noch im Aufbau VOR dem 16.11.
+  (ohne „Worum es geht“): TĀ 1000, 1002–1008 — nicht angefasst.
 - PDF: die Diskussionspunkte erscheinen im Teil Discussion; die Zeilen
   am Segment nicht (Carsten: erst das .org).
 - Testfalle: eine Form, die versehentlich AUSSERHALB von `ert-deftest'
