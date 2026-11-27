@@ -1,9 +1,9 @@
 #+TITLE: Function Reference — buddhist-cat
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-11-27T11:50:50
+#+DATE: 2026-11-27T11:58:02
 #+OPTIONS: toc:2 num:nil
 
-Source tree: ~/Users/cp/buddhist-cat~  ·  100 modules  ·  2669 forms
+Source tree: ~/Users/cp/buddhist-cat~  ·  100 modules  ·  2666 forms
 
 Regenerated automatically by:
 
@@ -71,7 +71,7 @@ python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/buddhist-c
   - [[#persist/bcat-outline.el][persist/bcat-outline.el]]  (13)
   - [[#persist/bcat-parallel.el][persist/bcat-parallel.el]]  (7)
   - [[#persist/bcat-relayout.el][persist/bcat-relayout.el]]  (25)
-  - [[#persist/bcat-sentence.el][persist/bcat-sentence.el]]  (122)
+  - [[#persist/bcat-sentence.el][persist/bcat-sentence.el]]  (120)
   - [[#persist/bcat-status.el][persist/bcat-status.el]]  (11)
   - [[#persist/bcat-survey.el][persist/bcat-survey.el]]  (35)
   - [[#persist/bcat-template.el][persist/bcat-template.el]]  (17)
@@ -82,14 +82,14 @@ python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/buddhist-c
   - [[#persist/tibetan-analysis-persist.el][persist/tibetan-analysis-persist.el]]  (159)
   - [[#persist/tibetan-analysis-sanskrit.el][persist/tibetan-analysis-sanskrit.el]]  (22)
   - [[#persist/tibetan-auto-analysis.el][persist/tibetan-auto-analysis.el]]  (29)
-  - [[#persist/tibetan-cascade.el][persist/tibetan-cascade.el]]  (119)
+  - [[#persist/tibetan-cascade.el][persist/tibetan-cascade.el]]  (117)
   - [[#persist/tibetan-claude-queue.el][persist/tibetan-claude-queue.el]]  (22)
   - [[#persist/tibetan-compound-analysis.el][persist/tibetan-compound-analysis.el]]  (29)
   - [[#persist/tibetan-discussion-paper.el][persist/tibetan-discussion-paper.el]]  (42)
   - [[#persist/tibetan-handout.el][persist/tibetan-handout.el]]  (67)
   - [[#persist/tibetan-portfolio.el][persist/tibetan-portfolio.el]]  (5)
   - [[#persist/tibetan-sanskrit-comparison.el][persist/tibetan-sanskrit-comparison.el]]  (19)
-  - [[#persist/tibetan-sentence-claude.el][persist/tibetan-sentence-claude.el]]  (29)
+  - [[#persist/tibetan-sentence-claude.el][persist/tibetan-sentence-claude.el]]  (30)
   - [[#persist/tibetan-sentence-persist.el][persist/tibetan-sentence-persist.el]]  (62)
   - [[#persist/tibetan-structure-reorg.el][persist/tibetan-structure-reorg.el]]  (15)
   - [[#persist/tibetan-translation-discussion.el][persist/tibetan-translation-discussion.el]]  (40)
@@ -20637,7 +20637,7 @@ typing is read (and kept) by a rebuild.
 ** ~bcat-sentence--segments-part~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1193
+:LINE: 1192
 :SIGNATURE: (bcat-sentence--segments-part text)
 :END:
 
@@ -20654,7 +20654,7 @@ segments under `* Sentence N').
 ** ~bcat-sentence--goto-segments~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1218
+:LINE: 1217
 :SIGNATURE: (bcat-sentence--goto-segments)
 :END:
 
@@ -20666,7 +20666,7 @@ Returns non-nil when found; point at the start of the buffer before.
 ** ~bcat-sentence--unaligned~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1228
+:LINE: 1227
 :SIGNATURE: (bcat-sentence--unaligned file)
 :END:
 
@@ -20677,7 +20677,7 @@ stripped.
 ** ~bcat-sentence-fetch-state~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1240
+:LINE: 1239
 :SIGNATURE: (bcat-sentence-fetch-state file seg-nums)
 :END:
 
@@ -20694,7 +20694,7 @@ when the file is complete.
 ** ~bcat-sentence--own-translations~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1271
+:LINE: 1270
 :SIGNATURE: (bcat-sentence--own-translations text)
 :END:
 
@@ -20704,7 +20704,7 @@ The ⟦N⟧ translations in TEXT: ((N . TRANSLATION) …), without the
 ** ~bcat-sentence--block-lines~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1280
+:LINE: 1279
 :SIGNATURE: (bcat-sentence--block-lines block)
 :END:
 
@@ -20713,7 +20713,7 @@ The lines of a translation BLOCK without their org line breaks.
 ** ~bcat-sentence--align-merge~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1285
+:LINE: 1284
 :SIGNATURE: (bcat-sentence--align-merge text parsed)
 :END:
 
@@ -20727,7 +20727,7 @@ Everything else stays as it is.
 ** ~bcat-sentence--unreadable~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1358
+:LINE: 1357
 :SIGNATURE: (bcat-sentence--unreadable what file response problem)
 :END:
 
@@ -20738,7 +20738,7 @@ on FILE's status line.  Returns nil.
 ** ~bcat-sentence--align-land~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1371
+:LINE: 1370
 :SIGNATURE: (bcat-sentence--align-land file response)
 :END:
 
@@ -20748,7 +20748,7 @@ the answer is unreadable.
 ** ~bcat-sentence--align-one~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1384
+:LINE: 1383
 :SIGNATURE: (bcat-sentence--align-one file sentence source-file)
 :END:
 
@@ -20758,7 +20758,7 @@ no DharmaMitra, no new analysis.
 ** ~bcat-sentence--references-for~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1411
+:LINE: 1410
 :SIGNATURE: (bcat-sentence--references-for file sent-num source-file)
 :END:
 
@@ -20769,7 +20769,7 @@ compared of FILE.
 ** ~bcat-sentence--prepare~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1420
+:LINE: 1419
 :SIGNATURE: (bcat-sentence--prepare file sentence source-file)
 :END:
 
@@ -20783,7 +20783,7 @@ sections and references added by hand carried over.  Returns
 ** ~bcat-sentence--dm-status~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1445
+:LINE: 1444
 :SIGNATURE: (bcat-sentence--dm-status translation)
 :END:
 
@@ -20794,7 +20794,7 @@ in *Messages*).
 ** ~bcat-sentence--dharmamitra~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1455
+:LINE: 1454
 :SIGNATURE: (bcat-sentence--dharmamitra file sentence)
 :END:
 
@@ -20804,7 +20804,7 @@ must not stop the analysis); never with an org link in it.
 ** ~bcat-sentence--second-language~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1471
+:LINE: 1470
 :SIGNATURE: (bcat-sentence--second-language sentence source-file)
 :END:
 
@@ -20817,7 +20817,7 @@ nil.
 ** ~bcat-sentence--context-with-zettels~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1484
+:LINE: 1483
 :SIGNATURE: (bcat-sentence--context-with-zettels meta segs source-file &optional lines)
 :END:
 
@@ -20829,7 +20829,7 @@ them.
 ** ~bcat-sentence--sanskrit-checklist~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1493
+:LINE: 1492
 :SIGNATURE: (bcat-sentence--sanskrit-checklist source-file)
 :END:
 
@@ -20843,7 +20843,7 @@ tool's), then the tool's Templates/analysis/.
 ** ~bcat-sentence--outline-block~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1504
+:LINE: 1503
 :SIGNATURE: (bcat-sentence--outline-block sentence source-file)
 :END:
 
@@ -20856,7 +20856,7 @@ after it are those of the source, whatever their numbers (the Viveka's
 ** ~bcat-sentence--outline-report~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1520
+:LINE: 1519
 :SIGNATURE: (bcat-sentence--outline-report file sentence source-file parsed)
 :END:
 
@@ -20871,7 +20871,7 @@ outline is not changed (Tantrāloka-Sitzung 20.11.: „Die Gliederung
 ** ~bcat-sentence--prompts~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1542
+:LINE: 1541
 :SIGNATURE: (bcat-sentence--prompts sentence source-file refs &optional file)
 :END:
 
@@ -20885,7 +20885,7 @@ goes with the request (20.11., `bcat-sentence--reviewed-block').
 ** ~bcat-sentence--write-analysed~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1586
+:LINE: 1585
 :SIGNATURE: (bcat-sentence--write-analysed file sent-num segs source-file build)
 :END:
 
@@ -20897,7 +20897,7 @@ during a request survives); LAST_ANALYZED is today.
 ** ~bcat-sentence--fetched-context~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1604
+:LINE: 1603
 :SIGNATURE: (bcat-sentence--fetched-context base sentence source-file refs parsed &optional tibetan)
 :END:
 
@@ -20908,7 +20908,7 @@ Tibetan request; REFS the references sent with the request.
 ** ~bcat-sentence--answers-file~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1618
+:LINE: 1617
 :SIGNATURE: (bcat-sentence--answers-file file)
 :END:
 
@@ -20917,7 +20917,7 @@ Where the answers for the sentence FILE are kept: .answers/ beside it.
 ** ~bcat-sentence--keep-answers~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1623
+:LINE: 1622
 :SIGNATURE: (bcat-sentence--keep-answers file record)
 :END:
 
@@ -20930,7 +20930,7 @@ signals: keeping is no reason to lose a landing.
 ** ~bcat-sentence--answers~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1644
+:LINE: 1643
 :SIGNATURE: (bcat-sentence--answers file)
 :END:
 
@@ -20940,7 +20940,7 @@ or nil.
 ** ~bcat-sentence--write-fetched~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1655
+:LINE: 1654
 :SIGNATURE: (bcat-sentence--write-fetched file sentence source-file refs parsed &optional tibetan)
 :END:
 
@@ -20952,7 +20952,7 @@ compared are REFS as sent, marked from the answer's segment parts.
 ** ~bcat-sentence--write-partner~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1675
+:LINE: 1674
 :SIGNATURE: (bcat-sentence--write-partner sentence source-file tibetan trefs sanskrit &optional hint assignment sanskrit-translation bhasya-translation)
 :END:
 
@@ -20968,7 +20968,7 @@ Returns the file.
 ** ~bcat-sentence--padapatha-warnings~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1701
+:LINE: 1700
 :SIGNATURE: (bcat-sentence--padapatha-warnings file sentence source-file parsed)
 :END:
 
@@ -20981,7 +20981,7 @@ segment numbers.
 ** ~bcat-sentence--land~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1723
+:LINE: 1722
 :SIGNATURE: (bcat-sentence--land file sentence source-file refs response)
 :END:
 
@@ -20993,7 +20993,7 @@ finishes the file; any other ends here (C-c u H).
 ** ~bcat-sentence--tibetan-prompts~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1741
+:LINE: 1740
 :SIGNATURE: (bcat-sentence--tibetan-prompts sentence source-file parsed trefs)
 :END:
 
@@ -21007,7 +21007,7 @@ reference translations of the Tibetan, the Tibetan source's
 ** ~bcat-sentence--tibetan-land~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1770
+:LINE: 1769
 :SIGNATURE: (bcat-sentence--tibetan-land file sentence source-file refs parsed trefs response)
 :END:
 
@@ -21020,7 +21020,7 @@ FILE as the Sanskrit answer left it when the answer is unreadable.
 ** ~bcat-sentence--tibetan-one~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1793
+:LINE: 1792
 :SIGNATURE: (bcat-sentence--tibetan-one file sentence source-file refs parsed)
 :END:
 
@@ -21034,7 +21034,7 @@ the Tibetan.
 ** ~bcat-sentence--prepare-partner~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1817
+:LINE: 1816
 :SIGNATURE: (bcat-sentence--prepare-partner sentence source-file)
 :END:
 
@@ -21044,7 +21044,7 @@ paired SOURCE-FILE; nil when the Tibetan lacks the sentence.
 ** ~bcat-sentence--pair-state~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1827
+:LINE: 1826
 :SIGNATURE: (bcat-sentence--pair-state file sentence source-file)
 :END:
 
@@ -21056,7 +21056,7 @@ two requests.
 ** ~bcat-sentence--add-compared~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1845
+:LINE: 1844
 :SIGNATURE: (bcat-sentence--add-compared file name text)
 :END:
 
@@ -21068,7 +21068,7 @@ points for the discussion, under its own heading.
 ** ~bcat-sentence--dm-one~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1867
+:LINE: 1866
 :SIGNATURE: (bcat-sentence--dm-one file sentence source-file)
 :END:
 
@@ -21081,7 +21081,7 @@ why and nothing goes to Claude.
 ** ~bcat-sentence--fetch-one~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1890
+:LINE: 1886
 :SIGNATURE: (bcat-sentence--fetch-one file sentence source-file)
 :END:
 
@@ -21092,7 +21092,7 @@ request through the queue.
 ** ~bcat-sentence-fetch~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 1919
+:LINE: 1912
 :SIGNATURE: (bcat-sentence-fetch scope &optional force)
 :END:
 
@@ -21253,26 +21253,10 @@ file's folder) of the reviewed version it replaces
 
 /(no docstring)/
 
-** ~tibetan-dharmamitra-sentence-request-delay~  /variable/
-:PROPERTIES:
-:KIND: defvar
-:LINE: 1186
-:END:
-
-/(no docstring)/
-
-** ~tibetan-sentence-claude--dm-schedule-count~  /variable/
-:PROPERTIES:
-:KIND: defvar
-:LINE: 1187
-:END:
-
-/(no docstring)/
-
 ** ~bcat-sentence-after-fetch-functions~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 1189
+:LINE: 1188
 :DEFAULT: nil
 :END:
 
@@ -28798,7 +28782,7 @@ Rückgabe (:total :ok :skipped :failed :failures ((FILE . ERR)…)).
 ** ~tibetan-cascade--schedule-dm-section~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 3602
+:LINE: 3601
 :SIGNATURE: (tibetan-cascade--schedule-dm-section chunk files force)
 :END:
 
@@ -28809,7 +28793,7 @@ per SECTION instead of one per sentence.
 ** ~tibetan-cascade--fire-section~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 3626
+:LINE: 3622
 :SIGNATURE: (tibetan-cascade--fire-section chunk source-file folder
                                       &optional force)
 :END:
@@ -28824,7 +28808,7 @@ flavor); DM rides the same claim at SECTION granularity.  Returns
 ** ~tibetan-cascade-fire-sections~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 3693
+:LINE: 3689
 :SIGNATURE: (tibetan-cascade-fire-sections &optional force)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -29066,22 +29050,6 @@ remembers the rest.
 Machine placeholders / stubs of a slot — never content.
 Prefix-anchored (§5.40 lesson: a real rendering may open with an
 editorial bracket like `[He] spoke').
-
-** ~tibetan-sentence-claude--dm-schedule-count~  /variable/
-:PROPERTIES:
-:KIND: defvar
-:LINE: 3599
-:END:
-
-/(no docstring)/
-
-** ~tibetan-dharmamitra-sentence-request-delay~  /variable/
-:PROPERTIES:
-:KIND: defvar
-:LINE: 3600
-:END:
-
-/(no docstring)/
 
 
 * persist/tibetan-claude-queue.el
@@ -31360,10 +31328,26 @@ SENTENCE is the walker plist from
 static system blocks (metadata/Portfolio/target-lang — shared helper,
 cache-constant).  FOLDER locates the child seg files for grounding.
 
+** ~tibetan-sentence-claude-dm-delay~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 511
+:SIGNATURE: (tibetan-sentence-claude-dm-delay)
+:END:
+
+Seconds the next sentence-level DharmaMitra call waits, and its slot
+taken: the calls of one batch are spaced by
+`tibetan-dharmamitra-sentence-request-delay' (DharmaMitra allows about
+10 a minute) — 0, d, 2d …; once the last slot has passed, the next call
+goes at once.  Bug 27.11.: a counter times the delay, reset only by
+`tibetan-sentence-claude-clear-inflight', grew with every call of the
+session — at 92 in Carsten's Emacs, every C-c u G waited ten minutes
+before anything went out.
+
 ** ~tibetan-sentence-claude--schedule-dm~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 514
+:LINE: 529
 :SIGNATURE: (tibetan-sentence-claude--schedule-dm sentence child-files
                                              sent-file force)
 :END:
@@ -31375,7 +31359,7 @@ rate limit.  Timers run during the batch drain loop's
 ** ~tibetan-sentence-claude-clear-inflight~  /function/  ⚡
 :PROPERTIES:
 :KIND: defun
-:LINE: 544
+:LINE: 557
 :SIGNATURE: (tibetan-sentence-claude-clear-inflight)
 :INTERACTIVE: t
 :END:
@@ -31385,7 +31369,7 @@ Clear the sentence-level in-flight registry (crash recovery).
 ** ~tibetan-sentence-claude--claim~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 551
+:LINE: 564
 :SIGNATURE: (tibetan-sentence-claude--claim source-file sent-num label)
 :END:
 
@@ -31394,7 +31378,7 @@ Claim (SOURCE-FILE . SENT-NUM); nil when already in flight.
 ** ~tibetan-sentence-claude--release~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 558
+:LINE: 571
 :SIGNATURE: (tibetan-sentence-claude--release key)
 :END:
 
@@ -31403,7 +31387,7 @@ Release the in-flight claim KEY.
 ** ~tibetan-sentence-claude--segment-label~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 562
+:LINE: 575
 :SIGNATURE: (tibetan-sentence-claude--segment-label sent-num seg-nums)
 :END:
 
@@ -31414,7 +31398,7 @@ Single-segment sentences (B-1.2) label as `segment N' — a
 ** ~tibetan-sentence-claude--handle-response~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 571
+:LINE: 584
 :SIGNATURE: (tibetan-sentence-claude--handle-response response ctx)
 :END:
 
@@ -31431,7 +31415,7 @@ silent blank.  The sent file gets the whole-sentence pieces.
 ** ~tibetan-sentence-claude--handle-response-1~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 595
+:LINE: 608
 :SIGNATURE: (tibetan-sentence-claude--handle-response-1 response ctx)
 :END:
 
@@ -31440,7 +31424,7 @@ Two-file landing body of `tibetan-sentence-claude--handle-response'.
 ** ~tibetan-sentence-claude--request~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 657
+:LINE: 670
 :SIGNATURE: (tibetan-sentence-claude--request sentence child-files sent-file
                                          source-file folder force
                                          &optional cascade)
@@ -31464,7 +31448,7 @@ and the handler routes to `tibetan-cascade--land-chunk-response'.
 ** ~tibetan-analysis--fire-sentence-level~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 763
+:LINE: 776
 :SIGNATURE: (tibetan-analysis--fire-sentence-level tibetan-text analysis-file
                                               source-file seg-id
                                               &optional force)
@@ -31481,7 +31465,7 @@ per-segment Claude).
 ** ~tibetan-analysis--fire-sentence-level-1~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 784
+:LINE: 797
 :SIGNATURE: (tibetan-analysis--fire-sentence-level-1 analysis-file source-file
                                                 seg-id force)
 :END:
@@ -31491,7 +31475,7 @@ Unguarded body of `tibetan-analysis--fire-sentence-level'.
 ** ~tibetan-analysis--fire-sentence-level-2~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 817
+:LINE: 830
 :SIGNATURE: (tibetan-analysis--fire-sentence-level-2 sentence analysis-file
                                                 source-file force)
 :END:
@@ -31510,8 +31494,7 @@ Two-file (child seg + sent file) body of the sentence dispatcher.
 Seconds between scheduled sentence-level DharmaMitra fires.
 DharmaMitra rate-limits at ~10 requests/minute (§5.29 history); a
 batch firing 57 sentences must stagger.  Each scheduled fire adds
-this delay to a cumulative counter, reset by
-`tibetan-sentence-claude-clear-inflight'.
+this delay to the slot of the next one (`tibetan-sentence-claude-dm-delay').
 
 ** ~gptel-max-tokens~  /variable/
 :PROPERTIES:
@@ -31592,19 +31575,20 @@ parser.
 
 /(no docstring)/
 
-** ~tibetan-sentence-claude--dm-schedule-count~  /variable/
+** ~tibetan-sentence-claude--dm-next-slot~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 508
-:DEFAULT: 0
+:LINE: 507
+:DEFAULT: nil
 :END:
 
-Cumulative counter for staggering sentence-level DM fires.
+When (float seconds) the next sentence-level DharmaMitra call may go
+out — `tibetan-sentence-claude-dm-delay'; nil: at once.
 
 ** ~tibetan-sentence-claude--inflight~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 536
+:LINE: 549
 :DEFAULT: (make-hash-table :test #'equal)
 :END:
 

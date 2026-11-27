@@ -1183,8 +1183,7 @@ typing is read (and kept) by a rebuild."
 (declare-function tibetan-dharmamitra-translation--target-lang "tibetan-dharmamitra-translation" (file))
 (declare-function tibetan-dharmamitra-translation--input-encoding "tibetan-dharmamitra-translation" (file))
 (defvar tibetan-cascade-subtree-confirm-threshold)
-(defvar tibetan-dharmamitra-sentence-request-delay)
-(defvar tibetan-sentence-claude--dm-schedule-count)
+(declare-function tibetan-sentence-claude-dm-delay "tibetan-sentence-claude" ())
 
 (defvar bcat-sentence-after-fetch-functions nil
   "Abnormal hook run with the sentence FILE after C-c u G has written
@@ -1870,12 +1869,9 @@ fetch it alone (staggered like every sentence-level DharmaMitra call);
 with a translation add it under Translations compared and place it with
 ONE small alignment request — no new analysis; without, the status says
 why and nothing goes to Claude."
-  (let ((delay (* (if (boundp 'tibetan-sentence-claude--dm-schedule-count)
-                      tibetan-sentence-claude--dm-schedule-count 0)
-                  (if (boundp 'tibetan-dharmamitra-sentence-request-delay)
-                      tibetan-dharmamitra-sentence-request-delay 6.5))))
-    (when (boundp 'tibetan-sentence-claude--dm-schedule-count)
-      (cl-incf tibetan-sentence-claude--dm-schedule-count))
+  (let ((delay (if (fboundp 'tibetan-sentence-claude-dm-delay)
+                   (tibetan-sentence-claude-dm-delay)
+                 0)))
     (bcat-status-step file :dm "DharmaMitra …")
     (run-at-time
      delay nil
@@ -1891,12 +1887,9 @@ why and nothing goes to Claude."
   "Schedule the analysis of SENTENCE into FILE: DharmaMitra first
 \(staggered like every sentence-level DharmaMitra call), then ONE Claude
 request through the queue."
-  (let ((delay (* (if (boundp 'tibetan-sentence-claude--dm-schedule-count)
-                      tibetan-sentence-claude--dm-schedule-count 0)
-                  (if (boundp 'tibetan-dharmamitra-sentence-request-delay)
-                      tibetan-dharmamitra-sentence-request-delay 6.5))))
-    (when (boundp 'tibetan-sentence-claude--dm-schedule-count)
-      (cl-incf tibetan-sentence-claude--dm-schedule-count))
+  (let ((delay (if (fboundp 'tibetan-sentence-claude-dm-delay)
+                   (tibetan-sentence-claude-dm-delay)
+                 0)))
     (bcat-status-step file :dm "DharmaMitra …")
     (run-at-time
      delay nil

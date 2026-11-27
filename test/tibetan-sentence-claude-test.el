@@ -740,5 +740,26 @@ returns nil."
                 (should dm)))))
       (delete-directory root t))))
 
+;; --- DharmaMitra stagger (27.11.) -----------------------------------------
+
+(ert-deftest tibetan-sentence-claude-dm-delay-staggers-and-forgets ()
+  "Bug (27.11.): the stagger of the sentence-level DharmaMitra calls was
+a counter times 6.5 s that only the crash-recovery command reset — in
+Carsten's Emacs it stood at 92, and every C-c u G waited ten minutes
+before anything went out.  The stagger is to space the calls of ONE
+batch (DharmaMitra allows about 10 a minute): consecutive calls wait
+0, d, 2d …; once the last slot has passed, the next call goes at once."
+  (let ((now 1000.0)
+        (tibetan-dharmamitra-sentence-request-delay 6.5)
+        (tibetan-sentence-claude--dm-next-slot nil))
+    (cl-letf (((symbol-function 'float-time) (lambda (&optional _) now)))
+      (should (= 0 (tibetan-sentence-claude-dm-delay)))
+      (should (= 6.5 (tibetan-sentence-claude-dm-delay)))
+      (should (= 13.0 (tibetan-sentence-claude-dm-delay)))
+      ;; a long while later: no waiting for the calls of the old batch
+      (setq now 5000.0)
+      (should (= 0 (tibetan-sentence-claude-dm-delay)))
+      (should (= 6.5 (tibetan-sentence-claude-dm-delay))))))
+
 (provide 'tibetan-sentence-claude-test)
 ;;; tibetan-sentence-claude-test.el ends here

@@ -3596,8 +3596,7 @@ Rückgabe (:total :ok :skipped :failed :failures ((FILE . ERR)…))."
 
 (declare-function tibetan-dharmamitra-translation-fire-section
                   "tibetan-dharmamitra-translation")
-(defvar tibetan-sentence-claude--dm-schedule-count)
-(defvar tibetan-dharmamitra-sentence-request-delay)
+(declare-function tibetan-sentence-claude-dm-delay "tibetan-sentence-claude" ())
 
 (defun tibetan-cascade--schedule-dm-section (chunk files force)
   "Schedule ONE DharmaMitra call for CHUNK's whole text — staggered
@@ -3605,15 +3604,12 @@ against the 10/min limit like the §5.40 sentence DM, but one call
 per SECTION instead of one per sentence."
   (when (and files
              (fboundp 'tibetan-dharmamitra-translation-fire-section)
-             (boundp 'tibetan-sentence-claude--dm-schedule-count)
-             (boundp 'tibetan-dharmamitra-sentence-request-delay))
-    (let ((delay (* tibetan-sentence-claude--dm-schedule-count
-                    tibetan-dharmamitra-sentence-request-delay))
+             (fboundp 'tibetan-sentence-claude-dm-delay))
+    (let ((delay (tibetan-sentence-claude-dm-delay))
           (text (mapconcat (lambda (s)
                              (mapconcat #'cdr (plist-get s :segs) ""))
                            (plist-get chunk :sentences) ""))
           (label (or (plist-get chunk :label) "Section")))
-      (cl-incf tibetan-sentence-claude--dm-schedule-count)
       (run-at-time
        delay nil
        (lambda ()

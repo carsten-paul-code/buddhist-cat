@@ -500,13 +500,28 @@ cache-constant).  FOLDER locates the child seg files for grounding."
   "Seconds between scheduled sentence-level DharmaMitra fires.
 DharmaMitra rate-limits at ~10 requests/minute (§5.29 history); a
 batch firing 57 sentences must stagger.  Each scheduled fire adds
-this delay to a cumulative counter, reset by
-`tibetan-sentence-claude-clear-inflight'."
+this delay to the slot of the next one (`tibetan-sentence-claude-dm-delay')."
   :type 'number
   :group 'buddhist-cat)
 
-(defvar tibetan-sentence-claude--dm-schedule-count 0
-  "Cumulative counter for staggering sentence-level DM fires.")
+(defvar tibetan-sentence-claude--dm-next-slot nil
+  "When (float seconds) the next sentence-level DharmaMitra call may go
+out — `tibetan-sentence-claude-dm-delay'; nil: at once.")
+
+(defun tibetan-sentence-claude-dm-delay ()
+  "Seconds the next sentence-level DharmaMitra call waits, and its slot
+taken: the calls of one batch are spaced by
+`tibetan-dharmamitra-sentence-request-delay' (DharmaMitra allows about
+10 a minute) — 0, d, 2d …; once the last slot has passed, the next call
+goes at once.  Bug 27.11.: a counter times the delay, reset only by
+`tibetan-sentence-claude-clear-inflight', grew with every call of the
+session — at 92 in Carsten's Emacs, every C-c u G waited ten minutes
+before anything went out."
+  (let* ((now (float-time))
+         (slot (max now (or tibetan-sentence-claude--dm-next-slot now))))
+    (setq tibetan-sentence-claude--dm-next-slot
+          (+ slot tibetan-dharmamitra-sentence-request-delay))
+    (- slot now)))
 
 (declare-function tibetan-dharmamitra-translation-fire-tibetan-sentence
                   "tibetan-dharmamitra-translation")
@@ -517,9 +532,7 @@ this delay to a cumulative counter, reset by
 rate limit.  Timers run during the batch drain loop's
 `accept-process-output'."
   (when (fboundp 'tibetan-dharmamitra-translation-fire-tibetan-sentence)
-    (let ((delay (* tibetan-sentence-claude--dm-schedule-count
-                    tibetan-dharmamitra-sentence-request-delay)))
-      (cl-incf tibetan-sentence-claude--dm-schedule-count)
+    (let ((delay (tibetan-sentence-claude-dm-delay)))
       (run-at-time
        delay nil
        (lambda ()
@@ -545,7 +558,7 @@ crash only suppresses until `tibetan-sentence-claude-clear-inflight'.")
   "Clear the sentence-level in-flight registry (crash recovery)."
   (interactive)
   (clrhash tibetan-sentence-claude--inflight)
-  (setq tibetan-sentence-claude--dm-schedule-count 0)
+  (setq tibetan-sentence-claude--dm-next-slot nil)
   (message "Sentence-level in-flight registry cleared"))
 
 (defun tibetan-sentence-claude--claim (source-file sent-num label)
