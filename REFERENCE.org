@@ -1,9 +1,9 @@
 #+TITLE: Function Reference — buddhist-cat
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-11-22T17:36:15
+#+DATE: 2026-11-27T11:00:37
 #+OPTIONS: toc:2 num:nil
 
-Source tree: ~/Users/cp/buddhist-cat~  ·  100 modules  ·  2665 forms
+Source tree: ~/Users/cp/buddhist-cat~  ·  100 modules  ·  2668 forms
 
 Regenerated automatically by:
 
@@ -92,7 +92,7 @@ python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/buddhist-c
   - [[#persist/tibetan-sentence-claude.el][persist/tibetan-sentence-claude.el]]  (29)
   - [[#persist/tibetan-sentence-persist.el][persist/tibetan-sentence-persist.el]]  (62)
   - [[#persist/tibetan-structure-reorg.el][persist/tibetan-structure-reorg.el]]  (15)
-  - [[#persist/tibetan-translation-discussion.el][persist/tibetan-translation-discussion.el]]  (36)
+  - [[#persist/tibetan-translation-discussion.el][persist/tibetan-translation-discussion.el]]  (39)
   - [[#persist/tibetan-translation-doc.el][persist/tibetan-translation-doc.el]]  (15)
   - [[#persist/tibetan-word-formation.el][persist/tibetan-word-formation.el]]  (13)
   - [[#philology/tibetan-bialek-textbook-refs.el][philology/tibetan-bialek-textbook-refs.el]]  (2)
@@ -32928,10 +32928,20 @@ the handout may quote, never reproduce a provided translation.
 
 Non-nil while a KIND request for FILE is in flight.
 
+** ~bcat-model~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 504
+:SIGNATURE: (bcat-model)
+:END:
+
+The model a CAT request goes out with: `bcat-model' as gptel takes
+it (a symbol), or gptel's own `gptel-model' when that is nil.
+
 ** ~tibetan-discussion--submit~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 491
+:LINE: 511
 :SIGNATURE: (tibetan-discussion--submit kind file prompts land &optional fail)
 :END:
 
@@ -32951,7 +32961,7 @@ by the discussion (§5.62) and the Sanskrit comparison (§5.64).
 ** ~tibetan-discussion--request~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 564
+:LINE: 585
 :SIGNATURE: (tibetan-discussion--request file &optional force)
 :END:
 
@@ -32962,7 +32972,7 @@ when a discussion exists and FORCE is nil.
 ** ~tibetan-discussion--maybe-fire~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 578
+:LINE: 599
 :SIGNATURE: (tibetan-discussion--maybe-fire file)
 :END:
 
@@ -32973,7 +32983,7 @@ once Claude AND DharmaMitra are there — unless switched off
 ** ~tibetan-discussion-fetch~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 593
+:LINE: 614
 :SIGNATURE: (tibetan-discussion-fetch source-file sentences folder)
 :END:
 
@@ -32986,7 +32996,7 @@ analysed.  Returns the list of files requested.
 ** ~tibetan-translation-compare-dwim~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 612
+:LINE: 633
 :SIGNATURE: (tibetan-translation-compare-dwim)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -33013,6 +33023,23 @@ When non-nil, the seminar discussion of a cascade sentence is
 requested automatically as soon as Claude AND DharmaMitra have landed
 (and reference translations exist).  One extra Claude call per
 sentence.  C-c u c always works on demand.
+
+** ~bcat-model~  /customize variable/
+:PROPERTIES:
+:KIND: defcustom
+:LINE: 493
+:TYPE: '(choice (string
+:GROUP: buddhist-cat
+:DEFAULT: "claude-sonnet-4-6"
+:END:
+
+The Claude model of the CAT's requests — the sentence files (C-c u
+G), commentary documents, surveys (C-c u Q), outlines (C-c u S): every
+request through `tibetan-discussion--submit'.  Carsten 27.11.: set in
+the configuration — the live Emacs sent them to whatever gptel's global
+model happened to be (claude-sonnet-4-6, set at run time, while the
+init file says claude-opus-4-8).  The default is the model the
+analyses so far came from.  nil: gptel's own `gptel-model'.
 
 ** ~gptel-max-tokens~  /variable/
 :PROPERTIES:
@@ -33086,6 +33113,14 @@ been written into it (§5.64: the discussion paper waits for it).
 
 Requests in flight, keyed "KIND:truename" (KIND = discussion /
 comparison) — one request per kind and file at a time.
+
+** ~gptel-model~  /variable/
+:PROPERTIES:
+:KIND: defvar
+:LINE: 491
+:END:
+
+/(no docstring)/
 
 
 * persist/tibetan-translation-doc.el

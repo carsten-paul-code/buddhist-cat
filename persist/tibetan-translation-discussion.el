@@ -488,6 +488,26 @@ comparison) — one request per kind and file at a time.")
   (gethash (concat kind ":" (file-truename file))
            tibetan-discussion--inflight))
 
+(defvar gptel-model)
+
+(defcustom bcat-model "claude-sonnet-4-6"
+  "The Claude model of the CAT's requests — the sentence files (C-c u
+G), commentary documents, surveys (C-c u Q), outlines (C-c u S): every
+request through `tibetan-discussion--submit'.  Carsten 27.11.: set in
+the configuration — the live Emacs sent them to whatever gptel's global
+model happened to be (claude-sonnet-4-6, set at run time, while the
+init file says claude-opus-4-8).  The default is the model the
+analyses so far came from.  nil: gptel's own `gptel-model'."
+  :type '(choice (string :tag "Model") (const :tag "gptel's model" nil))
+  :group 'buddhist-cat)
+
+(defun bcat-model ()
+  "The model a CAT request goes out with: `bcat-model' as gptel takes
+it (a symbol), or gptel's own `gptel-model' when that is nil."
+  (cond ((null bcat-model) gptel-model)
+        ((symbolp bcat-model) bcat-model)
+        (t (intern bcat-model))))
+
 (defun tibetan-discussion--submit (kind file prompts land &optional fail)
   "Queue ONE Claude request of KIND for FILE through the Claude queue
 \(budget `tibetan-claude-max-tokens', system prompt cached).
@@ -513,6 +533,7 @@ by the discussion (§5.62) and the Sanskrit comparison (§5.64)."
                  (error "gptel not loaded"))
                (tibetan-analysis--ensure-gptel-ready)
                (let* ((ps (funcall prompts))
+                      (gptel-model (bcat-model))
                       (gptel-cache '(system))
                       (gptel-max-tokens tibetan-claude-max-tokens))
                  (gptel-request

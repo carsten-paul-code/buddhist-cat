@@ -361,6 +361,38 @@ file while one is in flight is a no-op."
         (when added (setq features (delq 'gptel features)))))))
 
 
+(defvar gptel-model)
+
+(ert-deftest tibetan-discussion-submit-uses-the-cat-model ()
+  "Carsten 27.11.: the model of the CAT's requests is set in its own
+configuration (`bcat-model') — the live Emacs sent them to whatever
+gptel's global model happened to be (claude-sonnet-4-6, set at run
+time, while the init file says claude-opus-4-8).  Every request through
+`tibetan-discussion--submit' (sentence, commentary, survey, outline)
+goes out with `bcat-model'; nil follows gptel's own."
+  (let ((file (make-temp-file "bcat-model-")) (added (not (featurep 'gptel)))
+        (seen '()) (pending nil))
+    (when added (provide 'gptel))
+    (unwind-protect
+        (cl-letf (((symbol-function 'tibetan-claude-queue-submit)
+                   (lambda (job &rest _) (setq pending job)))
+                  ((symbol-function 'tibetan-analysis--ensure-gptel-ready) (lambda () t))
+                  ((symbol-function 'run-at-time) (lambda (_s _r fn &rest args) (apply fn args)))
+                  ((symbol-function 'gptel-request)
+                   (lambda (_prompt &rest args)
+                     (push gptel-model seen)
+                     (funcall (plist-get args :callback) "{}" nil))))
+          (let ((gptel-model 'claude-sonnet-4-6))
+            (let ((bcat-model "claude-fable-5-2"))
+              (tibetan-discussion--submit "test" file (lambda () '("s" . "u")) #'ignore)
+              (funcall pending #'ignore))
+            (let ((bcat-model nil))
+              (tibetan-discussion--submit "test" file (lambda () '("s" . "u")) #'ignore)
+              (funcall pending #'ignore)))
+          (should (equal '(claude-fable-5-2 claude-sonnet-4-6) (reverse seen))))
+      (when added (setq features (delq 'gptel features)))
+      (delete-file file))))
+
 (ert-deftest tibetan-discussion-fetched-by-c-c-u-g ()
   "§5.64: C-c u G requests the missing discussion of a sentence whose
 Claude, DharmaMitra and reference are already there (a reference
