@@ -420,6 +420,32 @@ API's default anyway, nothing changes for Sonnet 4.6 or Opus 5.5)."
       (when added (setq features (delq 'gptel features)))
       (delete-file file))))
 
+(ert-deftest tibetan-discussion-submit-keeps-the-model-it-was-sent-with ()
+  "Carsten 27.11. (second round: Opus asks Fable): a request keeps the
+model that was current when it was submitted — the queue may send it
+later, when a let-binding of `bcat-model' (Fable for the second
+opinion) has long ended."
+  (let ((file (make-temp-file "bcat-model-later-")) (added (not (featurep 'gptel)))
+        (seen nil) (pending nil))
+    (when added (provide 'gptel))
+    (unwind-protect
+        (cl-letf (((symbol-function 'tibetan-claude-queue-submit)
+                   (lambda (job &rest _) (setq pending job)))
+                  ((symbol-function 'tibetan-analysis--ensure-gptel-ready) (lambda () t))
+                  ((symbol-function 'run-at-time) (lambda (_s _r fn &rest args) (apply fn args)))
+                  ((symbol-function 'gptel-request)
+                   (lambda (_prompt &rest args)
+                     (setq seen gptel-model)
+                     (funcall (plist-get args :callback) "{}" nil))))
+          (let ((bcat-model "claude-opus-5-5"))
+            (let ((bcat-model "claude-fable-5-2"))
+              (tibetan-discussion--submit "test" file (lambda () '("s" . "u")) #'ignore))
+            ;; the queue sends it now
+            (funcall pending #'ignore))
+          (should (eq 'claude-fable-5-2 seen)))
+      (when added (setq features (delq 'gptel features)))
+      (delete-file file))))
+
 (ert-deftest bcat-model-default-is-opus ()
   "Carsten 27.11., after the comparison of Sonnet 4.6, Opus 5.5 and
 Fable 5.2 on TĀ 1012, 1025 and bDen gnyis 28: „Opus 5.5 als Vorgabe“ —

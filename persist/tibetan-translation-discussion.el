@@ -524,7 +524,11 @@ exhausted): 11.11., MSA IX.62 without network, the caller's own state
 (a commentary run) otherwise waited for ever.  Returns t
 when queued, nil while a KIND request for FILE is in flight.  Shared
 by the discussion (§5.62) and the Sanskrit comparison (§5.64)."
-  (let ((key (concat kind ":" (file-truename file))))
+  (let ((key (concat kind ":" (file-truename file)))
+        ;; 27.11.: the model current NOW — the queue may send the
+        ;; request later, after a let-binding of `bcat-model' (the
+        ;; second opinion's Fable) has ended
+        (model (bcat-model)))
     (unless (gethash key tibetan-discussion--inflight)
       (puthash key t tibetan-discussion--inflight)
       (require 'tibetan-claude-queue)
@@ -536,7 +540,7 @@ by the discussion (§5.62) and the Sanskrit comparison (§5.64)."
                  (error "gptel not loaded"))
                (tibetan-analysis--ensure-gptel-ready)
                (let* ((ps (funcall prompts))
-                      (gptel-model (bcat-model))
+                      (gptel-model model)
                       ;; 27.11.: no sampling parameter — Fable 5.2
                       ;; rejects one; 1.0 is the API's default anyway
                       (gptel-temperature nil)
