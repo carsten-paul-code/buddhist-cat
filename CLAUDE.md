@@ -6368,7 +6368,22 @@ Abruf umsetzen — XI gleich, IX erst auf sein Wort).
     die Durchsicht der ganzen Analyse → *** Review (Fable 5.2), höchstens
     fünf Punkte, jeder an seinem Wort, nach der zweiten Meinung; C-u C-c
     u Z = blind noch einmal.  Trockenlauf an der Kopie (kein Abruf):
-    Prompt sauber.  Noch kein echter blinder Abruf — erst auf sein Wort.
+    Prompt sauber.
+  · BLINDER ABRUF (27.11. 13:39, auf sein Wort, Kopie von TĀ 1012, 24 s):
+    Fable wählt blind bei ⟦695⟧ /kārya-mṛta/ wie Opus (Grund: Gegensatz
+    zu begrenzt haltbaren Erzeugnissen), bei ⟦698⟧ /mṛtam/ als Subjekt
+    wie Opus, /amākhyakalāsvarūpam/ als bahuvrīhi (Opus' Wahl dort nicht
+    erkennbar → ohne Urteil).  Kein falsches Sandhi-Argument mehr; der
+    Grund gegen /kāri-amṛta/ bleibt dünn („would require kārin-amṛta
+    sandhi“ — kārin- → kāri-, i + a → ya ist regelrecht).  Im
+    Modellvergleich las Fable als Analyst /kāri-amṛta/, blind jetzt
+    /kārya-mṛta/: keine stabile Lesung des Modells, die Stelle bleibt ein
+    Diskussionspunkt.  Restanker: die Lesungen sind Opus' Wortlaut, und
+    Opus glossierte die Gegenlesung schwach („the deathless
+    made/caused“; Fables eigene Fassung: Elixiere, die Festigkeit geben).
+    Möglich: nur die Formen schicken, Fable glossiert selbst — auf sein
+    Wort.  Fable verwies auf „reading 1“ (Nummer der sortierten Liste,
+    in der Datei unsichtbar) → 4da00c8: Lesungen beim Namen nennen.
 - OFFEN: landet ein Kommentar allein und deckt mehrere Verse, wird nur
   das Dossier des ersten neu exportiert (`bcat-dossier-export-files');
   Sanskrit-Bhāṣya nicht eigens analysiert; die geprüfte Fassung eines
