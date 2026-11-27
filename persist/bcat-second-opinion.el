@@ -254,7 +254,7 @@ the places with their readings numbered — nothing of the analysis."
          (refs (plist-get m :references)))
     (cons
      (format "You give a second opinion on places in one sentence of a Sanskrit or Tibetan text, read in a reading class at a university. At each place the original admits more than one grammatical analysis; the readings are listed in no particular order. Decide each place from the original alone — grammar, sandhi, lexicon, the context in the work and its commentary; the published translations show how others read the sentence, they do not decide, and a translator's standing is no argument.
-- opinions: one entry per place, in the order given. place: its number. choice: the number of the reading the original supports; 0 when it supports a reading that is not listed — give it in reading, the form of the original first — or when the place stays open (reading \"\"). reason: one to three sentences.
+- opinions: one entry per place, in the order given. place: its number. choice: the number of the reading the original supports; 0 when it supports a reading that is not listed — give it in reading, the form of the original first — or when the place stays open (reading \"\"). reason: one to three sentences; name a reading by its form, never by its number (your answer is shown without the numbers).
 - Words of the original in /italic/; reason in %s.
 Answer with the JSON object alone: %s" (bcat-second-opinion--language file) bcat-second-opinion--schema)
      (concat (format "Sentence file: %s\n\n" (file-name-nondirectory file))

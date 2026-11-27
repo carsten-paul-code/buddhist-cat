@@ -147,6 +147,9 @@ translation, the machine translation or the user's notes."
         (should (string-match-p "no particular order" (car ps)))
         (should (string-match-p "\"choice\"" (car ps)))
         (should (string-match-p "reason in English" (car ps)))
+        ;; the run on TĀ 1012: „reading 1 would require …“ — in the file
+        ;; the readings stand in the analysis' order, the numbers not at all
+        (should (string-match-p "name a reading by its form, never by its number" (car ps)))
         (should (string-match-p "katipayakāladārḍhyakāryamṛtāntaravailakṣaṇyād" user))
         (should (string-match-p "TĀ 1\\.1 › Deutung 1 › Herz" user))
         (should (string-match-p "Dyczkowski 2023: (By) ‘Absolute’" user))
