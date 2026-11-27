@@ -43,7 +43,8 @@ Bhāṣya auf der Reading-Seite Satz für Satz; ÜBERBLICK ÜBER DIE QUELLEN
 EINER STELLE (bcat-survey.el) — kommt mit C-c u G, wenn es etwas zu
 beachten gibt, C-c u Q auf Zuruf; erster Abruf XI.15, noch nicht auf dem
 Gerät; UNTERORDNER JE VERS auf dem reMarkable, wo es Kommentar-Dokumente
-gibt (MSA XI verschoben);
+gibt (MSA XI verschoben); SEIT 27.11. OPUS 5.5 ALS MODELL DER ABRUFE (`bcat-model'),
+MEHRDEUTIGKEITEN IM PROMPT UND ZWEITE MEINUNG VON FABLE (C-c u Z);
 offen: Philologie-Teil weiter gliedern, Kompositum-Auflösung straffen).
 Before that 2026-10-28 (§5.74: SATZDATEIEN
 NACH VORLAGE — Reading-Klassen, Tibetisch: `#+CAT_TEMPLATE: tibetan' im
@@ -6290,6 +6291,67 @@ Abruf umsetzen — XI gleich, IX erst auf sein Wort).
   auf ihnen baut das Dossier des Verses, kein eigenes Dokument; 1002
   und 1003 gehören zu Satz 3 und 4, die noch keine Analyse haben, und
   liegen darum einzeln oben.
+- MODELL DER ABRUFE, OPUS 5.5, ZWEITE MEINUNG VON FABLE (27.11.).
+  Befund: die CAT-Abrufe gingen mit dem globalen gptel-model — im
+  laufenden Emacs claude-sonnet-4-6, zur Laufzeit gesetzt (init:
+  claude-opus-4-8).  Carsten: „Modell in der Konfiguration festlegen und
+  Vergleich machen“.
+  · `bcat-model' (9e2eb5b, tibetan-translation-discussion.el): das
+    Modell jedes Abrufs über `tibetan-discussion--submit' (Satz,
+    Kommentar, Überblick, Gliederung); beim Abschicken festgehalten
+    (3e65207), damit (let ((bcat-model …)) …) auch hält, wenn die
+    Warteschlange später sendet.  Vorgabe seit d51f2bb "claude-opus-5-5".
+  · VERGLEICH (WS26-27/Modellvergleich-2026-11-27/Modellvergleich.org,
+    neun Satzdateien daneben): TĀ 1012, TĀ 1025 (gegen die geprüften
+    Fassungen) und bDen gnyis 28, je genau der Abruf von C-c u G ohne
+    die geprüfte Fassung als Vorlage, direkt über die API.  Je Satz
+    Sonnet 4.6 ≈ $0.10–0.25, Opus 5.5 ≈ $0.18–0.70, Fable 5.2 ≈
+    $0.59–1.86; 65–385 s.  Opus ohne gefundenen Fehler gegen die
+    geprüften Fassungen, Sonnet mit einem (/avidyamānam/ als ppp.), Fable
+    mit eigener Lesung in TĀ 1012 ⟦695⟧ (/kāri-amṛta/ statt /kārya-mṛta/
+    — Elixiere, die nur eine Zeit lang Festigkeit geben; ungeprüft,
+    Diskussionspunkt).  Die Modelle fanden zwei Fehler der geprüften
+    Fassungen (/avibhāgena/ m.; /tam/ nur m.).
+  · Voraussetzungen für Modelle, die denken: gptel ruft den Rückruf
+    zuerst mit (reasoning . TEXT) — wurde als Fehler gewertet (e424089,
+    jetzt übergangen); keine temperature (b0eacd8, Fable lehnt
+    Sampling-Parameter ab); tibetan-claude-max-tokens 64 000 (255206f,
+    TĀ 1025 brauchte mit Fable 44 085).  Probe über gptel mit Opus
+    (bDen gnyis 28 in einer Kopie) gelandet.
+  · NEBENBEI BEHOBEN (7ce7bfa): die DharmaMitra-Staffelung war Zähler ×
+    6,5 s, der Zähler wuchs die ganze Sitzung (92 → jeder C-c u G wartete
+    zehn Minuten); jetzt ein Zeitfenster
+    (`tibetan-sentence-claude-dm-delay'), das alte Abrufe vergisst.
+  · MEHRDEUTIGKEITEN (302ab1b): Feld `ambiguities' im gemeinsamen
+    Vergleichsteil jeder Satzanalyse — jede Stelle, an der das Original
+    zwei grammatische Analysen zulässt, auch bei sicherer Wahl (passage,
+    segment, readings, chosen, why); unter Translations compared als
+    *** Ambiguities / Mehrdeutigkeiten.  Auslöser der zweiten Meinung,
+    weil Selbsteinschätzung nicht taugt (Opus zweifelte an ⟦695⟧ nicht).
+  · ZWEITE MEINUNG (fd7f910, bcat-second-opinion.el): nach einem Abruf
+    mit genannten Mehrdeutigkeiten EIN kurzer Abruf an
+    `bcat-second-opinion-model' (Fable 5.2) — Analyse als Klartext +
+    die Stellen; Antwort als *** Second opinion (Fable 5.2) unter
+    Translations compared (nach den Mehrdeutigkeiten, vor der
+    maschinellen Übersetzung, eine frühere weicht); der Export wartet
+    (`bcat-second-opinion-pending-p' in `bcat-export-after-fetch') und
+    folgt der Landung.  C-c u Z „Fable fragen“: von Hand, ohne
+    Mehrdeutigkeiten eine Durchsicht, ohne Export.  Nicht das „advisor
+    tool“ der API (gptel kann es nicht; der Ausführende müsste selbst
+    wissen, wann er fragt).
+  · DURCHLAUF (27.11., Kopie von TĀ 1012, ohne Export): Opus nannte drei
+    Mehrdeutigkeiten, darunter /kāryamṛta/ ⟦695⟧ (/kāri-amṛta/ „highly
+    unlikely“); die zweite Meinung kam von selbst und landete.  ABER:
+    Fable stimmte Opus bei ⟦695⟧ zu — mit einem falschen Argument
+    („mṛta + antara → mṛtāntara schließt kāri-amṛta aus“; auch
+    kāri-amṛta-antara ergibt …kāryamṛtāntara…) —, während Fable allein
+    im Vergleich /kāri-amṛta/ vorschlug.  Die zweite Meinung sieht die
+    Analyse samt Wahl und Begründung und lässt sich davon leiten
+    (Ankereffekt).  Außerdem gab Fable als passage den ganzen Satz statt
+    der Stelle.  Fand dafür in „Also“ einen echten Fehler der Tabelle
+    (/avidyamānam/ ppp. statt Partizip Präsens Passiv).  Offen: die
+    Stellen ohne Opus' Wahl und Begründung schicken („blind“), passage
+    straffen — auf Carstens Wort.
 - OFFEN: landet ein Kommentar allein und deckt mehrere Verse, wird nur
   das Dossier des ersten neu exportiert (`bcat-dossier-export-files');
   Sanskrit-Bhāṣya nicht eigens analysiert; die geprüfte Fassung eines
