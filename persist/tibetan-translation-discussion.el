@@ -491,14 +491,16 @@ comparison) — one request per kind and file at a time.")
 (defvar gptel-model)
 (defvar gptel-temperature)
 
-(defcustom bcat-model "claude-sonnet-4-6"
+(defcustom bcat-model "claude-opus-5-5"
   "The Claude model of the CAT's requests — the sentence files (C-c u
 G), commentary documents, surveys (C-c u Q), outlines (C-c u S): every
 request through `tibetan-discussion--submit'.  Carsten 27.11.: set in
 the configuration — the live Emacs sent them to whatever gptel's global
 model happened to be (claude-sonnet-4-6, set at run time, while the
-init file says claude-opus-4-8).  The default is the model the
-analyses so far came from.  nil: gptel's own `gptel-model'."
+init file says claude-opus-4-8).  27.11., after a comparison of Sonnet
+4.6, Opus 5.5 and Fable 5.2 (WS26-27/Modellvergleich-2026-11-27):
+„Opus 5.5 als Vorgabe“ — the analyses until then came from Sonnet 4.6.
+nil: gptel's own `gptel-model'."
   :type '(choice (string :tag "Model") (const :tag "gptel's model" nil))
   :group 'buddhist-cat)
 

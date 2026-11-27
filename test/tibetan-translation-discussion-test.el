@@ -420,6 +420,13 @@ API's default anyway, nothing changes for Sonnet 4.6 or Opus 5.5)."
       (when added (setq features (delq 'gptel features)))
       (delete-file file))))
 
+(ert-deftest bcat-model-default-is-opus ()
+  "Carsten 27.11., after the comparison of Sonnet 4.6, Opus 5.5 and
+Fable 5.2 on TĀ 1012, 1025 and bDen gnyis 28: „Opus 5.5 als Vorgabe“ —
+cleaner forms and translations than Sonnet 4.6 for about two and a half
+to three times the price; Fable for hard sentences, not as default."
+  (should (equal "claude-opus-5-5" (eval (car (get 'bcat-model 'standard-value)) t))))
+
 (ert-deftest tibetan-discussion-submit-ignores-the-reasoning-call ()
   "Bug (27.11., found before switching to Opus 5.5): with a model that
 thinks (Opus 5.5, Fable 5.2 — thinking always on), gptel calls the

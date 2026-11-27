@@ -1,9 +1,9 @@
 #+TITLE: Function Reference — buddhist-cat
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-11-27T11:00:37
+#+DATE: 2026-11-27T11:50:50
 #+OPTIONS: toc:2 num:nil
 
-Source tree: ~/Users/cp/buddhist-cat~  ·  100 modules  ·  2668 forms
+Source tree: ~/Users/cp/buddhist-cat~  ·  100 modules  ·  2669 forms
 
 Regenerated automatically by:
 
@@ -92,7 +92,7 @@ python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/buddhist-c
   - [[#persist/tibetan-sentence-claude.el][persist/tibetan-sentence-claude.el]]  (29)
   - [[#persist/tibetan-sentence-persist.el][persist/tibetan-sentence-persist.el]]  (62)
   - [[#persist/tibetan-structure-reorg.el][persist/tibetan-structure-reorg.el]]  (15)
-  - [[#persist/tibetan-translation-discussion.el][persist/tibetan-translation-discussion.el]]  (39)
+  - [[#persist/tibetan-translation-discussion.el][persist/tibetan-translation-discussion.el]]  (40)
   - [[#persist/tibetan-translation-doc.el][persist/tibetan-translation-doc.el]]  (15)
   - [[#persist/tibetan-word-formation.el][persist/tibetan-word-formation.el]]  (13)
   - [[#philology/tibetan-bialek-textbook-refs.el][philology/tibetan-bialek-textbook-refs.el]]  (2)
@@ -29093,7 +29093,7 @@ editorial bracket like `[He] spoke').
 ** ~tibetan-claude-queue-status~  /function/  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 156
+:LINE: 160
 :SIGNATURE: (tibetan-claude-queue-status)
 :AUTOLOAD: t
 :END:
@@ -29104,7 +29104,7 @@ Keys: :pending :in-flight :total :succeeded :failed :retried.
 ** ~tibetan-claude-queue-show-status~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 167
+:LINE: 171
 :SIGNATURE: (tibetan-claude-queue-show-status)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -29115,7 +29115,7 @@ Echo current Claude queue stats in the minibuffer.
 ** ~tibetan-claude-queue-cancel-pending~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 178
+:LINE: 182
 :SIGNATURE: (tibetan-claude-queue-cancel-pending)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -29128,7 +29128,7 @@ In-flight requests are unaffected and will still run to completion
 ** ~tibetan-claude-queue-reset-stats~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 189
+:LINE: 193
 :SIGNATURE: (tibetan-claude-queue-reset-stats)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -29140,7 +29140,7 @@ Does not touch pending or in-flight jobs.
 ** ~tibetan-claude-queue-submit~  /function (cl)/  ↗
 :PROPERTIES:
 :KIND: cl-defun
-:LINE: 205
+:LINE: 209
 :SIGNATURE: (tibetan-claude-queue-submit thunk &key on-done on-fail label)
 :AUTOLOAD: t
 :END:
@@ -29172,7 +29172,7 @@ are caught and logged so they do not break queue progress.
 ** ~tibetan-claude-queue--maybe-dispatch~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 241
+:LINE: 245
 :SIGNATURE: (tibetan-claude-queue--maybe-dispatch)
 :END:
 
@@ -29181,7 +29181,7 @@ Dispatch jobs from the pending queue up to the concurrency cap.
 ** ~tibetan-claude-queue--start~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 249
+:LINE: 253
 :SIGNATURE: (tibetan-claude-queue--start job)
 :END:
 
@@ -29190,7 +29190,7 @@ Actually run JOB.  Internal.
 ** ~tibetan-claude-queue--handle-finish~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 268
+:LINE: 272
 :SIGNATURE: (tibetan-claude-queue--handle-finish job status)
 :END:
 
@@ -29201,7 +29201,7 @@ job.  Kept robust against repeated calls (idempotent on counters).
 ** ~tibetan-claude-queue--call-fail~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 334
+:LINE: 338
 :SIGNATURE: (tibetan-claude-queue--call-fail job status)
 :END:
 
@@ -29213,7 +29213,7 @@ Invoke JOB's :on-fail callback (if any) with STATUS, swallowing errors.
 :LINE: 77
 :TYPE: 'integer
 :GROUP: buddhist-cat
-:DEFAULT: 32000
+:DEFAULT: 64000
 :END:
 
 Response budget (`max_tokens') of every analysis request to Claude.
@@ -29225,13 +29225,17 @@ needs even more.  30.10. (was 16000): AS sentence 2 — 18 dhātus and
 12 āyatanas, each with forms and compounds — was cut off at 16000
 tokens; it needs about 18000.  Not higher: gptel requests without
 streaming, and an answer of 32000 tokens already takes minutes.
-Billing follows the tokens actually produced, not this ceiling.  Bound
-as `gptel-max-tokens' at each request site.
+27.11. (was 32000): Opus 5.5 as the CAT's model (`bcat-model') — a
+model that thinks counts its thinking in the output; TĀ 1025 took 32 802
+tokens with Opus 5.5, 44 085 with Fable 5.2.  Without streaming such an
+answer takes four to seven minutes; nothing times out on the way (gptel
+via curl sets no limit).  Billing follows the tokens actually produced,
+not this ceiling.  Bound as `gptel-max-tokens' at each request site.
 
 ** ~tibetan-claude-queue-concurrency~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 92
+:LINE: 96
 :TYPE: 'integer
 :GROUP: tibetan-claude-queue
 :DEFAULT: 3
@@ -29245,7 +29249,7 @@ parallel requests and you want batches to finish faster.
 ** ~tibetan-claude-queue-max-retries~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 100
+:LINE: 104
 :TYPE: 'integer
 :GROUP: tibetan-claude-queue
 :DEFAULT: 4
@@ -29258,7 +29262,7 @@ After this many retries the job is considered failed and its
 ** ~tibetan-claude-queue-base-delay~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 107
+:LINE: 111
 :TYPE: 'number
 :GROUP: tibetan-claude-queue
 :DEFAULT: 2.0
@@ -29272,7 +29276,7 @@ capped at `tibetan-claude-queue-max-delay'.
 ** ~tibetan-claude-queue-max-delay~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 115
+:LINE: 119
 :TYPE: 'number
 :GROUP: tibetan-claude-queue
 :DEFAULT: 60.0
@@ -29283,7 +29287,7 @@ Upper bound on the per-retry backoff delay, in seconds.
 ** ~tibetan-claude-queue-verbose~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 120
+:LINE: 124
 :TYPE: 'boolean
 :GROUP: tibetan-claude-queue
 :DEFAULT: t
@@ -29296,7 +29300,7 @@ nil for quieter operation.
 ** ~tibetan-claude-queue--pending~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 131
+:LINE: 135
 :DEFAULT: nil
 :END:
 
@@ -29307,7 +29311,7 @@ Each job is a plist (:thunk FN :attempt N
 ** ~tibetan-claude-queue--in-flight~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 136
+:LINE: 140
 :DEFAULT: 0
 :END:
 
@@ -29316,7 +29320,7 @@ Count of currently in-flight Claude requests.
 ** ~tibetan-claude-queue--total~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 139
+:LINE: 143
 :DEFAULT: 0
 :END:
 
@@ -29325,7 +29329,7 @@ Total jobs ever submitted in this Emacs session.
 ** ~tibetan-claude-queue--succeeded~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 142
+:LINE: 146
 :DEFAULT: 0
 :END:
 
@@ -29334,7 +29338,7 @@ Count of jobs that completed successfully.
 ** ~tibetan-claude-queue--failed~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 145
+:LINE: 149
 :DEFAULT: 0
 :END:
 
@@ -29343,7 +29347,7 @@ Count of jobs that ultimately failed.
 ** ~tibetan-claude-queue--retried~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 148
+:LINE: 152
 :DEFAULT: 0
 :END:
 
@@ -32931,7 +32935,7 @@ Non-nil while a KIND request for FILE is in flight.
 ** ~bcat-model~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 504
+:LINE: 507
 :SIGNATURE: (bcat-model)
 :END:
 
@@ -32941,7 +32945,7 @@ it (a symbol), or gptel's own `gptel-model' when that is nil.
 ** ~tibetan-discussion--submit~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 511
+:LINE: 514
 :SIGNATURE: (tibetan-discussion--submit kind file prompts land &optional fail)
 :END:
 
@@ -32961,7 +32965,7 @@ by the discussion (§5.62) and the Sanskrit comparison (§5.64).
 ** ~tibetan-discussion--request~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 585
+:LINE: 597
 :SIGNATURE: (tibetan-discussion--request file &optional force)
 :END:
 
@@ -32972,7 +32976,7 @@ when a discussion exists and FORCE is nil.
 ** ~tibetan-discussion--maybe-fire~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 599
+:LINE: 611
 :SIGNATURE: (tibetan-discussion--maybe-fire file)
 :END:
 
@@ -32983,7 +32987,7 @@ once Claude AND DharmaMitra are there — unless switched off
 ** ~tibetan-discussion-fetch~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 614
+:LINE: 626
 :SIGNATURE: (tibetan-discussion-fetch source-file sentences folder)
 :END:
 
@@ -32996,7 +33000,7 @@ analysed.  Returns the list of files requested.
 ** ~tibetan-translation-compare-dwim~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 633
+:LINE: 645
 :SIGNATURE: (tibetan-translation-compare-dwim)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -33027,10 +33031,10 @@ sentence.  C-c u c always works on demand.
 ** ~bcat-model~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 493
+:LINE: 494
 :TYPE: '(choice (string
 :GROUP: buddhist-cat
-:DEFAULT: "claude-sonnet-4-6"
+:DEFAULT: "claude-opus-5-5"
 :END:
 
 The Claude model of the CAT's requests — the sentence files (C-c u
@@ -33038,8 +33042,10 @@ G), commentary documents, surveys (C-c u Q), outlines (C-c u S): every
 request through `tibetan-discussion--submit'.  Carsten 27.11.: set in
 the configuration — the live Emacs sent them to whatever gptel's global
 model happened to be (claude-sonnet-4-6, set at run time, while the
-init file says claude-opus-4-8).  The default is the model the
-analyses so far came from.  nil: gptel's own `gptel-model'.
+init file says claude-opus-4-8).  27.11., after a comparison of Sonnet
+4.6, Opus 5.5 and Fable 5.2 (WS26-27/Modellvergleich-2026-11-27):
+„Opus 5.5 als Vorgabe“ — the analyses until then came from Sonnet 4.6.
+nil: gptel's own `gptel-model'.
 
 ** ~gptel-max-tokens~  /variable/
 :PROPERTIES:
@@ -33118,6 +33124,14 @@ comparison) — one request per kind and file at a time.
 :PROPERTIES:
 :KIND: defvar
 :LINE: 491
+:END:
+
+/(no docstring)/
+
+** ~gptel-temperature~  /variable/
+:PROPERTIES:
+:KIND: defvar
+:LINE: 492
 :END:
 
 /(no docstring)/
