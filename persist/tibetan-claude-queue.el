@@ -74,7 +74,7 @@
   :group 'buddhist-cat
   :prefix "tibetan-claude-queue-")
 
-(defcustom tibetan-claude-max-tokens 32000
+(defcustom tibetan-claude-max-tokens 64000
   "Response budget (`max_tokens') of every analysis request to Claude.
 §5.61 (2026-10-12): unset, gptel-anthropic sends 4096 — a sentence-
 level answer (translation, vocabulary, grammar, particles, concept
@@ -84,8 +84,12 @@ needs even more.  30.10. (was 16000): AS sentence 2 — 18 dhātus and
 12 āyatanas, each with forms and compounds — was cut off at 16000
 tokens; it needs about 18000.  Not higher: gptel requests without
 streaming, and an answer of 32000 tokens already takes minutes.
-Billing follows the tokens actually produced, not this ceiling.  Bound
-as `gptel-max-tokens' at each request site."
+27.11. (was 32000): Opus 5.5 as the CAT's model (`bcat-model') — a
+model that thinks counts its thinking in the output; TĀ 1025 took 32 802
+tokens with Opus 5.5, 44 085 with Fable 5.2.  Without streaming such an
+answer takes four to seven minutes; nothing times out on the way (gptel
+via curl sets no limit).  Billing follows the tokens actually produced,
+not this ceiling.  Bound as `gptel-max-tokens' at each request site."
   :type 'integer
   :group 'buddhist-cat)
 

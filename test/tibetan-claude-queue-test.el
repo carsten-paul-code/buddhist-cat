@@ -379,9 +379,12 @@ compounds): the Sanskrit answer was cut off at 16000 tokens after
 analysis of its 41 segments about 12000.  The budget leaves room for
 that — and stays where a request without streaming ends within minutes
 \(gptel sends none; a dropped connection would be retried and billed
-again)."
-  (should (>= (default-value 'tibetan-claude-max-tokens) 32000))
-  (should (<= (default-value 'tibetan-claude-max-tokens) 32000)))
+again).  27.11. (Opus 5.5 as the CAT's model): a model that thinks
+counts its thinking in the output — TĀ 1025 took 32 802 tokens with
+Opus 5.5 and 44 085 with Fable 5.2, over the old ceiling of 32 000; cut
+off, the answer is paid for and unusable.  Now 64 000 (four to seven
+minutes without streaming)."
+  (should (= 64000 (eval (car (get 'tibetan-claude-max-tokens 'standard-value)) t))))
 
 (provide 'tibetan-claude-queue-test)
 ;;; tibetan-claude-queue-test.el ends here
