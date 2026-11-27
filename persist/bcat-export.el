@@ -1993,6 +1993,8 @@ condensed of the verse since 22.11.)"
              (not (and target (file-exists-p target)
                        (bcat-export--on-device-p target (md5 (plist-get views :view) nil nil 'utf-8))))))))
 
+(declare-function bcat-second-opinion-pending-p "bcat-second-opinion" (file))
+
 (defvar bcat-export-passage-complete-functions nil
   "Called with the sentence FILE of a passage when, after a fetch, all
 of it is in and its PDF was exported (`bcat-export-after-fetch') — the
@@ -2009,7 +2011,11 @@ put such papers on the device (§5.69).  Never signals — a LaTeX or
 rmapi failure must not spoil the landed analysis."
   (require 'tibetan-discussion-paper)
   (when (and bcat-export-auto
-             (not (tibetan-discussion-paper--temp-source-p file)))
+             (not (tibetan-discussion-paper--temp-source-p file))
+             ;; 27.11.: the second opinion on the file's ambiguities is
+             ;; still to come — the export follows when it has landed
+             (not (and (fboundp 'bcat-second-opinion-pending-p)
+                       (bcat-second-opinion-pending-p file))))
     (let* ((commentary (equal (bcat-sentence-file-p file) "commentary"))
            (bcat-export--condensed-done '())
            (export (lambda (f)

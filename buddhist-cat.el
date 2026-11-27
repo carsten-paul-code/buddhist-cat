@@ -544,6 +544,7 @@ in the appropriate instance."
 (require 'bcat-zettel)
 (require 'bcat-dossier)
 (require 'bcat-survey)
+(require 'bcat-second-opinion)
 
 (provide 'buddhist-cat)
 ;; The old feature name, announced too: code that waits on it

@@ -43,6 +43,10 @@ device).  Tests that need it bind it to t and stub the upload.")
 ;; suite (the tests of it switch it on).
 (defvar bcat-survey-auto nil)
 (setq bcat-survey-auto nil)
+;; 27.11.: C-c u G asks Fable when the analysis names ambiguities — not
+;; from the suite (the tests of it switch it on).
+(defvar bcat-second-opinion-auto nil)
+(setq bcat-second-opinion-auto nil)
 (setq bcat-zettel-link-concepts nil
       bcat-zettel-belege-auto nil
       bcat-zettel-in-prompt nil)
@@ -289,6 +293,9 @@ body in the test suite (the transport self-tests only).")
 
 ;; §5.27 Phase 6:  unified document-preparation wizard orchestrator.
 (condition-case nil (require 'tibetan-document-prep-wizard-test) (error nil))
+
+;; 27.11.: the second opinion (Fable) on the ambiguities of a sentence.
+(condition-case nil (require 'bcat-second-opinion-test) (error nil))
 
 ;; ---------------------------------------------------------------------------
 ;; Visibility guard for the silent `(condition-case nil … (error nil))'

@@ -123,6 +123,9 @@
      ["Überblick über die Quellen (C-c u Q)" bcat-survey
       :help "Die Quellen der Stelle nebeneinander: was sich von Schicht zu Schicht verschiebt, Sanskrit gegen Tibetisch, worauf jede Übersetzung achtet — ein Abruf aus dem, was schon analysiert ist"
       :active (fboundp 'bcat-survey)]
+     ["Fable fragen — zweite Meinung (C-c u Z)" bcat-second-opinion
+      :help "Die zweite Meinung von Fable zur Satzdatei: zu den Mehrdeutigkeiten, die die Analyse nennt, sonst eine Durchsicht — unter Translations compared"
+      :active (fboundp 'bcat-second-opinion)]
      ["Als geprüft vermerken" bcat-sentence-mark-reviewed
       :help "#+CAT_REVIEWED: ein neuer Abruf gibt die Analyse dann als Referenz mit und bewahrt die Datei auf"
       :active (fboundp 'bcat-sentence-mark-reviewed)]
