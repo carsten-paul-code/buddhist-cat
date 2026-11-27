@@ -393,6 +393,37 @@ goes out with `bcat-model'; nil follows gptel's own."
       (when added (setq features (delq 'gptel features)))
       (delete-file file))))
 
+(ert-deftest tibetan-discussion-submit-ignores-the-reasoning-call ()
+  "Bug (27.11., found before switching to Opus 5.5): with a model that
+thinks (Opus 5.5, Fable 5.2 — thinking always on), gptel calls the
+callback TWICE: first with (reasoning . TEXT), then with the answer.
+The first call was taken for „no response“ — the queue got an error
+status (counted as failed, ON-FAIL ran, the in-flight mark dropped),
+and then a second `done' with ok.  The reasoning call is to be ignored:
+one landing, one `done' with ok, no failure."
+  (let ((file (make-temp-file "bcat-reasoning-")) (added (not (featurep 'gptel)))
+        (statuses '()) (landed 0) (failed 0) (pending nil))
+    (when added (provide 'gptel))
+    (unwind-protect
+        (cl-letf (((symbol-function 'tibetan-claude-queue-submit)
+                   (lambda (job &rest _) (setq pending job)))
+                  ((symbol-function 'tibetan-analysis--ensure-gptel-ready) (lambda () t))
+                  ((symbol-function 'run-at-time) (lambda (_s _r fn &rest args) (apply fn args)))
+                  ((symbol-function 'gptel-request)
+                   (lambda (_prompt &rest args)
+                     (let ((cb (plist-get args :callback)))
+                       (funcall cb '(reasoning . "Let me think about the sandhi …") nil)
+                       (funcall cb "{\"segments\": []}" nil)))))
+          (tibetan-discussion--submit "test" file (lambda () '("s" . "u"))
+                                      (lambda (_f _r) (cl-incf landed))
+                                      (lambda (_f _r) (cl-incf failed)))
+          (funcall pending (lambda (status) (push (plist-get status :status) statuses)))
+          (should (= 1 landed))
+          (should (= 0 failed))
+          (should (equal '(ok) statuses)))
+      (when added (setq features (delq 'gptel features)))
+      (delete-file file))))
+
 (ert-deftest tibetan-discussion-fetched-by-c-c-u-g ()
   "§5.64: C-c u G requests the missing discussion of a sentence whose
 Claude, DharmaMitra and reference are already there (a reference

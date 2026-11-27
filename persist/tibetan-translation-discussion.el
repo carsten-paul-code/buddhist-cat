@@ -542,6 +542,12 @@ by the discussion (§5.62) and the Sanskrit comparison (§5.64)."
                   :callback
                   (lambda (response info)
                     (cond
+                     ;; 27.11.: a model that thinks (Opus 5.5, Fable
+                     ;; 5.2) — gptel first hands over its reasoning as
+                     ;; (reasoning . TEXT), then the answer; the first
+                     ;; call is no answer and no failure.
+                     ((and (consp response) (eq (car response) 'reasoning))
+                      nil)
                      ((and (stringp response)
                            (not (string-empty-p response)))
                       ;; Land OUTSIDE the gptel sentinel (§5.40).
