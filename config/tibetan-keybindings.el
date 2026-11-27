@@ -129,10 +129,10 @@
 ;; Stelle — Schichten, Sanskrit gegen Tibetisch, Stimmen — per Abruf aus
 ;; dem, was schon analysiert ist (bcat-survey.el).  Q wie Quellen.
 (global-set-key (kbd "C-c u Q") 'bcat-survey)
-;; C-c u Z (Carsten 27.11.2026: „Befehl „Fable fragen““): die zweite
-;; Meinung von Fable 5.2 zur Satzdatei an Punkt — zu den Mehrdeutigkeiten,
-;; die die Analyse nennt, sonst eine Durchsicht (bcat-second-opinion.el).
-;; Z wie zweite Meinung.
+;; C-c u Z (Carsten 27.11.2026: „Befehl „Fable fragen““): Fable 5.2
+;; sieht die Analyse der Satzdatei an Punkt durch; C-u C-c u Z fragt
+;; blind zu den Mehrdeutigkeiten, die die Analyse nennt — das kommt nach
+;; C-c u G von selbst (bcat-second-opinion.el).  Z wie zweite Meinung.
 (global-set-key (kbd "C-c u Z") 'bcat-second-opinion)
 ;; C-c u V (Carsten 5.11.2026): the reading dossier of the verse — text,
 ;; bhāṣya, commentary one under the other (bcat-dossier.el).
