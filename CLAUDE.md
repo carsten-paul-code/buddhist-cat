@@ -6381,9 +6381,14 @@ Abruf umsetzen — XI gleich, IX erst auf sein Wort).
     Diskussionspunkt.  Restanker: die Lesungen sind Opus' Wortlaut, und
     Opus glossierte die Gegenlesung schwach („the deathless
     made/caused“; Fables eigene Fassung: Elixiere, die Festigkeit geben).
-    Möglich: nur die Formen schicken, Fable glossiert selbst — auf sein
-    Wort.  Fable verwies auf „reading 1“ (Nummer der sortierten Liste,
-    in der Datei unsichtbar) → 4da00c8: Lesungen beim Namen nennen.
+    Fable verwies auf „reading 1“ (Nummer der sortierten Liste, in der
+    Datei unsichtbar) → 4da00c8: Lesungen beim Namen nennen.
+  · NUR DIE FORMEN (Carsten 27.11.: „Nur die Formen schicken“): Fable sieht
+    je Lesung nur die Form (/kāri-amṛta/ · /kārya-mṛta/), bei gleicher
+    Form die Konstruktion ohne Glossen, nur wenn allein die Glossen sich
+    unterscheiden die Lesungen ganz (`bcat-second-opinion--shown');
+    Feld sense = Fables eigene Glosse, im Block statt Opus'.  Noch kein
+    Abruf damit.
 - OFFEN: landet ein Kommentar allein und deckt mehrere Verse, wird nur
   das Dossier des ersten neu exportiert (`bcat-dossier-export-files');
   Sanskrit-Bhāṣya nicht eigens analysiert; die geprüfte Fassung eines

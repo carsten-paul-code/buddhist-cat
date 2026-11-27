@@ -1,9 +1,9 @@
 #+TITLE: Function Reference — buddhist-cat
 #+SUBTITLE: Auto-generated from source — do not hand-edit; re-run generate-function-reference.py
-#+DATE: 2026-11-27T13:37:00
+#+DATE: 2026-11-27T13:54:03
 #+OPTIONS: toc:2 num:nil
 
-Source tree: ~/Users/cp/buddhist-cat~  ·  101 modules  ·  2711 forms
+Source tree: ~/Users/cp/buddhist-cat~  ·  101 modules  ·  2714 forms
 
 Regenerated automatically by:
 
@@ -71,7 +71,7 @@ python3 ~/emacs-zettelkasten/generate-function-reference.py /Users/cp/buddhist-c
   - [[#persist/bcat-outline.el][persist/bcat-outline.el]]  (13)
   - [[#persist/bcat-parallel.el][persist/bcat-parallel.el]]  (7)
   - [[#persist/bcat-relayout.el][persist/bcat-relayout.el]]  (25)
-  - [[#persist/bcat-second-opinion.el][persist/bcat-second-opinion.el]]  (44)
+  - [[#persist/bcat-second-opinion.el][persist/bcat-second-opinion.el]]  (47)
   - [[#persist/bcat-sentence.el][persist/bcat-sentence.el]]  (120)
   - [[#persist/bcat-status.el][persist/bcat-status.el]]  (11)
   - [[#persist/bcat-survey.el][persist/bcat-survey.el]]  (35)
@@ -19865,7 +19865,7 @@ compared: the overview with the sigla.
 ** ~bcat-second-opinion--compared-bounds~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 106
+:LINE: 117
 :SIGNATURE: (bcat-second-opinion--compared-bounds text)
 :END:
 
@@ -19874,7 +19874,7 @@ compared: the overview with the sigla.
 ** ~bcat-second-opinion--block-bounds~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 112
+:LINE: 123
 :SIGNATURE: (bcat-second-opinion--block-bounds text heading beg end)
 :END:
 
@@ -19885,7 +19885,7 @@ or nil.
 ** ~bcat-second-opinion-ambiguities-in~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 124
+:LINE: 135
 :SIGNATURE: (bcat-second-opinion-ambiguities-in text)
 :END:
 
@@ -19895,7 +19895,7 @@ The lines of the ambiguities the analysis in TEXT names (its
 ** ~bcat-second-opinion--form~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 135
+:LINE: 146
 :SIGNATURE: (bcat-second-opinion--form text)
 :END:
 
@@ -19904,7 +19904,7 @@ The first form of the original in TEXT (/…/), or nil.
 ** ~bcat-second-opinion--chosen-index~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 139
+:LINE: 150
 :SIGNATURE: (bcat-second-opinion--chosen-index chosen readings)
 :END:
 
@@ -19912,24 +19912,50 @@ The number of the reading in READINGS ((RAW . NEUTRAL) …) that CHOSEN
 (what follows „chosen:“) names: the longest reading it begins with, else
 the one reading with its form of the original; nil when none or several.
 
+** ~bcat-second-opinion--bare~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 166
+:SIGNATURE: (bcat-second-opinion--bare reading)
+:END:
+
+READING without its glosses in quotation marks
+(`bcat-second-opinion--gloss'): its form and its construction.
+
+** ~bcat-second-opinion--shown~  /function/
+:PROPERTIES:
+:KIND: defun
+:LINE: 177
+:SIGNATURE: (bcat-second-opinion--shown readings)
+:END:
+
+What the second opinion is shown of READINGS (neutral, without a
+judgement) — Carsten 27.11.: „Nur die Formen schicken“, since the
+analysis' glosses frame the reading it did not choose (TĀ 1012 ⟦695⟧:
+/kāri-amṛta/ „the deathless made/caused“): the forms of the original
+when every reading begins with one and they differ; else the readings
+without their glosses (the attachment of a word, the kind of a
+compound) when these differ; else the readings whole.
+
 ** ~bcat-second-opinion--place~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 155
+:LINE: 194
 :SIGNATURE: (bcat-second-opinion--place line)
 :END:
 
 The ambiguity LINE as the second opinion is given it: (:passage P
-:segment N :readings (R …) :chosen I) — the readings sorted (the
-analysis names its choice first) and without a judgement in brackets
-(`bcat-second-opinion--judgement'), the analysis' choice only as the
-number I of its reading among them (nil when it cannot be told); nil
-for a line without two readings.
+:segment N :readings (R …) :shown (S …) :chosen I) — R the readings
+without a judgement in brackets (`bcat-second-opinion--judgement'), S
+what Fable is shown of them (`bcat-second-opinion--shown'), both sorted
+by S (the analysis names its choice first); the analysis' choice only
+as the number I of its reading among them (nil when it cannot be
+told); nil for a line without two readings.
 
 ** ~bcat-second-opinion-places~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 184
+:LINE: 227
 :SIGNATURE: (bcat-second-opinion-places text)
 :END:
 
@@ -19939,7 +19965,7 @@ The places the analysis in TEXT names as ambiguous, each as
 ** ~bcat-second-opinion--language-code~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 189
+:LINE: 232
 :SIGNATURE: (bcat-second-opinion--language-code file)
 :END:
 
@@ -19950,7 +19976,7 @@ language of FILE's source, else English.
 ** ~bcat-second-opinion--language~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 200
+:LINE: 243
 :SIGNATURE: (bcat-second-opinion--language file)
 :END:
 
@@ -19959,7 +19985,7 @@ The name of the language the second opinion of FILE is written in.
 ** ~bcat-second-opinion--material~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 205
+:LINE: 248
 :SIGNATURE: (bcat-second-opinion--material file text)
 :END:
 
@@ -19974,7 +20000,7 @@ Translations compared.
 ** ~bcat-second-opinion-prompts~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 246
+:LINE: 289
 :SIGNATURE: (bcat-second-opinion-prompts file places)
 :END:
 
@@ -19986,7 +20012,7 @@ the places with their readings numbered — nothing of the analysis.
 ** ~bcat-second-opinion--without-answers~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 280
+:LINE: 323
 :SIGNATURE: (bcat-second-opinion--without-answers text)
 :END:
 
@@ -19996,7 +20022,7 @@ compared — a review does not read the second model's earlier answers.
 ** ~bcat-second-opinion-review-prompts~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 290
+:LINE: 333
 :SIGNATURE: (bcat-second-opinion-review-prompts file)
 :END:
 
@@ -20007,7 +20033,7 @@ model's earlier answers and without the user's notes.
 ** ~bcat-second-opinion--model-name~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 311
+:LINE: 354
 :SIGNATURE: (bcat-second-opinion--model-name model)
 :END:
 
@@ -20016,7 +20042,7 @@ MODEL as the heading names it: claude-fable-5-2 → „Fable 5.2“.
 ** ~bcat-second-opinion--words~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 317
+:LINE: 360
 :SIGNATURE: (bcat-second-opinion--words code)
 :END:
 
@@ -20026,7 +20052,7 @@ in the language CODE (English when CODE has none).
 ** ~bcat-second-opinion--field~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 324
+:LINE: 367
 :SIGNATURE: (bcat-second-opinion--field alist key)
 :END:
 
@@ -20035,7 +20061,7 @@ The field KEY of ALIST (an object of an answer) as a trimmed string.
 ** ~bcat-second-opinion--sentence~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 328
+:LINE: 371
 :SIGNATURE: (bcat-second-opinion--sentence s)
 :END:
 
@@ -20044,19 +20070,20 @@ S ending with a full stop (S itself when empty or already ended).
 ** ~bcat-second-opinion--block~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 332
+:LINE: 375
 :SIGNATURE: (bcat-second-opinion--block parsed model code places)
 :END:
 
 The *** Second opinion block of PARSED (the blind answer) from MODEL
-on PLACES, in the language CODE: per place the reading chosen and
-whether the analysis chose it too (open, when no reading is chosen;
-no verdict when the analysis' choice cannot be told).
+on PLACES, in the language CODE: per place the reading chosen as Fable
+saw it, with what Fable says it means — never the analysis' gloss —,
+and whether the analysis chose it too (open, when no reading is
+chosen; no verdict when the analysis' choice cannot be told).
 
 ** ~bcat-second-opinion--review-block~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 373
+:LINE: 420
 :SIGNATURE: (bcat-second-opinion--review-block parsed model code)
 :END:
 
@@ -20066,7 +20093,7 @@ language CODE.
 ** ~bcat-second-opinion--insert-block~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 390
+:LINE: 437
 :SIGNATURE: (bcat-second-opinion--insert-block text block heading afters)
 :END:
 
@@ -20079,7 +20106,7 @@ unchanged when it has no Translations compared.
 ** ~bcat-second-opinion-insert~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 414
+:LINE: 461
 :SIGNATURE: (bcat-second-opinion-insert text block)
 :END:
 
@@ -20089,7 +20116,7 @@ TEXT with BLOCK as the second opinion: after *** Ambiguities
 ** ~bcat-second-opinion--insert-review~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 420
+:LINE: 467
 :SIGNATURE: (bcat-second-opinion--insert-review text block)
 :END:
 
@@ -20099,7 +20126,7 @@ TEXT with BLOCK as the review: after the second opinion, else after
 ** ~bcat-second-opinion--write~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 427
+:LINE: 474
 :SIGNATURE: (bcat-second-opinion--write file response make)
 :END:
 
@@ -20109,7 +20136,7 @@ the object of RESPONSE; return it.
 ** ~bcat-second-opinion--land~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 440
+:LINE: 487
 :SIGNATURE: (bcat-second-opinion--land file response model places)
 :END:
 
@@ -20119,7 +20146,7 @@ sentence FILE.
 ** ~bcat-second-opinion--land-review~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 448
+:LINE: 495
 :SIGNATURE: (bcat-second-opinion--land-review file response model)
 :END:
 
@@ -20128,7 +20155,7 @@ Write the review RESPONSE from MODEL into the sentence FILE.
 ** ~bcat-second-opinion-pending-p~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 455
+:LINE: 502
 :SIGNATURE: (bcat-second-opinion-pending-p file)
 :END:
 
@@ -20137,7 +20164,7 @@ Non-nil while a second opinion on FILE is on its way.
 ** ~bcat-second-opinion--done~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 459
+:LINE: 506
 :SIGNATURE: (bcat-second-opinion--done file how)
 :END:
 
@@ -20147,7 +20174,7 @@ fetch (HOW `auto') the export that waited follows.
 ** ~bcat-second-opinion--status~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 466
+:LINE: 513
 :SIGNATURE: (bcat-second-opinion--status file text)
 :END:
 
@@ -20156,7 +20183,7 @@ TEXT as FILE's step of the second opinion in the status buffer.
 ** ~bcat-second-opinion--ask~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 471
+:LINE: 518
 :SIGNATURE: (bcat-second-opinion--ask file how kind what prompts land)
 :END:
 
@@ -20168,7 +20195,7 @@ the answer (FILE RESPONSE MODEL).  Non-nil when queued.
 ** ~bcat-second-opinion-request~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 497
+:LINE: 544
 :SIGNATURE: (bcat-second-opinion-request file how)
 :END:
 
@@ -20179,7 +20206,7 @@ C-c u Z).  Returns non-nil when the request was queued.
 ** ~bcat-second-opinion-review-request~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 508
+:LINE: 555
 :SIGNATURE: (bcat-second-opinion-review-request file)
 :END:
 
@@ -20189,7 +20216,7 @@ sentence FILE (C-c u Z).  Returns non-nil when the request was queued.
 ** ~bcat-second-opinion-after-fetch~  /function/
 :PROPERTIES:
 :KIND: defun
-:LINE: 516
+:LINE: 563
 :SIGNATURE: (bcat-second-opinion-after-fetch file)
 :END:
 
@@ -20202,7 +20229,7 @@ for the answer.  Returns non-nil when asked; never signals.
 ** ~bcat-second-opinion~  /function/  ⚡  ↗
 :PROPERTIES:
 :KIND: defun
-:LINE: 538
+:LINE: 585
 :SIGNATURE: (bcat-second-opinion &optional blind)
 :INTERACTIVE: t
 :AUTOLOAD: t
@@ -20217,7 +20244,7 @@ The PDF stays as it is (C-c u H).
 ** ~bcat-second-opinion-model~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 58
+:LINE: 62
 :TYPE: 'string
 :GROUP: buddhist-cat
 :DEFAULT: "claude-fable-5-2"
@@ -20229,7 +20256,7 @@ names — Carsten 27.11.: Opus 5.5 analyses, Fable 5.2 is asked.
 ** ~bcat-second-opinion-auto~  /customize variable/
 :PROPERTIES:
 :KIND: defcustom
-:LINE: 64
+:LINE: 68
 :TYPE: 'boolean
 :GROUP: buddhist-cat
 :DEFAULT: t
@@ -20242,7 +20269,7 @@ when that model is the CAT's own (`bcat-model').
 ** ~bcat-analysis-comparison-language~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 56
+:LINE: 60
 :END:
 
 /(no docstring)/
@@ -20250,7 +20277,7 @@ when that model is the CAT's own (`bcat-model').
 ** ~bcat-second-opinion--pending~  /variable/
 :PROPERTIES:
 :KIND: defvar
-:LINE: 71
+:LINE: 75
 :DEFAULT: (make-hash-table :test #'equal)
 :END:
 
@@ -20260,7 +20287,7 @@ file: `auto' (after a fetch — its export waits) or `manual' (C-c u Z).
 ** ~bcat-second-opinion--labels~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 75
+:LINE: 79
 :DEFAULT: '
 :END:
 
@@ -20269,7 +20296,7 @@ file: `auto' (after a fetch — its export waits) or `manual' (C-c u Z).
 ** ~bcat-second-opinion--headings~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 84
+:LINE: 88
 :DEFAULT: "\\(?:Second opinion\\|Zweite Meinung\\)"
 :END:
 
@@ -20278,7 +20305,7 @@ The heading of a second opinion in either language.
 ** ~bcat-second-opinion--review-headings~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 88
+:LINE: 92
 :DEFAULT: "\\(?:Review\\|Durchsicht\\)"
 :END:
 
@@ -20287,7 +20314,7 @@ The heading of a review in either language.
 ** ~bcat-second-opinion--ambiguity-headings~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 92
+:LINE: 96
 :DEFAULT: "\\(?:Ambiguities\\|Mehrdeutigkeiten\\)"
 :END:
 
@@ -20296,7 +20323,7 @@ The heading of the ambiguities in either language.
 ** ~bcat-second-opinion--judgement~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 96
+:LINE: 100
 :DEFAULT: (concat " *([^()]*\\(?:likely\\|probab\\|preferab\\|preferred\\|doubtful\\|forced"
           "\\|less natural\\|wahrsche
 :END:
@@ -20304,11 +20331,23 @@ The heading of the ambiguities in either language.
 A judgement in brackets after a reading — „(highly unlikely given
 context)“ told Fable the analysis' choice (TĀ 1012 ⟦695⟧); cut off.
 
+** ~bcat-second-opinion--gloss~  /constant/
+:PROPERTIES:
+:KIND: defconst
+:LINE: 106
+:DEFAULT: (concat "\\(?:‘[^’\n]*’\\|„[^“\n]*“\\|“[^”\n]*”\\|\"[^\"\n]*\""
+          "\\|\\(?:\\`\\|[ \t]\\)'[^'\n]*'\\)")
+:END:
+
+A gloss of a reading in quotation marks — an ASCII apostrophe only
+after a blank, since one inside a word of the original is an avagraha
+(/vyādhayo'pi/).
+
 ** ~bcat-second-opinion--schema~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 238
-:DEFAULT: "{\"opinions\": [{\"place\": 1, \"choice\": 1, \"reading\": \"…\", \"reason\": \"…\"}]}"
+:LINE: 281
+:DEFAULT: "{\"opinions\": [{\"place\": 1, \"choice\": 1, \"reading\": \"…\", \"sense\": \"…\", \"reason\": \"…\"}]}"
 :END:
 
 The JSON contract of the blind second opinion.
@@ -20316,7 +20355,7 @@ The JSON contract of the blind second opinion.
 ** ~bcat-second-opinion--review-schema~  /constant/
 :PROPERTIES:
 :KIND: defconst
-:LINE: 242
+:LINE: 285
 :DEFAULT: "{\"points\": [{\"passage\": \"…\", \"segment\": 0, \"point\": \"…\"}]}"
 :END:
 
