@@ -109,10 +109,11 @@ last under Translations compared, under a heading that says what it is,
 and its renderings alone make no point for the discussion.")
 
 (defconst bcat-analysis--comparison-schema
-  "\"units\": [{\"passage\": \"…\", \"segment\": 0, \"readings\": [{\"sigla\": \"…\", \"text\": \"…\"}], \"finding\": \"…\", \"grammatical\": \"all|one\", \"grammar_note\": \"…\", \"certainty\": \"certain|likely|open\", \"impact\": \"medium|high\", \"impact_note\": \"…\", \"doubts\": [{\"who\": \"…\", \"verdict\": \"doubtful|wrong\", \"reason\": \"…\", \"better\": \"…\"}]}], \"minor\": \"…\", \"proposal\": [{\"label\": \"…\", \"text\": \"…\"}], \"decisions\": \"…\", \"corrections\": [\"…\"]"
+  "\"units\": [{\"passage\": \"…\", \"segment\": 0, \"readings\": [{\"sigla\": \"…\", \"text\": \"…\"}], \"finding\": \"…\", \"grammatical\": \"all|one\", \"grammar_note\": \"…\", \"certainty\": \"certain|likely|open\", \"impact\": \"medium|high\", \"impact_note\": \"…\", \"doubts\": [{\"who\": \"…\", \"verdict\": \"doubtful|wrong\", \"reason\": \"…\", \"better\": \"…\"}]}], \"minor\": \"…\", \"proposal\": [{\"label\": \"…\", \"text\": \"…\"}], \"decisions\": \"…\", \"corrections\": [\"…\"], \"ambiguities\": [{\"passage\": \"…\", \"segment\": 0, \"readings\": [\"…\"], \"chosen\": \"…\", \"why\": \"…\"}]"
   "The comparison's part of the JSON contract of every sentence analysis
 \(`bcat-analysis--sentence-rules').  18.11.: the points for the
-discussion only — no rating, core or weight any more (2.11.–18.11.).")
+discussion only — no rating, core or weight any more (2.11.–18.11.).
+27.11.: the ambiguities of the original (the second opinion's trigger).")
 
 (defun bcat-analysis--sentence-rules (lang)
   "The rules for the sentence translation and the comparison of the
@@ -142,7 +143,8 @@ the comparison in it are an option of the sentence
 - proposal: your translation of the sentence weighed by the comparison — every point decided (the other reading belongs in a note); where the text has a double sense one entry per sense, each with its label (\"First sense (theological)\"), else one entry with the label \"\"; [] when no reference translation other than a machine's is given. Each text a finished translation to be read aloud in class: fluent and idiomatic, every statement once, the word order free; square brackets only for words the original leaves implicit — never to show a construction or to repeat a clause (that belongs in decisions).
 - decisions: the decisions of the proposal, by point number, in one to three sentences; \"\" when units is [].
 - corrections: errors of your own analysis above that the comparison brings to light (a form misidentified, a gloss that does not fit), one sentence each; [] when there are none.
-- Language of the comparison: finding, impact_note, minor, reason, decisions and corrections in %s, the labels of the proposal and grammar_note too; readings verbatim; the renderings in better and proposal in %s."
+- ambiguities: every place where the original itself admits more than one grammatical analysis — a sandhi or compound boundary that resolves in two ways (/kāryamṛta/: /kārya-mṛta/ or /kāri-amṛta/), a word division, the function of a case or a particle, the attachment of a word or a clause — whether or not a translation differs there, and even where you chose one reading with confidence. Name each one; do not decide whether it is worth naming. passage: the words of the original in /italic/; segment: its number; readings: each analysis in a few words, the form of the original first (\"/kārya-mṛta/ ‘dead products’\"); chosen: the reading your analysis follows; why: one sentence on why. [] when the original admits only one analysis throughout.
+- Language of the comparison: finding, impact_note, minor, reason, decisions, corrections and why in %s, the labels of the proposal and grammar_note too; readings verbatim; the renderings in better and proposal in %s."
           (if bcat-analysis-comparison-language
               (bcat-analysis--language bcat-analysis-comparison-language)
             lang)
@@ -1489,7 +1491,8 @@ comparison below it (*** Übersicht …, 2.11.) stay where they are."
      (discuss . "Zu besprechen") (here . "hier") (point . "Punkt") (depends . "Was daran hängt")
      (not-at-issue . "Unstrittig") (agree . "%d Stelle(n), an denen alle übereinstimmen")
      (machine-only . "nur %s weicht ab") (minor . "geringfügig")
-     (machine . "%s (maschinelle Übersetzung, der Vollständigkeit halber)"))
+     (machine . "%s (maschinelle Übersetzung, der Vollständigkeit halber)")
+     (ambiguities . "Mehrdeutigkeiten") (chosen . "gewählt"))
     ("en" (overview . "Overview") (passages . "The passages")
      (proposal . "Proposed translation") (corrections . "Corrections to the analysis")
      (columns "No." "Passage" "Rating" "Point")
@@ -1505,7 +1508,8 @@ comparison below it (*** Übersicht …, 2.11.) stay where they are."
      (discuss . "Discuss") (here . "here") (point . "point") (depends . "What depends on it")
      (not-at-issue . "Not at issue") (agree . "%d passage(s) on which all agree")
      (machine-only . "only %s differs") (minor . "minor")
-     (machine . "%s (machine translation, for completeness)")))
+     (machine . "%s (machine translation, for completeness)")
+     (ambiguities . "Ambiguities") (chosen . "chosen")))
   "The words of the comparison in the file, by
 `bcat-analysis-comparison-language' — the Muster's (2.11.) for German.")
 
@@ -2001,10 +2005,41 @@ TARGET.  Until 18.11.: `bcat-analysis-comparison-units-rated'."
                              (mapconcat (lambda (p) (bcat-analysis--point-block p machine known)) points "\n\n")
                            (funcall label 'none))))
             (and compared (bcat-analysis--not-at-issue parsed points machine known))
+            (bcat-analysis--ambiguities-block parsed)
             (and corrections
                  (concat "*** " (funcall label 'corrections) "\n"
                          (mapconcat (lambda (c) (concat "- " (string-trim c))) corrections "\n")))))
      "\n\n")))
+
+(defun bcat-analysis--ambiguities-block (parsed)
+  "*** Ambiguities of PARSED (Carsten 27.11.: „Mehrdeutigkeitsfeld“): one
+line per place where the original admits more than one analysis — the
+passage and its segment, the readings, which one the analysis chose and
+why — or nil when it names none.  In the language of the comparison
+being rendered (`bcat-analysis--comparison-lang'); the second opinion's
+trigger (bcat-second-opinion.el)."
+  (let ((items (cl-remove-if-not
+                (lambda (a) (and (consp a)
+                                 (not (string-blank-p (bcat-analysis--field a 'passage)))))
+                (append (alist-get 'ambiguities parsed) nil))))
+    (when items
+      (concat "*** " (bcat-analysis--comparison-label 'ambiguities) "\n"
+              (mapconcat
+               (lambda (a)
+                 (let* ((seg (alist-get 'segment a))
+                        (readings (cl-remove-if #'string-blank-p
+                                                (mapcar (lambda (r) (string-trim (format "%s" r)))
+                                                        (append (alist-get 'readings a) nil))))
+                        (chosen (bcat-analysis--field a 'chosen))
+                        (why (bcat-analysis--field a 'why)))
+                   (concat "- " (bcat-analysis--field a 'passage)
+                           (if (and (integerp seg) (> seg 0)) (format " (⟦%d⟧)" seg) "")
+                           ": " (string-join readings " · ")
+                           (if (string-empty-p chosen) ""
+                             (format " — %s: %s" (bcat-analysis--comparison-label 'chosen) chosen))
+                           (if (string-empty-p why) ""
+                             (concat (if (string-match-p "[.!?]\\'" chosen) " " ". ") why)))))
+               items "\n")))))
 
 (defun bcat-analysis-comparison-units-rated (parsed &optional refs target)
   "The comparison as it was written from 2.11. to 18.11. — every unit

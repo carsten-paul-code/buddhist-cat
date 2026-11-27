@@ -1632,6 +1632,41 @@ the one before; the Sanskrit part links back."
 ;; Translations compared: units, rating, proposal (Carsten 2.11.)
 ;; ----------------------------------------------------------------------------
 
+(ert-deftest bcat-analysis-ambiguities-contract ()
+  "Carsten 27.11. („Zweite Runde mit Mehrdeutigkeitsfeld“): every
+sentence analysis — Sanskrit, Tibetan, the Tibetan request of a pair —
+asks for the places where the original itself admits more than one
+grammatical analysis, whether or not a translation differs there and
+even where the choice was confident (TĀ 1012 ⟦695⟧: /kāryamṛta/ is
+/kārya-mṛta/ or /kāri-amṛta/ — Opus followed Dyczkowski without a
+word, Fable read it the other way).  A fact to name, not a feeling:
+the trigger of the second opinion."
+  (dolist (sys (list (bcat-analysis-sanskrit-system-prompt "en")
+                     (bcat-analysis-system-prompt "en")
+                     (bcat-analysis-tibetan-system-prompt "en")))
+    (dolist (key '("\"ambiguities\"" "\"chosen\"" "\"why\""))
+      (should (string-match-p (regexp-quote key) sys)))
+    (should (string-match-p "^- ambiguities: every place where the original itself admits more than one" sys))))
+
+(ert-deftest bcat-analysis-ambiguities-render ()
+  "The ambiguities stand under Translations compared as *** Ambiguities
+(German: Mehrdeutigkeiten), one line each: the passage with its
+segment, the readings, which one the analysis chose and why — also
+when there is no reference translation to compare with; none, no
+block."
+  (let* ((parsed '((translation . "T")
+                   (ambiguities . [((passage . "/kāryamṛta/") (segment . 695)
+                                    (readings . ["/kārya-mṛta/ ‘dead products’" "/kāri-amṛta/ ‘nectars that produce’"])
+                                    (chosen . "/kārya-mṛta/")
+                                    (why . "The commentary contrasts the lasting with the perishable."))])))
+         (en (bcat-analysis-comparison-units parsed nil "en"))
+         (de (bcat-analysis-comparison-units parsed nil "de")))
+    (should (string-match-p "^\\*\\*\\* Ambiguities$" en))
+    (should (string-match-p (regexp-quote "- /kāryamṛta/ (⟦695⟧): /kārya-mṛta/ ‘dead products’ · /kāri-amṛta/ ‘nectars that produce’ — chosen: /kārya-mṛta/. The commentary contrasts the lasting with the perishable.") en))
+    (should (string-match-p "^\\*\\*\\* Mehrdeutigkeiten$" de))
+    (should (string-match-p "— gewählt: /kārya-mṛta/" de))
+    (should-not (string-match-p "Ambiguities" (bcat-analysis-comparison-units '((translation . "T") (ambiguities . [])) nil "en")))))
+
 (ert-deftest bcat-analysis-comparison-units-contract ()
   "Carsten 2.11. (Muster Resources/vergleich-ta1-1.org of the Tantrāloka
 reading, „das Muster passt“; „Immer“ — every C-c u G): Translations
@@ -1661,10 +1696,10 @@ discussion only (`bcat-analysis-comparison-points-contract')."
     (should (string-match-p "never from a translator's standing" sys))
     (should (string-match-p (regexp-quote "(S, I 0:15:24)") sys))
     (should (string-match-p "double sense" sys))
-    (should (string-match-p "finding, impact_note, minor, reason, decisions and corrections in German" sys))
+    (should (string-match-p "finding, impact_note, minor, reason, decisions, corrections and why in German" sys))
     (should (string-match-p "renderings in better and proposal in English" sys)))
   (let ((bcat-analysis-comparison-language "en"))
-    (should (string-match-p "decisions and corrections in English"
+    (should (string-match-p "decisions, corrections and why in English"
                             (bcat-analysis-sanskrit-system-prompt "de")))
     (should (string-match-p "renderings in better and proposal in German"
                             (bcat-analysis-sanskrit-system-prompt "de")))))
@@ -1705,7 +1740,7 @@ The user prompt names the machine translation as such."
     (should (string-match-p "reason: .*without the conjunction" sys))
     (should (string-match-p "double sense" sys))
     (should (string-match-p "- minor: " sys))
-    (should (string-match-p "reason, decisions and corrections in English" sys))
+    (should (string-match-p "reason, decisions, corrections and why in English" sys))
     (should (string-match-p "renderings in better and proposal in English" sys)))
   (should (string-match-p
            (regexp-quote "Sigla for the comparison: C = your translation, D = Dyczkowski 2023, DM = DharmaMitra (a machine translation: no reference, for completeness only)")
@@ -2277,9 +2312,9 @@ when `bcat-analysis-comparison-language' says so (default nil).  The
 target comes with the rump (`target-lang') into the context."
   (should (null (eval (car (get 'bcat-analysis-comparison-language 'standard-value)))))
   (let ((bcat-analysis-comparison-language nil))
-    (should (string-match-p "reason, decisions and corrections in English"
+    (should (string-match-p "reason, decisions, corrections and why in English"
                             (bcat-analysis-sanskrit-system-prompt "en")))
-    (should (string-match-p "reason, decisions and corrections in German"
+    (should (string-match-p "reason, decisions, corrections and why in German"
                             (bcat-analysis-sanskrit-system-prompt "de")))
     (let ((parsed (bcat-analysis-parse bcat-analysis-test--units-answer)))
       (should (string-match-p "^\\*\\*\\* Discussion points$" (bcat-analysis-comparison parsed nil "en")))
@@ -2297,7 +2332,7 @@ target comes with the rump (`target-lang') into the context."
                                           (cons '(target-lang . "en") (bcat-analysis-test--base))
                                           parsed nil))))))
   (let ((bcat-analysis-comparison-language "de"))
-    (should (string-match-p "reason, decisions and corrections in German"
+    (should (string-match-p "reason, decisions, corrections and why in German"
                             (bcat-analysis-sanskrit-system-prompt "en")))
     (should (string-match-p "^\\*\\*\\* Diskussionspunkte$"
                             (bcat-analysis-comparison
