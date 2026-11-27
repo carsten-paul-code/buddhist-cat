@@ -44,7 +44,8 @@ EINER STELLE (bcat-survey.el) — kommt mit C-c u G, wenn es etwas zu
 beachten gibt, C-c u Q auf Zuruf; erster Abruf XI.15, noch nicht auf dem
 Gerät; UNTERORDNER JE VERS auf dem reMarkable, wo es Kommentar-Dokumente
 gibt (MSA XI verschoben); SEIT 27.11. OPUS 5.5 ALS MODELL DER ABRUFE (`bcat-model'),
-MEHRDEUTIGKEITEN IM PROMPT UND ZWEITE MEINUNG VON FABLE (C-c u Z);
+MEHRDEUTIGKEITEN IM PROMPT UND ZWEITE MEINUNG VON FABLE, BLIND — C-c u Z
+DURCHSICHT DER ANALYSE;
 offen: Philologie-Teil weiter gliedern, Kompositum-Auflösung straffen).
 Before that 2026-10-28 (§5.74: SATZDATEIEN
 NACH VORLAGE — Reading-Klassen, Tibetisch: `#+CAT_TEMPLATE: tibetan' im
@@ -6349,9 +6350,25 @@ Abruf umsetzen — XI gleich, IX erst auf sein Wort).
     Analyse samt Wahl und Begründung und lässt sich davon leiten
     (Ankereffekt).  Außerdem gab Fable als passage den ganzen Satz statt
     der Stelle.  Fand dafür in „Also“ einen echten Fehler der Tabelle
-    (/avidyamānam/ ppp. statt Partizip Präsens Passiv).  Offen: die
-    Stellen ohne Opus' Wahl und Begründung schicken („blind“), passage
-    straffen — auf Carstens Wort.
+    (/avidyamānam/ ppp. statt Partizip Präsens Passiv).
+  · BLIND (Carsten 27.11.: „Blind fragen und Stelle straffen“, 56878ba +
+    de68cd5): die Regel der Mehrdeutigkeiten verlangt passage nur als
+    Wort/Kompositum (nie ganzes Segment), Lesungen ohne Wertung, chosen
+    wörtlich wie eine Lesung.  Die zweite Meinung nach dem Abruf ist
+    blind: Original Segment für Segment AUS DER QUELLE (die ⟦N⟧-Zeile der
+    Satzdatei trägt Opus' Worttrennung, z. B. kārya-mṛta-antara), Kontext
+    des Dokuments, Ort im Ganzen, Nachbarsätze, veröffentlichte
+    Übersetzungen (`bcat-survey--references'), je Stelle die Lesungen
+    sortiert und ohne Wertung in Klammern (`bcat-second-opinion--place')
+    — nie Opus' Wahl, Begründung, Tabellen, Übersetzung.  Fable antwortet
+    mit der Nummer der Lesung; das CAT vergleicht mit Opus' Wahl (wörtlich,
+    sonst eindeutige /Form/) → *** Second opinion (Fable 5.2, blind):
+    „as the analysis“ / „differs from the analysis“ / „open“, ohne Urteil,
+    wo Opus' Wahl nicht erkennbar ist (ältere Analysen).  C-c u Z ist jetzt
+    die Durchsicht der ganzen Analyse → *** Review (Fable 5.2), höchstens
+    fünf Punkte, jeder an seinem Wort, nach der zweiten Meinung; C-u C-c
+    u Z = blind noch einmal.  Trockenlauf an der Kopie (kein Abruf):
+    Prompt sauber.  Noch kein echter blinder Abruf — erst auf sein Wort.
 - OFFEN: landet ein Kommentar allein und deckt mehrere Verse, wird nur
   das Dossier des ersten neu exportiert (`bcat-dossier-export-files');
   Sanskrit-Bhāṣya nicht eigens analysiert; die geprüfte Fassung eines
