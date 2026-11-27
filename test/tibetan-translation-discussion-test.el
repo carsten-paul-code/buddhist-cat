@@ -393,6 +393,33 @@ goes out with `bcat-model'; nil follows gptel's own."
       (when added (setq features (delq 'gptel features)))
       (delete-file file))))
 
+(defvar gptel-temperature)
+
+(ert-deftest tibetan-discussion-submit-sends-no-temperature ()
+  "Carsten 27.11. (Opus 5.5 as the CAT's model, Fable 5.2 as a second
+opinion): Fable 5.2 takes no sampling parameters — a request with a
+temperature is rejected —, and gptel sends `gptel-temperature' (1.0)
+whenever it is set.  A CAT request goes out without one (1.0 is the
+API's default anyway, nothing changes for Sonnet 4.6 or Opus 5.5)."
+  (let ((file (make-temp-file "bcat-temperature-")) (added (not (featurep 'gptel)))
+        (seen 'unset) (pending nil))
+    (when added (provide 'gptel))
+    (unwind-protect
+        (cl-letf (((symbol-function 'tibetan-claude-queue-submit)
+                   (lambda (job &rest _) (setq pending job)))
+                  ((symbol-function 'tibetan-analysis--ensure-gptel-ready) (lambda () t))
+                  ((symbol-function 'run-at-time) (lambda (_s _r fn &rest args) (apply fn args)))
+                  ((symbol-function 'gptel-request)
+                   (lambda (_prompt &rest args)
+                     (setq seen gptel-temperature)
+                     (funcall (plist-get args :callback) "{}" nil))))
+          (let ((gptel-temperature 1.0))
+            (tibetan-discussion--submit "test" file (lambda () '("s" . "u")) #'ignore)
+            (funcall pending #'ignore))
+          (should (null seen)))
+      (when added (setq features (delq 'gptel features)))
+      (delete-file file))))
+
 (ert-deftest tibetan-discussion-submit-ignores-the-reasoning-call ()
   "Bug (27.11., found before switching to Opus 5.5): with a model that
 thinks (Opus 5.5, Fable 5.2 — thinking always on), gptel calls the

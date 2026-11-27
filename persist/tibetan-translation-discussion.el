@@ -489,6 +489,7 @@ comparison) — one request per kind and file at a time.")
            tibetan-discussion--inflight))
 
 (defvar gptel-model)
+(defvar gptel-temperature)
 
 (defcustom bcat-model "claude-sonnet-4-6"
   "The Claude model of the CAT's requests — the sentence files (C-c u
@@ -534,6 +535,9 @@ by the discussion (§5.62) and the Sanskrit comparison (§5.64)."
                (tibetan-analysis--ensure-gptel-ready)
                (let* ((ps (funcall prompts))
                       (gptel-model (bcat-model))
+                      ;; 27.11.: no sampling parameter — Fable 5.2
+                      ;; rejects one; 1.0 is the API's default anyway
+                      (gptel-temperature nil)
                       (gptel-cache '(system))
                       (gptel-max-tokens tibetan-claude-max-tokens))
                  (gptel-request
