@@ -22,9 +22,13 @@
 ;; segment from the source), the document's context, the place in the
 ;; work, the sentences around it, the published translations, and per
 ;; place the readings in no particular order, a judgement in brackets cut
-;; off (`bcat-second-opinion--place').  Fable answers with the number of
-;; the reading it chooses; whether the analysis chose it too is decided
-;; here and written beside it: *** Second opinion (Fable 5.2, blind) —
+;; off (`bcat-second-opinion--place') — and then („Nur die Formen
+;; schicken“) only their forms, or their construction where they share
+;; the form, without the analysis' glosses: its gloss of /kāri-amṛta/,
+;; „the deathless made/caused“, was a weak version of the reading.  Fable
+;; answers with the number of the reading it chooses and what it means;
+;; whether the analysis chose it too is decided here and written beside
+;; it: *** Second opinion (Fable 5.2, blind) —
 ;; nothing of the analysis is overwritten.  The PDF of the file waits for
 ;; it (`bcat-export-after-fetch' asks `bcat-second-opinion-pending-p').
 ;;
@@ -99,6 +103,13 @@ file: `auto' (after a fetch — its export waits) or `manual' (C-c u Z).")
   "A judgement in brackets after a reading — „(highly unlikely given
 context)“ told Fable the analysis' choice (TĀ 1012 ⟦695⟧); cut off.")
 
+(defconst bcat-second-opinion--gloss
+  (concat "\\(?:‘[^’\n]*’\\|„[^“\n]*“\\|“[^”\n]*”\\|\"[^\"\n]*\""
+          "\\|\\(?:\\`\\|[ \t]\\)'[^'\n]*'\\)")
+  "A gloss of a reading in quotation marks — an ASCII apostrophe only
+after a blank, since one inside a word of the original is an avagraha
+\(/vyādhayo'pi/).")
+
 ;; ----------------------------------------------------------------------------
 ;; Reading the file
 ;; ----------------------------------------------------------------------------
@@ -152,13 +163,42 @@ the one reading with its form of the original; nil when none or several."
                                       collect i))))
         (and same (null (cdr same)) (car same))))))
 
+(defun bcat-second-opinion--bare (reading)
+  "READING without its glosses in quotation marks
+\(`bcat-second-opinion--gloss'): its form and its construction."
+  (string-trim
+   (replace-regexp-in-string
+    "[ \t]+" " "
+    (replace-regexp-in-string
+     "([ \t]*)" ""
+     (replace-regexp-in-string bcat-second-opinion--gloss " " reading)))
+   "[ \t]+" "[ \t:;,—–-]+"))
+
+(defun bcat-second-opinion--shown (readings)
+  "What the second opinion is shown of READINGS (neutral, without a
+judgement) — Carsten 27.11.: „Nur die Formen schicken“, since the
+analysis' glosses frame the reading it did not choose (TĀ 1012 ⟦695⟧:
+/kāri-amṛta/ „the deathless made/caused“): the forms of the original
+when every reading begins with one and they differ; else the readings
+without their glosses (the attachment of a word, the kind of a
+compound) when these differ; else the readings whole."
+  (let ((forms (mapcar (lambda (r) (and (string-match "\\`/[^/\n]+/" r) (match-string 0 r)))
+                       readings))
+        (bare (mapcar #'bcat-second-opinion--bare readings))
+        (distinct (lambda (xs) (and (not (memq nil xs)) (not (member "" xs))
+                                    (= (length xs) (length (delete-dups (copy-sequence xs))))))))
+    (cond ((funcall distinct forms) forms)
+          ((funcall distinct bare) bare)
+          (t readings))))
+
 (defun bcat-second-opinion--place (line)
   "The ambiguity LINE as the second opinion is given it: (:passage P
-:segment N :readings (R …) :chosen I) — the readings sorted (the
-analysis names its choice first) and without a judgement in brackets
-\(`bcat-second-opinion--judgement'), the analysis' choice only as the
-number I of its reading among them (nil when it cannot be told); nil
-for a line without two readings."
+:segment N :readings (R …) :shown (S …) :chosen I) — R the readings
+without a judgement in brackets (`bcat-second-opinion--judgement'), S
+what Fable is shown of them (`bcat-second-opinion--shown'), both sorted
+by S (the analysis names its choice first); the analysis' choice only
+as the number I of its reading among them (nil when it cannot be
+told); nil for a line without two readings."
   (let ((case-fold-search nil))
     (when (string-match "\\`- \\(.+?\\)\\(?: (⟦\\([0-9]+\\)⟧)\\)?: \\(.+\\)\\'" line)
       (let* ((passage (match-string 1 line))
@@ -169,17 +209,20 @@ for a line without two readings."
              (raw (cl-remove-if #'string-blank-p
                                 (mapcar #'string-trim
                                         (split-string (if cut (substring rest 0 cut) rest) " · "))))
-             (pairs (sort (mapcar (lambda (r)
-                                    (cons r (string-trim
-                                             (let ((case-fold-search t))
-                                               (replace-regexp-in-string
-                                                bcat-second-opinion--judgement "" r)))))
-                                  raw)
-                          (lambda (a b) (string< (cdr a) (cdr b))))))
-        (when (cdr pairs)
+             (neutral (mapcar (lambda (r)
+                                (string-trim
+                                 (let ((case-fold-search t))
+                                   (replace-regexp-in-string bcat-second-opinion--judgement "" r))))
+                              raw))
+             ;; (RAW NEUTRAL SHOWN), in the order Fable sees them
+             (rows (sort (cl-mapcar #'list raw neutral (bcat-second-opinion--shown neutral))
+                         (lambda (a b) (string< (nth 2 a) (nth 2 b))))))
+        (when (cdr rows)
           (list :passage passage :segment seg
-                :readings (mapcar #'cdr pairs)
-                :chosen (and chosen (bcat-second-opinion--chosen-index chosen pairs))))))))
+                :readings (mapcar #'cadr rows)
+                :shown (mapcar #'caddr rows)
+                :chosen (and chosen (bcat-second-opinion--chosen-index
+                                     chosen (mapcar (lambda (row) (cons (car row) (cadr row))) rows)))))))))
 
 (defun bcat-second-opinion-places (text)
   "The places the analysis in TEXT names as ambiguous, each as
@@ -236,7 +279,7 @@ Translations compared."
 ;; ----------------------------------------------------------------------------
 
 (defconst bcat-second-opinion--schema
-  "{\"opinions\": [{\"place\": 1, \"choice\": 1, \"reading\": \"…\", \"reason\": \"…\"}]}"
+  "{\"opinions\": [{\"place\": 1, \"choice\": 1, \"reading\": \"…\", \"sense\": \"…\", \"reason\": \"…\"}]}"
   "The JSON contract of the blind second opinion.")
 
 (defconst bcat-second-opinion--review-schema
@@ -253,9 +296,9 @@ the places with their readings numbered — nothing of the analysis."
          (m (bcat-second-opinion--material file text))
          (refs (plist-get m :references)))
     (cons
-     (format "You give a second opinion on places in one sentence of a Sanskrit or Tibetan text, read in a reading class at a university. At each place the original admits more than one grammatical analysis; the readings are listed in no particular order. Decide each place from the original alone — grammar, sandhi, lexicon, the context in the work and its commentary; the published translations show how others read the sentence, they do not decide, and a translator's standing is no argument.
-- opinions: one entry per place, in the order given. place: its number. choice: the number of the reading the original supports; 0 when it supports a reading that is not listed — give it in reading, the form of the original first — or when the place stays open (reading \"\"). reason: one to three sentences; name a reading by its form, never by its number (your answer is shown without the numbers).
-- Words of the original in /italic/; reason in %s.
+     (format "You give a second opinion on places in one sentence of a Sanskrit or Tibetan text, read in a reading class at a university. At each place the original admits more than one grammatical analysis; the readings are listed in no particular order, each by its form alone — by its construction where the readings share their form —, so say yourself what the one you choose means. Decide each place from the original alone — grammar, sandhi, lexicon, the context in the work and its commentary; the published translations show how others read the sentence, they do not decide, and a translator's standing is no argument.
+- opinions: one entry per place, in the order given. place: its number. choice: the number of the reading the original supports; 0 when it supports a reading that is not listed — give it in reading, the form of the original first — or when the place stays open (reading \"\"). sense: what the chosen reading says here, in a few words (\"\" when the place stays open). reason: one to three sentences; name a reading by its form, never by its number (your answer is shown without the numbers).
+- Words of the original in /italic/; sense and reason in %s.
 Answer with the JSON object alone: %s" (bcat-second-opinion--language file) bcat-second-opinion--schema)
      (concat (format "Sentence file: %s\n\n" (file-name-nondirectory file))
              (if (plist-get m :context)
@@ -272,7 +315,7 @@ Answer with the JSON object alone: %s" (bcat-second-opinion--language file) bcat
               (cl-loop for p in places for i from 1
                        collect (concat (format "Place %d: %s" i (plist-get p :passage))
                                        (if (plist-get p :segment) (format " (⟦%d⟧)" (plist-get p :segment)) "")
-                                       (cl-loop for r in (plist-get p :readings) for k from 1
+                                       (cl-loop for r in (plist-get p :shown) for k from 1
                                                 concat (format "\n  %d) %s" k r))))
               "\n\n")
              "\n</places>"))))
@@ -331,9 +374,10 @@ in the language CODE (English when CODE has none)."
 
 (defun bcat-second-opinion--block (parsed model code places)
   "The *** Second opinion block of PARSED (the blind answer) from MODEL
-on PLACES, in the language CODE: per place the reading chosen and
-whether the analysis chose it too (open, when no reading is chosen;
-no verdict when the analysis' choice cannot be told)."
+on PLACES, in the language CODE: per place the reading chosen as Fable
+saw it, with what Fable says it means — never the analysis' gloss —,
+and whether the analysis chose it too (open, when no reading is
+chosen; no verdict when the analysis' choice cannot be told)."
   (let* ((word (bcat-second-opinion--words code))
          (lines
           (delq nil
@@ -343,7 +387,7 @@ no verdict when the analysis' choice cannot be told)."
                           (n (if (stringp n) (string-to-number n) n))
                           (place (and (integerp n) (> n 0) (nth (1- n) places))))
                      (when place
-                       (let* ((readings (plist-get place :readings))
+                       (let* ((readings (or (plist-get place :shown) (plist-get place :readings)))
                               (choice (alist-get 'choice o))
                               (choice (if (stringp choice) (string-to-number choice) choice))
                               (k (and (integerp choice) (<= 1 choice (length readings)) choice))
@@ -355,13 +399,16 @@ no verdict when the analysis' choice cannot be told)."
                                              ((and k chosen) (if (= k chosen) 'same 'differs))
                                              (k nil)
                                              (t 'differs)))
+                              (sense (string-trim (bcat-second-opinion--field o 'sense) "[ \t‘’'\"„“”]+" "[ \t‘’'\"„“”]+"))
                               (reason (bcat-second-opinion--field o 'reason)))
                          (concat "- " (plist-get place :passage)
                                  (if (plist-get place :segment) (format " (⟦%d⟧)" (plist-get place :segment)) "")
                                  ": "
                                  (if (eq verdict 'open)
                                      (funcall word 'open)
-                                   (concat reading (if verdict (concat " — " (funcall word verdict)) "")))
+                                   (concat reading
+                                           (if (string-empty-p sense) "" (format " ‘%s’" sense))
+                                           (if verdict (concat " — " (funcall word verdict)) "")))
                                  (if (string-empty-p reason) ""
                                    (concat ". " (bcat-second-opinion--sentence reason))))))))
                  (append (alist-get 'opinions parsed) nil)))))

@@ -67,8 +67,8 @@ Meine Notiz.
   "A sentence file with one ambiguity.")
 
 (defconst bcat-second-opinion-test--answer
-  "{\"opinions\": [{\"place\": 1, \"choice\": 1, \"reading\": \"\", \"reason\": \"/dārḍhya/ is the firmness the elixirs give.\"}]}"
-  "Fable's blind answer: the first of the readings as listed (sorted).")
+  "{\"opinions\": [{\"place\": 1, \"choice\": 1, \"reading\": \"\", \"sense\": \"nectars that give firmness\", \"reason\": \"/dārḍhya/ is the firmness the elixirs give.\"}]}"
+  "Fable's blind answer: the first of the readings as listed (sorted), in its own words.")
 
 (defconst bcat-second-opinion-test--review
   "{\"points\": [{\"passage\": \"/avidyamānam/\", \"segment\": 698, \"point\": \"A present passive participle, not a ppp.\"}]}"
@@ -119,6 +119,9 @@ read word for word, else by the form of the original."
     (should (equal 695 (plist-get p :segment)))
     (should (equal '("/kāri-amṛta/ ‘nectars that produce’" "/kārya-mṛta/ ‘dead products’")
                    (plist-get p :readings)))
+    ;; Carsten 27.11.: „Nur die Formen schicken“ — the analysis' glosses
+    ;; framed the reading it did not choose („the deathless made/caused“)
+    (should (equal '("/kāri-amṛta/" "/kārya-mṛta/") (plist-get p :shown)))
     (should (equal 2 (plist-get p :chosen))))
   ;; chosen not word for word: the form of the original decides, when it
   ;; names one reading only
@@ -130,8 +133,30 @@ read word for word, else by the form of the original."
     (should (equal "/x/" (plist-get p :passage)))
     (should-not (plist-get p :segment))
     (should (equal '("/p/ als Subjekt" "/q/ als Objekt") (plist-get p :readings)))
+    (should (equal '("/p/" "/q/") (plist-get p :shown)))
     (should-not (plist-get p :chosen)))
   (should-not (bcat-second-opinion--place "- no readings here")))
+
+(ert-deftest bcat-second-opinion-place-shows-the-construction ()
+  "Where the readings share their form — the attachment of a word, the
+kind of a compound — the form alone tells them not apart: the reading
+goes with its construction, its gloss in quotation marks cut off; an
+apostrophe in a word of the original is no quotation mark; only where
+nothing but the glosses differ, the readings go whole."
+  (should (equal '("/avidyamānam/ as predicate of /mṛtam/" "/avidyamānam/ as predicate of /tat/")
+                 (plist-get (bcat-second-opinion--place
+                             "- /avidyamānam mṛtam yatra tat/ (⟦698⟧): /avidyamānam/ as predicate of /mṛtam/: 'the dead-state is not found' · /avidyamānam/ as predicate of /tat/: „that in which …“ — chosen: x")
+                            :shown)))
+  (should (equal '("bahuvrīhi" "karmadhāraya chain")
+                 (plist-get (bcat-second-opinion--place
+                             "- /amākhyakalāsvarūpam/ (⟦698⟧): karmadhāraya chain: ‘whose nature is the amā-kalā’ · bahuvrīhi: \"having the nature of the amā-kalā\"")
+                            :shown)))
+  (should (equal '("/vyādhayo'pi/ as one word" "/vyādhayo'pi/ as two words")
+                 (plist-get (bcat-second-opinion--place
+                             "- /x/: /vyādhayo'pi/ as two words 'diseases too' · /vyādhayo'pi/ as one word")
+                            :shown)))
+  (should (equal '("/a/ ‘one’" "/a/ ‘two’")
+                 (plist-get (bcat-second-opinion--place "- /x/: /a/ ‘two’ · /a/ ‘one’") :shown))))
 
 (ert-deftest bcat-second-opinion-prompts-are-blind ()
   "The request on the places: the original, the place in the work, the
@@ -146,7 +171,9 @@ translation, the machine translation or the user's notes."
         (should (string-match-p "second opinion" (car ps)))
         (should (string-match-p "no particular order" (car ps)))
         (should (string-match-p "\"choice\"" (car ps)))
-        (should (string-match-p "reason in English" (car ps)))
+        (should (string-match-p "\"sense\"" (car ps)))
+        (should (string-match-p "by its form alone" (car ps)))
+        (should (string-match-p "sense and reason in English" (car ps)))
         ;; the run on TĀ 1012: „reading 1 would require …“ — in the file
         ;; the readings stand in the analysis' order, the numbers not at all
         (should (string-match-p "name a reading by its form, never by its number" (car ps)))
@@ -154,10 +181,11 @@ translation, the machine translation or the user's notes."
         (should (string-match-p "TĀ 1\\.1 › Deutung 1 › Herz" user))
         (should (string-match-p "Dyczkowski 2023: (By) ‘Absolute’" user))
         (should (string-match-p (concat "Place 1: /kāryamṛta/ (⟦695⟧)\n"
-                                        "  1) /kāri-amṛta/ ‘nectars that produce’\n"
-                                        "  2) /kārya-mṛta/ ‘dead products’")
+                                        "  1) /kāri-amṛta/\n"
+                                        "  2) /kārya-mṛta/\n</places>")
                                 user))
         (dolist (seen '("chosen" "contrasts the lasting" "highly unlikely" "kārya-mṛta-antara"
+                        "nectars that produce" "dead products"
                         "by contrast with dead products" "The Unsurpassable, most excellent"
                         "DharmaMitra" "transient" "Meine Notiz"))
           (should-not (string-match-p (regexp-quote seen) user)))))))
@@ -214,7 +242,7 @@ replaces the earlier one; the user's sections stay."
         (let ((text (bcat-second-opinion-test--read file)))
           (should (string-match-p (concat "\\*\\*\\* Ambiguities\n- [^\n]*\n\n"
                                           "\\*\\*\\* Second opinion (Fable 5\\.2, blind)\n"
-                                          "- /kāryamṛta/ (⟦695⟧): /kāri-amṛta/ ‘nectars that produce’ — differs from the analysis\\. "
+                                          "- /kāryamṛta/ (⟦695⟧): /kāri-amṛta/ ‘nectars that give firmness’ — differs from the analysis\\. "
                                           "/dārḍhya/ is the firmness the elixirs give\\.\n\n"
                                           "\\*\\*\\* DharmaMitra")
                                   text))
@@ -224,29 +252,32 @@ replaces the earlier one; the user's sections stay."
         (let ((text (bcat-second-opinion-test--read file)))
           (should (= 1 (cl-count-if (lambda (l) (string-prefix-p "*** Second opinion" l))
                                     (split-string text "\n"))))
-          (should (string-match-p "(⟦695⟧): /kārya-mṛta/ ‘dead products’ — as the analysis\\. Fine\\." text))
+          (should (string-match-p "(⟦695⟧): /kārya-mṛta/ — as the analysis\\. Fine\\." text))
           (should-not (string-match-p "elixirs" text)))))))
 
 (ert-deftest bcat-second-opinion-block-verdicts ()
   "Fable's choice against the analysis': the same reading, another one of
 the list, one not listed, the place left open; the analysis' choice not
 known — the reading without a verdict; in German."
-  (let* ((place (list :passage "/x/" :segment 3 :readings '("/a/ one" "/b/ two") :chosen 1))
+  (let* ((place (list :passage "/x/" :segment 3 :readings '("/a/ one" "/b/ two") :shown '("/a/" "/b/")
+                      :chosen 1))
          (block (lambda (opinion &optional code chosen)
                   (bcat-second-opinion--block
                    `((opinions . [,opinion])) "claude-fable-5-2" (or code "en")
                    (list (plist-put (copy-sequence place) :chosen (if chosen (car chosen) 1)))))))
-    (should (string-match-p "- /x/ (⟦3⟧): /a/ one — as the analysis\\. R\\."
-                            (funcall block '((place . 1) (choice . 1) (reading . "") (reason . "R")))))
-    (should (string-match-p "- /x/ (⟦3⟧): /b/ two — differs from the analysis\\. R\\."
+    ;; the reading as Fable saw it, with its own sense — never the
+    ;; analysis' gloss
+    (should (string-match-p "- /x/ (⟦3⟧): /a/ ‘S’ — as the analysis\\. R\\."
+                            (funcall block '((place . 1) (choice . 1) (reading . "") (sense . "S") (reason . "R")))))
+    (should (string-match-p "- /x/ (⟦3⟧): /b/ — differs from the analysis\\. R\\."
                             (funcall block '((place . 1) (choice . 2) (reading . "") (reason . "R")))))
-    (should (string-match-p "- /x/ (⟦3⟧): /c/ three — differs from the analysis\\. R\\."
-                            (funcall block '((place . 1) (choice . 0) (reading . "/c/ three") (reason . "R")))))
+    (should (string-match-p "- /x/ (⟦3⟧): /c/ ‘three’ — differs from the analysis\\. R\\."
+                            (funcall block '((place . 1) (choice . 0) (reading . "/c/") (sense . "three") (reason . "R")))))
     (should (string-match-p "- /x/ (⟦3⟧): open\\. R\\."
-                            (funcall block '((place . 1) (choice . 0) (reading . "") (reason . "R")))))
-    (should (string-match-p "- /x/ (⟦3⟧): /b/ two\\. R\\."
-                            (funcall block '((place . 1) (choice . 2) (reading . "") (reason . "R")) "en" '(nil))))
-    (should (string-match-p "\\*\\*\\* Zweite Meinung (Fable 5\\.2, blind)\n- /x/ (⟦3⟧): /b/ two — anders als die Analyse\\. R\\."
+                            (funcall block '((place . 1) (choice . 0) (reading . "") (sense . "") (reason . "R")))))
+    (should (string-match-p "- /x/ (⟦3⟧): /b/ ‘S’\\. R\\."
+                            (funcall block '((place . 1) (choice . 2) (reading . "") (sense . "S") (reason . "R")) "en" '(nil))))
+    (should (string-match-p "\\*\\*\\* Zweite Meinung (Fable 5\\.2, blind)\n- /x/ (⟦3⟧): /b/ — anders als die Analyse\\. R\\."
                             (funcall block '((place . 1) (choice . 2) (reading . "") (reason . "R")) "de")))))
 
 (ert-deftest bcat-second-opinion-review-lands-after-the-second-opinion ()
