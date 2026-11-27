@@ -1648,6 +1648,21 @@ the trigger of the second opinion."
       (should (string-match-p (regexp-quote key) sys)))
     (should (string-match-p "^- ambiguities: every place where the original itself admits more than one" sys))))
 
+(ert-deftest bcat-analysis-ambiguities-rule-is-tight ()
+  "Carsten 27.11. („Blind fragen und Stelle straffen“): the place is the
+word or compound, never the whole segment (Fable gave a whole segment as
+its passage); the readings are stated without a judgement — the second
+opinion sees them blind, and „(highly unlikely given context)“ after
+/kāri-amṛta/ told Fable the analysis' choice; the choice is one of the
+readings word for word, so the second opinion can say whether it agrees."
+  (dolist (sys (list (bcat-analysis-sanskrit-system-prompt "en")
+                     (bcat-analysis-system-prompt "en")
+                     (bcat-analysis-tibetan-system-prompt "en")))
+    (should (string-match-p "passage: only the word or compound concerned" sys))
+    (should (string-match-p "never a whole segment or line" sys))
+    (should (string-match-p "stated neutrally — no judgement" sys))
+    (should (string-match-p "chosen: the reading your analysis follows, word for word as under readings" sys))))
+
 (ert-deftest bcat-analysis-ambiguities-render ()
   "The ambiguities stand under Translations compared as *** Ambiguities
 (German: Mehrdeutigkeiten), one line each: the passage with its
